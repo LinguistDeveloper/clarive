@@ -71,21 +71,21 @@ sub show : Local {
     }
     $c->stash->{about} = \@about;
 
+    my $licenses     = [];
+    my $current_year = DateTime->now->year();
+    foreach my $license_file ( grep { -e } glob('LICENSE* features/*/LICENSE') ) {
+        my $content = _file($license_file)->slurp;
+        $content =~ s/\(CURRENT_DATE\)/2010-$current_year/g;
 
-    $c->stash->{licenses} = [
-        map {
-            my $date = DateTime->now();
-            my $year = $date->year();
-            my $file_year = _file( $_ )->slurp;
-            $file_year =~s/\(CURRENT_DATE\)/2010-$year/g;
-            {
-                name=> $_,
-                text=> $file_year
-            };
-        }
-        grep { -e }
-        glob( 'LICENSE* features/*/LICENSE' )
-    ];
+        push @$licenses,
+          {
+            name => $_,
+            text => $content
+          };
+    }
+
+    $c->stash->{licenses} = $licenses;
+
     $c->stash->{copyright} = [
         map {
            { name=>$_, text=>scalar _file( $_ )->slurp };

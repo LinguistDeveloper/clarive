@@ -2,42 +2,32 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Fatal;
-use Test::Deep;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
-use TestUtils ':catalyst', 'mock_time';
+use TestUtils ':catalyst';
 use TestSetup;
 
-use JSON ();
-use Capture::Tiny qw(capture);
+use DateTime;
 
 use_ok 'Baseliner::Controller::About';
 
-subtest 'show: return a license' => sub {
-
-
+subtest 'show: returns a license with updated current year' => sub {
     my $controller = _build_controller();
+
     my $c = _build_c();
 
     $controller->show($c);
 
-    my $date = DateTime->now();
-    my $year = $date->year();
-    my $mm = $c;
+    my $current_year = DateTime->now->year;
 
-    is  $c->stash->{licenses}[0]->{text} =~ m/2010-$year/g, 1;
-
+    like $c->stash->{licenses}[0]->{text}, qr/2010-$current_year/;
 };
 
 done_testing;
 
 sub _build_c {
-    mock_catalyst_c(
-        username => 'root',
-        @_
-    );
+    mock_catalyst_c( username => 'root', @_ );
 }
 
 sub _build_controller {
