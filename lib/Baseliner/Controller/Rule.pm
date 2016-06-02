@@ -71,14 +71,14 @@ sub list : Local {
 
 sub actions : Local {
     my ($self,$c)=@_;
-    my $list = $c->registry->starts_with( 'service' ) ;
+    my $list = Baseliner::Core::Registry->starts_with( 'service' ) ;
     my $p = $c->req->params;
     my @tree;
     my $field = $p->{field} || 'name';
     push @tree, (
         { id=>'service.email.send', text=>_loc('Send notification by email') }
     );
-    foreach my $key ( $c->registry->starts_with( 'service' ) ) {
+    foreach my $key ( Baseliner::Core::Registry->starts_with( 'service' ) ) {
         my $service = Baseliner::Core::Registry->get( $key );
         push @tree,
           {
@@ -239,7 +239,7 @@ sub event_list : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my @rows;
-    foreach my $key ( $c->registry->starts_with( 'event' ) ) {
+    foreach my $key ( Baseliner::Core::Registry->starts_with( 'event' ) ) {
         my $ev = Baseliner::Core::Registry->get( $key );
         push @rows, {
             name        => $ev->name // $key,
@@ -341,7 +341,7 @@ sub palette : Local {
         grep { !$query || join(',',grep{defined}%$_) =~ $query }
         map {
             my $key = $_;
-            my $s = $c->registry->get( $key );
+            my $s = Baseliner::Core::Registry->get( $key );
             my $n= { palette => 1 };
             $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
             $n->{leaf} = \1;
@@ -359,7 +359,7 @@ sub palette : Local {
                 });
             $n;
         }
-        Baseliner->registry->starts_with( 'statement.' );
+        Baseliner::Core::Registry->starts_with( 'statement.' );
         push @tree, {
             icon     => '/static/images/icons/controller.png',
             #icon     => '/static/images/icons/control.gif',
@@ -371,7 +371,7 @@ sub palette : Local {
             children => \@control,
         };
 
-    my @services = sort $c->registry->starts_with('service');
+    my @services = sort Baseliner::Core::Registry->starts_with('service');
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
@@ -398,7 +398,7 @@ sub palette : Local {
             $_->{job_service}
         }
         map {
-            $c->registry->get( $_ );
+            Baseliner::Core::Registry->get( $_ );
         }
         @services ]
     };
@@ -429,13 +429,13 @@ sub palette : Local {
             ! $_->{job_service}
         }
         map {
-            $c->registry->get( $_ );
+            Baseliner::Core::Registry->get( $_ );
         }
         @services ]
     };
 
     ############ Dashlets
-    my @dashlets = sort $c->registry->starts_with('dashlet');
+    my @dashlets = sort Baseliner::Core::Registry->starts_with('dashlet');
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
@@ -459,7 +459,7 @@ sub palette : Local {
             }
         }
         map {
-            $c->registry->get( $_ );
+            Baseliner::Core::Registry->get( $_ );
         }
         @dashlets ]
     };
@@ -489,7 +489,7 @@ sub palette : Local {
             }
         } @rules ]
     };
-    my @fieldlets = grep { $_ !~ /required/ } sort $c->registry->starts_with('fieldlet.');
+    my @fieldlets = grep { $_ !~ /required/ } sort Baseliner::Core::Registry->starts_with('fieldlet.');
     my $default_icon = '/static/images/icons/detail.png';
     push @tree, {
         id=>$cnt++,
@@ -512,6 +512,7 @@ sub palette : Local {
                     leaf=> \1,
                     holds_children=>$n->{holds_children}? \1: \0,
                     key => $service_key,
+                    active => \1,
                     icon => $n->{icon} // $default_icon,
                     palette => \1,
                     text => _loc($n->{name}) // $service_key,
@@ -521,7 +522,7 @@ sub palette : Local {
             }
             grep { $_->{show_in_palette} }
             map {
-                $c->registry->get( $_ );
+                Baseliner::Core::Registry->get( $_ );
             } @fieldlets
         ]
     };
@@ -551,7 +552,7 @@ sub stmts_save : Local {
                 cache->remove_like( qr/^topic:/ );
                 cache->remove_like( qr/^roles:/ );
                 cache->remove({ d=>"topic:meta" });
-                $c->registry->reload_all;
+                Baseliner::Core::Registry->reload_all;
             }
             my $msg = $detected_errors ? _loc('Rule statements saved with errors: %1', $short_errors) : _loc('Rule statements saved ok');
             $c->stash->{json} = { success=>\1, msg =>$msg, old_ts => $old_ts, actual_ts=> $actual_ts, username=>$c->username, detected_errors=>$detected_errors };
@@ -794,11 +795,11 @@ sub edit_key : Local {
     my $p = $c->req->params;
     try {
         my $key = $p->{key} or _fail 'Missing key parameter';
-        my $r = $c->registry->get( $key );
+        my $r = Baseliner::Core::Registry->get( $key );
         _fail _loc "Key %1 not found in registry", $key unless $r;
         my $form = $r->form;
         my $config = $r->config;
-        my $params = $c->registry->get_params($key);
+        my $params = Baseliner::Core::Registry->get_params($key);
         delete $params->{$_} for qw(data_gen dsl handler);  ## these are code ref
         my $config_data;
         if( $r->isa( 'BaselinerX::Type::Service' ) ) {
@@ -851,7 +852,7 @@ sub dsl : Local {
             };
         } elsif( $rule_type eq 'event' ) {
             my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
-            my $event = $c->registry->get( $event_key );
+            my $event = Baseliner::Core::Registry->get( $event_key );
             my $event_data = { map { $_ => '' } _array( $event->vars ) };
             $data = $event_data;
         } else {

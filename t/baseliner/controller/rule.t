@@ -15,6 +15,21 @@ use Capture::Tiny qw(capture);
 
 use_ok 'Baseliner::Controller::Rule';
 
+subtest 'palette: returns fieldlets with active set to true' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c();
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    my @value = $c->stash->{json};
+    my ($element) = grep { $_->{text} eq 'Fieldlets' } @{ $c->stash->{json} };
+
+    cmp_deeply $element->{'children'}[0]->{active}, \1;
+};
+
 subtest 'stmts_load: returns error when no rule id' => sub {
     _setup();
 
@@ -786,10 +801,23 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event',             'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',         'BaselinerX::CI',
+        'BaselinerX::Fieldlets',               'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules',             'BaselinerX::Service::ChangesetServices',
+        'BaselinerX::Service::CIServices',     'BaselinerX::Service::CallWebService',
+        'BaselinerX::Service::Catalog' ,       'BaselinerX::Service::CreateJob',
+        'BaselinerX::Service::DBServices',     'BaselinerX::Service::Dispatcher',
+        'BaselinerX::Service::FileManagement', 'BaselinerX::Service::FootprintElements',
+        'BaselinerX::Service::Init',           'BaselinerX::Service::JobDaemon',
+        'BaselinerX::Service::LDAPServices',   'BaselinerX::Service::Parsing',
+        'BaselinerX::Service::PauseSuspend',   'BaselinerX::Service::Purge',
+        'BaselinerX::Service::RenameItems',    'BaselinerX::Service::SchedulerService',
+        'BaselinerX::Service::Scripting',      'BaselinerX::Service::Sed',
+        'BaselinerX::Service::ServerService',  'BaselinerX::Service::Sleep',
+        'BaselinerX::Service::SystemMessages', 'BaselinerX::Service::Templating',
+        'BaselinerX::Service::TopicServices',  'BaselinerX::Service::ValidateStashVariables',
+        'BaselinerX::Type::Service'
     );
 
     TestUtils->cleanup_cis;
