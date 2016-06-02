@@ -125,6 +125,46 @@ subtest 'compile: compiles rule with version id' => sub {
     $rule_compiler->unload;
 };
 
+subtest 'compile: uses non-empty dsl instead of loading a rule' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_tree => [
+            {
+                "attributes"=> {
+                    "icon"=> "/static/images/icons/cog_perl.png",
+                    "key"=> "statement.code.server",
+                    "text"=> "Server CODE",
+                    "id"=> "rule-ext-gen38276-1456842988061",
+                    "name"=> "Server CODE",
+                    "data"=> {
+                        "lang"=> "perl",
+                        "code"=> q{
+                            return 'hello';
+                        }
+                    },
+                },
+                "children"=> [],
+            }
+        ]
+    );
+
+    my $rule_compiler = _build_rule_compiler( id_rule => $id_rule, version_id => 'haha', dsl => q{return 'bye';} );
+
+    $rule_compiler->compile;
+
+    ok $rule_compiler->is_compiled;
+    ok $rule_compiler->is_loaded;
+
+    my $package = $rule_compiler->package;
+
+    is $package, "Clarive::RULE_${id_rule}_haha";
+
+    is $package->run, 'bye';
+
+    $rule_compiler->unload;
+};
+
 subtest 'compile: returns info' => sub {
     _setup();
 

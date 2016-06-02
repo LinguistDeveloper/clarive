@@ -100,7 +100,7 @@ sub compile {
     }
 
     my $dsl = $self->dsl;
-    if (my $id_rule = $self->id_rule) {
+    if ($dsl eq '' && (my $id_rule = $self->id_rule)) {
         my $rule = mdb->rule->find_one(
             { '$or' => [ { _id => mdb->oid($id_rule) }, { id => "$id_rule" }, { rule_name => $id_rule } ] } );
         $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
