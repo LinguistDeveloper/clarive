@@ -6,7 +6,7 @@
     var controller;
     Cla.help_push({
         title: _('Commits history of branch'),
-        path: 'howto/commits-history-of-branch'
+        path: 'how-to/commits-history-of-branch'
     });
     if (!params.controller) {
         controller = params.click.controller;

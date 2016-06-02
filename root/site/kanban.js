@@ -36,7 +36,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     initComponent : function(){
         var self = this;
-        Cla.help_push({ title:_('Topic Kanban Board'), path:'Getting-started/kanban' });
+        Cla.help_push({ title:_('Topic Kanban Board'), path:'getting-started/kanban' });
         self.addEvents( 'tab' );
         self.statuses_hash = {};
         self.column_by_status = {};

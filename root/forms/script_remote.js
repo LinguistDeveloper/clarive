@@ -1,6 +1,6 @@
 (function(params){
     var data = params.data || {};
-    Cla.help_push({ title:_('Run Remote Script'), path:'Rules/Palette/Job/run-remote' });
+    Cla.help_push({ title:_('Run Remote Script'), path:'rules/palette/job/run-remote' });
     var errors = new Baseliner.ComboSingle({ fieldLabel: _('Errors'), name:'errors', value: data.errors || 'fail', data: [
         'fail',
         'warn',

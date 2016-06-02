@@ -522,6 +522,7 @@ subtest '_json_pointer: set' => sub {
     my $stash = { aa => { bb => 22 } };
     Util->_json_pointer( $stash, '/aa/bb', 33 );
     is( Util->_json_pointer( $stash, '/aa/bb' ), 33 );
+};
 
 subtest '_json_pointer: set existing' => sub {
     my $stash = { aa=>{ bb=>22 } };
