@@ -19,7 +19,7 @@ register 'menu.help.about' => {
     label => 'About...',
     icon  => '/static/images/icons/about.svg',
     url   => '/about/show',
-    title => 'About ' . ( Baseliner->config->{app_name} // 'Baseliner' ),
+    title => 'About ' . ( Clarive->config->{app_name} // 'Baseliner' ),
     index => 999
 };
 
@@ -48,7 +48,7 @@ sub show : Local {
     my @about = map { { name=>$_, value=>$c->config->{About}->{$_} } } keys %{ $c->config->{About} || {} };
     push @about, { name=>'Server Version', value=>$Baseliner::VERSION };
 
-    if ( Baseliner->model("Permissions")->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
+    if ( Baseliner::Model::Permissions->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
         push @about, { name=>'Perl Version', value=>$] };
         push @about, { name=>'Hostname', value=>Sys::Hostname::hostname() };
         push @about, { name=>'Process ID', value=>$$ };
@@ -70,13 +70,22 @@ sub show : Local {
         $c->stash->{tlc} = $Baseliner::TLC;
     }
     $c->stash->{about} = \@about;
-    $c->stash->{licenses} = [
-        map {
-           { name=>$_, text=>scalar _file( $_ )->slurp };
-        }
-        grep { -e }
-        glob( 'LICENSE* features/*/LICENSE' )
-    ];
+
+    my $licenses     = [];
+    my $current_year = DateTime->now->year();
+    foreach my $license_file ( grep { -e } glob('LICENSE* features/*/LICENSE') ) {
+        my $content = _file($license_file)->slurp;
+        $content =~ s/\(CURRENT_DATE\)/2010-$current_year/g;
+
+        push @$licenses,
+          {
+            name => $_,
+            text => $content
+          };
+    }
+
+    $c->stash->{licenses} = $licenses;
+
     $c->stash->{copyright} = [
         map {
            { name=>$_, text=>scalar _file( $_ )->slurp };
