@@ -19,7 +19,7 @@ register 'menu.help.about' => {
     label => 'About...',
     icon  => '/static/images/icons/about.svg',
     url   => '/about/show',
-    title => 'About ' . ( Baseliner->config->{app_name} // 'Baseliner' ),
+    title => 'About ' . ( Clarive->config->{app_name} // 'Baseliner' ),
     index => 999
 };
 
@@ -48,7 +48,7 @@ sub show : Local {
     my @about = map { { name=>$_, value=>$c->config->{About}->{$_} } } keys %{ $c->config->{About} || {} };
     push @about, { name=>'Server Version', value=>$Baseliner::VERSION };
 
-    if ( Baseliner->model("Permissions")->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
+    if ( Baseliner::Model::Permissions->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
         push @about, { name=>'Perl Version', value=>$] };
         push @about, { name=>'Hostname', value=>Sys::Hostname::hostname() };
         push @about, { name=>'Process ID', value=>$$ };
