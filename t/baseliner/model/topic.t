@@ -1816,109 +1816,40 @@ subtest 'set_topic: saves topic into release' => sub {
 subtest 'deal_with_images: returns field in image format with src' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {
-                "attributes" => {
-                    "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.description",
-                        "id_field"     => "status_new",
-                    },
-                    "key" => "fieldlet.system.description",
-                }
-            },
-            {
-                "attributes" => {
-                    "data" => {
-                        id_field => 'asignada',
-                    },
-                    "key" => "fieldlet.system.users",
-                    name  => 'Asiganada',
-                }
-            }
-        ],
-    );
-
-    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role();
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-
-    my $topic_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic',
-        asignada    => $user->mid
-    );
-
-    my $field  = q[<img src="data:image/gif;base64,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">];
+    my $field = q[<img src="data:image/gif;base64,BASE64">];
 
     my $model = _build_model();
-    my $image = $model->deal_with_images( {topic_mid=>$topic_mid, field=>$field}  );
-    my $img_id;
 
-    is $image =~ qq{<img class="bali-topic-editor-image" src="/topic/img/.+">}, 1;
+    my $image = $model->deal_with_images( { topic_mid => '123', field => $field } );
 
+    like $image, qr{<img class="bali-topic-editor-image" src="/topic/img/.+">};
 };
 
-subtest 'deal_with_images: returns field in image format without src' => sub {
+subtest 'deal_with_images: returns field with added class' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {
-                "attributes" => {
-                    "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.description",
-                        "id_field"     => "status_new",
-                    },
-                    "key" => "fieldlet.system.description",
-                }
-            },
-            {
-                "attributes" => {
-                    "data" => {
-                        id_field => 'asignada',
-                    },
-                    "key" => "fieldlet.system.users",
-                    name  => 'Asiganada',
-                }
-            }
-        ],
-    );
-
-    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role();
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-
-    my $topic_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic',
-        asignada    => $user->mid
-    );
-
-    my $field  = q[<img "fsavewaeqwefqwfeewfqwfwq">];
+    my $field = q[<img src="123">];
 
     my $model = _build_model();
-    my $image = $model->deal_with_images( {topic_mid=>$topic_mid, field=>$field}  );
-    my $img_id;
+    my $image = $model->deal_with_images( { topic_mid => '123', field => $field } );
 
-    is $image =~ qq{ class="bali-topic-editor-image" .+}, 1;
+    like $image, qr{class="bali-topic-editor-image"};
+};
 
+subtest 'deal_with_images: inserts data into grid' => sub {
+    _setup();
+
+    my $field = q[<img src="data:image/gif;base64,BASE64">];
+
+    my $model = _build_model();
+
+    $model->deal_with_images( { topic_mid => '123', field => $field } );
+
+    my $doc = mdb->grid->find_one();
+
+    is $doc->{info}->{parent_mid},   '123';
+    is $doc->{info}->{content_type}, 'image/gif';
+    is $doc->{info}->{length},       4;
 };
 
 done_testing();
@@ -1933,14 +1864,14 @@ sub _setup {
 
     TestUtils->cleanup_cis;
 
-    mdb->event->drop;
     mdb->activity->drop;
-    mdb->rule->drop;
-    mdb->role->drop;
     mdb->category->drop;
+    mdb->event->drop;
+    mdb->grid->drop;
     mdb->label->drop;
+    mdb->role->drop;
+    mdb->rule->drop;
     mdb->topic->drop;
-    mdb->activity->drop;
     mdb->index_all('topic');
 }
 
@@ -1955,9 +1886,4 @@ sub _create_file {
 
 sub _build_model {
     return Baseliner::Model::Topic->new;
-}
-
-sub from_base64 {
-    require MIME::Base64;
-    return  MIME::Base64::decode_base64( shift );
 }
