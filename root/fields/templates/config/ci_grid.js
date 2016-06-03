@@ -129,16 +129,14 @@
     ret.push([ 
       {
           xtype: 'container',
-          id: 'selection_method',
           layout: 'hbox',
           fieldLabel: _('Selection method'),
           items: [
               {
                   xtype: 'radiogroup',
-                  id: 'rdogrpMethod',
                   items: [
-                      { id: 'rdoRole', boxLabel: _('Role selection'), name: 'rdoMethod', inputValue: 'roleSelection', width: 20, checked: !ci_role_field.value && !ci_class_field.value || ci_role_field.value },
-                      { id: 'rdoClass', boxLabel: 'Class selection', name: 'rdoMethod', width: 20, inputValue: 'classSelection', checked: ci_class_field.value }
+                      { boxLabel: _('Role selection'), name: 'rdoMethod', inputValue: 'roleSelection', width: 20, checked: !ci_role_field.value && !ci_class_field.value || ci_role_field.value },
+                      { boxLabel: 'Class selection', name: 'rdoMethod', width: 20, inputValue: 'classSelection', checked: ci_class_field.value }
                   ],
                   listeners: {
                       'change': function(rg,checked){
