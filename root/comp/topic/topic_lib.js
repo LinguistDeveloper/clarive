@@ -1397,10 +1397,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         self.detail.body.setStyle('overflow', 'auto');
     },
-    save_topic : function(opts){
+    save_topic: function(opts) {
         var self = this;
+
         self.form_topic.on_submit();
-        if( !opts ) opts = {};
+        if (!opts) opts = {};
 
         var form_data = self.form_topic.getValues();
         self.original_record = form_data; // reset save status for is_dirty
@@ -1408,37 +1409,41 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var action = form_data['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
 
-        var do_submit = function(){
+        var do_submit = function() {
             self.getEl().mask('');
-            Baseliner.ajax_json( 
+            Baseliner.ajax_json(
                 self.form_topic.url,
-                Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data),
+                Ext.apply({
+                    action: action,
+                    form: custom_form,
+                    _cis: Ext.util.JSON.encode(self._cis)
+                }, form_data),
                 // success
-                function(res){
+                function(res) {
                     self.getEl().unmask();
                     self.getTopToolbar().enable();
-                    if( self.permDelete ) {
+                    if (self.permDelete) {
                         self.btn_delete_form.enable();
                     }
-                    Baseliner.message(_('Success'), res.msg );
+                    Baseliner.message(_('Success'), res.msg);
                     self.reload_parent_grid();
-                    if( opts.close_on_save ) {
+                    if (opts.close_on_save) {
                         self.destroy();
                         return;
                     }
-                    if( opts.return_on_save ) {
+                    if (opts.return_on_save) {
                         return;
                     }
 
                     var mid = res.topic_mid;
-                    form2.findField("topic_mid").setValue( mid );
+                    form2.findField("topic_mid").setValue(mid);
                     var status_hidden_field = form2.findField("status");
                     var status_value = status_hidden_field.getValue();
-                    if ( res.return_options.reload_tab == 1 ){
+                    if (res.return_options.reload_tab == 1) {
                         self.reload_tab = true;
                     }
-                    if ( res.return_options.reload == 1 ) {
-                    // if ( status_value != res.topic_status && status_value != ''){
+                    if (res.return_options.reload == 1) {
+                        // if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
                         self.view_is_dirty = true;
                         /*
@@ -1456,29 +1461,30 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.show_form();
                     } else {
                         var store = form2.findField("status_new").getStore();
-                        if(form2.findField("status").getValue()==''){
+                        if (form2.findField("status").getValue() == '') {
                             store.reload({
-                                params:{    'categoryId': form2.findField("category").getValue(),
-                                            //'statusId': form2.findField("status").getValue(),
-                                            'statusId': res.topic_status,
-                                            'statusName': form2.findField("status_new").getRawValue()
-                                        }
+                                params: {
+                                    'categoryId': form2.findField("category").getValue(),
+                                    //'statusId': form2.findField("status").getValue(),
+                                    'statusId': res.topic_status,
+                                    'statusName': form2.findField("status_new").getRawValue()
+                                }
                             });
                         }
 
                         form2.findField("status").setValue(res.topic_status);
                         self.topic_mid = res.topic_mid;
-                        if( self.permComment ) {
+                        if (self.permComment) {
                             self.btn_comment.show();
                         };
                         self.getTopToolbar().enable();
                         self.btn_detail.show();
-                        if( self.permDelete ) {
+                        if (self.permDelete) {
                             self.btn_delete_form.show();
                         }
 
-                        if(action == 'add'){
-                            if ( !opts.no_refresh ) {
+                        if (action == 'add') {
+                            if (!opts.no_refresh) {
                                 self.form_is_loaded = false;
                                 self.show_form();
                                 self.view_is_dirty = true;
@@ -1486,25 +1492,27 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             var tabpanel = Ext.getCmp('main-panel');
                             var objtab = tabpanel.getActiveTab();
                             var category = res.category;
-                            var title = Baseliner.topic_title( res.topic_mid, category.name, category.color, null, self.id_field );
+                            var title = Baseliner.topic_title(res.topic_mid, category.name, category.color, null, self.id_field);
                             //objtab.setTitle( title );
-                            var info = Baseliner.panel_info( objtab );
+                            var info = Baseliner.panel_info(objtab);
                             info.params.topic_mid = res.topic_mid;
                             info.title = title;
-                            self.setTitle( title );
+                            self.setTitle(title);
                         }
                         self.view_is_dirty = true;
-                        if( Ext.isFunction(opts.success) ) opts.success(res);
+                        if (Ext.isFunction(opts.success)) opts.success(res);
 
                         self.modified_on = res.modified_on;
-
+                        if (self._parent_box){
+                            self.reload_store_grid_box();
+                        }
                     }
                 },
                 // failure
-                function(res){
+                function(res) {
                     self.getEl().unmask();
                     self.getTopToolbar().enable();
-                    if( self.permDelete ) {
+                    if (self.permDelete) {
                         self.btn_delete_form.enable();
                     }
                     //if(res.fields_required){
@@ -1512,60 +1520,76 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     //    self.render_required(fields_required);
                     //    Baseliner.message(_('Error'), _('This fields are required: ') + res.fields_required.join(',') );
                     //}else{
-                        // self.form_is_loaded = false;
-                        // self.show_form();
-                        // self.view_is_dirty = true;
-                        Baseliner.error(_('Error'), res.msg );
+                    // self.form_is_loaded = false;
+                    // self.show_form();
+                    // self.view_is_dirty = true;
+                    Baseliner.error(_('Error'), res.msg);
                     //}
 
 
-                    if( Ext.isFunction(opts.failure) ) opts.failure(res);
+                    if (Ext.isFunction(opts.failure)) opts.failure(res);
                 }
             );
         };
 
-        if ( self.form_topic.is_valid() ) {
+        if (self.form_topic.is_valid()) {
             self.getTopToolbar().disable();
             self.btn_delete_form.disable();
 
-            if(action == 'update'){
+            if (action == 'update') {
                 var rel_signature = self.form_topic.rec ? self.form_topic.rec.rel_signature : '';
-                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
+                Baseliner.ajaxEval('/topic/check_modified_on/', {
+                        topic_mid: self.topic_mid,
+                        modified: self.modified_on,
+                        rel_signature: rel_signature
+                    },
                     function(res) {
-                        if ( res.success ) {
-                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?", res.modified_before, res.modified_before_duration)
-                                              : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to overwrite the topic?")
-                                              : null;
+                        if (res.success) {
+                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?", res.modified_before, res.modified_before_duration) : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to overwrite the topic?") : null;
 
-                            if (msg_confirm){
-                                Ext.Msg.confirm( _('Confirmation'), msg_confirm,
-                                    function(btn){
-                                        if(btn=='yes') {
+                            if (msg_confirm) {
+                                Ext.Msg.confirm(_('Confirmation'), msg_confirm,
+                                    function(btn) {
+                                        if (btn == 'yes') {
                                             do_submit();
-                                        }else{
+                                        } else {
                                             self.getTopToolbar().enable();
-                                            if( self.permDelete ) {
+                                            if (self.permDelete) {
                                                 self.btn_delete_form.enable();
                                             }
                                         }
                                     }
                                 );
-                            } else{
+                            } else {
                                 do_submit();
                             }
                         } else {
-                            Baseliner.error( _('Error'), res.msg );
+                            Baseliner.error(_('Error'), res.msg);
                             self.getTopToolbar().enable();
-                            if( self.permDelete ) {
+                            if (self.permDelete) {
                                 self.btn_delete_form.enable();
                             }
                         }
                     }
                 );
-            }else{
+            } else {
                 do_submit();
             }
         }
+    },
+    reload_store_grid_box: function() {
+        var self = this;
+        var combo_grid = Ext.getCmp(self._parent_box);
+        Baseliner.ajaxEval('/topic/related', {
+            query: self.topic_mid,
+            valuesqry : 'true'
+        }, function(res) {
+            Ext.each(res.data, function(r) {
+                if (!r) return;
+
+                combo_grid.add_to_grid(r);
+            });
+        });
     },
     delete_topic : function(){
         var self = this;
@@ -1583,6 +1607,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     reload_parent_grid : function(){
         var self = this;
+
         if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
             self._parent_grid = Ext.getCmp( self._parent_grid );
         }
@@ -1697,9 +1722,11 @@ Baseliner.TopicCombo = Ext.extend(Ext.form.ComboBox, {
 
 Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
+
         var sm = c.sm || new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
+
         });
 
         var render_text_field = function(v){
@@ -1779,6 +1806,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     },
     initComponent: function(){
         var self = this;
+
         self.combo_store = self.combo_store || new Baseliner.store.Topics({});
         if( self.topic_grid == undefined ) self.topic_grid = {};
         self.combo = new Baseliner.TopicCombo({
@@ -1824,14 +1852,138 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         */
 
-        self.tbar = [ self.combo, btn_delete ];
-        self.combo.on('select', function(combo,rec,ix) {
-            if( combo.id != self.combo.id ) return; // strange bug with TopicGrid and CIGrid in the same page
-            self.add_to_grid( rec.data );
+        var add_topic = function() {
+            var win;
+
+            var render_category = function(value, metadata, rec, rowIndex, colIndex, store) {
+                var color = rec.data.color;
+                var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: ' + color + '">' + value + '</span></div>';
+                return ret;
+            };
+
+            var topic_category_grid = new Ext.grid.GridPanel({
+                store: store_category,
+                height: 200,
+                hideHeaders: true,
+                stripeRows: true,
+                viewConfig: {
+                    headersDisabled: true,
+                    enableRowBody: true,
+                    forceFit: true
+                },
+                columns: [{
+                    header: _('Name'),
+                    width: 200,
+                    dataIndex: 'name',
+                    renderer: render_category
+                }, {
+                    header: _('Description'),
+                    width: 450,
+                    dataIndex: 'description'
+                }]
+            });
+
+            topic_category_grid.on("rowdblclick", function(grid, rowIndex, e) {
+                var r = grid.getStore().getAt(rowIndex);
+                topic_create_for_category({
+                    id: r.get('id'),
+                    name: r.get('name')
+                });
+
+                win.close();
+            });
+
+            var form_topic = new Ext.FormPanel({
+                frame: true,
+                items: [
+                    topic_category_grid
+                ]
+            });
+
+            win = new Ext.Window({
+                title: _('Select a category'),
+                width: 550,
+                autoHeight: true,
+                closeAction: 'close',
+                modal: true,
+                items: form_topic
+            });
+            win.show();
+        };
+
+        var topic_create_for_category = function(args) {
+            var combo = self.getSelectionModel();
+            id_combo_box = combo.grid.id;
+
+            Baseliner.ajaxEval('/topic/list_category', {
+                action: 'create'
+            }, function(res) {
+                var data = res.data;
+                if (data.length > 0) {
+                    var data_ok = 0;
+                    data.forEach(function(value) {
+                        if (value.id == args.id) {
+                            data_ok = 1;
+                            Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title, {
+                                title: args.title,
+                                new_category_id: args.id,
+                                new_category_name: args.name,
+                                _parent_box: id_combo_box,
+                            }, new Date().getTime().toString());
+                        };
+                    });
+                    if (data_ok == 0) {
+                        Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'));
+                    }
+                } else {
+                    Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'));
+                }
+            });
+        };
+
+        var store_category = new Baseliner.Topic.StoreCategory();
+
+        var btn_add = new Baseliner.Grid.Buttons.Add({
+            disabled: false,
+            hidden : false,
+            handler: function() {
+                store_category.load({
+                    params: {
+                        categories_id_filter: self.combo_store.baseParams.categories,
+                        categories_filter: self.combo_store.baseParams.filter,
+                        action: 'create'
+                    }
+                });
+
+                add_topic();
+            },
+        });
+
+        btn_add.disabled = self.readOnly ? self.readOnly : false;
+
+        Baseliner.ajaxEval('/topic/list_category', {
+            categories_id_filter: self.combo_store.baseParams.categories,
+            categories_filter: self.combo_store.baseParams.filter,
+            action: 'create'
+        }, function(res) {
+
+            if (!res.totalCount) {
+                btn_add.hide();
+            } else {
+                btn_add.show();
+            }
+
+        });
+
+        self.tbar = [self.combo, btn_delete, btn_add];
+
+        self.combo.on('select', function(combo, rec, ix) {
+            if (combo.id != self.combo.id) return; // strange bug with TopicGrid and CIGrid in the same page
+
+            self.add_to_grid(rec.data);
             self.combo.setValue("");
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
-
         self.refresh(true);
         self.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);

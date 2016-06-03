@@ -476,6 +476,215 @@ subtest 'list_status_changes: returns status changes' => sub {
     cmp_deeply $c->stash, { json => { data => [ ignore(), ignore() ] } };
 };
 
+subtest 'list_category: returns ids categories' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { categories_id_filter => "" } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->list_category($c);
+
+    is $c->stash->{json}->{data}[0]->{category}, $category_1;
+    is $c->stash->{json}->{data}[1]->{category}, $category_2;
+    is $c->stash->{json}->{data}[2]->{category}, $category_3;
+    is $c->stash->{json}->{totalCount}, 3;
+};
+
+subtest 'list_category: returns ids categories when filter on id categories' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { categories_id_filter => [ $category_1, $category_3 ] } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->list_category($c);
+
+    is $c->stash->{json}->{data}[0]->{category}, $category_1;
+    is $c->stash->{json}->{data}[1]->{category}, $category_3;
+    is $c->stash->{json}->{totalCount}, 2;
+};
+
+subtest 'list_category: returns ids categories when all option filter is activated' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+
+    my @category_name = map { $_->{name} }
+        mdb->category->find( { id => mdb->in( $category_1, $category_2 ) } )->fields( { name => 1 } )->all;
+    my $c = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                categories_id_filter => [ $category_1, $category_2 ],
+                categories_filter    => {
+                    id_category   => [$category_1],
+                    category_id   => [$category_1],
+                    name_category => \@category_name,
+                    category_name => \@category_name
+                }
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->list_category($c);
+
+    is $c->stash->{json}->{data}[0]->{category}, $category_1;
+    is $c->stash->{json}->{data}[1]->{category}, $category_2;
+    is $c->stash->{json}->{totalCount}, 2;
+};
+
+subtest 'list_category: return ids when user has permission' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+
+    mdb->role->insert(
+        {   id      => '1',
+            actions => [ { action => 'action.topics.category.view' } ],
+            role    => 'Developer'
+        }
+    );
+
+    TestUtils->create_ci(
+        'user',
+        name             => 'developer',
+        username         => 'developer',
+        project_security => { '1' => { project => [ $project->mid ] } }
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+
+    my @category_name = map { $_->{name} }
+        mdb->category->find( { id => mdb->in( $category_1, $category_2 ) } )->fields( { name => 1 } )->all;
+    my $c = _build_c(
+        username => 'developer',
+        req      => { params => { action => 'view' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->list_category($c);
+
+    is $c->stash->{json}->{data}[0]->{category}, $category_1;
+    is $c->stash->{json}->{data}[1]->{category}, $category_2;
+    is $c->stash->{json}->{totalCount}, 2;
+};
+
+subtest 'list_category: do not return categories when user not has permission' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+
+    mdb->role->insert(
+        {   id      => '1',
+            actions => [ { action => 'action.topics.category.view' } ],
+            role    => 'Developer'
+        }
+    );
+
+    TestUtils->create_ci(
+        'user',
+        name             => 'developer',
+        username         => 'developer',
+        project_security => { '1' => { project => [ $project->mid ] } }
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+
+    my @category_name = map { $_->{name} }
+        mdb->category->find( { id => mdb->in( $category_1, $category_2 ) } )->fields( { name => 1 } )->all;
+    my $c = _build_c(
+        username => 'developer',
+        req      => { params => { action => 'create' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->list_category($c);
+
+    is $c->stash->{json}->{totalCount}, 0;
+};
+
+subtest 'list_category: return just categories that have permission to return' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+
+    mdb->role->insert(
+        {   id      => '1',
+            actions => [ { action => 'action.topics.category_1.create' } ],
+            role    => 'Developer'
+        }
+    );
+
+    TestUtils->create_ci(
+        'user',
+        name             => 'developer',
+        username         => 'developer',
+        project_security => { '1' => { project => [ $project->mid ] } }
+    );
+
+    my $category_1 = TestSetup->create_category(name => 'category_1' );
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c(
+        username => 'developer',
+        req      => { params => { categories_id_filter => [ $category_1, $category_3 ] } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->list_category($c);
+
+    is $c->stash->{json}->{data}[0]->{category}, $category_1;
+    is $c->stash->{json}->{totalCount}, 1;
+};
+
 subtest 'topic_drop: set error when no drop fields found' => sub {
     _setup();
 

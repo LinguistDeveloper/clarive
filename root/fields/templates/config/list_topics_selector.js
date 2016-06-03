@@ -1,4 +1,5 @@
 (function(params){
+    Cla.help_push({ title:_('Topic selector with filter'), path:'rules/palette/fieldlets/topic-selector-with-filter' });
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
