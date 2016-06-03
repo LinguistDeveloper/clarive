@@ -386,7 +386,6 @@
         var combo_form =new Baseliner.SuperBox({ 
             name: 'default_form',
             cls: 'ui-comp-topic-admin-window-form',
-            id: 'default_form',
             hiddenName: 'default_form',
             fieldLabel: _("Form"), 
             valueField: 'id',
