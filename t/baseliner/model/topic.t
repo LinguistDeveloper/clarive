@@ -1877,6 +1877,18 @@ subtest 'deal_with_images: returns field in image format with src' => sub {
     like $image, qr{<img class="bali-topic-editor-image" src="/topic/img/.+">};
 };
 
+subtest 'deal_with_images: returns field in image format with src that have more than one image' => sub {
+    _setup();
+
+    my $field = q[<img src="data:image/gif;base64,BASE64"><img src="data:image/gif;base64,BASE64">];
+
+    my $model = _build_model();
+
+    my $image = $model->deal_with_images( { topic_mid => '123', field => $field } );
+
+    like $image, qr{<img class="bali-topic-editor-image" src="/topic/img/.+"><img class="bali-topic-editor-image" src="/topic/img/.+">};
+};
+
 subtest 'deal_with_images: returns field with added class' => sub {
     _setup();
 
