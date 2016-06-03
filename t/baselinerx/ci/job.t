@@ -7,14 +7,11 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
-use Baseliner::Utils qw(_load);
 
 use Capture::Tiny qw(capture);
-use BaselinerX::Type::Event;
-use Baseliner::Utils qw(_load _unbless);
+use Baseliner::Utils qw(_load);
 
 use_ok 'BaselinerX::CI::job';
-
 
 subtest 'start_task: sets current_service' => sub {
     _setup();
@@ -190,63 +187,53 @@ subtest 'finish: creates notify in event.job.end' => sub {
 };
 
 subtest 'reset: creates correct event event.job.rerun with parameters step POST and last_finish_status ERROR' => sub {
-    our $config = {};
-
-    require Baseliner;
-    no warnings 'redefine';
-    sub Baseliner::config { $config };
     _setup();
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
 
-    my $job = _build_ci(changesets => [$changeset]);
-    $job->save;
+    my $job = _build_ci( changesets => [$changeset] );
 
-    $job->reset ({username => $user->name, step => 'POST', last_finish_status => 'ERROR'});
+    capture {
+        $job->save;
+
+        $job->reset( { username => $user->name, step => 'POST', last_finish_status => 'ERROR' } );
+    };
 
     my $events = _build_events_model();
 
-    my $rv = $events->find_by_key('event.job.rerun');
-    my $event = $rv->[0];
-    my $event_data = _load $event->{event_data};
-    my $event_data_job = $event_data->{job};
+    my $event_data = _load $events->find_by_key('event.job.rerun')->[0]->{event_data};
 
-    is $event_data_job->{last_finish_status}, 'ERROR';
-    is $event_data_job->{step}, 'POST';
+    is $event_data->{job}->{last_finish_status}, 'ERROR';
+    is $event_data->{job}->{step},               'POST';
 };
 
 subtest 'reset: creates correct event event.job.rerun with parameters step POST and last_finish_status OK' => sub {
-    our $config = {};
-    require Baseliner;
-    no warnings 'redefine';
-    sub Baseliner::config { $config };
-
     _setup();
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
 
-    my $job = _build_ci(changesets => [$changeset]);
-    $job->save;
+    my $job = _build_ci( changesets => [$changeset] );
 
-    $job->reset ({username => $user->name, step => 'POST', last_finish_status => 'OK'});
+    capture {
+        $job->save;
+
+        $job->reset( { username => $user->name, step => 'POST', last_finish_status => 'OK' } );
+    };
 
     my $events = _build_events_model();
 
-    my $rv = $events->find_by_key('event.job.rerun');
-    my $event = $rv->[0];
-    my $event_data = _load $event->{event_data};
-    my $event_data_job = $event_data->{job};
+    my $event_data = _load $events->find_by_key('event.job.rerun')->[0]->{event_data};
 
-    is $event_data_job->{last_finish_status}, 'OK';
-    is $event_data_job->{step}, 'POST';
+    is $event_data->{job}->{last_finish_status}, 'OK';
+    is $event_data->{job}->{step},               'POST';
 };
 
 done_testing;
@@ -261,13 +248,12 @@ sub _setup {
 
     TestUtils->cleanup_cis;
 
-    mdb->rule->drop;
-    mdb->rule_version->drop;
-    mdb->job_log->drop;
+    mdb->category->drop;
     mdb->event->drop;
     mdb->job_log->drop;
     mdb->role->drop;
-    mdb->category->drop;
+    mdb->rule->drop;
+    mdb->rule_version->drop;
     mdb->topic->drop;
 
     mdb->rule->insert(

@@ -911,46 +911,50 @@
                 var run_now = sel.data.step_code == 'END' ? true : false;
                 var mid = sel.data.mid;
                 var radio_post = new Ext.form.RadioGroup({
-                  name: 'job_status',
-                  defaults: {
+                    name: 'job_status',
+                    defaults: {
                         xtype: "radio",
                         name: "last_finish_status"
                     },
-                  //anchor:'75%',
-                  fieldLabel: _('Job Status'),
-                  hidden: true,
-                  items: [
-                      { boxLabel: _('OK'), inputValue: '',checked: true},
-                      { boxLabel: _('FAIL'), inputValue: 'ERROR'}
-                  ]
+                    fieldLabel: _('Job Status'),
+                    hidden: true,
+                    items: [{
+                        boxLabel: _('OK'),
+                        inputValue: '',
+                        checked: true
+                    }, {
+                        boxLabel: _('FAIL'),
+                        inputValue: 'ERROR'
+                    }]
                 });
-                var step_buttons = new Ext.Container({ layout: { type:'hbox' }, fieldLabel: _('Initial Step'), border: false,
-                    items: ['PRE','RUN','POST','END'].map(function(st){
-                      var step_button = new Ext.Button({
-                        text: st,
-                        enableToggle: true,
-                        width: 45,
-                        style:{ 'font-weight':(step_field==st?'bold':'') },
-                        toggleGroup: 'step_buttons',
-                        allowDepress: false,
-                        pressed: step_field==st,
-                        handler: function() {
-                          if (this.text == 'POST') {
-                            radio_post.show();
-                            form_res.doLayout();
-                          } else {
-                            radio_post.hide();
-                          }
-                        }
-                      });
-                      return step_button;
-
-                      //return { xtype:'button', text: st, enableToggle: true, width: 45, style:{ 'font-weight':(step_field==st?'bold':'') },
-                      //      toggleGroup: 'step_buttons', allowDepress: false, pressed: step_field==st
-                      //  };
-
+                var step_buttons = new Ext.Container({
+                    layout: {
+                        type: 'hbox'
+                    },
+                    fieldLabel: _('Initial Step'),
+                    border: false,
+                    items: ['PRE', 'RUN', 'POST', 'END'].map(function(st) {
+                        var step_button = new Ext.Button({
+                            text: st,
+                            enableToggle: true,
+                            width: 45,
+                            style: {
+                                'font-weight': (step_field == st ? 'bold' : '')
+                            },
+                            toggleGroup: 'step_buttons',
+                            allowDepress: false,
+                            pressed: step_field == st,
+                            handler: function() {
+                                if (this.text == 'POST') {
+                                    radio_post.show();
+                                    form_res.doLayout();
+                                } else {
+                                    radio_post.hide();
+                                }
+                            }
+                        });
+                        return step_button;
                     })
-
                 });
                 var form_res = new Ext.FormPanel({
                     frame: false,
