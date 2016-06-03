@@ -1813,6 +1813,45 @@ subtest 'set_topic: saves topic into release' => sub {
     is $release->{changesets}->[0]->{mid}, $changeset_mid;
 };
 
+subtest 'deal_with_images: returns field in image format with src' => sub {
+    _setup();
+
+    my $field = q[<img src="data:image/gif;base64,BASE64">];
+
+    my $model = _build_model();
+
+    my $image = $model->deal_with_images( { topic_mid => '123', field => $field } );
+
+    like $image, qr{<img class="bali-topic-editor-image" src="/topic/img/.+">};
+};
+
+subtest 'deal_with_images: returns field with added class' => sub {
+    _setup();
+
+    my $field = q[<img src="123">];
+
+    my $model = _build_model();
+    my $image = $model->deal_with_images( { topic_mid => '123', field => $field } );
+
+    like $image, qr{class="bali-topic-editor-image"};
+};
+
+subtest 'deal_with_images: inserts data into grid' => sub {
+    _setup();
+
+    my $field = q[<img src="data:image/gif;base64,BASE64">];
+
+    my $model = _build_model();
+
+    $model->deal_with_images( { topic_mid => '123', field => $field } );
+
+    my $doc = mdb->grid->find_one();
+
+    is $doc->{info}->{parent_mid},   '123';
+    is $doc->{info}->{content_type}, 'image/gif';
+    is $doc->{info}->{length},       4;
+};
+
 done_testing();
 
 sub _setup {
@@ -1825,14 +1864,14 @@ sub _setup {
 
     TestUtils->cleanup_cis;
 
-    mdb->event->drop;
     mdb->activity->drop;
-    mdb->rule->drop;
-    mdb->role->drop;
     mdb->category->drop;
+    mdb->event->drop;
+    mdb->grid->drop;
     mdb->label->drop;
+    mdb->role->drop;
+    mdb->rule->drop;
     mdb->topic->drop;
-    mdb->activity->drop;
     mdb->index_all('topic');
 }
 

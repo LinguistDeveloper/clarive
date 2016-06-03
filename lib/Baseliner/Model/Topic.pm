@@ -2240,21 +2240,24 @@ sub update_projects {
     mdb->topic->save( $doc );
 }
 
-sub deal_with_images{
-    my ($self, $params ) = @_;
-    my $topic_mid = $params->{topic_mid};
-    my $field = $params->{field};
+sub deal_with_images {
+    my ( $self, $params ) = @_;
 
-    for my $img ( $field =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
-        my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
-        $img_data = from_base64( $img_data );
-        my $img_id = mdb->grid_insert( $img_data, parent_mid=>$topic_mid, content_type=>$ct );
+    my $topic_mid = $params->{topic_mid};
+    my $field     = $params->{field};
+
+    for my $img ( $field =~ m{<img src="data:(.*?)"/?>}g ) {    # image/png;base64,xxxxxx
+        my ( $ct, $enc, $img_data ) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
+        $img_data = from_base64($img_data);
+        my $img_id = mdb->grid_insert( $img_data, parent_mid => $topic_mid, content_type => $ct );
+
         # my $img_md5 = mdb->grid->get( $img_id )->{md5};
-        $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
+        $field =~
+          s{<img src="data:image/.*;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
     }
 
-    for my $img ( $field =~ m{<img*(.*?)>} ){
-        if ( !($img =~ m/class/) ){
+    for my $img ( $field =~ m{<img*(.*?)>} ) {
+        if ( !( $img =~ m/class/ ) ) {
             $field =~ s{$img}{ class="bali-topic-editor-image" $img};
         }
     }
