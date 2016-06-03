@@ -118,15 +118,7 @@ Que el asunto sea breve.
 
 El asunto puede ser dinámico utilizando variables stash, por ejemplo `$ {username}`.
 
-
-<<<<<<< HEAD
-
 `Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.gif" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
-
-Primera selección - Establece de qué manera aparecerán los destinatarios. 
-=======
-&nbsp; &nbsp;• `Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.svg" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
->>>>>>> enh: change icons to svg - add.gif in markdown
 
 *To* 
 

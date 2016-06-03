@@ -462,22 +462,6 @@ register 'fieldlet.system.list_topics' => {
     set_method  => 'set_topics',
     section_allowed => ['head','more'],
     html        => '/fields/system/html/list_topics.html',
-    js          => '/fields/system/js/list_topics.js',
-    form        => '/fields/templates/config/list_topics.js',
-    meta_type   => 'topic',
-    relation    => 'system',
-    type        => 'listbox',
-    rel_type    => 'topic_topic',
-    section_allowed => ['head','more','details']
-};
-
-register 'fieldlet.system.list_topics_selector' => {
-    name        => _loc('Topic Selector with filter'),
-    icon        => '/static/images/icons/combo_box.svg',
-    get_method  => 'get_topics',
-    set_method  => 'set_topics',
-    section_allowed => ['head','more'],
-    html        => '/fields/system/html/list_topics.html',
     js          => '/fields/system/js/list_topics_selector.js',
     form        => '/fields/templates/config/list_topics_selector.js',
     meta_type   => 'topic',
