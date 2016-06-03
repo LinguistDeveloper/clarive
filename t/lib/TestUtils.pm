@@ -182,6 +182,15 @@ sub create_temp_file {
     return $filename;
 }
 
+sub slurp_file {
+    my $class = shift;
+    my ($filename) = @_;
+
+    local $/;
+    open my $fh, '<', $filename or die $!;
+    return <$fh>;
+}
+
 package FakeLogger;
 sub new {
     my $class = shift;
