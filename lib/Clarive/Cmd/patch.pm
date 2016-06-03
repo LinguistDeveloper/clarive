@@ -17,9 +17,12 @@ sub run_apply {
     my $opt_dry_run = $opts{'dry-run'};
     my $opt_quiet   = $opts{'quiet'};
 
-    my $file = $opts{patch} or die "--patch required\n";
+    $self->_dry_run_banner if $opt_dry_run && !$opt_quiet;
 
-    die "Can't open file '$file'\n" unless -f $file;
+    my $file = $opts{patch} or $self->_error("--patch required");
+
+    $self->_error("Can't open file '$file'") unless -f $file;
+    $self->_error("File '$file' is not a tar.gz file") unless $file =~ m/\.(tar\.gz|tgz)/;
 
     my $home = $self->app->home;
 
@@ -33,40 +36,40 @@ sub run_apply {
     my $new_version = $self->_slurp_version("$tempdir/VERSION.new");
 
     if ( $old_version ne $current_version ) {
-        die "Can't apply patch when $current_version != $old_version\n";
+        $self->_error("Can't apply patch when $current_version != $old_version");
     }
 
-    warn "Applying patches for '$new_version'\n" unless $opt_quiet;
+    $self->_log( "Applying patches for '$new_version'", \%opts );
 
     my @patches = glob "$tempdir/*patch";
     foreach my $patch (@patches) {
         my $basename = basename $patch;
 
-        warn "Checking '$basename'...\n" unless $opt_quiet;
+        $self->_log( "Checking '$basename'...", \%opts );
 
-        my $exit_code = $self->_run_patch_cmd($patch, dry_run => 1);
-        die "ERROR\n" if $exit_code;
+        my $exit_code = $self->_run_patch_cmd( $patch, dry_run => 1 );
+        $self->_error("Patch failed") if $exit_code;
     }
 
-    if (!$opt_dry_run) {
+    if ( !$opt_dry_run ) {
         foreach my $patch (@patches) {
             my $basename = basename $patch;
 
-            warn "Applying '$basename'...\n" unless $opt_quiet;
+            $self->_log( "Applying '$basename'...", \%opts );
 
             my $exit_code = $self->_run_patch_cmd($patch);
-            die "ERROR\n" if $exit_code;
+            $self->_error("Patch failed") if $exit_code;
         }
     }
 
-    warn "Updating VERSION\n" unless $opt_quiet;
+    $self->_log( "Updating VERSION", \%opts );
 
-    if (!$opt_dry_run) {
+    if ( !$opt_dry_run ) {
         copy( File::Spec->catfile( $home, 'VERSION' ), File::Spec->catfile( $home, 'VERSION.orig' ) );
         $self->_write_version( File::Spec->catfile( $home, 'VERSION' ), $new_version );
     }
 
-    print "Done\n";
+    $self->_log( "Done", \%opts );
 }
 
 sub run_rollback {
@@ -75,9 +78,12 @@ sub run_rollback {
 
     my $opt_dry_run = $opts{'dry-run'};
     my $opt_quiet   = $opts{'quiet'};
-    my $file = $opts{patch} or die "--patch required\n";
+    my $file        = $opts{patch} or $self->_error("--patch required");
 
-    die "Can't open file '$file'\n" unless -f $file;
+    $self->_dry_run_banner if $opt_dry_run && !$opt_quiet;
+
+    $self->_error("Can't open file '$file'") unless -f $file;
+    $self->_error("File '$file' is not a tar.gz file") unless $file =~ m/\.(tar\.gz|tgz)/;
 
     my $home = $self->app->home;
 
@@ -91,39 +97,39 @@ sub run_rollback {
     my $new_version = $self->_slurp_version("$tempdir/VERSION.new");
 
     if ( $new_version ne $current_version ) {
-        die "Can't rollback patch when $current_version != $new_version\n";
+        $self->_error("Can't rollback patch when $current_version != $new_version");
     }
 
-    warn "Rollbacking patches for '$old_version'\n" unless $opt_quiet;
+    $self->_log( "Rollbacking patches for '$old_version'", \%opts );
 
     my @patches = glob "$tempdir/*patch";
     foreach my $patch (@patches) {
         my $basename = basename $patch;
 
-        warn "Checking reverse '$basename'...\n" unless $opt_quiet;
+        $self->_log( "Checking reverse '$basename'...", \%opts );
 
-        my $exit_code = $self->_run_patch_reverse_cmd($patch, dry_run => 1);
-        die "ERROR\n" if $exit_code;
+        my $exit_code = $self->_run_patch_reverse_cmd( $patch, dry_run => 1 );
+        $self->_error("Patch failed") if $exit_code;
     }
 
-    if (!$opt_dry_run) {
+    if ( !$opt_dry_run ) {
         foreach my $patch (@patches) {
             my $basename = basename $patch;
 
-            warn "Applying reverse '$basename'...\n" unless $opt_quiet;
+            $self->_log( "Applying reverse '$basename'...", \%opts );
 
             my $exit_code = $self->_run_patch_reverse_cmd($patch);
-            die "ERROR\n" if $exit_code;
+            $self->_error("Patch failed") if $exit_code;
         }
     }
 
-    warn "Updating VERSION\n" unless $opt_quiet;
+    $self->_log( "Updating VERSION", \%opts );
 
-    if (!$opt_dry_run) {
+    if ( !$opt_dry_run ) {
         $self->_write_version( File::Spec->catfile( $home, 'VERSION' ), $old_version );
     }
 
-    print "Done\n";
+    $self->_log( "Done", \%opts );
 }
 
 sub run_create {
@@ -132,12 +138,12 @@ sub run_create {
 
     my $opt_quiet = $opts{'quiet'};
 
-    my $old_version = $opts{old} or die "--old required\n";
-    my $new_version = $opts{new} or die "--new required\n";
+    my $old_version = $opts{old} or $self->_error("--old required");
+    my $new_version = $opts{new} or $self->_error("--new required");
 
     my $home = $self->app->home;
 
-    my $diffs = $opts{diff} or die "--diff required\n";
+    my $diffs = $opts{diff} or $self->_error("--diff required");
     $diffs = [$diffs] unless ref $diffs eq 'ARRAY';
 
     my $tempdir = tempdir( CLEANUP => 1 );
@@ -156,18 +162,18 @@ sub run_create {
 
     my $output = $opts{output} || "clarive_$old_version-$new_version.patch.tar.gz";
 
-    warn "Creating '$output'...\n" unless $opt_quiet;
+    $self->_log( "Creating '$output'...", \%opts );
 
     system("tar czf '$output' -C '$tempdir' '.'");
 
-    print "Done\n";
+    $self->_log( "Done", \%opts );
 }
 
 sub _write_version {
     my $self = shift;
     my ( $file, $version ) = @_;
 
-    open my $fh, '>', $file or die "Can't create '$file': $!";
+    open my $fh, '>', $file or $self->_error("Can't create '$file': $!");
     print $fh "$version\n";
     close $fh;
 }
@@ -188,7 +194,7 @@ sub _slurp {
     my ($file) = @_;
 
     local $/;
-    open my $fh, '<', $file or die "Can't open file '$file': $!";
+    open my $fh, '<', $file or $self->_error("Can't open file '$file': $!");
     my $content = <$fh>;
     close $fh;
 
@@ -197,7 +203,7 @@ sub _slurp {
 
 sub _run_patch_cmd {
     my $self = shift;
-    my ($patch, %options) = @_;
+    my ( $patch, %options ) = @_;
 
     my $home = $self->app->home;
 
@@ -208,13 +214,41 @@ sub _run_patch_cmd {
 
 sub _run_patch_reverse_cmd {
     my $self = shift;
-    my ($patch, %options) = @_;
+    my ( $patch, %options ) = @_;
 
     my $home = $self->app->home;
 
     my $dry_run = $options{'dry_run'} ? '--dry-run' : '';
 
     return system("cd $home; patch --batch --quiet -p1 --reverse $dry_run < '$patch'");
+}
+
+sub _dry_run_banner {
+    my $self = shift;
+
+    warn "DRY RUN: Not actually updating anything\n\n";
+}
+
+sub _log {
+    my $self = shift;
+    my ( $message, $options ) = @_;
+
+    return if $options->{quiet};
+
+    my $prefix = '';
+
+    if ( $options->{'dry-run'} ) {
+        $prefix = 'DRY RUN: ';
+    }
+
+    warn "$prefix$message\n";
+}
+
+sub _error {
+    my $self = shift;
+    my ($message) = @_;
+
+    die "Error: $message\n";
 }
 
 1;
@@ -234,19 +268,22 @@ Create patch. Options:
     --new <num>         new version
     --diff <file>       path to a diff file (multiple values are allowed)
     --output <file>     output file (optional)
+    --quiet             be quiet
 
 =head2 apply
 
 Apply patch. Options:
 
     --patch <file>      path to a patch file
-    --dry-run           dry run mode
+    --dry-run           dry run mode (not actually updating anything)
+    --quiet             be quiet
 
 =head2 rollback
 
 Rollback patch. Options:
 
     --patch <file>      path to a patch file
-    --dry-run           dry run mode
+    --dry-run           dry run mode (not actually updating anything)
+    --quiet             be quiet
 
 =cut

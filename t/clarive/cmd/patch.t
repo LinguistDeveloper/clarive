@@ -45,6 +45,18 @@ subtest 'run_apply: throws when cannot open patch' => sub {
     like exception { $cmd->run_apply( patch => "$tempdir/unknown" ) }, qr/Can't open.*unknown/;
 };
 
+subtest 'run_apply: throws when not a tar.gz file' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+    my $app     = _build_app($tempdir);
+    my $cmd     = _build_cmd( app => $app );
+
+    TestUtils->write_file( 'something', "$tempdir/some-file" );
+
+    like exception { $cmd->run_apply( patch => "$tempdir/some-file" ) }, qr/not a tar.gz/;
+};
+
 subtest 'run_apply: throws when cannot detect current version' => sub {
     _setup();
 
@@ -57,7 +69,7 @@ subtest 'run_apply: throws when cannot detect current version' => sub {
     like exception { $cmd->run_apply( patch => "$tempdir/patch.tar.gz" ) }, qr/Can't open.*VERSION/;
 };
 
-subtest 'run_apply: apply patches' => sub {
+subtest 'run_apply: applies patches' => sub {
     _setup();
 
     my $tempdir = tempdir();
