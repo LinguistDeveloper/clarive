@@ -7,9 +7,9 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
-use Baseliner::Utils qw(_load);
 
 use Capture::Tiny qw(capture);
+use Baseliner::Utils qw(_load);
 
 use_ok 'BaselinerX::CI::job';
 
@@ -82,7 +82,6 @@ subtest 'new: saves rule versions for INIT & CHECK' => sub {
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
-
     my $job;
     capture {
         $job = TestUtils->create_ci('job', changesets => [$changeset]);
@@ -185,7 +184,56 @@ subtest 'finish: creates notify in event.job.end' => sub {
         bl      => $bl->{mid},
         project => [ $project->{mid} ]
         };
+};
 
+subtest 'reset: creates correct event event.job.rerun with parameters step POST and last_finish_status ERROR' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job = _build_ci( changesets => [$changeset] );
+
+    capture {
+        $job->save;
+
+        $job->reset( { username => $user->name, step => 'POST', last_finish_status => 'ERROR' } );
+    };
+
+    my $events = _build_events_model();
+
+    my $event_data = _load $events->find_by_key('event.job.rerun')->[0]->{event_data};
+
+    is $event_data->{job}->{last_finish_status}, 'ERROR';
+    is $event_data->{job}->{step},               'POST';
+};
+
+subtest 'reset: creates correct event event.job.rerun with parameters step POST and last_finish_status OK' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job = _build_ci( changesets => [$changeset] );
+
+    capture {
+        $job->save;
+
+        $job->reset( { username => $user->name, step => 'POST', last_finish_status => 'OK' } );
+    };
+
+    my $events = _build_events_model();
+
+    my $event_data = _load $events->find_by_key('event.job.rerun')->[0]->{event_data};
+
+    is $event_data->{job}->{last_finish_status}, 'OK';
+    is $event_data->{job}->{step},               'POST';
 };
 
 done_testing;
@@ -195,16 +243,18 @@ sub _setup {
         'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Statement', 'BaselinerX::CI',
         'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
-        'Baseliner::Model::Rules',
+        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs'
     );
 
     TestUtils->cleanup_cis;
 
+    mdb->category->drop;
+    mdb->event->drop;
+    mdb->job_log->drop;
+    mdb->role->drop;
     mdb->rule->drop;
     mdb->rule_version->drop;
-    mdb->job_log->drop;
-    mdb->event->drop;
+    mdb->topic->drop;
 
     mdb->rule->insert(
         {
@@ -213,9 +263,12 @@ sub _setup {
             rule_when => 'promote',
         }
     );
-
 }
 
 sub _build_ci {
     BaselinerX::CI::job->new(@_);
+}
+
+sub _build_events_model {
+    return Baseliner::Model::Events->new();
 }

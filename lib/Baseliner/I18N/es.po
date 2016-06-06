@@ -8860,3 +8860,6 @@ msgstr "El %1 %2 tiene %3 usuarios asignados, ¿desea borrar el %4?"
 
 msgid "You do not have permissions to open this calendar"
 msgstr "No tiene permisos para abrir este calendario"
+
+msgid "FAIL"
+msgstr "FALLO"

@@ -544,13 +544,13 @@ sub reset {   # aka restart
     my %p = %{ $p || {} };
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
-    my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
+    my $last_finish_status = $p{last_finish_status} // '';
 
     _fail _loc('Job %1 is currently running (%2) and cannot be rerun', $self->name, $self->status)
         if $self->is_running;
 
     my $msg;
-    event_new 'event.job.rerun' => { job=>$self } => sub {
+    event_new 'event.job.rerun' => { job=> $self } => sub {
         # prepare stash for rules
         my $prev_stash = $self->job_stash;
         my $stash = {
@@ -569,7 +569,7 @@ sub reset {   # aka restart
         $self->pid( 0 );
         $self->status( 'READY' );
         $self->final_status( '' );
-        $self->last_finish_status( '' );
+        $self->last_finish_status( $last_finish_status );
         $self->step( $p{step} || 'PRE' );
         $self->username( $username );
         $self->is_rejected(0);
