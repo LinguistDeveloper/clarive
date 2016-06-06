@@ -18,7 +18,6 @@ sub upgrade {
 
             if ( $attributes->{key} eq "fieldlet.system.list_topics" ) {
                 $data->{fieldletType} = "fieldlet.system.list_topics";
-                $data->{filter}       = '';
                 $data->{filter_data}  = '';
                 $data->{filter_field} = '';
             }
