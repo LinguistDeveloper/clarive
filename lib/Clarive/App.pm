@@ -31,6 +31,9 @@ has version => qw(is ro isa Str lazy 1), default => sub{
         close $ff;
         return $ver;
     }
+
+    return '' unless -d '.git';
+
     # determine version with a GIT DESCRIBE
     my $FULL_VERSION = do {
         my $v = eval {
