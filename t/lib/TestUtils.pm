@@ -291,6 +291,8 @@ sub new {
     my $self = {};
     bless $self, $class;
 
+    $self->{write_fh} = $params{write_fh} || FakeResponseFileHandle->new;
+
     return $self;
 }
 
@@ -341,6 +343,30 @@ sub body {
     return $self;
 }
 
+sub write_fh {
+    my $self = shift;
+
+    return $self->{write_fh};
+}
+
+package FakeResponseFileHandle;
+
+sub new {
+    my $class = shift;
+
+    my $self = {};
+    bless $self, $class;
+
+    return $self;
+}
+
+sub write {
+    my $self = shift;
+}
+
+sub close {
+}
+
 package FakeContext;
 
 use Carp;
@@ -355,6 +381,7 @@ sub new {
     $self->{stash}   = $params{stash}   || {};
     $self->{session} = $params{session} || {};
     $self->{req}     = $params{req};
+    $self->{res}     = $params{res};
     $self->{user}    = $params{user};
     $self->{user_ci} = $params{user_ci};
     $self->{username}     = $params{username};

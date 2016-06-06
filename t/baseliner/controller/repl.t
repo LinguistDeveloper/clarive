@@ -1,43 +1,181 @@
 use strict;
 use warnings;
+use utf8;
 
 use Test::More;
 use Test::Deep;
+use Test::Fatal;
+use Test::MonkeyMock;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
-use TestUtils ':catalyst';
+use TestUtils ':catalyst', 'mock_time';
 
+use JSON ();
 use Baseliner::Utils qw(_dump _load);
 
 use_ok 'Baseliner::Controller::REPL';
 
-subtest 'eval: perl code executed' => sub {
+subtest 'eval: executes code and returns correct results' => sub {
     _setup();
 
     my $controller = _build_controller();
 
+    my $fh = _mock_fh();
+
     my $c = _build_c(
         req => {
             params => {
-                eval                       => 1,
-                dump                       => "yaml",
-                show                       => "cons",
-                lang                       => 'perl',
-                code                       => 'my $x = 123;',
-                _merge_with_params         => 1,
-                as_json                    => 1,
-                _bali_login_count          => 0,
-                _bali_notify_valid_session => 1
-
+                eval    => 1,
+                dump    => "yaml",
+                show    => "cons",
+                lang    => 'perl',
+                code    => 'print "output"; my $x = 123;',
+                as_json => 1,
             }
-        }
+        },
+        res => FakeResponse->new( write_fh => $fh )
     );
 
     $controller->eval($c);
 
-    my $res = _load( $c->stash->{json}{result} );
-    is $res, 123;
+    my ($message1) = $fh->mocked_call_args( 'write', 0 );
+    my ($message2) = $fh->mocked_call_args( 'write', 1 );
+
+    my ($json1) = split "\n", $message1;
+    my ($json2) = split "\n", $message2;
+
+    is_deeply JSON::decode_json($json1),
+      {
+        type => 'output',
+        data => 'output'
+      };
+    cmp_deeply JSON::decode_json($json2),
+      {
+        type => 'result',
+        data => {
+            result  => "--- 123\n",
+            error   => '',
+            elapsed => ignore(),
+            stdout  => 'output',
+            stderr  => '',
+        }
+      };
+
+    ok $fh->mocked_called('close');
+};
+
+subtest 'eval: returns result as json' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $fh = _mock_fh();
+
+    my $c = _build_c(
+        req => {
+            params => {
+                eval    => 1,
+                dump    => "json",
+                show    => "cons",
+                lang    => 'perl',
+                code    => '{foo => "bar"}',
+                as_json => 1,
+            }
+        },
+        res => FakeResponse->new( write_fh => $fh )
+    );
+
+    $controller->eval($c);
+
+    my ($message2) = $fh->mocked_call_args( 'write', 0 );
+    my ($json2) = split "\n", $message2;
+
+    is JSON::decode_json($json2)->{data}->{result}, qq/{\n   "foo" : "bar"\n}\n/;
+};
+
+subtest 'eval: returns correct results with exceptions' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $fh = _mock_fh();
+
+    my $c = _build_c(
+        req => {
+            params => {
+                eval    => 1,
+                dump    => "yaml",
+                show    => "cons",
+                lang    => 'perl',
+                code    => 'die "error"',
+                as_json => 1,
+            }
+        },
+        res => FakeResponse->new( write_fh => $fh )
+    );
+
+    $controller->eval($c);
+
+    my ($message1) = $fh->mocked_call_args( 'write', 0 );
+
+    my ($json1) = split "\n", $message1;
+
+    cmp_deeply JSON::decode_json($json1),
+      {
+        type => 'result',
+        data => {
+            result  => "--- ~\n",
+            error   => re(qr/error/),
+            elapsed => ignore(),
+            stdout  => '',
+            stderr  => '',
+        }
+      };
+
+    ok $fh->mocked_called('close');
+};
+
+subtest 'eval: returns result value as json' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $fh = _mock_fh();
+
+    my $c = _build_c(
+        req => {
+            params => {
+                eval    => 1,
+                dump    => "json",
+                show    => "cons",
+                lang    => 'perl',
+                code    => 'print "output"; my $x = {foo => "bar"};',
+                as_json => 1,
+            }
+        },
+        res => FakeResponse->new( write_fh => $fh )
+    );
+
+    $controller->eval($c);
+
+    my ($message) = $fh->mocked_call_args( 'write', 1 );
+
+    my ($json) = split "\n", $message;
+
+    cmp_deeply JSON::decode_json($json),
+      {
+        type => 'result',
+        data => {
+            result  => qq/{\n   "foo" : "bar"\n}\n/,
+            error   => '',
+            elapsed => ignore(),
+            stdout  => 'output',
+            stderr  => '',
+        }
+      };
+
+    ok $fh->mocked_called('close');
 };
 
 subtest 'eval: javascript code executed' => sub {
@@ -45,27 +183,42 @@ subtest 'eval: javascript code executed' => sub {
 
     my $controller = _build_controller();
 
+    my $fh = _mock_fh();
+
     my $c = _build_c(
         req => {
             params => {
-                eval                       => 1,
-                dump                       => "yaml",
-                show                       => "cons",
-                lang                       => 'js-server',
-                code                       => 'var x = 123; x',
-                _merge_with_params         => 1,
-                as_json                    => 1,
-                _bali_login_count          => 0,
-                _bali_notify_valid_session => 1
+                eval    => 1,
+                dump    => "yaml",
+                show    => "cons",
+                lang    => 'js-server',
+                code    => 'var x = 123; x',
+                as_json => 1,
 
             }
-        }
+        },
+        res => FakeResponse->new( write_fh => $fh )
     );
 
     $controller->eval($c);
 
-    my $res = _load( $c->stash->{json}{result} );
-    is $res, 123;
+    my ($message) = $fh->mocked_call_args( 'write', 1 );
+
+    my ($json) = split "\n", $message;
+
+    cmp_deeply JSON::decode_json($json),
+      {
+        type => 'result',
+        data => {
+            result  => "--- '123'\n",
+            error   => '',
+            elapsed => ignore(),
+            stdout  => ignore(),
+            stderr  => '',
+        }
+      };
+
+    ok $fh->mocked_called('close');
 };
 
 subtest 'eval: correctly decodes unicode' => sub {
@@ -73,29 +226,49 @@ subtest 'eval: correctly decodes unicode' => sub {
 
     my $controller = _build_controller();
 
+    my $fh = _mock_fh();
+
     my $c = _build_c(
         req => {
             params => {
-                eval                       => 1,
-                dump                       => "yaml",
-                show                       => "cons",
-                lang                       => 'perl-server',
-                code                       => qq{print "\x{1F627}"},
-                _merge_with_params         => 1,
-                as_json                    => 1,
-                _bali_login_count          => 0,
-                _bali_notify_valid_session => 1
-
+                eval    => 1,
+                dump    => "yaml",
+                show    => "cons",
+                lang    => 'perl',
+                code    => qq{print "\x{1F627}"; "привет"},
+                as_json => 1,
             }
-        }
+        },
+        res => FakeResponse->new( write_fh => $fh )
     );
 
     $controller->eval($c);
 
-    is $c->stash->{json}->{stdout}, "\x{1F627}";
+    my ($message1) = $fh->mocked_call_args( 'write', 0 );
+    my ($message2) = $fh->mocked_call_args( 'write', 1 );
+
+    my ($json1) = split "\n", $message1;
+    my ($json2) = split "\n", $message2;
+
+    is_deeply JSON::decode_json($json1),
+      {
+        type => 'output',
+        data => "\x{1F627}"
+      };
+    cmp_deeply JSON::decode_json($json2),
+      {
+        type => 'result',
+        data => {
+            result  => "--- привет\n",
+            error   => '',
+            elapsed => ignore(),
+            stdout  => "\x{1F627}",
+            stderr  => '',
+        }
+      };
 };
 
-subtest 'repl: code saved to history' => sub {
+subtest 'tree_hist: returns history' => sub {
     _setup();
 
     my $controller = _build_controller();
@@ -103,29 +276,96 @@ subtest 'repl: code saved to history' => sub {
     my $c = _build_c(
         req => {
             params => {
-                lang => 'perl',
+                lang => 'js-server',
                 code => 'var x = 123; x',
             }
         }
     );
 
     $controller->eval($c);
+
     $controller->tree_hist($c);
-    is scalar( @{ $c->stash->{json} } ), 1;
+
+    cmp_deeply $c->stash->{json},
+      [
+        {
+            'data' => {
+                'text' => ignore(),
+            },
+            'text'      => re(qr/.*? \(js-server\): var x = 123; x/),
+            'iconCls'   => 'default_folders',
+            'url_click' => '/repl/load_hist',
+            'leaf'      => \1
+        }
+      ];
 };
 
-subtest 'tidy: tidy some code' => sub {
+subtest 'tree_hist: returns history by query' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c;
+
+    mock_time '2016-01-01 00:00:00', sub {
+        $c = _build_c(
+            req => {
+                params => {
+                    lang => 'js-server',
+                    code => 'var x = 123; x',
+                }
+            }
+        );
+        $controller->eval($c);
+    };
+
+    mock_time '2016-01-01 00:01:00', sub {
+        $c = _build_c(
+            session => $c->session,
+            req     => {
+                params => {
+                    lang => 'js-server',
+                    code => '[1, 2, 3]',
+                }
+            }
+        );
+        $controller->eval($c);
+    };
+
+    $c = _build_c(
+        session => $c->session,
+        req     => {
+            params => {
+                query => 'var x'
+            }
+        }
+    );
+
+    $controller->tree_hist($c);
+
+    cmp_deeply $c->stash->{json},
+      [
+        {
+            'data' => {
+                'text' => ignore(),
+            },
+            'text'      => re(qr/.*? \(js-server\): var x = 123; x/),
+            'iconCls'   => 'default_folders',
+            'url_click' => '/repl/load_hist',
+            'leaf'      => \1
+        }
+      ];
+};
+
+subtest 'tidy: tidies code' => sub {
     _setup();
 
     my $controller = _build_controller();
     my $c          = _build_c(
         req => {
             params => {
-                code                       => "if(1){\n22;}",
-                _merge_with_params         => 1,
-                as_json                    => 1,
-                _bali_login_count          => 0,
-                _bali_notify_valid_session => 1
+                code    => "if(1){\n22;}",
+                as_json => 1,
             }
         }
     );
@@ -136,12 +376,147 @@ subtest 'tidy: tidy some code' => sub {
     is $lines, 3;
 };
 
+subtest 'save: returns successful response' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id   => 'foo',
+                text => 'bar'
+            }
+        }
+    );
+
+    $controller->save($c);
+
+    cmp_deeply $c->stash, { json => { success => \1 } };
+};
+
+subtest 'save: saves code' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id   => 'foo',
+                text => 'bar'
+            }
+        }
+    );
+
+    $controller->save($c);
+
+    my $repl = mdb->repl->find_one;
+
+    cmp_deeply $repl, { _id => 'foo', id => 'foo', text => 'bar' };
+};
+
+subtest 'save: overwrites existing id' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id   => 'foo',
+                text => 'baz'
+            }
+        }
+    );
+
+    $controller->save($c);
+
+    my $repl = mdb->repl->find_one;
+
+    cmp_deeply $repl, { _id => 'foo', id => 'foo', text => 'baz' };
+};
+
+subtest 'load: throws when no entry found' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id => 'unknown'
+            }
+        }
+    );
+
+    like exception { $controller->load($c) }, qr/REPL entry not found: unknown/;
+};
+
+subtest 'load: returns history' => sub {
+    _setup();
+
+    mdb->repl->insert( { _id => 'foo', id => 'foo', text => 'bar' } );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id => 'foo'
+            }
+        }
+    );
+
+    $controller->load($c);
+
+    is_deeply $c->stash,
+      {
+        'json' => {
+            'id'   => 'foo',
+            'text' => 'bar',
+            '_id'  => 'foo'
+        }
+      };
+};
+
+subtest 'delete: throws when unknown id' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    like exception { $controller->delete($c) }, qr/Missing REPL id/;
+};
+
+subtest 'delete: deletes repl history' => sub {
+    _setup();
+
+    mdb->repl->insert( { _id => 'foo', id => 'foo', text => 'bar' } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { id => 'foo' } } );
+
+    $controller->delete($c);
+
+    ok !mdb->repl->find_one;
+
+    cmp_deeply $c->stash, { json => { success => \1 } };
+};
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI' );
 
     TestUtils->cleanup_cis;
+
+    mdb->repl->drop;
+}
+
+sub _mock_fh {
+    my $fh = FakeResponseFileHandle->new;
+    $fh = Test::MonkeyMock->new($fh);
+    $fh->mock('write');
+    $fh->mock('close');
+    return $fh;
 }
 
 sub _build_c {
