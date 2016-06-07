@@ -2315,7 +2315,6 @@ sub set_cal {
 sub set_topics {
     my ($self, $ci_topic, $topics, $user, $id_field, $meta, $cancelEvent ) = @_;
     my @all_topics = ();
-
     my $mid = ''.$ci_topic->mid;
     cache->remove({ mid=>"$mid" }) if length $mid; # qr/:$rs_cache:/ )
 
@@ -2333,10 +2332,10 @@ sub set_topics {
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map { $$_{$data_direction} }
         mdb->master_rel->find({ $topic_direction=>$mid, rel_type=>$rel_type, rel_field=>$rel_field })->all;
-
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
 
+    my $topics_old = join(',', @old_topics);
     my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$mid, rel_type=>'topic_project' });
     my $notify = {
         category        => $ci_topic->{id_category},
@@ -2433,7 +2432,7 @@ sub set_topics {
         if($cancelEvent != 1){
             event_new 'event.topic.modify_field' => { username      => $user,
                                                 field               => $id_field,
-                                                old_value           => '',
+                                                old_value           => $topics_old ? $topics_old : '',
                                                 new_value           => $topics,
                                                 text_new            => _loc('%1 modified topic: %2 ( %4 )',$user,$id_field,'', $topics),
                                                 mid => $mid,
@@ -2452,7 +2451,7 @@ sub set_topics {
         if($cancelEvent != 1){
             event_new 'event.topic.modify_field' => { username      => $user,
                                                 field               => $id_field,
-                                                old_value           => '',
+                                                old_value           => $topics_old ? $topics_old : '',
                                                 new_value           => '',
                                                 text_new            => _loc('%1 deleted all attached topics of %2',$user, $id_field),
                                                 mid => $mid,
@@ -2554,7 +2553,7 @@ sub set_revisions {
     # related topics
     my @new_revisions = _array( $revisions ) ;
     my @old_revisions = map {$_->{to_mid}} mdb->master_rel->find({ from_mid => $ci_topic->{mid}, rel_type=>'topic_revision' })->all;
-
+    my $revision_old = join(',', map { _ci($_)->{name}} @old_revisions);
     my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$ci_topic->{mid}, rel_type=>'topic_project' });
     my $notify = {
         category        => $ci_topic->{id_category},
@@ -2581,7 +2580,7 @@ sub set_revisions {
             if ($cancelEvent != 1){
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
-                                                    old_value      => '',
+                                                    old_value      => $revision_old ? $revision_old : '',
                                                     new_value  => $revisions,
                                                     text_new      => _loc('%1 modified topic: %2 ( %4 )',$user, $ci_topic->{title},'', $revisions),
                                                     mid => $ci_topic->{mid},
@@ -2599,7 +2598,7 @@ sub set_revisions {
             if ($cancelEvent != 1){
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
-                                                    old_value      => '',
+                                                    old_value      => $revision_old ? $revision_old : '',
                                                     new_value  => '',
                                                     text_new      => _loc('%1 deleted all revisions',$user),
                                                     mid => $ci_topic->{mid},
@@ -2704,12 +2703,14 @@ sub set_release {
 
 sub set_projects {
     my ($self, $ci_topic, $projects, $user, $id_field, $meta, $cancelEvent ) = @_;
+
     my $topic_mid = $ci_topic->{mid};
     my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
 
     my @new_projects = sort { $a cmp $b } _array( $projects ) ;
     my @old_projects = sort { $a cmp $b } map { $_->{to_mid} }
         mdb->master_rel->find({ from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field })->all;
+    my $project_old = join (',', map { _ci($_)->{name} } @old_projects );
 
     my $notify = {
         category        => $ci_topic->{id_category},
@@ -2739,7 +2740,7 @@ sub set_projects {
             if ($cancelEvent != 1) {
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
-                                                    old_value      => '',
+                                                    old_value      => $project_old ? $project_old : '',
                                                     new_value  => $projects,
                                                     text_new      => _loc('%1 modified topic: %2 ( %4 )',$user, $ci_topic->{title}, $projects, $name_field),
                                                     mid => $ci_topic->{mid},
@@ -2756,7 +2757,7 @@ sub set_projects {
             if ($cancelEvent != 1){
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
-                                                    old_value      => '',
+                                                    old_value      => $project_old ? $project_old : '',
                                                     new_value  => '',
                                                     text_new      => _loc('%1 deleted %2',$user, $ci_topic->{title}, $name_field),
                                                     mid => $ci_topic->{mid},
@@ -2778,7 +2779,7 @@ sub set_users{
 
     my @new_users = _array( $users ) ;
     my @old_users = map { $$_{to_mid} } mdb->master_rel->find({from_mid =>"$topic_mid", rel_type=>'topic_users', rel_field=>$id_field })->all;
-
+    my $username_old = join (',',map { _ci($_)->{name}} @old_users);
     my $notify = {
         category        => $ci_topic->{id_category},
         category_status => $ci_topic->{id_category_status},
@@ -2811,7 +2812,7 @@ sub set_users{
             event_new 'event.topic.modify_field' => {
                 username   => $user,
                 field      => $id_field,
-                old_value      => '',
+                old_value      => $username_old ? $username_old : '',
                 new_value  => $users,
                 text_new      => _loc('%1 Assigned To %2',$user, $users),
                 mid => $ci_topic->{mid},
@@ -2829,7 +2830,7 @@ sub set_users{
             if ( !$cancelEvent ) {
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
-                                                    old_value      => '',
+                                                    old_value      =>  $username_old ? $username_old : '',
                                                     new_value  => '',
                                                     text_new      => _loc('%1 deleted all users',$user),
                                                     mid => $ci_topic->{mid},
