@@ -78,7 +78,7 @@ register 'service.changeset.update' => {
 register 'service.topic.status' => {
     name    => '(DEPRECATED) Change Topic Status',
     icon    => '/static/images/icons/topic.svg',
-    form    => '/forms/topic_status.js',
+    form    => '/forms/topic_status_deprecated.js',
     job_service  => 1,
     handler => \&topic_status,
 };
