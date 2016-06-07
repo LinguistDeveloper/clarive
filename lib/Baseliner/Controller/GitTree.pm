@@ -520,12 +520,12 @@ sub view_diff_file : Local {
     my ( $self, $c ) = @_;
 
     return
-      unless my $node = $self->validate_params(
+        unless my $node = $self->validate_params(
         $c,
         repo_mid => { isa => 'ExistingCI' },
         sha      => { isa => 'GitCommit' },
         file     => {},
-      );
+        );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -546,18 +546,7 @@ sub view_diff_file : Local {
     map { $previous_commit = $commits[ $i + 1 ] if $_ =~ /^$actual_commit/ && $i < $total_commits - 1; $i++; } @commits;
     $previous_commit = $actual_commit if $previous_commit eq '-1';
 
-    my $commit_info;
-    my @lines = $g->git->exec( 'log', '-1', $actual_commit );
-    $lines[0] =~ /commit ([a-f0-9]+)/;
-    $commit_info->{revision} = substr( $1, 0, 8 );
-
-    my $offset = 0;
-    $offset = 1 if $lines[1] =~ /^Merge/;
-    $lines[ 1 + $offset ] =~ /Author: (.+)/;
-    $commit_info->{author} = _to_utf8 $1;
-    $lines[ 2 + $offset ] =~ /Date: (.+)/;
-    $commit_info->{date} = _to_utf8 $1;
-    $commit_info->{comment} = _to_utf8 join( "\n", @lines[ 4 + $offset .. $#lines ] );
+    my $commit_info = $self->commit_info( $c, $g, $actual_commit );
 
     my $diff;
     require Text::Diff;
@@ -575,29 +564,20 @@ sub view_diff_file : Local {
         my $previous_file_sha           = $self->return_sha8($rev_list);
         my $file_content                = join( "\n", @array_file_content ) . "\n";
         my @array_previous_file_content = $g->git->exec( 'cat-file', '-p', $previous_file_sha );
-        my $previous_content = $previous_commit eq $actual_commit ? '' : join( "\n", @array_previous_file_content ) . "\n";
+        my $previous_content
+            = $previous_commit eq $actual_commit ? '' : join( "\n", @array_previous_file_content ) . "\n";
         $diff = _to_utf8 Text::Diff::diff( \$previous_content, \$file_content, { STYLE => 'Unified' } );
         my @parts;
 
-        while ( $diff ne '' ) {
-            my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
-            push @parts, $slides[-1];
-            $diff = $slides[1];
-        }
-        foreach ( reverse @parts ) {
-            $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
-            my $stats = $+{stats};
-            my $code  = _to_utf8 $+{code};
-            push @code_chunks, { stats => $stats, code => $code };
-        }
+        @code_chunks = $self->write_code_chunks( $c, $diff );
     }
     push @changes,
-      {
+        {
         path        => $file,
         revision1   => substr( $previous_commit, 0, 8 ),
         revision2   => substr( $actual_commit, 0, 8 ),
         code_chunks => \@code_chunks
-      };
+        };
     $c->stash->{json} = try {
         { success => \1, msg => _loc("Success loading file diff"), changes => \@changes, commit_info => $commit_info };
     }
@@ -704,12 +684,12 @@ sub view_diff : Local {
     my ( $self, $c ) = @_;
 
     return
-      unless my $node = $self->validate_params(
+        unless my $node = $self->validate_params(
         $c,
         repo_mid => { isa => 'ExistingCI' },
         sha      => { isa => 'GitRef' },
         tag      => { isa => 'GitTag', default => '' }
-      );
+        );
 
     my $repo_ci = $node->{repo_mid};
 
@@ -720,17 +700,7 @@ sub view_diff : Local {
 
     my @changes;
     $c->stash->{json} = try {
-        my $commit_info;
-        my @lines = $g->git->exec( 'log', '-1', $sha );
-        $lines[0] =~ /commit ([a-f0-9]+)/;
-        $commit_info->{revision} = substr( $1, 0, 8 );
-        my $offset = 0;
-        $offset = 1 if $lines[1] =~ /^Merge/;
-        $lines[ 1 + $offset ] =~ /Author: (.+)/;
-        $commit_info->{author} = _to_utf8 $1;
-        $lines[ 2 + $offset ] =~ /Date: (.+)/;
-        $commit_info->{date} = _to_utf8 $1;
-        $commit_info->{comment} = _to_utf8 join( "\n", @lines[ 4 + $offset .. $#lines ] );
+        my $commit_info = $self->commit_info( $c, $g, $sha );
         my @array_show;
 
         if ( $node->{tag} ) {
@@ -751,22 +721,16 @@ sub view_diff : Local {
         foreach (@parts) {
             my $i = index( $_, '@@' );
             my $diff_info = substr( $_, 0, $i );
-            my ( $path, $revision1, $revision2 ) =
-              $diff_info =~ /diff --git a\/(.+) b\/.+index ([a-f0-9]{7})\.{2}([a-f0-9]{7})/s;
+            my ( $path, $revision1, $revision2 )
+                = $diff_info =~ /diff --git a\/(.+) b\/.+index ([a-f0-9]{7})\.{2}([a-f0-9]{7})/s;
             my @code_chunks;
             if ( !( $diff_info =~ /Binary files/s ) ) {
                 my $diff_code = substr( $_, $i );
-                my @parts;
-                while ( $diff_code ne '' ) {
-                    my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff_code;
-                    push @parts, $slides[-1];
-                    $diff_code = $slides[1] // '';
-                }
-                foreach ( reverse @parts ) {
-                    $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
-                    my $stats = $+{stats};
-                    my $code  = _to_utf8 $+{code};
-                    push @code_chunks, { stats => $stats, code => $code };
+                @code_chunks = $self->write_code_chunks( $c, $diff_code );
+                foreach my $code (@code_chunks) {
+                    if ( ( $code->{code} !~ /^\+/ ) && ( $code->{code} !~ /^\-/ ) ) {
+                        $code->{code} = ' ' . $code->{code};
+                    }
                 }
             }
             else {
@@ -774,7 +738,7 @@ sub view_diff : Local {
             }
             if ($path) {
                 push @changes,
-                  { path => $path, revision1 => $revision1, revision2 => $revision2, code_chunks => \@code_chunks };
+                    { path => $path, revision1 => $revision1, revision2 => $revision2, code_chunks => \@code_chunks };
             }
         }
         @changes = reverse(@changes);
@@ -784,7 +748,6 @@ sub view_diff : Local {
         my $err = shift;
         { success => \0, msg => _loc( "Error loading diffs: %1", "$err" ) };
     };
-
     $c->forward('View::JSON');
 }
 
@@ -1011,6 +974,43 @@ sub commit_search {
     push @commits, $log if $log->{author};
 
     return @commits;
+}
+
+sub commit_info : Local {
+    my ( $self, $c, $g, $sha ) = @_;
+
+    my $commit_info;
+    my @lines = $g->git->exec( 'log', '-1', $sha );
+    $lines[0] =~ /commit ([a-f0-9]+)/;
+    $commit_info->{revision} = substr( $1, 0, 8 );
+    my $offset = 0;
+    $offset = 1 if $lines[1] =~ /^Merge/;
+    $lines[ 1 + $offset ] =~ /Author: (.+)/;
+    $commit_info->{author} = _to_utf8 $1;
+    $lines[ 2 + $offset ] =~ /Date: (.+)/;
+    $commit_info->{date} = _to_utf8 $1;
+    $commit_info->{comment} = _to_utf8 join( "\n", @lines[ 4 + $offset .. $#lines ] );
+
+    return $commit_info;
+}
+
+sub write_code_chunks : Local {
+    my ( $self, $c, $diff_code ) = @_;
+    my @parts;
+    my @code_chunks;
+    while ( $diff_code ne '' ) {
+        my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff_code;
+        push @parts, $slides[-1];
+        $diff_code = $slides[1] // '';
+    }
+    foreach ( reverse @parts ) {
+        $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
+        my $stats = $+{stats};
+        my $code  = _to_utf8 $+{code};
+
+        push @code_chunks, { stats => $stats, code => $code };
+    }
+    return @code_chunks;
 }
 
 no Moose;
