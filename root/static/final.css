@@ -771,6 +771,7 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     height:16px;
     vertical-align: middle;
     margin-right: 3px;
+    margin-top: -2px;
 }
 
 .x-combo-list .x-combo-list-inner span > img {
@@ -781,7 +782,7 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
 .x-combo-name-list{
     float:left;
     margin-right: 5px;
-    margin-top: -2px;
+    margin-top: -1px;
 }
 
 .x-combo-name-list-description{
@@ -892,4 +893,10 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
    width: 16px;
    height:16px;
  }
+}
+
+ #boot div.x-combo-name-list, #boot div.project-item-list {
+    margin-right: 5px !important;
+    float: left;
+    margin-top: -1px !important;
 }

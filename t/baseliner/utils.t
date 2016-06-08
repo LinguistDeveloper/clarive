@@ -62,6 +62,11 @@ subtest '_pointer throws on invalid structures' => sub {
     like exception { _pointer( '[0].foo.[1]', [ { foo => {} } ], throw => 1 ) }, qr/array ref expected at '\[0\]\.foo'/;
 };
 
+subtest '_pointer now supports ARRAY as pointer' => sub {
+    is _pointer( [ qw(foo bar) ], { foo => { bar => 'baz' } } ), 'baz';
+    is _pointer( [ qw(foo [1] bar [0]) ], { foo => [ {}, { bar => ['baz'] } ] } ), 'baz';
+};
+
 ####### query_grep
 
 my @rows = (
@@ -519,6 +524,20 @@ subtest '_json_pointer: set' => sub {
     is( Util->_json_pointer( $stash, '/aa/bb' ), 33 );
 };
 
+subtest '_json_pointer: set existing' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33 );
+};
+
+subtest '_json_pointer: set new' => sub {
+    my $stash = { foo=>'bar' };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is $stash->{foo}, 'bar', 'preserved ok';
+    is $stash->{aa}{bb}, 33, 'stored';
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33, 'retrieve' );
+};
+
 subtest '_json_pointer: get/set arrays' => sub {
     my $stash = { aa => { bb => [ 33, { zz => 22 } ] } };
     Util->_json_pointer( $stash, '/aa/bb/1/zz', 99 );
@@ -536,6 +555,24 @@ subtest '_json_pointer: set non-pointers' => sub {
     Util->_json_pointer( $stash, '//aa/bb', 88 );
     is( Util->_json_pointer( $stash, '//aa/bb' ), 88 );
     is( $stash->{'/aa/bb'}, 88 );
+};
+
+subtest '_json_pointer supports ARRAY as pointer' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,[qw(aa bb)],33);
+    is ( Util->_json_pointer($stash,[qw(aa bb)]), 33 );
+};
+
+subtest '_json_pointer returns undef if ARRAY not found but value exists' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,[qw(aa bb)],33);
+    is ( Util->_json_pointer($stash,[qw(aa bb cc)]), undef );
+};
+
+subtest '_probe_one_row: basic one term' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ }) );
+    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/tata/ }) );
 };
 
 subtest '_is_binary: thows an exception when parameter size is 0' => sub {

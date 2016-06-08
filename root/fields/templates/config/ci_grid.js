@@ -9,7 +9,7 @@
         value: data.ci_role || ''
     });
     ci_role_field.hide();
-    Cla.help_push({ title:_('CI Grid'), path:'Rules/Palette/Fieldlets/ci_grid' });
+    Cla.help_push({ title:_('CI Grid'), path:'rules/palette/fieldlets/ci-grid' });
     var ci_class_field = new Ext.form.Field({
         name: 'ci_class',
         xtype: "textfield",

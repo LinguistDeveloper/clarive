@@ -2000,6 +2000,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 220,
     hideHeaders: false,
     disabled: false,
+    style: { border: 'solid 1px #ccc' },
     frame: true,
     stripeRows: true,
     enableDragDrop: true, // enable drag and drop of grid rows

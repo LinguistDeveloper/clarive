@@ -88,26 +88,26 @@ params:
     if (meta.display_mode == 'description') {
         tpl = new Ext.XTemplate(
             '<tpl for="."><div class="x-combo-list-item">'
-          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name} </strong></span>'
+          + '<span id="boot" style="background: transparent"><div class="project-item-list"><img src="{icon}" width="16" /></div><strong>{name} </strong></span>'
           + '<tpl if="description.length &gt; 0"><span class="x-combo-name-list-description">{description} </span></tpl>'
           + '</div></tpl>'
         );
     } else if (meta.display_mode == 'baseline') {
         tpl = new Ext.XTemplate(
             '<tpl for="."><div class="x-combo-list-item">'
-          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name}</strong> <span class="x-combo-name-list-description">{values.bl} </span></span>'
+          + '<span id="boot" style="background: transparent"><div class="project-item-list"><img src="{icon}" width="16" /></div><strong>{name}</strong> <span class="x-combo-name-list-description">{values.bl} </span></span>'
           + '</div></tpl>'
         );
     } else if (meta.display_mode == 'moniker') {
         tpl = new Ext.XTemplate(
             '<tpl for="."><div class="x-combo-list-item">'
-          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name}</strong> <span class="x-combo-name-list-description">{values.moniker} </span></span>'
+          + '<span id="boot" style="background: transparent"><div class="project-item-list"><img src="{icon}" width="16" /></div><strong>{name}</strong> <span class="x-combo-name-list-description">{values.moniker} </span></span>'
           + '</div></tpl>'
         );
     } else {
         tpl = new Ext.XTemplate(
             '<tpl for="."><div class="x-combo-list-item">'
-          + '<span id="boot" style="background: transparent"><img src="{icon}" /><strong>{name} </strong></span>'
+          + '<span id="boot" style="background: transparent"><div class="project-item-list"><img src="{icon}" width="16" /></div><strong>{name} </strong></span>'
           + '</div></tpl>'
         );
     }

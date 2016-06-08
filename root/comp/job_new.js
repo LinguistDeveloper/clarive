@@ -35,7 +35,7 @@
         for( var h=0; h<24; h++ ) {
            for( var m=0; m<60; m++ ) {
                arr.push(
-                  [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F' ] 
+                  [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F' ]
                );
            }
         }
@@ -83,10 +83,10 @@
     var __now=new Date();
     __now.setSeconds(00);
 
-    
+
     //****************  Job Type Radio
-    var hidden_job_type = new Ext.form.Hidden({ 
-        name: 'job_type', 
+    var hidden_job_type = new Ext.form.Hidden({
+        name: 'job_type',
         // value: job_type,
         listeners: {
             change: { fn: function(t,v) {
@@ -97,18 +97,18 @@
     });
 
     //****************  BL to
-    var hidden_baseline_to = new Ext.form.Hidden({ 
+    var hidden_baseline_to = new Ext.form.Hidden({
         name: 'bl_to'
     });
-    
+
     //****************  state to
-    var hidden_state_to = new Ext.form.Hidden({ 
+    var hidden_state_to = new Ext.form.Hidden({
         name: 'state_to'
     });
-    
+
     //****************  BL
-    var hidden_baseline = new Ext.form.Hidden({ 
-        name: 'bl', 
+    var hidden_baseline = new Ext.form.Hidden({
+        name: 'bl',
         listeners: {
             change: { fn: function(t,v) {
                 bl = v;
@@ -120,10 +120,10 @@
     // Transitions Combo
     //
     var store_transitions = new Baseliner.JsonStore({
-        url: '/lifecycle/job_transitions', 
+        url: '/lifecycle/job_transitions',
         fields: ['id', 'bl_to', 'job_type', 'job_bl', 'id_project', 'status_to', 'status_to_name', 'text'],
-        root: 'data', 
-        totalProperty: 'totalCount', 
+        root: 'data',
+        totalProperty: 'totalCount',
         id: 'id',
         baseParams: {}
     });
@@ -143,7 +143,7 @@
             calendar_reload();
         } else if( store_transitions.getCount() == 1 ) {
             // maybe it's only one transition anyway, select it. If 2, better not to do it, leads to possible error
-            var row = store_transitions.getAt(0); 
+            var row = store_transitions.getAt(0);
             combo_transitions.setValue( row.data.id  );
         }
     });
@@ -203,7 +203,7 @@
         fieldLabel: _('Version'),
         name: 'rule_version_tag',
         displayField:'label',
-        hiddenName:'rule_version_tag', 
+        hiddenName:'rule_version_tag',
         valueField: 'id',
         store: store_versions,
         //singleMode: true,
@@ -242,7 +242,7 @@
         fieldLabel: _('Pipeline'),
             name: 'id_rule',
             displayField:'rule_name',
-            hiddenName:'id_rule', 
+            hiddenName:'id_rule',
             valueField: 'id',
         store: store_chain,
         //singleMode: true,
@@ -276,7 +276,7 @@
         }
     });
     store_chain.load(); // {params: { type: 'promote'}});
-    
+
     var check_no_cal = new Ext.form.Checkbox({
         name: 'check_no_cal',
         fieldLabel: '',
@@ -393,7 +393,7 @@
         disabled: true,
         selectOnFocus: false
     });
-    combo_time.color_me = function( type ) { 
+    combo_time.color_me = function( type ) {
         switch( type ) {
             case 'N': combo_time.el.setStyle({ color: 'green' }); break;
             case 'U': combo_time.el.setStyle({ color: 'red' }); break;
@@ -453,9 +453,9 @@
                                     }
                                 });
                                 var rowmid = jc_row.data.mid;
-                                if( !row_data[rowmid] ) row_data[rowmid]={}; 
+                                if( !row_data[rowmid] ) row_data[rowmid]={};
                                 row_data[rowmid].revisions = arr_rels;
-                                row_data[rowmid].rels = ci.related; 
+                                row_data[rowmid].rels = ci.related;
                             });
                             rel_cals = res.cals ? res.cals : [];
                             job_statistics.update( stats_tmpl({ eta: res.stats?res.stats.eta:'-', p_success:res.stats?res.stats.p_success:'-' }) );
@@ -505,7 +505,7 @@
                 jc_store.remove(sel);
                 delete jc_store_topics[ sel.data.mid ];
 
-                var topics_json = '[' + topics.join(',') + ']';                
+                var topics_json = '[' + topics.join(',') + ']';
                 store_transitions.baseParams.topics= topics_json;
                 if ( topics.length == 0 ) {
                     set_transition = 'none';
@@ -567,12 +567,12 @@
              width: 260 + adder,
              sortable: true,
              locked: false,
-             renderer: function(v){ 
-                 //return String.format("<b>{0}</b>", v) 
+             renderer: function(v){
+                 //return String.format("<b>{0}</b>", v)
                  return String.format('{0} <b>{1}</b>', Baseliner.topic_name({
                     link: true,
                     //parent_id: jc_store.id,
-                    mid: v.mid, 
+                    mid: v.mid,
                     mini: false,
                     size: '11',
                     category_name: v.category_name,
@@ -614,21 +614,21 @@
     var row_data = {};
     var jc_record = Ext.data.Record.create([ '_id','_parent', '_is_leaf','ns','mid','topic_name','project_name','promotable','item','text','date','modified_by','created_by' ]);
     var jc_store_topics = {};
-    var jc_store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
-       autoLoad : true,  
+    var jc_store = new Ext.ux.maximgb.tg.AdjacencyListStore({
+       autoLoad : true,
        url: '/job/jc_store',
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, jc_record )
-    }); 
+    });
 
     jc_store.on('beforeload',function(me,opts){
         Ext.apply( opts.params, { jsonData: { topics: jc_store_topics } });
         //opts.jsonData.topics.length = 0;
     });
-    
+
     jc_store.on('load',function(){
-        if (jc_store.data.length == 0) { 
-            button_submit.disable(); 
-        } 
+        if (jc_store.data.length == 0) {
+            button_submit.disable();
+        }
         var deploys = jc_store.reader.jsonData;
         calendar_reload();
     });
@@ -669,9 +669,9 @@
         button_remove_item.disable();
         button_cis.disable();
     });
-  
-    
-    // text, topic_mid, promotable, demotable, deployable, ..., 
+
+
+    // text, topic_mid, promotable, demotable, deployable, ...,
     var jc_add_node = function(data) {
         //var bl = hidden_baseline.getValue();
         if ( !job_type ) {
@@ -684,9 +684,9 @@
         if( ! ( data.promotable || data.demotable || data.deployable ) ) {
             Ext.Msg.alert( _('Error'),
                 _("Cannot promote/demote this entity type" ) );
-            return true; 
+            return true;
         }
-        // find job type from radio. 
+        // find job type from radio.
         //var job_type = main_form.getForm().getValues()['job_type'];
         //if( !job_type ) return;  // can't continue
         var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
@@ -703,8 +703,8 @@
             } else {
                 var project = data.id_project;
                 if ( data.is_release  == 1 ) {
-                    Ext.Msg.confirm( _('Confirmation'), _('Do you want to add all grouped changesets in the same state from all projects?'), 
-                    function(btn){ 
+                    Ext.Msg.confirm( _('Confirmation'), _('Do you want to add all grouped changesets in the same state from all projects?'),
+                    function(btn){
                         if(btn=='yes') {
                             project = 'all';
                         }
@@ -715,14 +715,14 @@
                 }
             }
         }
-        return (true); 
+        return (true);
     };
     function add_node(data,project) {
         jc_store_topics[ data.topic_mid ] = { text:data.text, data:data, project: project };
         topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
         var topics_json = '[' + topics.join(',') + ']';
         // topics.push( data.topic_mid + '|' + data.id_project + '|' + data.state_id );
-        
+
         store_transitions.baseParams.topics= topics_json;
         if ( topics.length == 1 ) {
             set_transition = data.id;
@@ -745,14 +745,14 @@
             notifyDrop: function(dd, e, data) {
                 var n = dd.dragData.node;
                 var d = n.attributes.data;
-                return jc_add_node({ 
+                return jc_add_node({
                     text: n.text,
                     is_release: d.is_release,
-                    topic_mid: d.topic_mid, 
-                    id_project: d.id_project, 
-                    state_id: d.state_id, 
-                    promotable: d.promotable, 
-                    demotable: d.demotable, 
+                    topic_mid: d.topic_mid,
+                    id_project: d.id_project,
+                    state_id: d.state_id,
+                    promotable: d.promotable,
+                    demotable: d.demotable,
                     deployable: d.deployable,
                     job_type: d.job_type
                 });
@@ -901,7 +901,7 @@
 
     combo_search.on('beforeselect', function(combo, record, index) {
         if( record.get('can_job') != 1 ) {
-            /* 
+            /*
             Ext.Msg.show({icon: 'ext-mb-error',
             buttons: { cancel: true },
             title: _('Blocked'),
@@ -914,7 +914,7 @@
         jc_store.add(record);
         store_search.remove(record);
         return false; // stops the combo from collapsing
-    });     
+    });
 
     combo_search.on('collapse', function(){
         calendar_reload();
@@ -1040,7 +1040,7 @@
     });
     combo_time.on('enable', function(){ button_show_cals.enable(); });
     combo_time.on('disable', function(){ button_show_cals.disable(); });
-    
+
     var stats_tmpl = function(){/*
         <div id="boot" style='background: transparent'>
         <table class="table table-bordered"><tbody>
@@ -1161,7 +1161,7 @@
             comments
         ]
     });
-    
+
     main_form.on('afterrender', function(){
         if( opts.node ) {
             jc_add_node( opts.node );
@@ -1175,7 +1175,7 @@
     });
 
     Ext.form.Field.prototype.msgTarget = 'side';
-    
+
     //Ext.each( custom_forms, function(custom_form){ });
 % for my $custom_form ( _array $custom_forms ) {
     <& $custom_form &>

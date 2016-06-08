@@ -2281,7 +2281,7 @@ sub _pointer {
     my ($pointer, $data, %options) = @_;
 
     my $p = $data;
-    my @parts = split /\./, $pointer;
+    my @parts = ref $pointer eq 'ARRAY' ? @$pointer : split /\./, $pointer;
 
     for (my $i = 0; $i < @parts; $i++) {
         my $part = $parts[$i];
@@ -2326,38 +2326,75 @@ with a dotted key notation:
 
 =cut
 sub _json_pointer {
-    my ($data, $key, $val) = @_;
+    my ($data, $pointer, $val) = @_;
 
     my $is_setting = @_ == 3;
 
-    return $data if ! length $key;
+    return $data if ! length $pointer;
 
-    if( substr($key,0,1) ne '/' || ( my $is_double = substr($key,0,2) eq '//' ) ) {
-        $key = substr($key,1) if $is_double;
-        return $data->{$key} if @_ == 2;
-        return $data->{$key} = $val;
+    if( ref($pointer) ne 'ARRAY' ) {
+        if( substr($pointer,0,1) ne '/' || ( my $is_double = substr($pointer,0,2) eq '//' ) ) {
+
+            $pointer = substr($pointer,1) if $is_double;
+
+            return $data->{$pointer} if @_ == 2;
+            return $data->{$pointer} = $val;
+        }
+
+        $pointer = [ split( /\//, $pointer ) ];
     }
 
     my $rec;
     $rec = sub {
         my ( $obj, $keys, $val, $is_setting ) = @_;
-        return $obj unless @$keys && ref( $obj ) =~ /HASH|ARRAY/;
+
+        # we are done
+        return $obj if !@$keys;
+
+        # we can't continue, more keys to go but no data structure
+        return undef if !$is_setting && ref( $obj ) !~ /HASH|ARRAY/;
+
         my $key  = shift @$keys;
         my $is_arr = is_number($key);
-        my $slot = do{
-            if( $is_setting && !@$keys ) {
-                $is_arr
-                    ? ( $obj->[$key] = $val )
-                    : ( $obj->{$key} = $val );
+
+        $obj //= $is_arr ? [] : {}; # autovivify
+
+        my $slot;
+        if ( $is_setting ) {
+            if( !@$keys ) {
+                if ($is_arr) {
+                    $slot = $obj->[$key] = $val;
+                }
+                else {
+                    $slot = $obj->{$key} = $val;
+                }
             } else {
-                $is_arr
-                    ? $obj->[$key]
-                    : $obj->{$key};
+                if ($is_arr) {
+                    $slot = $obj->[$key] //= [];
+                }
+                else {
+                    $slot = $obj->{$key} //= {};
+                }
             }
-        };
-        return $is_setting ? $rec->( $slot, $keys, $val, $is_setting ) : $rec->( $slot, $keys, $is_setting );
+        }
+        else {
+            if ($is_arr) {
+                $slot = $obj->[$key];
+            }
+            else {
+                $slot = $obj->{$key};
+            }
+        }
+
+        return $is_setting
+            ? $rec->( $slot, $keys, $val, $is_setting )
+            : $rec->( $slot, $keys );
     };
-    $rec->($data, [grep { length } split /\//, $key], $val, $is_setting );
+    $rec->(
+        $data,
+        [ grep { length } @$pointer ],
+        $val, $is_setting
+    );
 }
 
 sub _to_camel_case {

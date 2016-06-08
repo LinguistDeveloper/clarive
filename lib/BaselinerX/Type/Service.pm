@@ -140,7 +140,16 @@ sub run {
         unless $self->quiet;
 
     # instanciate the service
-    my $instance = $module->new( log=>$logger );
+    my $instance;
+    if( my $mid = $args->{mid} && $module->can('does') && $module->does('Baseliner::Role::CI') ) {
+        $instance = ci->new( $args->{mid} );
+        if( $module ne ref($instance) ) {
+            _fail( _loc('Invalid mid=%1 for module=%2. Check your MID.', $mid, $module) );
+        }
+        $instance->log( $logger );
+    } else {
+        $instance = $module->new( log=>$logger );
+    }
 
     # check the service implements role
     _throw qq{Service '$key' doesn't implement Baseliner::Role::Service. Please, put:

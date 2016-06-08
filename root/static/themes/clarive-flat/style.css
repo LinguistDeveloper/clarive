@@ -13,7 +13,11 @@ body a table td tr h1 h2 h3 h4 h5 span li ul {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 .x-tree-node, .x-menu-list-item {
+    font-size: 12px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.x-tree-node-el {
+    line-height: 20px;
 }
 
 .x-toolbar td, .x-toolbar span, .x-toolbar input, .x-toolbar div, .x-toolbar select, .x-toolbar label {
@@ -204,6 +208,11 @@ td a.x-grid3-hd-btn:hover {
     margin:1px 1px 0 1px;
 }
 
+a.x-menu-item {
+    line-height: 18px;
+    color: #333;
+}
+
 li.x-menu-item-active {
     background:#F1F1F1 none repeat scroll 0 0;/*#6694E3 none repeat scroll 0 0;*/
     border: none;
@@ -360,7 +369,7 @@ table.x-btn.x-btn-over.login_button{
 }
 
 table.x-btn.x-btn-over {
-    border: 1.1pt solid #bbb;
+    border: 1px solid #bbb;
     background: #fff;
     margin-left: 0px;
     font-color: #000 !important;
@@ -1035,10 +1044,10 @@ textarea.x-form-textarea.x-form-field {
 }*/
 
 .job_new_main_form {
-   background-color: #eee;
+   background-color: #fff;
 }
 .job_new_main_form_general {
-   background-color: #eee;
+   background-color: #fff;
    padding: 10px 10px 10px 10px;
 }
 
@@ -1047,7 +1056,7 @@ textarea.x-form-textarea.x-form-field {
 }
 
 .job_new_main_form_when_column {
-   background-color: #eee;
+   background-color: #fff;
    padding: 0 25px 0 0;
 }
 
