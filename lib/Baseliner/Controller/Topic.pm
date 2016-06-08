@@ -2036,31 +2036,35 @@ sub report_yaml : Local {
 }
 
 sub report_csv : Local {
-    my ($self, $c ) = @_;
+    my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $json = $p->{data_json};
-    my $data = _decode_json $json;
-    my $params = _decode_json $p->{params};
-    $params->{username} = $c->username;
-    $params->{categories} ='' if ($$params{categories} && !scalar @{$params->{categories}});
-    $params->{limit} = $p->{total_rows};
 
-    my $rows = $self->get_items($params) ;
+    my $json = _decode_json $p->{data_json};
+    my $data = $json->{rows};
+
+    if ( $p->{params} ) {
+        my $params = _decode_json $p->{params};
+        $params->{username}   = $c->username;
+        $params->{categories} = '' if ( $$params{categories} && !scalar @{ $params->{categories} } );
+        $params->{limit}      = $p->{total_rows};
+
+        my $rows = $self->get_items($params);
+        $data = $rows->{data};
+    }
 
     my $exporter = Baseliner::Model::TopicExporter->new;
-    my $body = $exporter->export(
-        'csv', $rows->{data},
+    my $body     = $exporter->export(
+        'csv', $data,
         username   => $c->username,
         title      => $p->{title},
         params     => $p->{params},
-        columns => $data->{columns},
+        columns    => $json->{columns},
         rows       => $p->{rows},
         total_rows => $p->{total_rows},
     );
-
-    $c->stash->{serve_body} = $body;
-    $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
-    $c->stash->{content_type} = 'application/csv'; # To "Open With" dialog box recognizes is csv.
+    $c->stash->{serve_body}     = $body;
+    $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id( $p->{title} ) . '.csv' : 'topics.csv';
+    $c->stash->{content_type}   = 'application/csv';
     $c->forward('/serve_file');
 }
 

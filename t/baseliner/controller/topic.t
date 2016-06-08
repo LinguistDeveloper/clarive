@@ -7,12 +7,14 @@ use Test::Deep;
 use Test::MonkeyMock;
 use Test::MockSleep;
 use Test::TempDir::Tiny;
+use Test::LongString;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils qw(:catalyst mock_time);
 use TestSetup;
 
+use Class::Date;
 use POSIX ":sys_wait_h";
 use Baseliner::Role::CI;
 use Baseliner::Model::Topic;
@@ -21,10 +23,9 @@ use Baseliner::Core::Registry;
 use BaselinerX::Type::Event;
 use BaselinerX::Fieldlets;
 use Baseliner::Queue;
-
 use Baseliner::Model::Topic;
+use Baseliner::Utils qw(_encode_json);
 use Clarive::mdb;
-use Class::Date;
 
 use_ok 'Baseliner::Controller::Topic';
 
@@ -2556,6 +2557,28 @@ subtest 'list_users: returns users by id roles' => sub {
       };
 };
 
+subtest 'report_csv: returns the list of the dashlet in serve_body' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $data = {
+        rows    => [ { name => 'FT #2122' } ],
+        columns => [
+            {   id   => "name",
+                name => "ID"
+            }
+        ]
+    };
+    $data = _encode_json($data);
+
+    my $c = _build_c( req => { params => { data_json => $data } } );
+
+    $controller->report_csv($c);
+
+    is_string $c->stash->{serve_body}, "\xEF\xBB\xBF" . qq{"ID"\n} . qq{"FT #2122"\n} . ( "\n" x 1006 );
+};
+
 done_testing;
 
 sub _create_user_with_drop_rules {
@@ -2701,7 +2724,7 @@ sub _setup {
         'BaselinerX::CI',                     'BaselinerX::Fieldlets',
         'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',            'BaselinerX::LcController',
-        'BaselinerX::Type::Model::ConfigStore',
+        'BaselinerX::Type::Model::ConfigStore', 'Baseliner::Model::TopicExporter'
     );
     TestUtils->cleanup_cis;
 
