@@ -219,6 +219,88 @@ subtest 'remove_file: croaks on non existing field' => sub {
         qr/Error removing file from topic $topic_mid. Error: The related field does not exist for the topic: $topic_mid/;
 };
 
+subtest 'create: creates topic' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New',     type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Progres', type => 'I' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Finish',  type => 'I' );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_release_rule,
+        id_status => [ $status->mid, $status2->mid, $status3->mid ]
+    );
+
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view' } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $config = {
+        category => $id_release_category,
+        status   => $status->mid,
+        username => $user->{username},
+        title    => 'New Topic',
+    };
+
+    my $topic_services = BaselinerX::Service::TopicServices->new();
+
+    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
+
+    my $topic_mid = $topic_services->create( $c, $config );
+
+    ok $topic_mid;
+    my $topic_ci = ci->new($topic_mid);
+
+    is $topic_ci->{title},              'New Topic';
+    is $topic_ci->{id_category_status}, $status->mid;
+    is $topic_ci->{id_category},        $id_release_category;
+};
+
+subtest 'create: creates topic with category and status by name' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New',     type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Progres', type => 'I' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Finish',  type => 'I' );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $id_release_rule,
+        id_status => [ $status->mid, $status2->mid, $status3->mid ]
+    );
+
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view' } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $config = {
+        category => 'Category',
+        status   => 'New',
+        username => $user->{username},
+        title    => 'New Topic',
+    };
+
+    my $topic_services = BaselinerX::Service::TopicServices->new();
+
+    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
+
+    my $topic_mid = $topic_services->create( $c, $config );
+
+    ok $topic_mid;
+    my $topic_ci = ci->new($topic_mid);
+
+    is $topic_ci->{title},              'New Topic';
+    is $topic_ci->{id_category_status}, $status->mid;
+    is $topic_ci->{id_category},        $id_release_category;
+};
+
 subtest 'change_status: changes topic status' => sub {
     _setup();
 
