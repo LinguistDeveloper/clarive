@@ -41,6 +41,8 @@ sub setup {
 
     my $prev_dir = Cwd::getcwd();
 
+    $ENV{CLARIVE_ENV} = 'acmetest';
+
     require Clarive::App;
     $Clarive::app = Clarive::App->new( env => 'acmetest', config => "$root/../data/acmetest.yml", %opts );
     Clarive->config->{root} = Path::Class::dir('root')->absolute;
