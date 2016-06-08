@@ -30,15 +30,24 @@
     var min_chars = 3;
     var rel_cals = [];
 
-    var data_any_time = function() {
+    var data_any_time = function( current_selected_date ) {
         var arr = [];
         var name = _('no calendar window');
-        for( var h=0; h<24; h++ ) {
-           for( var m=0; m<60; m++ ) {
-               arr.push(
-                  [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F' ]
-               );
-           }
+        var today = moment().format(date_format);
+        var currentDate = current_selected_date ? current_selected_date : job_date.getRawValue();
+        var date_selected = moment(currentDate, date_format).format("YYYY-MM-DD")
+
+        var time = moment().format("HH:mm");
+        var start_hour = (today == currentDate) ? time.split(":")[0] : 0;
+        var start_time = (today == currentDate) ? time.split(":")[1] : 0;
+
+        for( var h = start_hour; h<24; h++ ) {
+            var start_minute = ( today == currentDate && h == start_hour ) ? start_time : 0;
+            for( var m = start_minute; m<60; m++ ) {
+                arr.push(
+                   [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F', date_selected ]
+                );
+            }
         }
         return arr;
     };
@@ -424,7 +433,10 @@
     });
 
     var calendar_reload = function( str_date ) {
-        if( check_no_cal.checked ) return;
+        if( check_no_cal.checked ){
+            store_time.loadData( data_any_time(str_date) );
+            return;
+        }
         try {
             var cnt = jc_store.getCount();
 
