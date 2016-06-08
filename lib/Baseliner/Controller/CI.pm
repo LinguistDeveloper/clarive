@@ -803,6 +803,7 @@ sub _ci_create_or_update {
     my $self = shift;
     my %p = @_;
     return $p{mid} if length $p{mid};
+
     my $ns = $p{ns} || delete $p{data}{ns};
     my $class = $p{class};
 
@@ -822,7 +823,7 @@ sub _ci_create_or_update {
         my @same_name_cis = mdb->master_doc->find({ sha=>''.$p{data}->{sha}, name=>$name, collection=>($p{collection} // $class->collection) })->fields({ yaml=>0 })->all;
         if ( scalar @same_name_cis > 1 ) {
             for ( @same_name_cis ) {
-                if ( ci->new( $_->{mid} )->{ci_class} eq $class ) {
+                if ( ref ci->new( $_->{mid} ) eq $class ) {
                     $mid = $_->{mid};
                     last;
                 }
