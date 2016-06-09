@@ -36,7 +36,8 @@ sub get_system_tags {
     my $self = shift;
 
     my @tags;
-    my @bls = grep { $_ ne '*' } map { $_->bl } BaselinerX::CI::bl->search_cis;
+    my @bls = grep { $_ ne '*' } map { $_->{bl}} ci->bl->find({active => '1'})->all;
+
     my @tags_modes = $self->tags_mode ? ( split /,/, $self->tags_mode ) : ();
 
     if ( grep { $_ eq 'project' } @tags_modes ) {
