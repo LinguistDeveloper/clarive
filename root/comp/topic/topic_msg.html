@@ -17,7 +17,7 @@
 </%args>
 <%perl>
     use Baseliner::Utils;
- 
+
     my @form = grep { $_->{fields} } _array( $topic_meta );
     my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
     my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
@@ -27,14 +27,14 @@
     my $tabactive = $has_comments ? 'discussion' : 
         $permissionDashboard && length($dashboard) ? 'dashboard' : 
         @more ? 'more' :
-        $permissionActivity ? 'activity' : 
-        $permissionJobs ? 'jobs' : 
+        $permissionActivity ? 'activity' :
+        $permissionJobs ? 'jobs' :
         'none';
 
 </%perl>
 <style>
 .badge-rel {
-    padding: 15px;    
+    padding: 15px;
     width: 400px;
     background: black;
     margin: 50px auto;
@@ -169,10 +169,10 @@ if (imagen.width()>600) { captura.show(); }
       </div>
       <div style="clear:left;" ></div>
 %   }
-%}                                 
+%}
             </td>
         </tr>
-% } 
+% }
 
 
 % if( @details ) {
@@ -183,7 +183,7 @@ if (imagen.width()>600) { captura.show(); }
 %   if ($field->{html}){
         <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %   }
-%}                                 
+%}
             </td>
         </tr>
         <script>
@@ -210,16 +210,16 @@ if (imagen.width()>600) { captura.show(); }
         <li <% $tabactive eq 'jobs' and 'class="active"' %> <%  $permissionJobs? '' : ' style="display: none" ' %>>
             <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
-% if( length $dashboard ) {    
+% if( length $dashboard ) {
         <li <% $tabactive eq 'dashboard' and 'class="active"' %> <%  $permissionDashboard? '' : ' style="display: none" ' %>>
             <a href="#dashboard<% $ii %>" id="tab-dashboard<% $ii %>" data-toggle="tab"><% _loc('Dashboard') %></a>
         </li>
-% } 
-% if( @more ) {    
+% }
+% if( @more ) {
         <li <% $tabactive eq 'more' and 'class="active"' %>>
             <a href="#more<% $ii %>" id="tab-more<% $ii %>" data-toggle="tab"><% _loc('More info') %></a>
         </li>
-% } 
+% }
 <!--         <li <% $tabactive eq 'timeline' and 'class="active"' %>>
             <a href="#timeline<% $ii %>" id="tab-timeline<% $ii %>" data-toggle="tab"><% _loc('Timeline') %></a>
         </li>
@@ -253,11 +253,11 @@ if (imagen.width()>600) { captura.show(); }
     <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %}
-% }                                 
-                            
+% }
+
                         </td>
                     </tr>
-% } 
+% }
 
                 </div>
             </div> <!-- more tab -->
@@ -270,32 +270,32 @@ if (imagen.width()>600) { captura.show(); }
                 (function(){   // protect scope
                     var build_topic_tabs = function(topic_mid, ii, target_id){
                         if( target_id == "tab-timeline"+ii && topic_mid != '' ) {
-                            Baseliner.timeline({ 
+                            Baseliner.timeline({
                                 mid: topic_mid,
                                 render_to: "topic-timeline"+ii,
                                 parent_id: ii
                             });
                         } else if( target_id == "tab-discussion"+ii && topic_mid != '' ) {
-                            Baseliner.comments_for_topic({ 
+                            Baseliner.comments_for_topic({
                                 mid: topic_mid,
                                 render_to: "topic-discussion"+ii,
                                 parent_id: ii
                             });
                         } else if( target_id == "tab-activity"+ii && topic_mid != '' ) {
-                            Baseliner.activity_for_topic({ 
+                            Baseliner.activity_for_topic({
                                 mid: topic_mid,
                                 render_to: "topic-activity"+ii,
                                 parent_id: ii
                             });
                         } else if( target_id == "tab-jobs"+ii && topic_mid != '' ) {
-                            Baseliner.jobs_for_topic({ 
+                            Baseliner.jobs_for_topic({
                                 mid: topic_mid,
                                 render_to: "topic-jobs"+ii,
                                 parent_id: ii,
                                 link: <% $permissionJobsLink %>
                             });
                         } else if( target_id == "tab-dashboard"+ii && topic_mid != '' ) {
-                            var dashboard_rule = '<% $dashboard %>'; 
+                            var dashboard_rule = '<% $dashboard %>';
                             if( dashboard_rule.length > 0 ) {
                                 var dashboard_id = "topic-dashboard"+ii;
                                 var jq_dash = $('#'+dashboard_id);
@@ -304,7 +304,7 @@ if (imagen.width()>600) { captura.show(); }
                                 if( !jq_dash.attr('setup') ) {
                                     jq_dash.show();
                                     jq_dash.attr('setup', true);
-                                    var dashboard = new Cla.Dashboard({ title: undefined, 
+                                    var dashboard = new Cla.Dashboard({ title: undefined,
                                             bodyStyle:'border:0', dashboard_id: dashboard_rule, topic_mid: topic_mid });
                                     dashboard.on('afterrender',function(){
                                         jq_dash.html('');
@@ -315,11 +315,11 @@ if (imagen.width()>600) { captura.show(); }
                         }// if tab
 
                         // sync dashboard div with tab div
-                        if( /dashboard/.test(target_id) ) 
+                        if( /dashboard/.test(target_id) )
                             $( '#off-topic-dashboard'+ii ).show();
                         else
                             $( '#off-topic-dashboard'+ii ).hide();
-                        
+
                     };
                     //$("#timeline<% $ii %> a").click(function(){});
                     var curr_tab = "<% $tabactive %>";
