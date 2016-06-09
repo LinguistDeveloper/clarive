@@ -898,7 +898,20 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 icon: obj_deploy_items_menu.menu[i].icon,
                 topic: topic,
                 handler: function(obj){
-                    Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: obj.topic } );
+                    Baseliner.ajaxEval( '/topic/json', { topic_mid: obj.topic.topic_mid}, function(rec) {
+                        var db_status = rec.topic_data.id_category_status;
+                        var form_status = obj.topic.state_id;
+                        if (db_status != form_status){
+                            Ext.Msg.confirm( _('Confirmation'), _('Topic changed status before. Do you  want to refresh the topic?'),
+                                function(btn){
+                                    if(btn == 'yes') {
+                                        Baseliner.refreshCurrentTab();
+                                    }
+                                });
+                        } else {
+                            Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: obj.topic } );
+                        }
+                    });
                 }
             });
         }

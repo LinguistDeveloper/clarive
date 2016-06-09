@@ -8875,3 +8875,9 @@ msgstr "Pasos"
 
 msgid "step"
 msgstr "paso"
+
+msgid "This job cannot be created for that changeset probably because its status has changed."
+msgstr "Este pase no se puede crear para ese cambio probablemente porque ha cambiado su estado."
+
+msgid "That job cannot be created for that changeset probably because its status has changed. Please, reload the node."
+msgstr "Este pase no se puede crear para ese cambio probablemente porque ha cambiado su estado. Por favor, refresca el nodo."

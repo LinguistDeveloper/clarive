@@ -139,22 +139,30 @@
     });
 
     store_transitions.on('load', function(){
-        // only set default value on combo if coming from lifecycle
-        if( set_transition ) {
-            combo_transitions.setValue( set_transition == 'none' ? '': set_transition );
-            var record = combo_transitions.findRecord('id', set_transition);
-            var index = combo_transitions.store.indexOf(record);
-            var data = combo_transitions.store.data.items[index].data;
-            hidden_job_type.setValue(data.job_type);
-            hidden_baseline.setValue(data.job_bl);
-            hidden_baseline_to.setValue(data.bl_to);
-            hidden_state_to.setValue(data.status_to);
-            //jc_store.reload();
-            calendar_reload();
-        } else if( store_transitions.getCount() == 1 ) {
-            // maybe it's only one transition anyway, select it. If 2, better not to do it, leads to possible error
-            var row = store_transitions.getAt(0);
-            combo_transitions.setValue( row.data.id  );
+
+        if(store_transitions.getCount() == 0){
+            Ext.Msg.alert(_('Error'), _('This job cannot be created for that changeset probably because its status has changed.'));
+            combo_transitions.disable();
+            button_submit.disable();
+            check_no_cal.disable();
+        }else{
+            // only set default value on combo if coming from lifecycle
+            if( set_transition ) {
+                combo_transitions.setValue( set_transition == 'none' ? '': set_transition );
+                var record = combo_transitions.findRecord('id', set_transition);
+                var index = combo_transitions.store.indexOf(record);
+                var data = combo_transitions.store.data.items[index].data;
+                hidden_job_type.setValue(data.job_type);
+                hidden_baseline.setValue(data.job_bl);
+                hidden_baseline_to.setValue(data.bl_to);
+                hidden_state_to.setValue(data.status_to);
+                //jc_store.reload();
+                calendar_reload();
+            } else if( store_transitions.getCount() == 1 ) {
+                // maybe it's only one transition anyway, select it. If 2, better not to do it, leads to possible error
+                var row = store_transitions.getAt(0);
+                combo_transitions.setValue( row.data.id  );
+            }
         }
     });
 
