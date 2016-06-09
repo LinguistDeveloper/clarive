@@ -25,8 +25,8 @@ params:
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var columns = meta.columns;
     if( !columns ) {
-        var headers = Ext.isString(meta.headers) ? [ meta.headers.split(';') ] : [ _('Milestone'), _('Planned End Date'), _('End Date') ];
-        columns = String.format('{0}[slotname],textfield,250;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
+        var headers = Ext.isString(meta.headers) ? [ meta.headers.split(';') ] : [ _('Milestone'), _('Start Date'), _('Planned Start Date'), _('End Date'), _('Planned End Date') ];
+        columns = String.format('{0}[slotname],textfield,250;{1}[start_date],datefield,80;{2}[plan_start_date],datefield,80;{3}[end_date],datefield,80;{4}[plan_end_date],datefield,80', headers[0], headers[1], headers[2], headers[3], headers[4]);
     } else {
         var arr_columns = columns.split(';');
         var found = false;
