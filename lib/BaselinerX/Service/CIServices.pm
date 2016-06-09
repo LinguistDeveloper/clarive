@@ -6,11 +6,18 @@ use Try::Tiny;
 with 'Baseliner::Role::Service';
 
 register 'service.ci.invoke' => {
-    name => 'Invoke CI methods',
+    name => _locl('Invoke CI methods'),
     form => '/forms/ci_invoke.js',
     icon => '/static/images/icons/class.svg',
     job_service  => 1,
     handler => \&ci_invoke,
+};
+
+register 'service.ci.create' => {
+    name => _locl('Create CI'),
+    form => '/forms/ci_create.js',
+    icon => '/static/images/icons/class.svg',
+    handler => \&ci_create,
 };
 
 sub ci_invoke {
@@ -44,6 +51,21 @@ sub ci_invoke {
     # Function::Parameters::info( $cl.'::'.'write_to_logfile' );
 }
 
+sub ci_create {
+    my ( $self, $c, $config ) = @_;
+
+    my ($class_name) = _array($config->{classname});
+    my $data = $config->{attributes};
+
+    my $ci_class =  Util->to_ci_class( $class_name );
+
+    my $ci = $ci_class->new($data);
+
+    $ci->save;
+
+    return $ci;
+
+}
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
