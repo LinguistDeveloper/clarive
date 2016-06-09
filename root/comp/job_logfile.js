@@ -1,6 +1,6 @@
 (function(params) {
         var logfile = new Ext.form.TextArea({
-            style: 'font-family: Consolas, monospace',
+            cls:'job_logfile_textarea',
             value: ''
         });
         var load_logfile = function() {
@@ -22,6 +22,7 @@
         };
         var panel = new Ext.Panel({
             layout: 'fit',
+            bodyCssClass:'job_logfile_panel',
             tbar: [
                 { xtype: 'button', icon: '/static/images/icons/html.gif', cls: 'x-btn-icon', handler: function(){ Baseliner.open_pre_page( panel.title, logfile.getValue() ) } },
                 { xtype: 'button', text: _('Reload'), handler: load_logfile, icon:'/static/images/icons/refresh.svg', cls:'x-btn-text-icon' }

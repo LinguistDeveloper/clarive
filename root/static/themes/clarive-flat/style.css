@@ -1720,3 +1720,14 @@ input.combo_box_fieldlet {
 .x-tab-panel-body .events_grid.ux-maximgb-tg-panel {
     max-width: 100% !important;
 }
+
+.job_logfile_panel {
+    overflow: hidden !important;
+}
+
+textarea.x-form-field.job_logfile_textarea {
+    max-width: -moz-available !important;
+    font-family: Consolas, monospace;
+    padding: 0 1px !important;
+}
+
