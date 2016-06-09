@@ -19,13 +19,19 @@
     use Baseliner::Utils;
 
     my @form = grep { $_->{fields} } _array( $topic_meta );
-    my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
-    my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
-    my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'between' } _array( $topic_meta );
-    my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'body' } _array( $topic_meta ) ;
-    my @more = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'more' } _array( $topic_meta ) ;
-    my $tabactive = $has_comments ? 'discussion' : 
-        $permissionDashboard && length($dashboard) ? 'dashboard' : 
+
+    my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'head') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'head') } _array( $topic_meta );
+
+    my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'details') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'details')} _array( $topic_meta );
+
+    my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'between') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'between') } _array( $topic_meta );
+
+    my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'body') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'body') } _array( $topic_meta ) ;
+
+    my @more = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'more') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'more') } _array( $topic_meta ) ;
+
+    my $tabactive = $has_comments ? 'discussion' :
+        $permissionDashboard && length($dashboard) ? 'dashboard' :
         @more ? 'more' :
         $permissionActivity ? 'activity' :
         $permissionJobs ? 'jobs' :
@@ -135,7 +141,7 @@ if (imagen.width()>600) { captura.show(); }
         </td>
 
 <!-- ******** right box ********** -->
-        <td width="40%" style="padding-left: 15px;">
+        <td class="right-box-view-topic">
             <table style="width: 100%" class="table table-bordered table-condensed">
                 <tbody>
 %foreach my $field ( @body ) {

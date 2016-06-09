@@ -12,6 +12,7 @@ register 'fieldlet.include_into' => {
     form        => '/fields/system/config/include_into.js',
     origin      => 'default',
     editable    => 0,
+    section_default => 'details',
     section_allowed => ['details'],
 };
 
@@ -24,6 +25,7 @@ register 'fieldlet.attach_file' => {
     get_method  => 'get_files',
     type        => 'upload_files',
     relation    => 'system',
+    section_default => 'details',
     section_allowed => ['details','between']
 };
 
@@ -34,6 +36,7 @@ register 'fieldlet.progressbar' => {
     form        => '/fields/templates/config/progress_bar.js',
     icon        => '/static/images/icons/progressbar.png',
     meta_type   => 'number',
+    section_default => 'details',
     section_allowed => ['details','between']
 };
 
@@ -44,6 +47,7 @@ register 'fieldlet.calculated_number' => {
     form        => '/fields/templates/config/calculated_numberfield.js',
     icon        => '/static/images/icons/number.png',
     meta_type   => 'number',
+    section_default => 'body',
     section_allowed => ['body']
 };
 
@@ -55,6 +59,7 @@ register 'fieldlet.datetime' => {
     icon        => '/static/images/icons/calendar.svg',
     meta_type   => 'date',
     type        => 'datefield',
+    section_default => 'body',
     section_allowed => ['body']
 };
 
@@ -65,6 +70,7 @@ register 'fieldlet.time' => {
     form        => '/fields/templates/config/timefield.js',
     icon        => '/static/images/icons/time.png',
     type        => 'timefield',
+    section_default => 'body',
     section_allowed => ['body']
 };
 
@@ -74,7 +80,8 @@ register 'fieldlet.ci_list' => {
     js          => '/fields/system/js/list_ci.js',
     form        => '/fields/templates/config/ci_list.js',
     icon        => '/static/images/icons/grid.png',
-    section_allowed => ['more','head']
+    section_default => 'head',
+    section_allowed => ['head','more']
 };
 
 register 'fieldlet.ci_grid' => {
@@ -83,7 +90,8 @@ register 'fieldlet.ci_grid' => {
     js          => '/fields/templates/js/ci_grid.js',
     form        => '/fields/templates/config/ci_grid.js',
     icon        => '/static/images/icons/grid.png',
-    section_allowed => ['more','head']
+    section_default => 'head',
+    section_allowed => ['head','more']
 };
 
 register 'fieldlet.combo' => {
@@ -92,6 +100,7 @@ register 'fieldlet.combo' => {
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
     icon        => '/static/images/icons/combo_box.svg',
+    section_default => 'body',
     section_allowed => ['body','head']
 };
 
@@ -101,8 +110,10 @@ register 'fieldlet.dbi_query' => {
     js          => '/fields/templates/js/dbi.js',
     form        => '/fields/templates/config/dbi.js',
     icon        => '/static/images/icons/sql.png',
+    type        => 'combo',
     show_in_palette => 0,
-    type        => 'combo'
+    section_default => 'head',
+    section_allowed => ['head'],
 };
 
 register 'fieldlet.download_all_files' => {
@@ -114,6 +125,7 @@ register 'fieldlet.download_all_files' => {
     relation    => 'system',
     categories  => 'all',
     files_field => 'all',
+    section_default => 'details',
     section_allowed => ['details']
 };
 
@@ -124,6 +136,7 @@ register 'fieldlet.grid_editor' => {
     form        => '/fields/templates/config/grid_editor.js',
     icon        => '/static/images/icons/grid.png',
     type        => 'generic',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -138,6 +151,7 @@ register 'fieldlet.milestones' => {
     set_method  => 'set_cal',
     type        => 'generic',
     meta_type   => 'calendar',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -159,6 +173,7 @@ register 'fieldlet.env_planner' => {
                 _loc('Environment'), _loc('Planned Start'), _loc('Planned End') )
         }
     },
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -173,6 +188,7 @@ register 'fieldlet.scheduler' => {
     set_method  => 'set_cal',
     type        => 'generic',
     meta_type   => 'calendar',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -184,6 +200,7 @@ register 'fieldlet.html_editor' => {
     icon        => '/static/images/icons/html.png',
     type        => 'html/editor',
     meta_type   => 'content',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -195,6 +212,7 @@ register 'fieldlet.pagedown' => {
     icon        => '/static/images/icons/html.png',
     type        => 'generic',
     meta_type   => 'content',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -204,6 +222,7 @@ register 'fieldlet.pills' => {
     js          => '/fields/templates/js/pills.js',
     form        => '/fields/templates/config/pills.js',
     icon        => '/static/images/icons/pills.png',
+    section_default => 'body',
     section_allowed => ['body']
 };
 
@@ -213,6 +232,7 @@ register 'fieldlet.status_chart_pie' => {
     form        => '/fields/templates/config/status_chart_pie.js',
     icon        => '/static/images/icons/chart_pie.png',
     type        => 'generic',
+    section_default => 'details',
     section_allowed => ['details']
 };
 
@@ -225,6 +245,7 @@ register 'fieldlet.status_changes' => {
     type        => 'datefield',
     meta_type   => 'history',
     relation    => 'system',
+    section_default => 'details',
     section_allowed => ['details']
 };
 
@@ -239,6 +260,7 @@ register 'fieldlet.topic_grid' => {
     relation    => 'system',
     set_method  => 'set_topics',
     type        => 'generic',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -250,6 +272,7 @@ register 'fieldlet.checkbox' => {
     icon        => '/static/images/icons/admin_request.svg',
     #icon        => '/static/images/icons/checkbox.png',
     type        => 'checkbox',
+    section_default => 'details',
     section_allowed => ['details','more','between', 'body'],
 };
 
@@ -270,6 +293,7 @@ register 'fieldlet.text' => {
     form        => '/fields/templates/config/textfield.js',
     icon        => '/static/images/icons/field.png',
     type        => 'textfield',
+    section_default => 'head',
     section_allowed => ['head','more','body']
 };
 
@@ -280,6 +304,7 @@ register 'fieldlet.text_plain' => {
     form        => '/fields/templates/config/preformattedtext.js',
     icon        => '/static/images/icons/field.png',
     type        => 'textarea',
+    section_default => 'head',
     section_allowed => ['head','more']
 };
 
@@ -290,6 +315,7 @@ register 'fieldlet.number' => {
     form        => '/fields/templates/config/numberfield.js',
     icon        => '/static/images/icons/number.png',
     meta_type   => 'number',
+    section_default => 'body',
     section_allowed => ['body']
 };
 
@@ -327,7 +353,8 @@ register 'fieldlet.system.moniker' => {
     origin      => 'system',
     type        => 'textfield',
     bd_field    => 'moniker',
-    id_field    => 'moniker'
+    id_field    => 'moniker',
+    section_default => 'details',
 };
 
 register 'fieldlet.system.title' => {
@@ -362,6 +389,7 @@ register 'fieldlet.system.description' => {
     id_field    => 'description',
     bd_field    => 'description',
     origin      => 'system',
+    section_default => 'head',
     section_allowed => ['head','more']
 
 };
@@ -380,6 +408,7 @@ register 'fieldlet.system.revisions' => {
     meta_type   => 'revision',
     relation    => 'system',
     type        => 'listbox',
+    section_default => 'head',
     section_allowed => ['head', 'details']
 };
 
@@ -395,6 +424,7 @@ register 'fieldlet.system.release' => {
     relation    => 'system',
     type        => 'listbox',
     rel_type    => 'topic_topic',
+    section_default => 'body',
     section_allowed => ['body','head','more']
 };
 
@@ -405,6 +435,7 @@ register 'fieldlet.system.release_version' => {
     form        => '/fields/templates/config/textfield.js',
     icon        => '/static/images/icons/field.png',
     type        => 'textfield',
+    section_default => 'head',
     section_allowed => ['head','more','body']
 };
 
@@ -420,6 +451,7 @@ register 'fieldlet.system.projects' => {
     relation    => 'system',
     include_root    => 'true',
     type        => 'listbox',
+    section_default => 'details',
     section_allowed => ['details']
 };
 
@@ -435,6 +467,7 @@ register 'fieldlet.system.users' => {
     meta_type   => 'user',
     relation    => 'system',
     type        => 'listbox',
+    section_default => 'details',
     section_allowed => ['details']
 };
 
@@ -452,6 +485,7 @@ register 'fieldlet.system.topics' => {
     type        => 'listbox',
     show_in_palette => 0,
     rel_type    => 'topic_topic',
+    section_default => 'head',
     section_allowed => ['head','more','details']
 };
 
@@ -468,6 +502,7 @@ register 'fieldlet.system.list_topics' => {
     relation    => 'system',
     type        => 'listbox',
     rel_type    => 'topic_topic',
+    section_default => 'head',
     section_allowed => ['head','more','details']
 };
 
@@ -484,6 +519,7 @@ register 'fieldlet.system.cis' => {
     relation    => 'system',
     type        => 'listbox',
     rel_type    => 'topic_ci',
+    section_default => 'body',
     section_allowed => ['body','details']
 };
 
