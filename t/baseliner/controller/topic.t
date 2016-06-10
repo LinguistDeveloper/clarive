@@ -2579,6 +2579,104 @@ subtest 'report_csv: returns the list of the dashlet in serve_body' => sub {
     is_string $c->stash->{serve_body}, "\xEF\xBB\xBF" . qq{"ID"\n} . qq{"FT #2122"\n} . ( "\n" x 1006 );
 };
 
+subtest 'view: allows users with action to see job monitor to see it' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            },
+            {
+                action => 'action.topics.changeset.jobs',
+            },
+            {
+                action => 'action.job.view_monitor',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    is $stash->{permissionJobsLink}, '1';
+    is $stash->{permissionJobs},  '1';
+};
+
+subtest 'view: does not allow users without action to see job monitor to see it' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.changeset.view',
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    is $stash->{permissionJobsLink}, '0';
+    is $stash->{permissionJobs},  '0';
+};
+
 done_testing;
 
 sub _create_user_with_drop_rules {

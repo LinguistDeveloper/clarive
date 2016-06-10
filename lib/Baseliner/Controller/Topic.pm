@@ -636,7 +636,7 @@ sub view : Local {
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
                 my $has_permission;
-                my $has_permission_link = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.job.monitor' );
+                my $has_permission_link = Baseliner::Model::Permissions->new->user_has_action( username=> $c->username, action=>'action.job.view_monitor' );
                 if (exists ($categories_jobs{ $category->{id} })){
                     $c->stash->{permissionJobs} = 1;
                     $c->stash->{permissionJobsLink} = 1 if $has_permission_link;
@@ -680,7 +680,7 @@ sub view : Local {
             $c->stash->{permissionActivity} = 1 if exists $categories_activity{$id_category};
             $c->stash->{viewTimeline} = $c->stash->{permissionActivity};
             $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
-            my $has_permission_link = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.job.monitor' );
+            my $has_permission_link = Baseliner::Model::Permissions->new->user_has_action( username=> $c->username, action=>'action.job.view_monitor' );
             $c->stash->{permissionJobsLink} = 1 if exists $categories_jobs{$id_category} && $has_permission_link;
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
