@@ -155,6 +155,7 @@
                                                                                    branch:'[%= branch %]', 
                                                                                    rev_num:'[%= rev_num %]',
                                                                                    revid: '[%= changes[i].revid %]',
+                                                                                   first_level: [%= first_level %],
                                                                                    controller:'[%= controller %]'
                                                                                }
                                                                            )">[%= _('Raw') %]
@@ -469,6 +470,7 @@
                        </div>
                    </div>
         */}.tmpl({
+            first_level: params.first_level,
             controller: controller,
             temp_id: temp_id,
             code_section: code_section,
