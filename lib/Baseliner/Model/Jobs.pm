@@ -335,7 +335,11 @@ sub _calculate_progress {
         )->count;
 
         if ($total) {
-            my $percentage = int(($now / $total) * 100);
+            if ( $now > $total ) {
+                $now = $now % $total;
+            }
+
+            my $percentage = int( ( $now / $total ) * 100 );
             $progress = " $percentage% ($now/$total)";
         }
     }
