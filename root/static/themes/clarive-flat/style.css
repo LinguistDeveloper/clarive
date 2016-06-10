@@ -1726,8 +1726,11 @@ input.combo_box_fieldlet {
 }
 
 textarea.x-form-field.job_logfile_textarea {
-    max-width: -moz-available !important;
     font-family: Consolas, monospace;
     padding: 0 1px !important;
 }
 
+textarea.x-form-field.job_logfile_textarea, x:-moz-any-link, x:default {
+    max-width: 99.5% !important;
+    padding: 0 1px !important;
+}
