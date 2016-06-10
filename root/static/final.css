@@ -900,3 +900,14 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
     float: left;
     margin-top: -1px !important;
 }
+
+
+#boot .right-box-view-topic {
+    width:40%;
+    padding-left: 15px;
+}
+
+#boot .right-box-view-topic img {
+    max-width: 16px;
+    max-height: 16px;
+}
