@@ -69,8 +69,15 @@ Cla.use = function(urls, callback, cache){
     }
 };
 
+Cla.moment_to_js_time_hash = {
+    ' H:mm' : ' H:i',
+    ' HH:mm' : ' H:i',
+    ' h:mma' : ' h:i',
+    ' hh:mma' : ' h:i'
+}
+
 Cla.moment_to_js_date_hash = {
-    'DD-MM-YY' : 'd-m-Y',
+    'DD-MM-YY' : 'd-m-y',
     'DD-MM-YYYY' : 'd-m-Y',
     'YY-MM-DD' : 'y-m-d',
     'YYYY-MM-DD' : 'Y-m-d',
@@ -78,12 +85,24 @@ Cla.moment_to_js_date_hash = {
     'MM/DD/YYYY' : 'm/d/Y',
     'DD/MM/YY' : 'd/m/y',
     'DD/MM/YYYY' : 'd/m/Y',
-    'l' : _('js_date_format'), 
-    'L' : _('js_date_format'), 
-    'll' :_('js_date_format'), 
-    'LL' :_('js_date_format'), 
-    'lll' : _('js_date_format'), 
-    'LLL' : _('js_date_format'), 
-    'LLLL' :_('js_date_format'), 
-    'llll' :_('js_date_format') 
+    'l' : _('js_date_format'),
+    'L' : _('js_date_format'),
+    'll' :_('js_date_format'),
+    'LL' :_('js_date_format'),
+    'lll' : _('js_date_format'),
+    'LLL' : _('js_date_format'),
+    'LLLL' :_('js_date_format'),
+    'llll' :_('js_date_format')
+};
+
+
+Cla.js_date_to_moment_hash = {
+    'd-m-y' : 'DD-MM-YY',
+    'd-m-Y' : 'DD-MM-YYYY',
+    'y-m-d' : 'YY-MM-DD',
+    'Y-m-d' : 'YYYY-MM-DD',
+    'm/d/y' : 'MM/DD/YY',
+    'm/d/Y' : 'MM/DD/YYYY',
+    'd/m/y' : 'DD/MM/YY',
+    'd/m/Y' : 'DD/MM/YYYY'
 }

@@ -8863,3 +8863,6 @@ msgstr "No tiene permisos para abrir este calendario"
 
 msgid "FAIL"
 msgstr "FALLO"
+
+msgid "Show Time?"
+msgstr "¿Mostrar hora?"

@@ -25,19 +25,29 @@
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
     var picker_format = Cla.user_js_date_format();
+    var date_format = Cla.js_date_to_moment_hash[picker_format];
     var today = Cla.user_date_timezone().toDate();
     var min_chars = 3;
     var rel_cals = [];
 
-    var data_any_time = function() {
+    var data_any_time = function( current_selected_date ) {
         var arr = [];
         var name = _('no calendar window');
-        for( var h=0; h<24; h++ ) {
-           for( var m=0; m<60; m++ ) {
-               arr.push(
-                  [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F' ]
-               );
-           }
+        var today = moment().format(date_format);
+        var currentDate = current_selected_date ? current_selected_date : job_date.getRawValue();
+        var date_selected = moment(currentDate, date_format).format("YYYY-MM-DD")
+
+        var time = moment().format("HH:mm");
+        var start_hour = (today == currentDate) ? time.split(":")[0] : 0;
+        var start_time = (today == currentDate) ? time.split(":")[1] : 0;
+
+        for( var h = start_hour; h<24; h++ ) {
+            var start_minute = ( today == currentDate && h == start_hour ) ? start_time : 0;
+            for( var m = start_minute; m<60; m++ ) {
+                arr.push(
+                   [ String.leftPad( h,2,'0') + ':' + String.leftPad( m,2,'0'), name, 'F', date_selected ]
+                );
+            }
         }
         return arr;
     };
@@ -371,7 +381,7 @@
         '<tpl for=".">',
         '<div class="search-item">',
         '<span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span>',
-        '<span style="margin-left:8px; color: #333;font-weight:bold">@{[ Cla.user_date(values.env_date) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
+        '<span style="margin-left:8px; color: #333;font-weight:bold">@{[ Cla.user_date_job(values.env_date, Cla.js_date_to_moment_hash[Cla.user_js_date_format()]) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
         '</div>',
         '</tpl>'
     );
@@ -423,7 +433,10 @@
     });
 
     var calendar_reload = function( str_date ) {
-        if( check_no_cal.checked ) return;
+        if( check_no_cal.checked ){
+            store_time.loadData( data_any_time(str_date) );
+            return;
+        }
         try {
             var cnt = jc_store.getCount();
 
@@ -435,9 +448,9 @@
                 var job_date_v = str_date ? str_date : job_date.getRawValue();
                 var bl  = hidden_baseline.getValue();
                 var json_res = job_grid_data({ warn: false });
-
+                var job_date_standard_formatted = moment(job_date_v, date_format).format("YYYY-MM-DD");
                 Baseliner.ajaxEval( '/job/build_job_window',
-                    { bl: bl, job_date: job_date_v, job_contents: json_res, date_format: picker_format  },
+                    { bl: bl, job_date: job_date_standard_formatted, job_contents: json_res, date_format: '%Y-%m-%d' },
                     function(res){
                         if( res.success ) {
                             // debugger;
