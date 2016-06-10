@@ -5124,10 +5124,6 @@ msgstr "Favorito eliminado correctamente"
 msgid "Favorite renamed ok"
 msgstr "Favorito renombrado ok"
 
-#: lib/BaselinerX/LcController.pm root/site/tabfu.js
-msgid "Not found: %1"
-msgstr "No encontrado: %1"
-
 #: lib/BaselinerX/LcController.pm
 msgid "Favorite moved ok"
 msgstr "Favorito movido ok"
@@ -7506,7 +7502,7 @@ msgid "Subject"
 msgstr "Asunto"
 
 #: root/comp/config/config_grid.mas root/comp/configlist/grid.mas
-#: root/comp/daemon_grid.js root/forms/shortcut.js root/site/explorer.js
+#: root/comp/daemon_grid.js root/forms/shortcut.js
 msgid "Config"
 msgstr "Configuración"
 
@@ -14543,6 +14539,10 @@ msgstr "Login no disponible"
 #: root/site/tabfu.js
 msgid "Sending Request..."
 msgstr "Enviando Petición..."
+
+#: root/site/tabfu.js
+msgid "Not found: %1"
+msgstr "No encontrado: %1"
 
 #: root/site/tabfu.js
 msgid "Server not available. Retry?"

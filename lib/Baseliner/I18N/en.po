@@ -5059,10 +5059,6 @@ msgstr ""
 msgid "Favorite renamed ok"
 msgstr ""
 
-#: lib/BaselinerX/LcController.pm root/site/tabfu.js
-msgid "Not found: %1"
-msgstr ""
-
 #: lib/BaselinerX/LcController.pm
 msgid "Favorite moved ok"
 msgstr ""
@@ -7432,7 +7428,7 @@ msgid "Subject"
 msgstr ""
 
 #: root/comp/config/config_grid.mas root/comp/configlist/grid.mas
-#: root/comp/daemon_grid.js root/forms/shortcut.js root/site/explorer.js
+#: root/comp/daemon_grid.js root/forms/shortcut.js
 msgid "Config"
 msgstr ""
 
@@ -14390,6 +14386,10 @@ msgstr ""
 
 #: root/site/tabfu.js
 msgid "Sending Request..."
+msgstr ""
+
+#: root/site/tabfu.js
+msgid "Not found: %1"
 msgstr ""
 
 #: root/site/tabfu.js

@@ -72,7 +72,7 @@ Ext.onReady(function(){
         }
         var tabfav = info.favorite_this(); 
         var opp = function(){
-            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite_new.svg');
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite.svg');
             var fav_data = {
                 title: title_field.getValue(),
                 click: {
@@ -92,8 +92,17 @@ Ext.onReady(function(){
                     menu: Ext.encode({})
                 },
                 function(res) {
-                    Cla.message( _('Favorite'), res.msg );
-                    Cla.explorer.$tree_favorites.refresh();
+                    var newNode = Cla.explorer.$tree_favorites.getLoader().createNode({
+                        text: title_field.getValue(),
+                        icon: icon,
+                        id_parent: null,
+                        leaf: true,
+                        id_favorite: res.id_favorite,
+                        data: fav_data,
+                        menu: {}
+                    });
+                    Cla.explorer.$tree_favorites.root.appendChild(newNode);
+                    Cla.message(_('Favorite'), res.msg);
                     win.destroy();
                 }
             );
