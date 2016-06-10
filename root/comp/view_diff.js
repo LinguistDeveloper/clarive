@@ -6,18 +6,18 @@
     var branch = params.branch;
     var repo_mid = params.repo_mid;
     var file_diff = params.file_diff;
-	if(!file_diff){
-		file_diff = '';
-	}
+    if(!file_diff){
+        file_diff = '';
+    }
     var temp_id;
-	var code_section = {};
+    var code_section = {};
     var panel = new Ext.Panel({ 
         frame: false,
         layout:'fit',
         html:'',
         region: 'center',
         bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'},
-    	border: false
+        border: false
     });
 
     var panel2 = new Ext.Panel({ 
@@ -39,36 +39,36 @@
 
 
     var get_combo_tags = function(){
-		var tags_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'tags', store: tagsStore , width: 150});
-		tags_combo.setValue(_('Parallel?'));
-		tags_combo.setEditable( false );
-		tags_combo.on( 'select', function(param){
-			params_view_diff.tag = param.value;
-			params_view_diff.commit = params_view_diff.sha;
-			params_view_diff.controller = controller;
-			Baseliner.ajaxEval('/comp/view_commits_history.js', params_view_diff, function(comp){
-	        	panel2.add(comp); 
-	            panel2.show();
-	        });
-	 		Baseliner.ajax_json('/'+controller+'/view_diff', params_view_diff, function(res_diff_tag){
-	 			generate_diff(res_diff_tag);
-	 		});
-		});
-		return tags_combo;
+        var tags_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'tags', store: tagsStore , width: 150});
+        tags_combo.setValue(_('Parallel?'));
+        tags_combo.setEditable( false );
+        tags_combo.on( 'select', function(param){
+            params_view_diff.tag = param.value;
+            params_view_diff.commit = params_view_diff.sha;
+            params_view_diff.controller = controller;
+            Baseliner.ajaxEval('/comp/view_commits_history.js', params_view_diff, function(comp){
+                panel2.add(comp); 
+                panel2.show();
+            });
+             Baseliner.ajax_json('/'+controller+'/view_diff', params_view_diff, function(res_diff_tag){
+                 generate_diff(res_diff_tag);
+             });
+        });
+        return tags_combo;
     };
 
     if(controller == 'gittree' && file_diff == ''){
-	    var params_get_tags = { repo_mid: params.repo_mid, repo_dir: params.repo_dir };
-	    var tagsStore = new Baseliner.JsonStore({
-	        autoLoad: true,
-	        remoteSort: true,
-	        totalProperty:"totalCount", 
-	        baseParams: params_get_tags,
-	        id: 'id',
-	        url: '/'+controller+'/get_tags',
-	        fields: [ 'name' ]
-	    });
-    	parent_panel.getTopToolbar().add(get_combo_tags());
+        var params_get_tags = { repo_mid: params.repo_mid, repo_dir: params.repo_dir };
+        var tagsStore = new Baseliner.JsonStore({
+            autoLoad: true,
+            remoteSort: true,
+            totalProperty:"totalCount", 
+            baseParams: params_get_tags,
+            id: 'id',
+            url: '/'+controller+'/get_tags',
+            fields: [ 'name' ]
+        });
+        parent_panel.getTopToolbar().add(get_combo_tags());
     }
 
     var params_view_diff;
@@ -79,396 +79,411 @@
     }
 
     var generate_diff = function(res){
-    	var get_section_ids = function(){
-    		for(var i=0; i < res.changes.length; i++) {
-    			temp_id = Ext.id(); 
-    			code_section[res.changes[i].path] = temp_id;
-    		}
-    	};
+        var get_section_ids = function(){
+            for(var i=0; i < res.changes.length; i++) {
+                temp_id = Ext.id(); 
+                code_section[res.changes[i].path] = temp_id;
+            }
+        };
 
-    	get_section_ids();
-    	var children = [];
-		var goto_link = function(n){
-        	var elem = document.getElementById(n.val); 
-        	elem.scrollIntoView(true);
-        	Baseliner.scroll_top_into_view();
-	    }
-    	for(var key in code_section){
-    	 	var val = code_section[key];
-    	 	children.push({text: key, leaf: true, val: val, handler: goto_link});
-    	}
-    	parent_panel.getTopToolbar().removeAll();
-    	parent_panel.getTopToolbar().add({ text:_('Files'), menu:children });
-    	if(controller == 'gittree' && file_diff == ''){
-    		parent_panel.getTopToolbar().add(get_combo_tags());
-    	}
-    	
-	    parent_panel.doLayout();
-    	panel.doLayout();
+        get_section_ids();
+        var children = [];
+        var goto_link = function(n){
+            var elem = document.getElementById(n.val); 
+            elem.scrollIntoView(true);
+            Baseliner.scroll_top_into_view();
+        }
+        for(var key in code_section){
+             var val = code_section[key];
+             children.push({text: key, leaf: true, val: val, handler: goto_link});
+        }
+        parent_panel.getTopToolbar().removeAll();
+        parent_panel.getTopToolbar().add({ text:_('Files'), menu:children });
+        if(controller == 'gittree' && file_diff == ''){
+            parent_panel.getTopToolbar().add(get_combo_tags());
+        }
+        
+        parent_panel.doLayout();
+        panel.doLayout();
 
-    	var html = function(){/*
-		       <div id="boot" >
-		       		<div>
-			       	   <center>
-			           [% if(tag){ tag = "compared to tag "+tag } %]
-			           <h3>[%= _('Revision') %] [%= rev_num %] [%= tag %]</h3>
-			           <table class="table table-bordered table-condensed" style="width: 60%">
-			           <thead>
-			           <tr><th width="33%">[%= _('Commit Owner') %]</th><th width="33%" style="white-space: nowrap">[%= _('Last Updated') %]</th><th width="33%">[%= _('Comment') %]</th></tr>
-			           </thead>
-			           <tbody>
-			           <tr>
-			           		<td style="white-space: nowrap">
-			           			&nbsp;[%= author %]
-			           		</td>
-			           		<td style="white-space: nowrap">
-			           			[%= date %]
-			           		</td>
-			           		<td>
-			           			[%= comment %]
-			           		</td>
-			           	</tr>
-			           </tbody>
-			           </table>
-			           
-			           [% for(var i=0; i < changes.length; i++) { %]
-					           <table class="table table-bordered table-condensed" style="width: 90%">
-			           	   <thead>
-				               	<tr>
-				               		<th id='[%= code_section[changes[i].path] %]' style="font-family: Courier New, Courier, monospace;" colspan=3>
-				               			[%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
-				               			[% 
-				               			   if(branch == undefined || controller == 'gittree'){
-											   branch = '';
-				               			   }
-				               			   var repo = repo_dir;
-				               			   if(controller != 'svntree'){
-												repo = repo +'/'+branch;
-				               			   }
-				               			%]
-				               			<a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
-				               												'/comp/view_file.js', 
-				               												'[%= branch %]:[[%= rev_num %]] [%= changes[i].path %]',
-				               												{   repo_dir:'[%= repo %]', 
-				               													file:'[%= changes[i].path %]',
-				               													repo_mid:'[%= repo_mid %]', 
-				               													branch:'[%= branch %]', 
-				               													rev_num:'[%= rev_num %]',
-				               													revid: '[%= changes[i].revid %]',
-				               													controller:'[%= controller %]'
-				               												}
-				               											)">[%= _('Raw') %]
-				               			</a>
-				               		</th>
-				               	</tr>
-				           </thead>
-				           <tbody>
-			           [%
-			            escapeHtmlEntities = function (text) {
-				            return text.replace(/[\u00A0-\u2666<>\& \t\s]/g, function(c) {
-				                return '&' + 
-				                (escapeHtmlEntities.entityTable[c.charCodeAt(0)] || '#'+c.charCodeAt(0)) + ';';
-				            });
-				        };
+        var html = function(){/*
+               <div id="boot" >
+                       <div>
+                          <center>
+                       [% if(tag){ tag = "compared to tag "+tag } %]
+                       <h3>[%= _('Revision') %] [%= rev_num %] [%= tag %]</h3>
+                       <table class="table table-bordered table-condensed" style="width: 60%">
+                       <thead>
+                       <tr><th width="33%">[%= _('Commit Owner') %]</th><th width="33%" style="white-space: nowrap">[%= _('Last Updated') %]</th><th width="33%">[%= _('Comment') %]</th></tr>
+                       </thead>
+                       <tbody>
+                       <tr>
+                               <td style="white-space: nowrap">
+                                   &nbsp;[%= author %]
+                               </td>
+                               <td style="white-space: nowrap">
+                                   [%= date %]
+                               </td>
+                               <td>
+                                   [%= comment %]
+                               </td>
+                           </tr>
+                       </tbody>
+                       </table>
+                       
+                       [% for(var i=0; i < changes.length; i++) { %]
+                               <table class="table table-bordered table-condensed" style="width: 90%">
+                              <thead>
+                                   <tr>
+                                       <th id='[%= code_section[changes[i].path] %]' style="font-family: Courier New, Courier, monospace;" colspan=3>
+                                           [%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
+                                           [% 
+                                              if(branch == undefined || controller == 'gittree'){
+                                               branch = '';
+                                              }
+                                              var repo = repo_dir;
+                                              if(controller != 'svntree'){
+                                                repo = repo +'/'+branch;
+                                              }
+                                           %]
+                                           <a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
+                                                                               '/comp/view_file.js', 
+                                                                               '[%= branch %]:[[%= rev_num %]] [%= changes[i].path %]',
+                                                                               {   repo_dir:'[%= repo %]', 
+                                                                                   file:'[%= changes[i].path %]',
+                                                                                   repo_mid:'[%= repo_mid %]', 
+                                                                                   branch:'[%= branch %]', 
+                                                                                   rev_num:'[%= rev_num %]',
+                                                                                   revid: '[%= changes[i].revid %]',
+                                                                                   first_level: [%= first_level %],
+                                                                                   controller:'[%= controller %]'
+                                                                               }
+                                                                           )">[%= _('Raw') %]
+                                           </a>
+                                       </th>
+                                   </tr>
+                           </thead>
+                           <tbody>
+                       [%
+                        escapeHtmlEntities = function (text) {
+                            return text.replace(/[\u00A0-\u2666<>\& \t\s]/g, function(c) {
+                                return '&' + 
+                                (escapeHtmlEntities.entityTable[c.charCodeAt(0)] || '#'+c.charCodeAt(0)) + ';';
+                            });
+                        };
 
-				        escapeHtmlEntities.entityTable = {
-				            32 : 'nbsp',
-				            34 : 'quot', 
-				            38 : 'amp', 
-				            39 : 'apos', 
-				            60 : 'lt', 
-				            62 : 'gt', 
-				            160 : 'nbsp', 
-				            161 : 'iexcl', 
-				            162 : 'cent', 
-				            163 : 'pound', 
-				            164 : 'curren', 
-				            165 : 'yen', 
-				            166 : 'brvbar', 
-				            167 : 'sect', 
-				            168 : 'uml', 
-				            169 : 'copy', 
-				            170 : 'ordf', 
-				            171 : 'laquo', 
-				            172 : 'not', 
-				            173 : 'shy', 
-				            174 : 'reg', 
-				            175 : 'macr', 
-				            176 : 'deg', 
-				            177 : 'plusmn', 
-				            178 : 'sup2', 
-				            179 : 'sup3', 
-				            180 : 'acute', 
-				            181 : 'micro', 
-				            182 : 'para', 
-				            183 : 'middot', 
-				            184 : 'cedil', 
-				            185 : 'sup1', 
-				            186 : 'ordm', 
-				            187 : 'raquo', 
-				            188 : 'frac14', 
-				            189 : 'frac12', 
-				            190 : 'frac34', 
-				            191 : 'iquest', 
-				            192 : 'Agrave', 
-				            193 : 'Aacute', 
-				            194 : 'Acirc', 
-				            195 : 'Atilde', 
-				            196 : 'Auml', 
-				            197 : 'Aring', 
-				            198 : 'AElig', 
-				            199 : 'Ccedil', 
-				            200 : 'Egrave', 
-				            201 : 'Eacute', 
-				            202 : 'Ecirc', 
-				            203 : 'Euml', 
-				            204 : 'Igrave', 
-				            205 : 'Iacute', 
-				            206 : 'Icirc', 
-				            207 : 'Iuml', 
-				            208 : 'ETH', 
-				            209 : 'Ntilde', 
-				            210 : 'Ograve', 
-				            211 : 'Oacute', 
-				            212 : 'Ocirc', 
-				            213 : 'Otilde', 
-				            214 : 'Ouml', 
-				            215 : 'times', 
-				            216 : 'Oslash', 
-				            217 : 'Ugrave', 
-				            218 : 'Uacute', 
-				            219 : 'Ucirc', 
-				            220 : 'Uuml', 
-				            221 : 'Yacute', 
-				            222 : 'THORN', 
-				            223 : 'szlig', 
-				            224 : 'agrave', 
-				            225 : 'aacute', 
-				            226 : 'acirc', 
-				            227 : 'atilde', 
-				            228 : 'auml', 
-				            229 : 'aring', 
-				            230 : 'aelig', 
-				            231 : 'ccedil', 
-				            232 : 'egrave', 
-				            233 : 'eacute', 
-				            234 : 'ecirc', 
-				            235 : 'euml', 
-				            236 : 'igrave', 
-				            237 : 'iacute', 
-				            238 : 'icirc', 
-				            239 : 'iuml', 
-				            240 : 'eth', 
-				            241 : 'ntilde', 
-				            242 : 'ograve', 
-				            243 : 'oacute', 
-				            244 : 'ocirc', 
-				            245 : 'otilde', 
-				            246 : 'ouml', 
-				            247 : 'divide', 
-				            248 : 'oslash', 
-				            249 : 'ugrave', 
-				            250 : 'uacute', 
-				            251 : 'ucirc', 
-				            252 : 'uuml', 
-				            253 : 'yacute', 
-				            254 : 'thorn', 
-				            255 : 'yuml', 
-				            402 : 'fnof', 
-				            913 : 'Alpha', 
-				            914 : 'Beta', 
-				            915 : 'Gamma', 
-				            916 : 'Delta', 
-				            917 : 'Epsilon', 
-				            918 : 'Zeta', 
-				            919 : 'Eta', 
-				            920 : 'Theta', 
-				            921 : 'Iota', 
-				            922 : 'Kappa', 
-				            923 : 'Lambda', 
-				            924 : 'Mu', 
-				            925 : 'Nu', 
-				            926 : 'Xi', 
-				            927 : 'Omicron', 
-				            928 : 'Pi', 
-				            929 : 'Rho', 
-				            931 : 'Sigma', 
-				            932 : 'Tau', 
-				            933 : 'Upsilon', 
-				            934 : 'Phi', 
-				            935 : 'Chi', 
-				            936 : 'Psi', 
-				            937 : 'Omega', 
-				            945 : 'alpha', 
-				            946 : 'beta', 
-				            947 : 'gamma', 
-				            948 : 'delta', 
-				            949 : 'epsilon', 
-				            950 : 'zeta', 
-				            951 : 'eta', 
-				            952 : 'theta', 
-				            953 : 'iota', 
-				            954 : 'kappa', 
-				            955 : 'lambda', 
-				            956 : 'mu', 
-				            957 : 'nu', 
-				            958 : 'xi', 
-				            959 : 'omicron', 
-				            960 : 'pi', 
-				            961 : 'rho', 
-				            962 : 'sigmaf', 
-				            963 : 'sigma', 
-				            964 : 'tau', 
-				            965 : 'upsilon', 
-				            966 : 'phi', 
-				            967 : 'chi', 
-				            968 : 'psi', 
-				            969 : 'omega', 
-				            977 : 'thetasym', 
-				            978 : 'upsih', 
-				            982 : 'piv', 
-				            8226 : 'bull', 
-				            8230 : 'hellip', 
-				            8242 : 'prime', 
-				            8243 : 'Prime', 
-				            8254 : 'oline', 
-				            8260 : 'frasl', 
-				            8472 : 'weierp', 
-				            8465 : 'image', 
-				            8476 : 'real', 
-				            8482 : 'trade', 
-				            8501 : 'alefsym', 
-				            8592 : 'larr', 
-				            8593 : 'uarr', 
-				            8594 : 'rarr', 
-				            8595 : 'darr', 
-				            8596 : 'harr', 
-				            8629 : 'crarr', 
-				            8656 : 'lArr', 
-				            8657 : 'uArr', 
-				            8658 : 'rArr', 
-				            8659 : 'dArr', 
-				            8660 : 'hArr', 
-				            8704 : 'forall', 
-				            8706 : 'part', 
-				            8707 : 'exist', 
-				            8709 : 'empty', 
-				            8711 : 'nabla', 
-				            8712 : 'isin', 
-				            8713 : 'notin', 
-				            8715 : 'ni', 
-				            8719 : 'prod', 
-				            8721 : 'sum', 
-				            8722 : 'minus', 
-				            8727 : 'lowast', 
-				            8730 : 'radic', 
-				            8733 : 'prop', 
-				            8734 : 'infin', 
-				            8736 : 'ang', 
-				            8743 : 'and', 
-				            8744 : 'or', 
-				            8745 : 'cap', 
-				            8746 : 'cup', 
-				            8747 : 'int', 
-				            8756 : 'there4', 
-				            8764 : 'sim', 
-				            8773 : 'cong', 
-				            8776 : 'asymp', 
-				            8800 : 'ne', 
-				            8801 : 'equiv', 
-				            8804 : 'le', 
-				            8805 : 'ge', 
-				            8834 : 'sub', 
-				            8835 : 'sup', 
-				            8836 : 'nsub', 
-				            8838 : 'sube', 
-				            8839 : 'supe', 
-				            8853 : 'oplus', 
-				            8855 : 'otimes', 
-				            8869 : 'perp', 
-				            8901 : 'sdot', 
-				            8968 : 'lceil', 
-				            8969 : 'rceil', 
-				            8970 : 'lfloor', 
-				            8971 : 'rfloor', 
-				            9001 : 'lang', 
-				            9002 : 'rang', 
-				            9674 : 'loz', 
-				            9824 : 'spades', 
-				            9827 : 'clubs', 
-				            9829 : 'hearts', 
-				            9830 : 'diams', 
-				            338 : 'OElig', 
-				            339 : 'oelig', 
-				            352 : 'Scaron', 
-				            353 : 'scaron', 
-				            376 : 'Yuml', 
-				            710 : 'circ', 
-				            732 : 'tilde', 
-				            8194 : 'ensp', 
-				            8195 : 'emsp', 
-				            8201 : 'thinsp', 
-				            8204 : 'zwnj', 
-				            8205 : 'zwj', 
-				            8206 : 'lrm', 
-				            8207 : 'rlm', 
-				            8211 : 'ndash', 
-				            8212 : 'mdash', 
-				            8216 : 'lsquo', 
-				            8217 : 'rsquo', 
-				            8218 : 'sbquo', 
-				            8220 : 'ldquo', 
-				            8221 : 'rdquo', 
-				            8222 : 'bdquo', 
-				            8224 : 'dagger', 
-				            8225 : 'Dagger', 
-				            8240 : 'permil', 
-				            8249 : 'lsaquo', 
-				            8250 : 'rsaquo', 
-				            8364 : 'euro'
-				        };
-			            var res = '';
-			            var regexp_add = new RegExp("^\\+[\s\S]*");
-						var regexp_del = new RegExp("^\\-[\s\S]*");
-			            changes[i].code_chunks.forEach(function(element, index, array){
-							if(element.stats){
-								var stats = element.stats;
-								var beginig_orig = stats.split(' ')[0].split(',');
-								var beginig_last = stats.split(' ')[1].split(',');
-								var origin_start = Math.abs(beginig_orig[0]);
-								var last_start = Math.abs(beginig_last[0]);
-							}
-							res = res+"<tr><td colspan=3>"+stats+"</td></tr>";
-							if(!element.code){
-								element.code = '';
-							}
-							var lines = element.code.split("\n");
-							var regexp_final = new RegExp("");
-							if(element.code.search(regexp_del)>=0)
-								lines.pop();
-							lines.forEach(function(element, index, array){
-							    if(element.search(regexp_add)>=0){
-							        res = res+"<tr><td width=\"1\" class=\"line-number\">"+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
-							    	last_start++;
-							    }else if(element.search(regexp_del)>=0){
-							        res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+"</td><td class=\"deleted-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
-							    	origin_start++;
-							    }else if(element.search("\\ No newline at end of file")>=0){
-							    } else {
-							        res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"permanent-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
-							    	origin_start++;
-							    	last_start++;
-							    }
-							});
-						});
-						%]
-			           [%= res.replace(/\&#9;/gm, '&nbsp;&nbsp;&nbsp;&nbsp;') %]
-			           </tbody>
-			           </table>
-			           [% } %]
-		       		</div>
-		       	</div>
-		*/}.tmpl({ controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes, tag: params_view_diff.tag });
+                        escapeHtmlEntities.entityTable = {
+                            32 : 'nbsp',
+                            34 : 'quot', 
+                            38 : 'amp', 
+                            39 : 'apos', 
+                            60 : 'lt', 
+                            62 : 'gt', 
+                            160 : 'nbsp', 
+                            161 : 'iexcl', 
+                            162 : 'cent', 
+                            163 : 'pound', 
+                            164 : 'curren', 
+                            165 : 'yen', 
+                            166 : 'brvbar', 
+                            167 : 'sect', 
+                            168 : 'uml', 
+                            169 : 'copy', 
+                            170 : 'ordf', 
+                            171 : 'laquo', 
+                            172 : 'not', 
+                            173 : 'shy', 
+                            174 : 'reg', 
+                            175 : 'macr', 
+                            176 : 'deg', 
+                            177 : 'plusmn', 
+                            178 : 'sup2', 
+                            179 : 'sup3', 
+                            180 : 'acute', 
+                            181 : 'micro', 
+                            182 : 'para', 
+                            183 : 'middot', 
+                            184 : 'cedil', 
+                            185 : 'sup1', 
+                            186 : 'ordm', 
+                            187 : 'raquo', 
+                            188 : 'frac14', 
+                            189 : 'frac12', 
+                            190 : 'frac34', 
+                            191 : 'iquest', 
+                            192 : 'Agrave', 
+                            193 : 'Aacute', 
+                            194 : 'Acirc', 
+                            195 : 'Atilde', 
+                            196 : 'Auml', 
+                            197 : 'Aring', 
+                            198 : 'AElig', 
+                            199 : 'Ccedil', 
+                            200 : 'Egrave', 
+                            201 : 'Eacute', 
+                            202 : 'Ecirc', 
+                            203 : 'Euml', 
+                            204 : 'Igrave', 
+                            205 : 'Iacute', 
+                            206 : 'Icirc', 
+                            207 : 'Iuml', 
+                            208 : 'ETH', 
+                            209 : 'Ntilde', 
+                            210 : 'Ograve', 
+                            211 : 'Oacute', 
+                            212 : 'Ocirc', 
+                            213 : 'Otilde', 
+                            214 : 'Ouml', 
+                            215 : 'times', 
+                            216 : 'Oslash', 
+                            217 : 'Ugrave', 
+                            218 : 'Uacute', 
+                            219 : 'Ucirc', 
+                            220 : 'Uuml', 
+                            221 : 'Yacute', 
+                            222 : 'THORN', 
+                            223 : 'szlig', 
+                            224 : 'agrave', 
+                            225 : 'aacute', 
+                            226 : 'acirc', 
+                            227 : 'atilde', 
+                            228 : 'auml', 
+                            229 : 'aring', 
+                            230 : 'aelig', 
+                            231 : 'ccedil', 
+                            232 : 'egrave', 
+                            233 : 'eacute', 
+                            234 : 'ecirc', 
+                            235 : 'euml', 
+                            236 : 'igrave', 
+                            237 : 'iacute', 
+                            238 : 'icirc', 
+                            239 : 'iuml', 
+                            240 : 'eth', 
+                            241 : 'ntilde', 
+                            242 : 'ograve', 
+                            243 : 'oacute', 
+                            244 : 'ocirc', 
+                            245 : 'otilde', 
+                            246 : 'ouml', 
+                            247 : 'divide', 
+                            248 : 'oslash', 
+                            249 : 'ugrave', 
+                            250 : 'uacute', 
+                            251 : 'ucirc', 
+                            252 : 'uuml', 
+                            253 : 'yacute', 
+                            254 : 'thorn', 
+                            255 : 'yuml', 
+                            402 : 'fnof', 
+                            913 : 'Alpha', 
+                            914 : 'Beta', 
+                            915 : 'Gamma', 
+                            916 : 'Delta', 
+                            917 : 'Epsilon', 
+                            918 : 'Zeta', 
+                            919 : 'Eta', 
+                            920 : 'Theta', 
+                            921 : 'Iota', 
+                            922 : 'Kappa', 
+                            923 : 'Lambda', 
+                            924 : 'Mu', 
+                            925 : 'Nu', 
+                            926 : 'Xi', 
+                            927 : 'Omicron', 
+                            928 : 'Pi', 
+                            929 : 'Rho', 
+                            931 : 'Sigma', 
+                            932 : 'Tau', 
+                            933 : 'Upsilon', 
+                            934 : 'Phi', 
+                            935 : 'Chi', 
+                            936 : 'Psi', 
+                            937 : 'Omega', 
+                            945 : 'alpha', 
+                            946 : 'beta', 
+                            947 : 'gamma', 
+                            948 : 'delta', 
+                            949 : 'epsilon', 
+                            950 : 'zeta', 
+                            951 : 'eta', 
+                            952 : 'theta', 
+                            953 : 'iota', 
+                            954 : 'kappa', 
+                            955 : 'lambda', 
+                            956 : 'mu', 
+                            957 : 'nu', 
+                            958 : 'xi', 
+                            959 : 'omicron', 
+                            960 : 'pi', 
+                            961 : 'rho', 
+                            962 : 'sigmaf', 
+                            963 : 'sigma', 
+                            964 : 'tau', 
+                            965 : 'upsilon', 
+                            966 : 'phi', 
+                            967 : 'chi', 
+                            968 : 'psi', 
+                            969 : 'omega', 
+                            977 : 'thetasym', 
+                            978 : 'upsih', 
+                            982 : 'piv', 
+                            8226 : 'bull', 
+                            8230 : 'hellip', 
+                            8242 : 'prime', 
+                            8243 : 'Prime', 
+                            8254 : 'oline', 
+                            8260 : 'frasl', 
+                            8472 : 'weierp', 
+                            8465 : 'image', 
+                            8476 : 'real', 
+                            8482 : 'trade', 
+                            8501 : 'alefsym', 
+                            8592 : 'larr', 
+                            8593 : 'uarr', 
+                            8594 : 'rarr', 
+                            8595 : 'darr', 
+                            8596 : 'harr', 
+                            8629 : 'crarr', 
+                            8656 : 'lArr', 
+                            8657 : 'uArr', 
+                            8658 : 'rArr', 
+                            8659 : 'dArr', 
+                            8660 : 'hArr', 
+                            8704 : 'forall', 
+                            8706 : 'part', 
+                            8707 : 'exist', 
+                            8709 : 'empty', 
+                            8711 : 'nabla', 
+                            8712 : 'isin', 
+                            8713 : 'notin', 
+                            8715 : 'ni', 
+                            8719 : 'prod', 
+                            8721 : 'sum', 
+                            8722 : 'minus', 
+                            8727 : 'lowast', 
+                            8730 : 'radic', 
+                            8733 : 'prop', 
+                            8734 : 'infin', 
+                            8736 : 'ang', 
+                            8743 : 'and', 
+                            8744 : 'or', 
+                            8745 : 'cap', 
+                            8746 : 'cup', 
+                            8747 : 'int', 
+                            8756 : 'there4', 
+                            8764 : 'sim', 
+                            8773 : 'cong', 
+                            8776 : 'asymp', 
+                            8800 : 'ne', 
+                            8801 : 'equiv', 
+                            8804 : 'le', 
+                            8805 : 'ge', 
+                            8834 : 'sub', 
+                            8835 : 'sup', 
+                            8836 : 'nsub', 
+                            8838 : 'sube', 
+                            8839 : 'supe', 
+                            8853 : 'oplus', 
+                            8855 : 'otimes', 
+                            8869 : 'perp', 
+                            8901 : 'sdot', 
+                            8968 : 'lceil', 
+                            8969 : 'rceil', 
+                            8970 : 'lfloor', 
+                            8971 : 'rfloor', 
+                            9001 : 'lang', 
+                            9002 : 'rang', 
+                            9674 : 'loz', 
+                            9824 : 'spades', 
+                            9827 : 'clubs', 
+                            9829 : 'hearts', 
+                            9830 : 'diams', 
+                            338 : 'OElig', 
+                            339 : 'oelig', 
+                            352 : 'Scaron', 
+                            353 : 'scaron', 
+                            376 : 'Yuml', 
+                            710 : 'circ', 
+                            732 : 'tilde', 
+                            8194 : 'ensp', 
+                            8195 : 'emsp', 
+                            8201 : 'thinsp', 
+                            8204 : 'zwnj', 
+                            8205 : 'zwj', 
+                            8206 : 'lrm', 
+                            8207 : 'rlm', 
+                            8211 : 'ndash', 
+                            8212 : 'mdash', 
+                            8216 : 'lsquo', 
+                            8217 : 'rsquo', 
+                            8218 : 'sbquo', 
+                            8220 : 'ldquo', 
+                            8221 : 'rdquo', 
+                            8222 : 'bdquo', 
+                            8224 : 'dagger', 
+                            8225 : 'Dagger', 
+                            8240 : 'permil', 
+                            8249 : 'lsaquo', 
+                            8250 : 'rsaquo', 
+                            8364 : 'euro'
+                        };
+                        var res = '';
+                        var regexp_add = new RegExp("^\\+[\s\S]*");
+                        var regexp_del = new RegExp("^\\-[\s\S]*");
+                        changes[i].code_chunks.forEach(function(element, index, array){
+                            if(element.stats){
+                                var stats = element.stats;
+                                var beginig_orig = stats.split(' ')[0].split(',');
+                                var beginig_last = stats.split(' ')[1].split(',');
+                                var origin_start = Math.abs(beginig_orig[0]);
+                                var last_start = Math.abs(beginig_last[0]);
+                            }
+                            res = res+"<tr><td colspan=3>"+stats+"</td></tr>";
+                            if(!element.code){
+                                element.code = '';
+                            }
+                            var lines = element.code.split("\n");
+                            var regexp_final = new RegExp("");
+                            if(element.code.search(regexp_del)>=0)
+                                lines.pop();
+                            lines.forEach(function(element, index, array){
+                                if(element.search(regexp_add)>=0){
+                                    res = res+"<tr><td width=\"1\" class=\"line-number\">"+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
+                                    last_start++;
+                                }else if(element.search(regexp_del)>=0){
+                                    res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+"</td><td class=\"deleted-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
+                                    origin_start++;
+                                }else if(element.search("\\ No newline at end of file")>=0){
+                                } else {
+                                    res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"permanent-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
+                                    origin_start++;
+                                    last_start++;
+                                }
+                            });
+                        });
+                        %]
+                       [%= res.replace(/\&#9;/gm, '&nbsp;&nbsp;&nbsp;&nbsp;') %]
+                       </tbody>
+                       </table>
+                       [% } %]
+                       </div>
+                   </div>
+        */}.tmpl({
+            first_level: params.first_level,
+            controller: controller,
+            temp_id: temp_id,
+            code_section: code_section,
+            repo_mid: repo_mid,
+            repo_dir: repo_dir,
+            branch: branch,
+            rev_num: res.commit_info.revision,
+            author: res.commit_info.author,
+            date: res.commit_info.date,
+            comment: res.commit_info.comment,
+            changes: res.changes,
+            tag: params_view_diff.tag
+        });
 
         if (panel.rendered) {
             panel.update(html);
