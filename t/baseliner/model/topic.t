@@ -1852,6 +1852,33 @@ subtest 'deal_with_images: inserts data into grid' => sub {
     is $doc->{info}->{length},       4;
 };
 
+subtest 'status_changes: saves the name of the project assigned to the topic in event.topic.change_status' => sub {
+    _setup();
+    _setup_user();
+
+    my $base_params = _topic_setup();
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+
+    my $topic_ci = ci->new($topic_mid);
+    my @projects = $topic_ci->projects;
+
+    my $model = _build_model();
+
+    my $other_status = TestUtils->create_ci( 'status', name => 'Change1', type => 'I' );
+
+    $model->change_status(
+        mid       => $topic_mid,
+        id_status => $other_status->mid,
+        change    => 1,
+        username  => $base_params->{username}
+    );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.change_status' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{projects}[0], $projects[0]->{name};
+};
+
 done_testing();
 
 sub _setup {
