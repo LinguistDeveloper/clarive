@@ -3226,50 +3226,63 @@ sub change_bls {
 }
 
 sub change_status {
-    my ($self, %p) = @_;
+    my ( $self, %p ) = @_;
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     $p{id_status} or _throw 'Missing parameter id_status';
 
-    my $doc = mdb->topic->find_one({ mid=>"$mid" },{ _txt=>0, _id=>0 });
+    my $doc = mdb->topic->find_one( { mid => "$mid" }, { _txt => 0, _id => 0 } );
     my $id_old_status = $p{id_old_status} || $doc->{category_status}{id};
-    my $status = $p{status} || $self->find_status_name($p{id_status});
-    my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
-    my $callback = $p{callback};
-    my @projects = map {$_->{mid}} ci->new($mid)->projects;
+    my $status        = $p{status}        || $self->find_status_name( $p{id_status} );
+    my $old_status    = $p{old_status}    || $self->find_status_name($id_old_status);
+    my $callback      = $p{callback};
+    my @projects = map { $_->{mid} } ci->new($mid)->projects;
 
-    event_new 'event.topic.change_status'
-        => { mid => $mid, username => $p{username}, old_status => $old_status, id_old_status=> $id_old_status, id_status=>$p{id_status}, status => $status }
-        => sub {
-            # should I change the status?
-            if( $p{change} ) {
-                _fail( _loc('Id not found: %1', $mid) ) unless $doc;
-                _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $doc->{category_status}{name}, $old_status
-                    if $doc->{category_status}{id} ne $id_old_status;
-                # XXX check workflow for user?
-                # update mongo
-                #my $modified_on = $doc->{modified_on};
-                my $modified_on = mdb->ts;
-                $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on, 1 );
+    event_new 'event.topic.change_status' => {
+        mid           => $mid,
+        username      => $p{username},
+        old_status    => $old_status,
+        id_old_status => $id_old_status,
+        id_status     => $p{id_status},
+        status        => $status
+        } => sub {
 
-                $self->cache_topic_remove( $mid );
-            }
-            # callback, if any
-            $callback->() if ref $callback eq 'CODE';
+        if ( $p{change} ) {
+            _fail( _loc( 'Id not found: %1', $mid ) ) unless $doc;
+            _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.",
+                $doc->{category_status}{name}, $old_status
+                if $doc->{category_status}{id} ne $id_old_status;
 
-            my @users = $self->get_users_friend(mid => $mid, id_category => $doc->{id_category}, id_status => $p{id_status});
+            my $modified_on = mdb->ts;
+            $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on, 1 );
 
-            my $notify = {
-                project         => \@projects,
-                category        => $doc->{id_category},
-                category_status => $p{id_status},
-            };
-
-            my $subject = _loc("%3: #%1 %2", $mid, $doc->{title}, $status );
-            mdb->master_cal->update({ mid => "$mid", slotname => $status, end_data => undef }, { '$set' => { end_date => ''.Class::Date->now }});
-            +{ mid => $mid, title => $doc->{title}, projects => [map { $_->{name} } ci->new($mid)->projects], notify_default => \@users, subject => $subject, notify => $notify } ;
+            $self->cache_topic_remove($mid);
         }
-        => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
+
+        $callback->() if ref $callback eq 'CODE';
+
+        my @users
+            = $self->get_users_friend( mid => $mid, id_category => $doc->{id_category}, id_status => $p{id_status} );
+
+        my $notify = {
+            project         => \@projects,
+            category        => $doc->{id_category},
+            category_status => $p{id_status},
+        };
+
+        my $subject = _loc( "%3: #%1 %2", $mid, $doc->{title}, $status );
+        mdb->master_cal->update(
+            { mid => "$mid", slotname => $status, end_data => undef },
+            { '$set' => { end_date => '' . Class::Date->now } }
+        );
+        +{  mid            => $mid,
+            title          => $doc->{title},
+            projects       => [ map { $_->{name} } ci->new($mid)->projects ],
+            notify_default => \@users,
+            subject        => $subject,
+            notify         => $notify
+        };
+        } => sub {
+        _throw _loc( 'Error modifying Topic: %1', shift() );
         };
 }
 
