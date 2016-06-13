@@ -163,9 +163,12 @@ sub save {
     $bl = '*' if !length $bl; # fix empty submits from web
     # make sure we have a mid AND it's in mongo
     Util->_fail( Util->_loc('CI mid cannot start with `name:` nor `mid:`') ) if $mid && $mid=~/^(name|moniker):/;
-    my $master_row;
-    $master_row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
-    my $master_old;
+
+    my ( $master_row, $master_old );
+    if( length $mid ) {
+        $master_row = mdb->master->find_one({ mid=>"$mid" });
+        $master_old = mdb->master_doc->find_one({ mid=>$mid });
+    }
     my $exists = length($mid) && $master_row;
 
     # try to get mid from ns
@@ -188,8 +191,6 @@ sub save {
             my $username = 'clarive';
             try { $username = $self->modified_by };
             event_new 'event.ci.update' => { username => $username, mid => $mid, ci=>$self, ci_data=>\%$self } => sub {
-                my $old_ci = Util->_clone($self);
-                $master_old = +{ %$master_row };
                 $master_row->{bl} = join ',', Util->_array( $bl );
                 $master_row->{name} = $self->name;
                 $master_row->{active} = $self->active;
@@ -417,12 +418,14 @@ sub save_fields {
 
 sub load {
     my ( $self, $mid, $row, $data, $yaml, $rel_data ) = @_;
+
     $mid ||= $self->mid if $self->can('mid');
     _throw _loc( "Missing mid %1", $mid ) unless length $mid;
+
     # in scope ?
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
-    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Clarive->debug;
     return $scoped if $scoped;
+
     # in cache ?
     my $cache_key = { d=>'ci', mid=>"$mid" }; #"ci:$mid:";
     my $cached = cache->get( $cache_key );
@@ -441,8 +444,10 @@ sub load {
     # find class, so that we are subclassed correctly
     my $coll = $data->{collection};
     my $class = "BaselinerX::CI::" . $coll;
+
     # fix static generic calling from Baseliner::CI
     $self = $class if $self eq 'Baseliner::Role::CI';
+
     # check class is available, otherwise use a dummy ci class
     if( ! try { Clarive->load_class( $class ) } ) {
         if( $Baseliner::CI::use_empty_ci ) {

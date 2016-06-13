@@ -9,6 +9,13 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
 
+use Baseliner;
+use Baseliner::CI;
+use Clarive::ci;
+use Baseliner::Core::Registry;
+use Baseliner::Role::CI;    # WTF this is needed for CI
+use BaselinerX::CI::variable;
+
 use_ok('BaselinerX::CI::project');
 
 subtest 'variable any env' => sub {
@@ -202,4 +209,6 @@ sub _setup {
     );
 
     TestUtils->cleanup_cis;
+
+    Baseliner->config->{decrypt_key} = '44444';
 }
