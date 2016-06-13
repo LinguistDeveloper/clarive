@@ -17,6 +17,10 @@ has connect_worker => qw(is rw isa Bool default 0);
 
 with 'Baseliner::Role::CI::Server';
 
+has_ci 'proxy';
+
+sub rel_type { { proxy => [ from_mid => 'server_proxy' ] } }
+
 service 'connect' => {
     name    => 'Test Server Connection',
     form    => '/forms/test_server_connect.js',
