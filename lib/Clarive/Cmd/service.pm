@@ -1,4 +1,4 @@
-package Clarive::Cmd::bali;
+package Clarive::Cmd::service;
 use Mouse;
 extends 'Clarive::Cmd';
 use v5.10;
@@ -8,7 +8,7 @@ has service_name => qw(is ro required 1);
 with 'Clarive::Role::Baseliner';
 
 our $CMD_ALIAS = '<service.*>';
-our $CAPTION = 'run Baseliner services';
+our $CAPTION = 'run services';
 
 sub run {
     my ($self,%opts)=@_;
