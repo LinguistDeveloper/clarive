@@ -180,7 +180,7 @@ subtest 'get_file: removes file when invalid crc32' => sub {
     close $local_fh;
 
     like exception { $clax_agent->get_file( local => $local_file, remote => 'remote-file', user => 'user' ) },
-      qr/crc32 check failed/;
+      qr/crc32 check failed/i;
 
     ok !-f $local_file;
 };
@@ -313,6 +313,139 @@ subtest 'put_file: sends request with directory on win' => sub {
     my ( $url ) = $ua->mocked_call_args('post');
 
     like $url, qr{http://bar:8888/tree/C:/Users/clarive};
+};
+
+subtest 'delete_file: sends correct request with absolute path' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        delete => sub {
+            shift;
+            my ( $url, $options ) = @_;
+
+            { success => 1 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->delete_file( remote => '/foo/bar');
+
+    my ( $url ) = $ua->mocked_call_args('delete');
+
+    is $url, 'http://bar:8888/tree//foo/bar';
+};
+
+subtest 'delete_file: sends correct request with relative path' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        delete => sub {
+            shift;
+            my ( $url, $options ) = @_;
+
+            { success => 1 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->delete_file( remote => 'foo/bar');
+
+    my ( $url ) = $ua->mocked_call_args('delete');
+
+    is $url, 'http://bar:8888/tree/foo/bar';
+};
+
+subtest 'rmpath: sends correct request' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        delete => sub {
+            shift;
+            my ( $url, $options ) = @_;
+
+            { success => 1 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->rmpath( '/foo/bar');
+
+    my ( $url ) = $ua->mocked_call_args('delete');
+
+    is $url, 'http://bar:8888/tree//foo/bar';
+};
+
+subtest 'mkpath: sends correct request' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            { success => 1 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->mkpath( 'foo/bar/baz' );
+
+    my ( $url, $data ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'http://bar:8888/tree/';
+    is_deeply $data, { dirname => 'foo/bar/baz'};
+
+    is_deeply $ret, {rc => 0, ret => '', output => ''};
+};
+
+subtest 'file_exists: returns true when file does not exist' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        head => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            { success => 1 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->file_exists( 'foo/bar/baz' );
+
+    my ( $url ) = $ua->mocked_call_args('head');
+
+    is $url, 'http://bar:8888/tree/foo/bar/baz';
+
+    ok $ret;
+};
+
+subtest 'file_exists: returns false when file does not exist' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        head => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            { success => 0 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->file_exists( 'foo/bar/baz' );
+
+    my ( $url ) = $ua->mocked_call_args('head');
+
+    is $url, 'http://bar:8888/tree/foo/bar/baz';
+
+    ok !$ret;
 };
 
 done_testing;
