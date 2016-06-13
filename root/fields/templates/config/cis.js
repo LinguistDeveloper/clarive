@@ -2,7 +2,7 @@
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
-    Cla.help_push({ title:_('CI Combo'), path:'Rules/Palette/Fieldlets/ci_combo' });
+    Cla.help_push({ title:_('CI Combo'), path:'rules/palette/fieldlets/ci-combo' });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
         name: 'ci_role',
