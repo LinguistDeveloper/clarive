@@ -1065,7 +1065,7 @@ msgid "All Users"
 msgstr "Todos Usuarios"
 
 msgid "Historical"
-msgstr "Antiguos"
+msgstr "Histórico"
 
 msgid "Pending"
 msgstr "Pendiente"
