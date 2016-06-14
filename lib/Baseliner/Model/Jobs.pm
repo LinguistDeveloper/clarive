@@ -347,7 +347,6 @@ sub _calculate_progress {
     return $progress;
 }
 
-
 with 'Baseliner::Role::Search';
 with 'Baseliner::Role::Service';
 
@@ -361,7 +360,6 @@ sub search_query {
     my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor(\%p);
     return map {
         my $r = $_;
-        #my $summary = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
         my @text =
             grep { length }
             map { "$_" }
@@ -438,7 +436,6 @@ sub export {
     return undef;
 }
 
-
 sub get_contents {
     my ( $self, %p ) = @_;
     defined $p{jobid} or _throw "Missing jobid";
@@ -473,7 +470,6 @@ sub build_field_query {
     my ($self,$query,$where) = @_;
     mdb->query_build( where=>$where, query=>$query, fields=>['name', 'bl','final_status', 'final_step', 'list_contents','username','job_contents.list_apps', 'job_contents.list_changesets', 'job_contents.list_natures', 'job_contents.list_releases'] );
 }
-
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
