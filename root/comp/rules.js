@@ -2,26 +2,26 @@
     var ps = 30;
     var rules_store = new Baseliner.JsonStore({
         url: '/rule/grid', root: 'data',
-        id: 'id', totalProperty: 'totalCount', 
+        id: 'id', totalProperty: 'totalCount',
         remoteSort: true,
         fields: [ 'rule_name', 'rule_type', 'rule_when', 'rule_event', 'rule_active', 'event_name', 'id','ts' ]
     });
-    
+
     var reload_tree = function(query, ids){
         var t = query ? query : '';
         var lo = rules_tree.getLoader();
         lo.baseParams = { query: t };
-        if(ids) lo.baseParams.ids = ids; 
+        if(ids) lo.baseParams.ids = ids;
         lo.load(rules_tree.root);
     };
 
     var on_click_rule_action = function(node){
-        var params = {  
-            rule_id: node.attributes.rule_id, 
-            rule_name: node.attributes.rule_name, 
-            rule_type: node.attributes.rule_type, 
-            event_name: node.attributes.event_name ? node.attributes.event_name : node.attributes.rule_name, 
-            rule_event: node.attributes.rule_event ? node.attributes.rule_event : node.attributes.rule_name, 
+        var params = {
+            rule_id: node.attributes.rule_id,
+            rule_name: node.attributes.rule_name,
+            rule_type: node.attributes.rule_type,
+            event_name: node.attributes.event_name ? node.attributes.event_name : node.attributes.rule_name,
+            rule_event: node.attributes.rule_event ? node.attributes.rule_event : node.attributes.rule_name,
             icon: node.attributes.icon
         };
         show_rules(params);
@@ -54,14 +54,14 @@
         }
     };
 
-    var search_field = new Baseliner.SearchSimple({ 
+    var search_field = new Baseliner.SearchSimple({
         name: 'rule_search',
         width: 140,
         handler: function(){
             do_search();
         }
     });
-    
+
 
     var rule_del = function(){
         var rule_id;
@@ -97,7 +97,7 @@
             rule_name = sm.getSelected().data.rule_name;
             rule_id = sm.getSelected().data.id;
             if( sm.hasSelection() ) {
-                call_del();        
+                call_del();
             }
         }
     };
@@ -107,8 +107,8 @@
         var call_rule_export = function(){
             Baseliner.ajaxEval( '/rule/export', { id_rule: rule_id }, function(res){
                 if( res.success ) {
-                    var win = new Baseliner.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.yaml }), 
-                         layout:'fit' });       
+                    var win = new Baseliner.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.yaml }),
+                         layout:'fit' });
                     win.show();
                 } else {
                     Baseliner.error( _('Rule Export'), res.msg );
@@ -133,7 +133,7 @@
             }
         }
     };
-    
+
 
     // use a form so file can download
     var form_export_file = new Ext.form.FormPanel({
@@ -146,7 +146,7 @@
     var rule_export_file = function(){
         var rule_id;
         var call_rule_export_file = function() {
-            var form = form_export_file.getForm(); 
+            var form = form_export_file.getForm();
             form.findField('id_rule').setValue( rule_id );
             form.findField('format').setValue( 'yaml' );
             var el = form.getEl().dom;
@@ -154,7 +154,7 @@
             targetD.nodeValue = 'FrameDownload';
             el.setAttributeNode(targetD);
             el.action = '/rule/export_file';
-            el.submit(); 
+            el.submit();
         };
         if(toggle_button.pressed){
             if(rules_tree.getSelectionModel().selNode){
@@ -169,17 +169,16 @@
                 rule_id = sm.getSelected().data.id;
                 call_rule_export_file();
             }else{
-                Baseliner.message( _('Error'), _('Select rows first') );   
+                Baseliner.message( _('Error'), _('Select rows first') );
             }
         }
     };
-    
 
     var rule_import = function(){
         var yaml = new Baseliner.MonoTextArea({ fieldLabel:_('YAML'), value:'' });
         var btn_imp = new Ext.Button({ text: _('Import YAML'), handler: function(){
             Baseliner.ajaxEval('/rule/import_yaml', { data: yaml.getValue(), type:'yaml' }, function(res){
-                if( res.success ) { 
+                if( res.success ) {
                     rules_store.reload();
                     reload_tree();
                     Baseliner.message( _('Import'), _('Imported rule: %1', res.name) );
@@ -192,7 +191,7 @@
         var win = new Baseliner.Window({ title:_('Import'), layout:'fit', width: 800, height: 600, tbar:[btn_imp], items:yaml });
         win.show();
     };
-    
+
     var rule_import_file = function(){
         var up = new Baseliner.UploadPanel({
             title: _('Drag and Drop Files Here'),
@@ -203,11 +202,11 @@
             reload_tree();
             rules_store.reload();
         });
-        var win = new Baseliner.Window({ title:_('Import'), layout:'form', 
+        var win = new Baseliner.Window({ title:_('Import'), layout:'form',
             width: 600, height: 300, tbar:[_('Select or Drag and Drop Rule Files Here')], items:up });
         win.show();
     };
-    
+
     var rule_activate = function(){
         var rule_id;
         var rule_active;
@@ -280,7 +279,7 @@
             var sm = rules_grid.getSelectionModel();
             rule_id = sm.getSelected().data.id;
             if( sm.hasSelection() ) {
-                call_edit();    
+                call_edit();
             }
         }
     };
@@ -378,15 +377,15 @@
     };
 
     var delete_rule_folder = function(node){
-        Baseliner.confirm(_('Are you sure you want delete the folder?'), function(){ 
-            Baseliner.ajaxEval('/rule/delete_rule_folder', { rule_folder_id: node.attributes.rule_folder_id }, function(response){ 
+        Baseliner.confirm(_('Are you sure you want delete the folder?'), function(){
+            Baseliner.ajaxEval('/rule/delete_rule_folder', { rule_folder_id: node.attributes.rule_folder_id }, function(response){
                 node.remove();
             });
         }, function(){  });
     };
 
     var deal_rule_drop = function(dropEvent){
-        Baseliner.ajaxEval('/rule/added_rule_to_folder', { rule_folder_id: dropEvent.target.attributes.rule_folder_id, rule_id: dropEvent.dropNode.attributes.rule_id }, function(response){ 
+        Baseliner.ajaxEval('/rule/added_rule_to_folder', { rule_folder_id: dropEvent.target.attributes.rule_folder_id, rule_id: dropEvent.dropNode.attributes.rule_id }, function(response){
         });
     };
 
@@ -394,7 +393,7 @@
         var rule_id = node.attributes.rule_id;
         var rule_folder_id = node.parentNode.attributes.rule_folder_id;
         Baseliner.ajaxEval('/rule/delete_rule_from_folder', { rule_folder_id: rule_folder_id, rule_id: rule_id }, function(response){
-            node.remove(); 
+            node.remove();
         });
     };
 
@@ -420,22 +419,21 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Remove from folder'), handler: function(item){ delete_rule_from_folder(node);  }, icon:'/static/images/icons/delete.svg' } 
+                    { text: _('Remove from folder'), handler: function(item){ delete_rule_from_folder(node);  }, icon:'/static/images/icons/delete.svg' }
                 ]
             });
             stmts_menu.showAt(event.xy);
         }
     };
 
-
     var rules_tree = new Ext.tree.TreePanel({
         cls: 'ui-comp-rules-tree',
         useArrows: true,
         expanded: true,
-        animate : true, 
+        animate : true,
         stateful:true,
         hidden: true,
-        enableDD: true,        
+        enableDD: true,
         rootVisible: false,
         dataUrl: '/rule/tree_structure',
         autoScroll : true,
@@ -496,7 +494,7 @@
                     rule_text = rule_text + String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
                     rule_when +
                     String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>', Cla.moment(node.attributes.rule_ts).fromNow()) +
-                    String.format('<span style="padding-left: 5px;color:#bbb">by {0}</span>', node.attributes.username); 
+                    String.format('<span style="padding-left: 5px;color:#bbb">by {0}</span>', node.attributes.username);
                     if(node.attributes.rule_active == "0"){
                         rule_text = String.format('<span style="text-decoration: line-through; color:#bbb">{0}</span>', rule_text);
                     }
@@ -518,7 +516,6 @@
             enableRowBody: true,
             forceFit: true,
             getRowClass : function(rec, index, p, store){
-                //p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
                 var caption = '';
                 if( rec.data.rule_type == 'event' ) {
                     caption =  _("%1 for event '%2'", _(rec.data.rule_when), rec.data.rule_event );
@@ -543,7 +540,7 @@
         ]
     });
     rules_store.load();
-    
+
 
     var show_rules = function(params){
         var get_rule_ts = Baseliner.ajaxEval('/rule/get_rule_ts', { id_rule: params.rule_id }, function(response){
@@ -566,16 +563,16 @@
 
     rules_grid.on('rowclick', function(grid, ix){
         var rec = rules_store.getAt( ix );
-        var params = {  rule_id: rec.data.id, 
-                        rule_name: rec.data.rule_name, 
-                        rule_type: rec.data.rule_type, 
-                        event_name: rec.data.event_name, 
-                        rule_event: rec.data.rule_event, 
+        var params = {  rule_id: rec.data.id,
+                        rule_name: rec.data.rule_name,
+                        rule_type: rec.data.rule_type,
+                        event_name: rec.data.event_name,
+                        rule_event: rec.data.rule_event,
                         icon: rec.icon
         };
         show_rules(params);
     });
-   
+
     var encode_tree = function( root, include ){
         var stmts = [];
         if( include ) {
@@ -606,15 +603,15 @@
             title: _('Edit: %1', node.text),
             items: item
         }, opts));
-        win.on('destroy', function(){ 
+        win.on('destroy', function(){
             var rule_tree = tabpanel.activeTab;
             if( rule_tree ) rule_tree.focus();
         });
         item.on('destroy', function(){
-            if( !Ext.isFunction(foo) ) foo = function(d){ 
-                node.getOwnerTree().is_dirty=true; 
-                node.attributes.data = d; 
-                node.attributes.ts = new Date(); 
+            if( !Ext.isFunction(foo) ) foo = function(d){
+                node.getOwnerTree().is_dirty=true;
+                node.attributes.data = d;
+                node.attributes.ts = new Date();
                 node.attributes.who = Prefs.username;
                 node.getOwnerTree().search_clear();
                 node.getOwnerTree().search_nodes();
@@ -625,9 +622,9 @@
         win.show();
         return win;
     };
-    
+
     var clipboard;
-    var clone_node = function(node){    
+    var clone_node = function(node){
         var nn = jQuery.extend(true,{},node.attributes);
         nn.id = Cla.id('rule');
         var copy = new Ext.tree.TreeNode( nn );
@@ -652,11 +649,11 @@
         clipboard = { mode:'shortcut', node: node };
     }
     var paste_node = function( node ) {
-        if( clipboard && clipboard.mode=='shortcut' ) { 
+        if( clipboard && clipboard.mode=='shortcut' ) {
             // paste as a shortcut
             if( clipboard.node.attributes ) {
-                // maybe a declared sub group 
-                if( !clipboard.node.attributes.sub_name ) 
+                // maybe a declared sub group
+                if( !clipboard.node.attributes.sub_name )
                     clipboard.node.attributes.sub_name = new_id_for_task(clipboard.node.text);
             } else {
                 Baseliner.error( _('Shortcut'), _('Could not find source node for shortcut') );
@@ -666,7 +663,7 @@
             node.appendChild({
                 text: clipboard.node.text,
                 data: { call_shortcut: clipboard.node.attributes.sub_name, source_key: clipboard.node.attributes.key },
-                key: 'statement.shortcut', 
+                key: 'statement.shortcut',
                 leaf: true,
                 icon: '/static/images/icons/shortcut.png',
                 id: Cla.id('rule')
@@ -704,10 +701,8 @@
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
         }
-        //clipboard = 
     };
     var export_node = function( node ) {
-        //node.getOwnerTree().rule_export(node,true);
         var stmts = encode_tree( node,true );
         var json = Ext.util.JSON.encode( stmts[0] );
         var editor = new Baseliner.MonoTextArea({ value: json });
@@ -721,27 +716,26 @@
             json = Ext.util.JSON.encode( stmts[0].children );
             editor.setValue( json );
         }});
-        
-        var win = new Baseliner.Window({ height: 400, width: 800, 
+
+        var win = new Baseliner.Window({ height: 400, width: 800,
             tbar: [btn_beau,'-', (stmts[0] && stmts[0].children ? btn_root : null) ],
-            items: editor, layout:'fit' });       
+            items: editor, layout:'fit' });
         win.show();
     };
     var import_node = function( node_parent ) {
-        //node.getOwnerTree().rule_export(node,true);
         if( node_parent.leaf ) {
             Baseliner.error(_('Import'), _('Cannot import into leaf node') );
             return;
         }
         var impbox = new Baseliner.MonoTextArea({ value: '' });
         var importer = function(){
-            var json = impbox.getValue(); 
+            var json = impbox.getValue();
             var ndata = Ext.util.JSON.decode( json );
             var processnode = function(n){
                 var at = n.attributes;
                 delete at.loader;
-                at.id = Cla.id('rule'); 
-                return Ext.apply({ 
+                at.id = Cla.id('rule');
+                return Ext.apply({
                     children: n.children.map(function(chi){ return processnode(chi) }),
                 }, at );
             }
@@ -762,10 +756,10 @@
                 impbox.setValue( json );
             });
         }});
-        var win = new Baseliner.Window({ 
-            height: 400, width: 800, 
+        var win = new Baseliner.Window({
+            height: 400, width: 800,
             tbar: [btn_beau, '->', { xtype:'button', text:_('Import'), icon: '/static/images/icons/import.svg', handler: importer }],
-            items: impbox, layout:'fit' });       
+            items: impbox, layout:'fit' });
         win.show();
     };
     var toggle_node = function( node ) {
@@ -787,12 +781,12 @@
         var de = new Baseliner.DataEditor({ title:_('Metadata'), data: attr, hide_save: true, hide_cancel: true  });
         var note = new Baseliner.MonoTextArea({ title:_('Note'), value: attr.note || '' });
         var data_key = new Ext.form.TextField({ fieldLabel:_('Return Key'), name:'data_key', value: node.attributes.data_key || '' });
-        var needs_rollback_mode = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: attr.needs_rollback_mode || 'none', 
-            data: [ ['nb_after',_('Rollback Needed After')], ['nb_before',_('Rollback Needed Before')], 
+        var needs_rollback_mode = new Baseliner.ComboDouble({
+            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: attr.needs_rollback_mode || 'none',
+            data: [ ['nb_after',_('Rollback Needed After')], ['nb_before',_('Rollback Needed Before')],
                     ['nb_always',_('Rollback Needed Always')], ['none',_('No Rollback Necessary')] ]
         });
-        needs_rollback_mode.on('select', function(){ 
+        needs_rollback_mode.on('select', function(){
             if (needs_rollback_mode.getValue()!='none'){
                 needs_rollback_key.setValue(Baseliner.name_to_id(node.text));
                 // needs_rollback_key.show();
@@ -801,53 +795,50 @@
                 needs_rollback_key.setValue('<always>');
             }
         });
-        var needs_rollback_key = new Ext.form.TextField({ 
-            name: 'needs_rollback_key', fieldLabel:_('Needs Rollback Key'), 
-            // hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
-            value: data.needs_rollback_key || '<always>' //Baseliner.name_to_id(node.text) 
+        var needs_rollback_key = new Ext.form.TextField({
+            name: 'needs_rollback_key', fieldLabel:_('Needs Rollback Key'),
+            value: data.needs_rollback_key || '<always>' //Baseliner.name_to_id(node.text)
         });
         if (needs_rollback_mode.getValue()!='none'){
             needs_rollback_key.setValue(Baseliner.name_to_id(node.text));
-            // needs_rollback_key.show();
         }else{
-            // needs_rollback_key.hide();
             needs_rollback_key.setValue('<always>');
         }
         var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: node.disabled===true?false:true });
         var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });
         var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
-        var error_trap = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Error Trap'), name:'error_trap', value: attr.error_trap || 'none', 
+        var error_trap = new Baseliner.ComboDouble({
+            fieldLabel: _('Error Trap'), name:'error_trap', value: attr.error_trap || 'none',
             data: [ ['none',_('No Trap')], ['trap',_('Trap Errors')], ['ignore',_('Ignore Errors')] ]
         });
         var trap_timeout = new Ext.form.TextField({ fieldLabel:_('Trap timeout (seconds)'), name:'trap_timeout', value: attr.trap_timeout || 0 });
-        var trap_timeout_action = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Trap timeout action'), name:'trap_timeout_action', value: attr.trap_timeout_action || 'abort', 
+        var trap_timeout_action = new Baseliner.ComboDouble({
+            fieldLabel: _('Trap timeout action'), name:'trap_timeout_action', value: attr.trap_timeout_action || 'abort',
             data: [ ['abort',_('Abort')], ['skip',_('Skip')], ['retry',_('Retry')] ]
         });
         var trap_rollback = new Ext.form.Checkbox({ fieldLabel:_('Trap in Rollback?'), checked: _bool(attr.trap_rollback,true) });
 
-        var debug_mode = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Debug Mode'), name:'debug_mode', value: attr.debug_mode || 'none', 
+        var debug_mode = new Baseliner.ComboDouble({
+            fieldLabel: _('Debug Mode'), name:'debug_mode', value: attr.debug_mode || 'none',
             data: [ ['none',_('No Debug')], ['op',_('Op Trace')], ['stash',_('Op Trace + Stash Dump')] ]
         });
-        var parallel_mode = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
+        var parallel_mode = new Baseliner.ComboDouble({
+            fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none',
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
         });
         var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
         var sub_name = new Ext.form.TextField({ fieldLabel:_('Sub Name'), name:'sub_name', readOnly: true, value: attr.sub_name });
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, debug_mode, 
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, debug_mode,
             error_trap, trap_timeout, trap_timeout_action, trap_rollback, sub_name
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();
-            if( !node.attributes.data ) node.attributes.data={}; 
-            var dk = data_key.getValue(); 
-            if( dk!=undefined ) { 
-                node.attributes.data_key = dk.trim(); 
+            if( !node.attributes.data ) node.attributes.data={};
+            var dk = data_key.getValue();
+            if( dk!=undefined ) {
+                node.attributes.data_key = dk.trim();
                 node.attributes.data.data_key=dk.trim();
             }
             // attribute save
@@ -873,23 +864,21 @@
             // data save
             if( !node.attributes.data ) node.attributes.data={};
             Ext.apply(node.attributes.data, opts.getValues() ); // TODO this is not needed and gets overwritten everytime config is saved
-            win.close(); 
+            win.close();
         }});
-        var tbar = [ '->', 
+        var tbar = [ '->',
             { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ win.close() } },
             btn_save_meta ];
         opts.doLayout();
         de.doLayout();
         var tabs = new Ext.TabPanel({ activeTab: goto_tab==undefined?0:goto_tab,  plugins: [ new Ext.ux.panel.DraggableTabs()], items:[ opts,de,note ] });
-        var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
-            //node.attributes=d;
-            //node.setText( d.text );
+        var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){
         });
     };
     var edit_node = function( node ) {
         var key = node.attributes.key;
         if( ! key ) {
-            Baseliner.error( _('Missing key'), 
+            Baseliner.error( _('Missing key'),
                 _("Service '%1' does not contain edit information", node.text) );
             return;
         }
@@ -906,12 +895,12 @@
                     if( is_dashlet && node.getOwnerTree().rule_type == 'form' ) {
                         common_options = [{
                             xtype: 'fieldset',
-                            collapsible: true, 
+                            collapsible: true,
                             title: _('Common Dashlet as a Field Options'),
                             items: [
-                                { xtype:'textfield', fieldLabel:_('Width'), name:'field_width', 
-                                    value: data.field_width||reg_params.field_width||'100%' }, 
-                                { xtype:'textfield', fieldLabel:_('Height'), name:'field_height', 
+                                { xtype:'textfield', fieldLabel:_('Width'), name:'field_width',
+                                    value: data.field_width||reg_params.field_width||'100%' },
+                                { xtype:'textfield', fieldLabel:_('Height'), name:'field_height',
                                     value: data.field_height||reg_params.field_height||'220px' }
                             ]
                         }];
@@ -924,7 +913,7 @@
                                 form.destroy();
                             }
                         };
-                        var form = new Baseliner.FormPanel({ 
+                        var form = new Baseliner.FormPanel({
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
                             labelWidth: 150,
                             width: 800, height: 600,
@@ -950,7 +939,7 @@
                 Baseliner.error( _('Error'), res.msg );
             }
         });
-    }; 
+    };
 
     function configureTextField(root, node, defaults) {
         if (!defaults) {
@@ -1081,7 +1070,7 @@
             if( attr1.palette ) {
                 if( attr1.holds_children ) {
                     attr1.leaf = false;
-                } 
+                }
                 var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
                 copy.attributes.id = Cla.id('rule');
                 copy.attributes.palette = false;
@@ -1097,40 +1086,23 @@
                 if( !copy.attributes.data ) copy.attributes.data={};
                 if( copy.attributes.on_drop_js ) {
                     try {
-                        eval("var foo = function(node,rule_tree){"+ copy.attributes.on_drop_js +"}"); 
+                        eval("var foo = function(node,rule_tree){"+ copy.attributes.on_drop_js +"}");
                         foo(copy);
                     } catch(err) {
                         Baseliner.error(_('Node Error'), _('Error loading node: %1', err ) );
                         return false;
                     }
                 }
-                //n2.getOwnerTree().is_dirty = true;
                 e.dropNode = copy;
             }
             return true;
         };
-        
+
         var rule_tree_loader = new Ext.tree.TreeLoader({
             dataUrl: '/rule/stmts_load',
             baseParams: { id_rule: id_rule }
-            //requestMethod:'GET',
-            //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
         });
 
-
-
-        /* 
-         * strikethrough disabled nodes
-         * XXX causes strange call stack exceeded errors on encode_tree
-         *
-        rule_tree_loader.on('load', function(loader,node){
-            node.cascade(function(n) {
-                var act = n.attributes.active;
-                if( act===undefined || act == '1' ) return;
-                if( n.ui && n.ui.textNode ) n.ui.textNode.style.textDecoration = 'line-through';
-            });
-        });*/
-    
         var rule_save = function(opt){
             var root = rule_tree.root;
             rule_tree.expandAll();
@@ -1155,7 +1127,7 @@
                             save_action({ ignore_dsl_errors: 1 });
                         });
                     }
-                    
+
                     if( btn_save_tree ) btn_save_tree.enable();
                     if( btn_refresh_tree ) btn_refresh_tree.enable();
 
@@ -1174,27 +1146,27 @@
                     if( btn_refresh_tree ) btn_refresh_tree.enable();
                     if( res.error_checking_dsl ) {
                         // show a decent window where to follow all errors that may come
-                        var errwin = new Baseliner.Window({ 
-                            title:_('Rule error'), 
+                        var errwin = new Baseliner.Window({
+                            title:_('Rule error'),
                             layout:'vbox', width: 800, height: 600, modal: true,
                             bodyStyle: 'background-color: #ccc',
                             layoutConfig: { align : 'stretch', pack  : 'start' },
                             items:[
                                 { html:  String.format(
-                                    '<div id="boot"><h2><span class="error-title" style="">{0}</span></h2></div>', 
+                                    '<div id="boot"><h2><span class="error-title" style="">{0}</span></h2></div>',
                                     _('DSL validation failed')
                                     ), flex:1 },
                                 new Baseliner.MonoTextArea({ value: res.msg, flex:10 }),
-                            ], 
+                            ],
                             bbar: [
                                 '->',
                                 { xtype:'button', icon: '/static/images/icons/left.svg', text: _('Go Back'), handler: function(){ errwin.close() } },
                                 { xtype:'button', icon: '/static/images/icons/save.png', text: _('Always Ignore for this Rule and Save'), handler: function(){
-                                    save_action({ ignore_dsl_errors: 1, ignore_error_always: 1 }); // repeat    
+                                    save_action({ ignore_dsl_errors: 1, ignore_error_always: 1 }); // repeat
                                     errwin.close();
                                 }},
                                 { xtype:'button', icon: '/static/images/icons/save.png', text: _('Ignore and Save'), handler: function(){
-                                    save_action({ ignore_dsl_errors: 1 }); // repeat    
+                                    save_action({ ignore_dsl_errors: 1 }); // repeat
                                     errwin.close();
                                 }}
                             ]
@@ -1217,7 +1189,7 @@
             if(btn) btn.enable();
         };
         var rule_load = function(btn,load_versions){
-            rule_tree.search_clear(); 
+            rule_tree.search_clear();
             if( rule_tree.is_dirty ) {
                 if( rule_tree.close_me() ) {
                     rule_load_do(btn,load_versions);
@@ -1339,7 +1311,7 @@
                     { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.svg' },
                     { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.svg' },
                     { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/restart_new.svg' },
-                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.svg' } 
+                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.svg' }
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -1362,7 +1334,7 @@
               { text:'30D', checked: false, group:'blame-time', tdiff: 2592000000, hideOnClick:false, checkHandler: blame_now },
               { text:_('All'), checked: false, group:'blame-time', tdiff: -1, hideOnClick:false, checkHandler: blame_now }
             ] });
-        
+
         // node search system
         var btn_search = new Ext.Button({ icon:IC('wrench.svg'), menu:[
             { text: _('Search'), icon:'/static/images/icons/search-small.svg',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
@@ -1372,20 +1344,20 @@
             '-',
             { text:_('Blame By Time'), menu: menu_blame_time }
         ]});
-        var search_box = new Baseliner.SearchSimple({ 
+        var search_box = new Baseliner.SearchSimple({
             width: 140,
             handler: function(){
                 var t = this.getValue();
-                if( t && t.length>0 ) { 
+                if( t && t.length>0 ) {
                     rule_tree.search_nodes(t);
                 } else {
                     rule_tree.search_clear();
                 }
             }
         });
-        
-        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, tooltip: _('History'), icon:'/static/images/icons/history.png', 
-            handler: function() { 
+
+        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, tooltip: _('History'), icon:'/static/images/icons/history.png',
+            handler: function() {
                 if( btn_version_tree.pressed ) {
                     var ok = rule_load( btn_refresh_tree, true );
                     if( ok === false ) {  // maybe user hit cancel
@@ -1409,7 +1381,7 @@
             id_rule: id_rule,
             rule_type: rule_type,
             closable: true,
-            title: String.format('{0}: {1}', id_rule, short_name), 
+            title: String.format('{0}: {1}', id_rule, short_name),
             autoScroll: true,
             useArrows: true,
             animate: true,
@@ -1420,51 +1392,36 @@
             loader: rule_tree_loader,
             listeners: {
                 beforenodedrop: { fn: drop_handler },
-                // beforenodedrop: function(object){
-                    // var data = object.data;
-                    // Ext.Msg.prompt(_('Name'), _('Save as:'), function(btn, text){
-                    //     if (btn == 'ok'){
-                    //         alert("ok!" + text);
-                    //     }
-                    // });
-
-                    // object.dropNode.attributes.name = "JOEEEEEEEE";
-                    // drop_handler(object);
-                // },
                 contextmenu: menu_click,
                 dblClick: node_dbl_click
             },
             rootVisible: true,
             tbar: [
-                search_box, 
-                //btn_search, 
+                search_box,
                 btn_refresh_tree,
                 btn_save_tree,
-                //btn_refresh_tree,
                 btn_dsl,
-                btn_search, 
-                //'-',
-                //search_box, btn_search,
+                btn_search,
                 '->',
                 { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.svg',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
                 btn_version_tree,
                 { xtype:'button', icon:'/static/images/icons/html.png', tooltip:_('HTML'),  handler: function() { rule_tree.view_docs() } }
             ],
-            root: { 
-                text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 
+            root: {
+                text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ),
                 cls: 'ui-comp-rules-tree-start',
                 name: _('Start: %1', event_name || short_name),
-                draggable: false, 
-                id: 'root', 
+                draggable: false,
+                id: 'root',
                 icon: (rule_type=='pipeline'?'/static/images/icons/job.svg':'/static/images/icons/event.svg'), expanded: true }
         });
-       
+
         rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
         rule_tree.on('movenode', rule_tree.make_dirty );
         rule_tree.on('nodedrop', rule_tree.make_dirty );
         rule_tree.on('remove', rule_tree.make_dirty );
-        rule_tree.close_me = function(){ 
+        rule_tree.close_me = function(){
             return confirm(_("Rule '%1' has changed, but has not been saved. Leave without saving?", rule_tree.title ));
         };
         // best place to decorate
@@ -1475,7 +1432,7 @@
             new Ext.KeyMap( rule_tree.body, {
                 key: 'scpr', scope: rule_tree.body,
                 stopEvent: true,
-                fn: function(key){  
+                fn: function(key){
                     var node = rule_tree.getSelectionModel().selNode;
                     if( node ) {
                         if( key=='R'.charCodeAt() ) rename_node(node);
@@ -1484,12 +1441,11 @@
                         else if( key=='N'.charCodeAt() ) meta_node(node,2);
                         else if( key=='T'.charCodeAt() ) toggle_node(node);
                     }
-                    
+
                     return false;
                 }
             });
         });
-        
         rule_tree.search_clear = function(){
             var clear_node = function(n){
                 try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
@@ -1523,7 +1479,7 @@
                     try { n.ui.getEl().children[0].style.backgroundColor = '#fff8dc'; } catch(e){ };
                     rule_tree.search_found++;
                 }
-                else { 
+                else {
                     try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
                 }
                 rule_tree.search_total++;
@@ -1532,7 +1488,7 @@
             root.eachChild( search_node );
             btn_search.setText( _('(%1/%2)', rule_tree.search_found||0, rule_tree.search_total||0) );
         };
-        
+
         rule_tree.redecorate = function(n){
             if(!n) n = rule_tree.root;
             rule_tree.node_decorate(n);
@@ -1597,15 +1553,14 @@
                 if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
                 if( blame ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+blame+'</span>&nbsp;';
                 if( badges.length ) {
-                    nel.insertAdjacentHTML( 'afterEnd', 
+                    nel.insertAdjacentHTML( 'afterEnd',
                         '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
                 }
             }
         };
-        
+
         rule_tree.rule_dsl = function(from,include){
             var root = from || rule_tree.root;
-            //rule_save({ callback: function(res) { } });
             var stmts = encode_tree( root, include );
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, rule_type: rule_type, stmts: json, event_key: rule_event }, function(res) {
@@ -1623,7 +1578,7 @@
                             Baseliner.message( 'DSL', _('Finished OK') );
                             document.getElementById( dsl_cons.getId() ).style.color = "#10c000";  // green
                             var out = res.output != undefined ? res.output : '';
-                            dsl_cons.setValue( out ); 
+                            dsl_cons.setValue( out );
                             dsl_stash.setValue( res.stash_yaml );
                         }, function(res){
                             Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
@@ -1631,13 +1586,12 @@
                             if(!el_cons) return;
                             el_cons.style.color = "#f54";  // red
                             var out = res.output != undefined ? res.output : '';
-                            dsl_cons.setValue( out + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
+                            dsl_cons.setValue( out + '\n\n========= DSL ERROR =======\n\n' + res.msg );
                             dsl_stash.setValue( res.stash_yaml );
                         });
                     };
                     var win = new Baseliner.Window({
                         layout: 'border', width: 1024, height: 650, maximizable: true,
-                        //tabifiable: true,
                         title: _('DSL: %1', name ),
                         tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
                         keys: [{
@@ -1668,13 +1622,13 @@
                 }
             });
         };
-        
-        // ========= rule documentation 
+
+        // ========= rule documentation
         var md_converter = new Markdown.Converter();
         var doc_gen = function(node,depth,doc,lev){
             if( depth==undefined ) depth=0
             if( doc==undefined ) doc=[];
-            var k = 1; 
+            var k = 1;
             node.eachChild(function(n){
                 var attr = n.attributes;
                 var note_html = attr.note!=undefined ? md_converter.makeHtml(attr.note) : '';
@@ -1682,20 +1636,20 @@
                 var dd = attr.data!=undefined ? YAML.stringify(attr.data) : '';
                 dd.replace("\n", "<br>");
                 dd.replace("\\n", "<br>");
-                doc.push({ text:n.text, 
-                    depth:depth, 
+                doc.push({ text:n.text,
+                    depth:depth,
                     icon: attr.icon,
                     lev: lev.length>0 ? lev.join('.')+'.'+k : k,
-                    debug_mode: attr.debug_mode && attr.debug_mode!='none' 
+                    debug_mode: attr.debug_mode && attr.debug_mode!='none'
                         ? _(attr.debug_mode) : '',
-                    parallel_mode: attr.parallel_mode && attr.parallel_mode!='none' 
+                    parallel_mode: attr.parallel_mode && attr.parallel_mode!='none'
                         ? _(attr.parallel_mode) : '',
-                    run_mode: rf && !rb ? _('NO ROLLBACK') 
+                    run_mode: rf && !rb ? _('NO ROLLBACK')
                         : !rf && rb ? _('ROLLBACK')
                         : rf===false && rb===false ? _('NO RUN') : '',
                     disabled: attr.disabled,
-                    data: dd, 
-                    key:attr.key, 
+                    data: dd,
+                    key:attr.key,
                     name: attr.name||attr.text, note: note_html });
                 doc_gen(n,depth+1,doc, [].concat(lev,[k]) );
                 k++;
@@ -1729,12 +1683,12 @@
             doc_gen(root,0,doc,[]);
             var html = [ doc_title({ name: Ext.util.Format.capitalize(name) }) ];
             Ext.each( doc, function(d){
-                html.push( doc_tmpl(d) ); 
+                html.push( doc_tmpl(d) );
             });
             Baseliner.print({ title: name, html: '<div id="boot">'+html.join('')+'</div>' }, true);
         };
 
-        var tab = tabpanel.add( rule_tree ); 
+        var tab = tabpanel.add( rule_tree );
         tab.on('beforeclose', function(tree){
             if( tree.is_dirty ) {
                 return tree.close_me();
@@ -1744,11 +1698,11 @@
         tabpanel.setActiveTab( tab );
         tabpanel.changeTabIcon( tab, icon || '/static/images/icons/rule.svg' );
     };
-    
+
     var menu_tab = new Ext.ux.TabCloseMenu({
         closeTabText: _('Close Tab'),
         closeOtherTabsText: _('Close Other Tabs'),
-        closeAllTabsText: _('Close All Tabs')        
+        closeAllTabsText: _('Close All Tabs')
     });
 
     var tabpanel = new Ext.TabPanel({
@@ -1757,7 +1711,7 @@
         plugins: [ new Ext.ux.panel.DraggableTabs()],
         items: []
     });
-    var search_palette = new Baseliner.SearchSimple({ 
+    var search_palette = new Baseliner.SearchSimple({
         name: 'palette_search',
         width: 220,
         handler: function(){
@@ -1780,9 +1734,9 @@
         resizable: true,
         tbar: [
             search_palette,
-            { xtype:'button',tooltip: _('Refresh Node'), icon:'/static/images/icons/refresh.svg', 
+            { xtype:'button',tooltip: _('Refresh Node'), icon:'/static/images/icons/refresh.svg',
                 handler: function(){
-                    palette.loader.load( palette.root ); 
+                    palette.loader.load( palette.root );
                 }
             }
         ],
@@ -1844,7 +1798,7 @@
         collapsible: true,
         activeItem: 0,
         items: [ rules_grid, rules_tree ],
-        tbar: [ 
+        tbar: [
             search_field,
             { xtype:'button', tooltip:_('Refresh'), handler: function(){ reload_data() }, icon:'/static/images/icons/refresh.svg', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.svg', cls: 'x-btn-icon ui-comp-rule-create', handler: rule_add },
@@ -1865,7 +1819,7 @@
 
     var panel = new Ext.Panel({
         layout: 'border',
-        items: [ left_panel, tabpanel, palette ]//rules_grid, 
+        items: [ left_panel, tabpanel, palette ]//rules_grid,
     });
 
 
