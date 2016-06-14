@@ -8,18 +8,17 @@
 	.st2{fill:none;stroke:#F7A808;stroke-width:0.85;stroke-linejoin:bevel;}
 	.st3{fill:none;stroke:#F90B6C;stroke-miterlimit:10;}
 	.st4{fill:none;}
-	.st5{fill:none;stroke:#414141;stroke-width:1.5;stroke-miterlimit:10;}
-	.st6{fill:none;stroke:#414141;stroke-miterlimit:10;}
+	.st5{fill:none;stroke:#414141;stroke-miterlimit:10;}
 </style>
-<polygon class="st0" points="14,5.2 9.1,7.8 9,13.3 14,11.1 "/>
+<polygon class="st0" points="13.5,4.8 8,7.5 8,14.7 13.5,11.5 "/>
 <title>nature</title>
-<path class="st0" d="M6,11.5l0.8,0.6l-1-4.2L5.1,7.5l-1.1,2.8l0.5,0.3l0.3-0.8l0.9,0.5L6,11.5z M5,9.3l0.3-0.8l0.2,0.1l0.2,1L5,9.3z
-	"/>
+<path class="st0" d="M5.8,11.5l0.8,0.6l-1-4.2L4.9,7.5l-1.1,2.8l0.5,0.3l0.3-0.8l0.9,0.5L5.8,11.5z M4.8,9.3l0.3-0.8l0.2,0.1l0.2,1
+	L4.8,9.3z"/>
 <path class="st1" d="M9,12.7"/>
 <path class="st2" d="M2.8,10.5"/>
 <path class="st3" d="M3.9,6.1"/>
 <rect class="st4" width="16" height="16"/>
-<polygon class="st5" points="2.8,11.2 2.9,4.8 8.4,1.6 14,4.8 14,11.1 8.4,14.3 "/>
-<polyline class="st6" points="3.4,5 8.6,7.7 13.5,4.9 "/>
-<line class="st6" x1="8.5" y1="14.5" x2="8.6" y2="7.7"/>
+<polygon class="st5" points="2.5,11 2.5,4.7 8,2 13.5,4.8 13.5,11.1 8,14.7 "/>
+<polyline class="st5" points="2.5,4.7 8.2,7.7 13.5,4.9 "/>
+<line class="st5" x1="8" y1="14.7" x2="8" y2="7.7"/>
 </svg>

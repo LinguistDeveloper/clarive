@@ -1,1 +1,12 @@
-<svg id="1ced49d1-d68c-4fb9-8980-116458210387" data-name="6add01c8-28b7-4715-8325-254763650c2e" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><defs><style>.\33 94397b0-3edd-4538-97fc-c6c3b25e4fa3{fill:#404040;}.\35 2e40bcd-b92d-4def-b241-9b2690dbbc20{fill:none;}</style></defs><title>delete_all</title><path class="394397b0-3edd-4538-97fc-c6c3b25e4fa3" d="M2.43,4.94v9.83H13.57V4.94H2.43ZM5.5,13.82H4.18v-8H5.5v8Zm3.15,0v0H7.34v-8H8.65v8h0v0Zm3.17,0H10.5v-8h1.32v8Z" transform="translate(0)"/><path class="394397b0-3edd-4538-97fc-c6c3b25e4fa3" d="M9.91,2.15V1.23H6.09V2.15H1V4.3H15V2.15H9.91Z" transform="translate(0)"/><rect class="52e40bcd-b92d-4def-b241-9b2690dbbc20" y="0.04" width="16" height="15.91"/><rect class="52e40bcd-b92d-4def-b241-9b2690dbbc20" width="16" height="16"/></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="_x31_ced49d1-d68c-4fb9-8980-116458210387"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 16 16"
+	 style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+</style>
+<title>delete_all</title>
+<path class="st0" d="M2,5v10h12V5H2z M6,13H4V7h2V13z M9,13H7V7h2V13z M12,13h-2V7h2V13z"/>
+<path class="st0" d="M10,2V1H6v1H1v2h14V2H10z"/>
+</svg>

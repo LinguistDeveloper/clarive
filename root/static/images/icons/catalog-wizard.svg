@@ -10,9 +10,9 @@
 <polygon class="st0" points="10.1,8 9.5,7.6 8.8,7.9 9,7.2 8.5,6.7 9.2,6.6 9.5,6 9.8,6.7 10.5,6.8 10,7.3 "/>
 <polygon class="st0" points="12.6,11 12.2,10.8 11.7,10.9 11.9,10.5 11.5,10.2 12,10 12.1,9.6 12.4,10 12.9,10.2 12.5,10.5 "/>
 <rect class="st1" width="16" height="16"/>
-<path class="st0" d="M15,3.8V2.6H8L7.2,2.2H1v2.7l0,0v8.9h13.9L15,3.8L15,3.8z M2,12.8V4.9h12v7.9H2z"/>
-<rect x="5.2" y="5.7" transform="matrix(0.6106 -0.792 0.792 0.6106 -4.1144 8.0014)" class="st0" width="1.7" height="5"/>
+<rect x="5.2" y="5.7" transform="matrix(0.6106 -0.792 0.792 0.6106 -4.152 7.9709)" class="st0" width="1.7" height="5"/>
 <g>
-	<rect x="8.3" y="9.9" transform="matrix(0.6106 -0.792 0.792 0.6106 -4.8426 11.3814)" class="st0" width="1.7" height="1.4"/>
+	<rect x="8.3" y="9.9" transform="matrix(0.6106 -0.792 0.792 0.6106 -4.8236 11.3721)" class="st0" width="1.7" height="1.4"/>
 </g>
+<path class="st0" d="M15,3.8V3H8L7,2H1v2.9l0,0V14h14V3.8L15,3.8z M2,13V5h12v8H2z"/>
 </svg>

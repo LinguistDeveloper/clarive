@@ -3,18 +3,17 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;stroke:#414141;stroke-width:1.5;stroke-miterlimit:10;}
-	.st1{fill:none;stroke:#414141;stroke-miterlimit:10;}
-	.st2{fill:none;stroke:#414141;stroke-width:0.5;stroke-miterlimit:10;}
-	.st3{fill:#50BA78;}
+	.st0{fill:none;stroke:#414141;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#414141;stroke-width:0.5;stroke-miterlimit:10;}
+	.st2{fill:#50BA78;}
 </style>
-<polyline class="st0" points="3.4,11.6 2.9,11.1 2.9,4.8 8.4,1.6 14,4.8 14,11.1 8.4,14.3 6.3,13.3 "/>
-<polyline class="st1" points="3.4,5 8.6,7.7 13.5,4.9 "/>
-<line class="st1" x1="8.5" y1="14.5" x2="8.6" y2="7.7"/>
-<line class="st2" x1="5.6" y1="6.2" x2="5.6" y2="11"/>
-<path class="st3" d="M4.5,10.2c-1.4,0-2.5,1.1-2.5,2.5s1.1,2.5,2.5,2.5S7,14,7,12.7S5.9,10.2,4.5,10.2z M6.2,13.1H5.1v1.2H3.9v-1.2
-	H2.8v-0.8v-0.2H4V11h1.2v1.2h1.2v0.9H6.2z"/>
-<line class="st2" x1="5.6" y1="6.3" x2="11.1" y2="3.1"/>
-<line class="st2" x1="5.6" y1="2.7" x2="11.2" y2="6.2"/>
-<line class="st2" x1="11.2" y1="6.2" x2="11.3" y2="12.7"/>
+<polyline class="st0" points="3.2,11.4 2.5,11 2.5,5 8,1.7 13.5,4.8 13.5,11.1 8.5,14.5 6.3,13.2 "/>
+<polyline class="st0" points="2.5,5 8.5,8.1 13.5,4.9 "/>
+<line class="st0" x1="8.5" y1="14.3" x2="8.5" y2="8.1"/>
+<line class="st1" x1="5.6" y1="6.2" x2="5.6" y2="11"/>
+<path class="st2" d="M4.6,10c-1.4,0-2.5,1.1-2.5,2.5S3.2,15,4.6,15s2.5-1.2,2.5-2.5S6,10,4.6,10z M5,13v1H4v-1H3v-1h1v-1h1v1h1v1H5z
+	"/>
+<line class="st1" x1="5.6" y1="6.3" x2="11.1" y2="3.1"/>
+<line class="st1" x1="5.6" y1="2.9" x2="11.2" y2="6.4"/>
+<line class="st1" x1="11.2" y1="6.2" x2="11.3" y2="12.7"/>
 </svg>

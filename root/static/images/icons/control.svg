@@ -3,15 +3,26 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#F6A81C;stroke:#414141;stroke-miterlimit:10;}
-	.st1{fill:#404040;stroke:#414141;stroke-miterlimit:10;}
-	.st2{fill:#FFFFFF;stroke:#414141;stroke-miterlimit:10;}
-	.st3{fill:none;}
+	.st0{fill:#F6A81C;}
+	.st1{fill:#414141;}
+	.st2{fill:#404040;}
+	.st3{fill:#909090;}
+	.st4{fill:#FFFFFF;stroke:#414141;stroke-width:0.8619;stroke-miterlimit:10;}
+	.st5{fill:#FFFFFF;stroke:#414141;stroke-width:1.1664;stroke-miterlimit:10;}
+	.st6{fill:none;}
 </style>
-<rect x="2.1" y="7.1" class="st0" width="5.5" height="2.5"/>
-<rect x="8.5" y="3.3" class="st1" width="5.5" height="2.5"/>
-<rect x="8.5" y="10.8" class="st2" width="5.5" height="2.5"/>
-<polyline class="st2" points="4.9,6.6 4.9,4.6 8.1,4.6 "/>
-<polyline class="st2" points="5,10.1 5,12.1 8.1,12.1 "/>
-<rect x="0.1" class="st3" width="15.9" height="15.9"/>
+<g>
+	<polygon class="st0" points="1.5,9.5 1.6,6.5 7.4,6.5 7.4,9.5 	"/>
+	<path class="st1" d="M6.9,7V9H2L2,7H6.9 M7.9,6H1.1L1,10h6.9V6L7.9,6z"/>
+</g>
+<g>
+	<polygon class="st2" points="8,1.1 13.9,1 14,4.9 8.1,5 	"/>
+</g>
+<g>
+	<polygon class="st3" points="8.6,14.5 8.6,11.6 13.5,11.6 13.5,14.5 	"/>
+	<path class="st1" d="M13,12.1V14H9.1l0-1.9H13 M14,11.1H8.1l0,3.9H14V11.1L14,11.1z"/>
+</g>
+<polyline class="st4" points="4.5,6.1 4.5,2.5 8.8,2.5 "/>
+<polyline class="st5" points="4.5,9.4 4.5,12.5 9,12.5 "/>
+<rect x="0.1" class="st6" width="15.9" height="15.9"/>
 </svg>
