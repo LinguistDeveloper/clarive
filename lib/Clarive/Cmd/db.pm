@@ -62,7 +62,7 @@ sub run_dump {
     my $cmd = join ' ', 'mongodump', '-h', $host, '-d', $dbname;
     if( ! $self->all ) {
         for my $coll ( qw(
-            _migrations activity calendar calendar_window category config
+            _migrations activity calendar calendar_window category clarive config
             daemon dashboard dispatcher master master_cal master_doc master_rel master_seen
             master_seq notification repl role rule rule_version scheduler shared_html topic topic_image
         )) {
@@ -86,6 +86,11 @@ Reindexes the database, dropping old-indexes.
 
 Uses all standard indexes, plus any
 feature-defined index in C<etc/index/*.yml>
+
+=head1 cla db-dump
+
+Creates a database dump, dropping log and
+filesystem collections
 
 =cut
 

@@ -31,6 +31,7 @@ The option `–h` shows the command help with a short description of every optio
         -env   :sets CLARIVE_ENV (local, test, prod, t, etc...)
         -schema    :schemas to deploy (does not work for migrations)
                     cla db-deploy --schema BaliUser --schema BaliProject
+        -dump    : dump collections skipping logs and filesystem data
 
         Versioning Options:
         --diff    :diffs this schema against the database
