@@ -174,6 +174,7 @@
         }
     };
     
+
     var rule_import = function(){
         var yaml = new Baseliner.MonoTextArea({ fieldLabel:_('YAML'), value:'' });
         var btn_imp = new Ext.Button({ text: _('Import YAML'), handler: function(){
@@ -181,7 +182,7 @@
                 if( res.success ) { 
                     rules_store.reload();
                     reload_tree();
-                    Baseliner.message( _('Import'), _('Imported rule: %1', res.rule_name) );
+                    Baseliner.message( _('Import'), _('Imported rule: %1', res.name) );
                     win.close();
                 }
             },function(res){
