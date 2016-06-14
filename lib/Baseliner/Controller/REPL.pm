@@ -228,6 +228,7 @@ sub save : Local {
 
     my $id = $p->{id};
     my $text = $p->{text} //= $p->{id};
+    $p->{username} = $c->username;
 
     my $doc = mdb->repl->find_one( { _id => $id } );
     if ($doc) {

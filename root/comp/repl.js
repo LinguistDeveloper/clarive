@@ -258,7 +258,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         if( params.save!==undefined && params.save ) {
             last_name = node_name;
             var f = form.getForm();
-            f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o } });
+            f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o, lang: params.lang } });
         }
     };
 
@@ -425,18 +425,19 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     };
     var change_lang = function(x) {
-        if( x.checked && aceditor.editor ) { 
+        if (x.checked && aceditor.editor) {
             var txt = aceditor.getValue();
-            if( ! x.syntax ) {
-               x.syntax = ( x.lang == 'sql' ? 'plsql' : x.lang ); 
+
+            if (!x.syntax) {
+                x.syntax = (x.lang == 'sql' ? 'plsql' : x.lang);
             }
-            if( ! x.text ) {
-                x.text = ( x.lang == 'perl' ? 'Perl' : x.lang=='sql' ? 'SQL' : x.lang=='js-client' ? 'JS Client' : 'JS Server' );
+            if (!x.text) {
+                x.text = (x.lang == 'perl' ? 'Perl' : x.lang == 'sql' ? 'SQL' : x.lang == 'js-client' ? 'JS Client' : x.lang == 'css' ? 'CSS' : 'JS Server');
             }
-            aceditor.setMode( x.syntax );
-            aceditor.setValue( txt );
-            btn_lang.setText( _('Lang: %1', '<b>'+x.text+'</b>') );
-            btn_lang.setIcon( '/static/images/icons/' + x.lang + '.png' );
+            aceditor.setMode(x.syntax);
+            aceditor.setValue(txt);
+            btn_lang.setText(_('Lang: %1', '<b>' + x.text + '</b>'));
+            btn_lang.setIcon('/static/images/icons/' + x.lang + '.png');
             btn_lang.lang = x.lang;
             aceditor.focus();
         }
@@ -515,7 +516,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true });
+                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true, lang: btn_lang.lang });
                         }
                     }, undefined, false, last_name );
                 }
