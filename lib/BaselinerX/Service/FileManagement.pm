@@ -309,14 +309,16 @@ sub run_write {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
+
     my $stash = $c->stash;
     my $filepath = $config->{filepath};
     my $file_encoding = $config->{file_encoding};
     my $body_encoding = $config->{body_encoding};
     my $templating    = $config->{templating} // 'none';
     my $template_var  = $config->{template_var} // '';
+    my $line_endings  = $config->{line_endings} // '';
     my $body = $config->{body};
-    my $log_body = $config->{log_body};
+    my $log_body = $config->{log_body} // 'no';
 
     require Encode;
     Encode::from_to( $body, $body_encoding, $file_encoding )
@@ -329,12 +331,22 @@ sub run_write {
 
     my $dir = _file( $filepath )->dir;
     $dir->mkpath;
+
+    if ($line_endings eq 'LF') {
+        $body =~ s{\r\n}{\n}g;
+    }
+    elsif ($line_endings eq 'CRLF') {
+        $body =~ s{(?<!\r)\n}{\r\n}g;
+    }
+
     my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
     open my $ff, $open_str, $filepath
         or _fail _loc('Could not open file for writing (%1): %2', $!);
     print $ff $body;
     close $ff;
+
     $log->info( _loc("File content written: '%1'", $filepath), $log_body eq 'yes' ? ( data=>$body ) : () );
+
     return $filepath;
 }
 
