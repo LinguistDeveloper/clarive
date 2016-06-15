@@ -1004,4 +1004,36 @@ subtest '_probe_one_row: or mode' => sub {
     ok( ! Util->_probe_one_row('or', $row, { aa=>qr/xx/ },{ bb=>qr/tt/ }) );
 };
 
+subtest '_retry: rethrows last error' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        die "error=" . $attempts++;
+    };
+
+    like exception { Util->_retry( $cb, attempts => 3 ) }, qr/error=2/;
+};
+
+subtest '_retry: returns last value on success' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        return $attempts if $attempts > 1;
+        die "error=" . $attempts++;
+    };
+
+    is(Util->_retry( $cb, attempts => 3 ), '2');
+};
+
+subtest '_retry: returns on the first success' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        $attempts++;
+
+        return $attempts;
+    };
+
+    Util->_retry( $cb, attempts => 3 );
+
+    is $attempts, 1;
+};
+
 done_testing;
