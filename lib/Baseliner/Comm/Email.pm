@@ -8,6 +8,8 @@ use MIME::Base64 qw(encode_base64);
 use Compress::Zlib;
 use Encode ();
 use File::Basename qw(basename);
+use File::Find qw(find);
+use File::LibMagic;
 use Baseliner::Model::Messaging;
 use Baseliner::Core::Registry ':dsl';
 use BaselinerX::Type::Model::ConfigStore;
@@ -77,7 +79,7 @@ sub group_queue {
             $email{ $id }->{subject} ||= $message->{subject};
             $email{ $id }->{body} ||= $body;
             $email{ $id }->{attach} ||= {
-                data         => $message->{attach},
+                path         => $message->{attach},
                 content_type => $message->{attach_content_type},
                 filename     => $message->{attach_filename}
             };
@@ -116,13 +118,13 @@ sub process_queue {
 
     # first group by message
     for my $msg_id ( keys %email ) {
-        my $em = $email{ $msg_id };
-        _debug "Sending email '$em->{subject}' (id=$msg_id) to " . join( ',',
-          _array( $em->{to} ) ) . " and cc " . join( ',', _array( $em->{cc} ) );
+        my $msg = $email{ $msg_id };
+        _debug "Sending email '$msg->{subject}' (id=$msg_id) to " . join( ',',
+          _array( $msg->{to} ) ) . " and cc " . join( ',', _array( $msg->{cc} ) );
 
         my $result;
-        my @to = _array $em->{to};
-        my @cc = _array $em->{cc};
+        my @to = _array $msg->{to};
+        my @cc = _array $msg->{cc};
         if( @email_override ) {
             @to=@email_override;
             @cc=();
@@ -131,19 +133,29 @@ sub process_queue {
             push @cc, @email_cc;
         }
         try {
-            my $subject = $em->{subject};
-            my $body = $em->{body};
+            my $subject = $msg->{subject};
+            my $body = $msg->{body};
+            my $size        = 0;
+            my $path_attach = $msg->{attach}->{path};
+            my $config      = BaselinerX::Type::Model::ConfigStore->new->get('config.comm.email');
 
-            #remove '?' from email comments notifications.
-            # my $last = substr $body, -1;
-            # if(Encode::encode("utf8", $last) eq "â\x80\x8B"){
-            #     $body = substr $body,0, -1;
-            # }
-
-            #$body = Encode::encode("iso-8859-15", $body);
-            #$body =~ s/[^\x00-\x7f]//g;
-            #utf8::decode( $body );
-
+            if ( $path_attach && -e $path_attach ) {
+                if ( -d $path_attach ) {
+                    find( sub { $size += -s if -f }, $path_attach );
+                }
+                else {
+                    my $file = _file($path_attach);
+                    $size = -s $file;
+                }
+                if ( $size > $config->{max_attach_size} ) {
+                    _error( _loc("Attachment not sent. The size is too big") );
+                    delete $msg->{attach};
+                }
+            }
+            else {
+                _error( _loc("Attachment not sent. The path does not exist") );
+                delete $msg->{attach};
+            }
 
             $result = $self->send(
                 server=>$config->{server},
@@ -154,17 +166,17 @@ sub process_queue {
                 cc => join(',',@cc),
                 body => $body,
                 subject => $subject,
-                from => $em->{from},
-                attach => [ $em->{attach} ],
+                from => $msg->{from},
+                attach => [ $msg->{attach} ]
             );
             # need to deactivate the message before sending it
-            for my $id ( _array $em->{id_list} ) {
+            for my $id ( _array $msg->{id_list} ) {
                 Baseliner::Model::Messaging->new->delivered( id=>$id, result=>$result );
             }
 
         } catch {
             my $error = shift;
-            for my $id ( _array $em->{id_list} ) {
+            for my $id ( _array $msg->{id_list} ) {
                 Baseliner::Model::Messaging->new->failed( id=>$id, result=>$error, max_attempts=>$config->{max_attempts} );
             }
             _log "Error enviando correo - $error";
@@ -210,17 +222,11 @@ sub send {
     my $content_type = $p{content_type};
     my @attach       = _array $p{attach};
 
-    # take out accents
-    #use Text::Unaccent::PurePerl qw/unac_string/;
-    #$subject = unac_string( $subject );
-    # $subject = '=?ISO-8859-1?Q?' . MIME::Lite::encode_qp($subject,''); # Building fa=?ISO-8859-1?Q?=E7ade?=
-    # $subject = substr( $subject, 0, length( $subject ) ) . '?=';
-
     if ( !@to && !@cc ) {
         _throw _loc("Could not send email '$subject'. No recipients in TO or CC.\n");
     }
 
-    $self->_init_connection($server, %p);
+    $self->_init_connection( $server, %p );
 
     _log "Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
 
@@ -234,35 +240,52 @@ sub send {
     );
 
     $msg->attach(
-        Data     => Encode::encode('UTF-8', $body),
+        Data     => Encode::encode( 'UTF-8', $body ),
         Type     => 'text/html; charset=utf-8',
         Encoding => 'base64',
     );
 
-    my $img_path = $self->_path_to_about_icon;
+    my $img_path     = $self->_path_to_about_icon;
     my $img_filename = basename($img_path);
     $msg->attach(
         Type     => 'image/jpg',
         Path     => $img_path,
         Filename => $img_filename,
-        Id      => "<$img_filename>",
+        Id       => "<$img_filename>",
     );
 
     foreach my $attach (@attach) {
-        _throw "Error: attachment is not a hash but a $attach" unless ref $attach eq 'HASH';
-        next unless $attach->{data} && length($attach->{data}) > 0;
-        unless( $attach->{content_type} ) {
-            $attach->{content_type} = 'application/x-gzip';
-            $attach->{data} = Compress::Zlib::compress( $attach->{data} );
+        _fail "Error: attachment is not a hash but a $attach" unless ref $attach eq 'HASH';
+
+        my $type = File::LibMagic->new();
+
+        unless ( $attach->{filename} ) {
+            $attach->{filename} = basename( $attach->{path} );
         }
+
+        if ( -d $attach->{path} ) {
+            if ( $attach->{filename} !~ /.zip$/ ) {
+                $attach->{filename} .= '.zip';
+            }
+
+            my $tempfile = File::Temp->new();
+            Baseliner::Utils->zip_dir( source_dir => $attach->{path}, zipfile => $tempfile );
+
+            $attach->{fh}           = $tempfile;
+            $attach->{content_type} = $type->info_from_filename( $tempfile->filename )->{mime_type};
+        }
+
+        unless ( $attach->{content_type} ) {
+            $attach->{content_type} = $type->info_from_filename( $attach->{path} )->{mime_type};
+        }
+
         $msg->attach(
-            Data     => $attach->{data},
+            $attach->{fh} ? ( FH => $attach->{fh} ) : ( Path => $attach->{path} ),
             Type     => $attach->{content_type},
             Filename => $attach->{filename},
-            Encoding => 'base64'
+            Encoding => 'base64',
         );
     }
-
     $self->_send($msg);
 }
 
@@ -313,7 +336,7 @@ sub _init_connection {
 
 sub _send {
     my $self = shift;
-    my ($msg) = @_;
+    my ( $msg ) = @_;
 
     eval { $msg->send('smtp'); };
     _throw "send failed: $@\n" if $@;

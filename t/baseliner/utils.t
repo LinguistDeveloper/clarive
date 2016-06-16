@@ -14,6 +14,7 @@ use TestUtils;
 
 use Cwd qw(getcwd);
 use File::Temp qw(tempfile);
+use Archive::Zip;
 use Baseliner::Utils qw(
   _pointer
   query_grep
@@ -32,6 +33,7 @@ use Baseliner::Utils qw(
   _chdir
   _timeout
   _capture_pipe
+  zip_dir
 );
 use Clarive::mdb;
 
@@ -807,7 +809,6 @@ subtest '_chdir: changes back to previous directory in case of error' => sub {
     is $cwd, getcwd();
 };
 
-
 subtest 'capture_pipe: returns correct results' => sub {
     my $output = '';
 
@@ -875,6 +876,102 @@ subtest 'capture_pipe: returns error exit code' => sub {
 
     like $ret->{error}, qr/here/;
     isnt $ret->{exit_code}, 0;
+};
+
+subtest 'zip_dir: throws an error when zipfile path does not exist' => sub {
+    my $self = shift;
+    my $tmp  = tempdir();
+
+    like exception {
+        zip_dir( $self, source_dir => $tmp, zipfile => '/unknown' );
+    }, qr/Could not create zip file `\/unknown`/;
+};
+
+subtest 'zip_dir: throws an error when source_dir path does not exist' => sub {
+    my $self = shift;
+    my $file = File::Temp->new;
+
+    like exception {
+        zip_dir( $self, source_dir => '/unknown', zipfile => $file );
+    }, qr/Could not find dir `\/unknown` to zip/;
+};
+
+subtest 'zip_dir: returns true when zipfile path exists' => sub {
+    my $self = shift;
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    my $output = zip_dir( $self, source_dir => $tmp, zipfile => $filename );
+    is $output, '1';
+};
+
+subtest 'zip_dir: compresses the files correctly in the zipfile when is a filehandle' => sub {
+    my $self = shift;
+
+    my $tmp      = tempdir();
+    my $file     = File::Temp->new;
+    my $zip      = Archive::Zip->new();
+    my $filename = "$tmp/foo";
+    TestUtils->write_file( 'foo', $filename );
+
+    zip_dir( $self, source_dir => $tmp, zipfile => $file );
+
+    $zip->read( $file->filename );
+    my @members = $zip->memberNames();
+    is $members[1], 'foo';
+};
+
+subtest 'zip_dir: compresses the files correctly in the zipfile when zipfile is a path' => sub {
+    my $self = shift;
+
+    my $zip      = Archive::Zip->new();
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    my $output = zip_dir( $self, source_dir => $tmp, zipfile => $filename );
+    $zip->read($filename);
+    my @members = $zip->memberNames();
+    is $members[1], 'foo';
+};
+
+subtest 'zip_dir: excludes files correctly in the zipfile' => sub {
+    my $self = shift;
+
+    my $tmp       = tempdir();
+    my $file      = File::Temp->new;
+    my $zip       = Archive::Zip->new();
+    my $filename  = "$tmp/foo";
+    my $filename2 = "$tmp/bar";
+
+    TestUtils->write_file( 'foo', $filename );
+    TestUtils->write_file( 'bar', $filename2 );
+    zip_dir( $self, source_dir => $tmp, zipfile => $file, exclude => $filename );
+
+    $zip->read( $file->filename );
+    my @members = $zip->memberNames();
+
+    ok( !grep( /foo/, @members ) );
+};
+
+subtest 'zip_dir: includes files correctly in the zipfile' => sub {
+    my $self = shift;
+
+    my $tmp       = tempdir();
+    my $file      = File::Temp->new;
+    my $zip       = Archive::Zip->new();
+    my $filename  = "$tmp/foo";
+    my $filename2 = "$tmp/bar";
+
+    TestUtils->write_file( 'foo', $filename );
+    TestUtils->write_file( 'bar', $filename2 );
+    zip_dir( $self, source_dir => $tmp, zipfile => $file, include => $filename );
+
+    $zip->read( $file->filename );
+    my @members = $zip->memberNames();
+
+    ok( grep( /foo/, @members ) );
+    ok( !grep( /bar/, @members ) );
 };
 
 subtest '_probe_one_row: basic one term' => sub {
