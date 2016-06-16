@@ -428,14 +428,6 @@ if( Prefs.routing ) {
             Ext.getCmp('main-panel').setActiveTab(tab);
     };
 
-    function truncate_string(text) {
-        if (text.length > 29) {
-            text = text.substr(0, 26) + '...';
-        }
-
-        return text;
-    }
-
     //adds a new object to a tab
     Baseliner.addNewTabItem = function( comp, title, params, json_key ) {
         if( params == undefined ) params = { active: true };
@@ -468,9 +460,9 @@ if( Prefs.routing ) {
         var tabpanel = Ext.getCmp('main-panel');
 
         comp.on('title_loaded', function(panel) {
-            var tooltip = comp.title.length > 29 ? comp.title : '';
+            var tooltip = Cla.truncateTooltip(comp.title);
             comp.setTabTip(tooltip);
-            var title = truncate_string(comp.title);
+            var title = Cla.truncateText(comp.title);
             comp.setTitle(title);
         });
 
@@ -499,10 +491,10 @@ if( Prefs.routing ) {
             }
         }
         if ($(title).length) {
-            title = title.replace($(title).text(), truncate_string($(title).text()));
+            title = title.replace($(title).text(), Cla.truncateText($(title).text()));
         }
         else {
-            title = truncate_string(title);
+            title = Cla.truncateText(title);
         }
 
         tab.setTitle(title);
