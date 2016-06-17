@@ -4,13 +4,12 @@
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#404040;}
-	.st1{fill:#F5A71C;}
-	.st2{fill:#414141;}
+	.st1{fill:#414141;}
 </style>
 <path class="st0" d="M15,3.8V2.6H8L7.2,2.2H1v2.7l0,0v8.9h13.9L15,3.8L15,3.8z M2,12.8V4.9h12v7.9H2z"/>
 <g>
-	<rect x="6.7" y="7.1" transform="matrix(0.7071 0.7071 -0.7071 0.7071 8.7214 -2.7741)" class="st1" width="2" height="4"/>
-	<polygon class="st2" points="5.1,11.8 5.6,9.9 7,11.3 	"/>
-	<rect x="8.9" y="6.4" transform="matrix(0.7071 0.7071 -0.7071 0.7071 7.8397 -4.9029)" class="st1" width="2" height="1.1"/>
+	<rect x="5" y="7.5" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -4.9334 7.0487)" class="st0" width="2" height="4"/>
+	<polygon class="st1" points="7.1,11.8 8.5,10.4 9,12.3 	"/>
+	<rect x="3.1" y="6.9" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -4.0761 5.1045)" class="st0" width="2" height="1.1"/>
 </g>
 </svg>

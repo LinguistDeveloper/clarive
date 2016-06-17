@@ -436,7 +436,7 @@ register 'statement.if.condition' => {
 
 register 'statement.if.else' => {
     text => 'ELSE',
-     icon => '/static/images/icons/else.gif',
+     icon => '/static/images/icons/else.svg',
     type => 'if',
     nested => 1,   # avoids a "current_task" before
     data => {},
@@ -453,7 +453,7 @@ register 'statement.if.else' => {
 
 register 'statement.if.elsif' => {
     text => 'ELSIF condition THEN',
-    icon => '/static/images/icons/if_else.gif',
+    icon => '/static/images/icons/if_else.svg',
     type => 'if',
     nested => 1,
     data => { condition =>'1' },
@@ -712,7 +712,7 @@ register 'statement.shortcut' => {
 register 'statement.log' => {
     text => 'LOG message',
     data => { text => 'Message', level=>'info' },
-    icon => '/static/images/icons/log.png',
+    icon => '/static/images/icons/log.svg',
     form => '/forms/log.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;

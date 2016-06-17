@@ -63,7 +63,7 @@ sub tree_topic_get_files : Local {
                     id_topic     => $id_topic,
                     sw_get_files => \1
                 },
-                icon       => '/static/images/icons/delete_red.png',
+                icon       => '/static/images/icons/delete_red.svg',
                 leaf       => \0,
                 expandable => \1
                 };
@@ -95,7 +95,7 @@ sub tree_project_releases : Local {
     my @tree = map {
        +{
             text => $_->{title},
-            icon => '/static/images/icons/release.png',
+            icon => '/static/images/icons/release.svg',
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
@@ -143,7 +143,7 @@ sub category_contents : Local {
         my $leaf = $related{$_->{mid}} ? \0 : \1;
        +{
             text => $_->{title},
-            icon => '/static/images/icons/release.png',
+            icon => '/static/images/icons/release.svg',
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
@@ -236,7 +236,7 @@ sub tree_topics_project : Local {
        my $leaf = $related{$_->{mid}} ? \0 : \1;
        +{
             text => $_->{title},
-            icon => '/static/images/icons/release.png',
+            icon => '/static/images/icons/release.svg',
             url  => '/lifecycle/topic_contents',
             draggable => \1,
             topic_name => {
@@ -307,7 +307,7 @@ sub topic_contents : Local {
         my $is_release = $_->{category}{is_release};
         my $is_changeset = $_->{category}{is_changeset};
 
-        my $icon = $is_release ? '/static/images/icons/release_lc.png'
+        my $icon = $is_release ? '/static/images/icons/release_lc.svg'
             : $is_changeset ? '/static/images/icons/changeset_lc.svg' :'/static/images/icons/topic.svg' ;
 
         my @menu_related = $self->menu_related();
@@ -348,7 +348,7 @@ sub tree_releases : Local {
     my @tree = map {
        +{
             text => $_->{name},
-            icon => '/static/images/icons/release.png',
+            icon => '/static/images/icons/release.svg',
             url  => $config_releases && $config_releases->{by_project} eq '1' ? 'lifecycle/tree_projects?category_id='.$_->{id} : '/lifecycle/category_contents?category_id='.$_->{id},
             has_query => 1,
             category_name => {
@@ -580,7 +580,7 @@ sub changeset : Local {
                     my $msg = _loc('Error loading changes for provider %1: %2', $provider, $err);
                     _error( $msg );
                     push @tree, {
-                        icon => '/static/images/icons/error.png',
+                        icon => '/static/images/icons/error.svg',
                         text => substr($msg,0,80),
                         leaf => \1,
                     };
@@ -615,7 +615,7 @@ sub changeset : Local {
                 my $d = $_->load;
                 push @tree, {
                     url  => '/lifecycle/repository',
-                    icon => '/static/images/icons/repo.gif',
+                    icon => '/static/images/icons/repo.svg',
                     draggable => \0,
                     text => $d->{name},
                     leaf => \1,
@@ -628,7 +628,7 @@ sub changeset : Local {
                         click => {
                             url   => '/lifecycle/repository',
                             type  => 'comp',
-                            icon  => '/static/images/icons/repo.gif',
+                            icon  => '/static/images/icons/repo.svg',
                             title => "$d->{name} - $bl",
                         }
                       }
@@ -747,7 +747,7 @@ sub changeset : Local {
                 #_warn $menu;
                 my $node = {
                     url  => '/lifecycle/topic_contents',
-                    icon => '/static/images/icons/release_lc.png',
+                    icon => '/static/images/icons/release_lc.svg',
                     text => $rel->{title},
                     leaf => \0,
                     menu => $menu,

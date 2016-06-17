@@ -42,7 +42,7 @@ sub node_menu {
         push @menu, {
             text => _loc('Close branch'),
             eval => { url => '/comp/git/close.js', title => 'Close branch' },
-            icon => '/static/images/icons/delete_.png'
+            icon => '/static/images/icons/delete.svg'
         };
     };
     # push @menu,

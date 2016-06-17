@@ -19,7 +19,7 @@
             frame    : false,
             hideLabel: false,
             tbar     : [
-                { xtype:'button', text:_('Commit...'),icon: '/static/images/icons/drive_add.png', cls: 'x-btn-text-icon',
+                { xtype:'button', text:_('Commit...'),icon: '/static/images/icons/drive_add.svg', cls: 'x-btn-text-icon',
                     handler: checkin },
                 { xtype:'button', text:_('Compile'),icon: '/static/images/icons/run.png', cls: 'x-btn-text-icon',
                     handler: checkin },

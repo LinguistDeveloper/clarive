@@ -11,8 +11,7 @@ with 'Baseliner::Role::Service';
 register 'service.job.rename_items' => {
     name    => 'Rename Baseline Items and Files',
     data    => { rename_items=>1, rename_files=>1 },
-    icon    => '/static/images/icons/rename_items.png',
-    #icon    => '/static/images/icons/baseline.gif',
+    icon    => '/static/images/icons/rename_items.svg',
     job_service  => 1,
     handler => \&run,
 };

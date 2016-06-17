@@ -176,7 +176,7 @@
     
     var btn_delete_status = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete_.png',
+        icon:'/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -690,7 +690,7 @@
     
     var btn_duplicate_category = new Ext.Toolbar.Button({
         text: _('Duplicate'),
-        icon:'/static/images/icons/copy.gif',
+        icon:'/static/images/icons/copy.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -717,7 +717,7 @@
     });     
 
     var btn_delete_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/delete_.png',
+        icon:'/static/images/icons/delete.svg',
         text:_('Delete'),
         //tooltip:_('Delete'),
         cls: 'x-btn-text-icon',
@@ -938,7 +938,7 @@
         
         var btn_delete_row = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon:'/static/images/icons/delete_.png',
+            icon:'/static/images/icons/delete.svg',
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -1035,10 +1035,9 @@
             buttons: [
                     combo_job_type,
                     {
-                        //text: _('Add'),
                         type: 'submit',
                         cls: 'btn-text-icon',
-                        icon: '/static/images/icons/down.png',
+                        icon: '/static/images/icons/down.svg',
                         handler: function() {
                             var form = form_category_admin.getForm();
                             var action = '';
@@ -1174,13 +1173,13 @@
         disabled: false,
         menu: [
             { text: _('Import'), 
-                icon: '/static/images/icons/import.png',
+                icon: '/static/images/icons/import.svg',
                 handler: function(){
                     category_import();
                  }
             },
             { text: _('Export'), 
-                icon: '/static/images/icons/export.png',
+                icon: '/static/images/icons/export.svg',
                 handler: function(){ 
                     var sm = grid_categories.getSelectionModel();
                     if (sm.hasSelection()) {
@@ -1335,7 +1334,7 @@
 
     var btn_delete_label = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete_.png',
+        icon:'/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -1759,7 +1758,7 @@
             items: [ data_paste, results ],
             tbar:[
                 { text:_('Import'), 
-                    icon: '/static/images/icons/import.png',
+                    icon: '/static/images/icons/import.svg',
                     handler: function(){
                         Baseliner.ajaxEval('/topicadmin/import_category', { yaml: data_paste.getValue() }, function(res){
                             if( !res.success ) {

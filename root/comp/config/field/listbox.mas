@@ -81,7 +81,7 @@
             }},
             {
             text: '<% $row->{delLabel} %>',
-            icon: '/static/images/icons/del_all.png',
+            icon: '/static/images/icons/del_all.svg',
             cls: 'x-btn-text-icon',
             handler : function(e){     
                 var __grid = Ext.getCmp('<% $uid %>');			            

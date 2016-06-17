@@ -45,7 +45,7 @@ params:
         },
         columns: [
           //{ header: _('ID'), width: 60, hidden: true, dataIndex: 'id' },
-          { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
+          { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.svg" />'} },
           { header: _('Name'), width: 240, dataIndex: 'name',
               renderer: function(v,metadata,rec){
                   return Baseliner.render_wrap( String.format('<a href="javascript:Baseliner.show_revision(\'{1}\')"><span id="boot"><h6>{0}</h6></span></a>', v, rec.data.mid ) );

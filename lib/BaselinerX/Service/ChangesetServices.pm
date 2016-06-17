@@ -11,8 +11,7 @@ with 'Baseliner::Role::Service';
 
 register 'service.changeset.items' => {
     name    => 'Load Job Items into Stash',
-    icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/baseline.gif',
+    icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&job_items,
 };
@@ -20,48 +19,41 @@ register 'service.changeset.items' => {
 register 'service.changeset.update_baselines' => {
     name    => 'Update Baselines',
     job_service  => 1,
-    icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/baseline.gif',
-    #form    => '/forms/update_baselines.js',
+    icon    => '/static/images/icons/changesets.svg',
     handler => \&update_baselines,
 };
 
 register 'service.changeset.verify_revisions' => {
     name    => 'Verify Revision Integrity Rules',
     job_service  => 1,
-    icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/baseline.gif',
-    #form    => '/forms/update_baselines.js',
+    icon    => '/static/images/icons/changesets.svg',
     handler => \&verify_revisions,
 };
 
 register 'service.changeset.checkout' => {
     name    => 'Checkout Job Items',
-    icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/checkout.png',
+    icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
     name    => 'Checkout Job Baseline',
-    icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/checkout.png',
+    icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout_bl,
 };
 
 register 'service.changeset.checkout.bl_all_repos' => {
     name    => 'Checkout Job Baseline ... all repos',
-    icon    => '/static/images/icons/changesets.png',
-    #icon    => '/static/images/icons/checkout.png',
+    icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout_bl_all_repos,
 };
 
 register 'service.changeset.natures' => {
     name    => 'Load Nature Items',
-    icon    => '/static/images/icons/changesets.png',
+    icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/nature_items.js',
     job_service  => 1,
     handler => \&nature_items,
@@ -69,7 +61,7 @@ register 'service.changeset.natures' => {
 
 register 'service.changeset.update' => {
     name    => 'Update Changesets',
-    icon    => '/static/images/icons/changesets.png',
+    icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/changeset_update.js',
     job_service  => 1,
     handler => \&changeset_update,
@@ -85,7 +77,7 @@ register 'service.topic.status' => {
 
 register 'service.changeset.update_bls' => {
     name    => 'Update Changesets BLs',
-    icon    => '/static/images/icons/changesets.png',
+    icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&update_changesets_bls,
 };
@@ -599,8 +591,7 @@ sub nature_items {
 
 register 'service.approval.request' => {
     name    => 'Request Approval',
-    #icon => '/static/images/icons/user_delete.gif',
-    icon => '/static/images/icons/user_green.png',
+    icon => '/static/images/icons/user_green.svg',
     form => '/forms/approval_request.js',
     job_service  => 1,
     handler => \&request_approval,

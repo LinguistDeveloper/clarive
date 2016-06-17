@@ -42,7 +42,7 @@ Ext.onReady(function(){
                 });
         } else {
             Cla.add_tabcomp('/comp/search_results.js', undefined,
-                { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search-green.png' });
+                { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search-green.svg' });
         }
     };
     search_box.on('specialkey', function(f, e){
@@ -240,7 +240,7 @@ Ext.onReady(function(){
     if( Prefs.is_logged_in ) { 
         var user_menu = [
              { text: _('Inbox'),
-                 handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.png" } ); },
+                 handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.svg" } ); },
                  icon : '/static/images/icons/envelope.png' 
              },
              { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/lock_small.png' },
@@ -248,13 +248,13 @@ Ext.onReady(function(){
         ];
         
         if( Prefs.stash.can_change_password ) {
-            user_menu.push({ text: _('Change password'), handler: function(){ Cla.change_password(); }, icon:'/static/images/icons/password.png' });
+            user_menu.push({ text: _('Change password'), handler: function(){ Cla.change_password(); }, icon:'/static/images/icons/password.svg' });
         }
         if( Prefs.stash.can_surrogate ) {
-            user_menu.push({ text: _('Surrogate...'), handler: function(){ Cla.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.png' });
+            user_menu.push({ text: _('Surrogate...'), handler: function(){ Cla.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.svg' });
         }
         
-        user_menu.push({ text: _('Logout') , handler: function(){ Cla.logout(); }, index: 999, icon: '/static/images/icons/logout.png', cls: 'ui-user-menu-logout' });
+        user_menu.push({ text: _('Logout') , handler: function(){ Cla.logout(); }, index: 999, icon: '/static/images/icons/logout.svg', cls: 'ui-user-menu-logout' });
         tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu, cls: 'ui-user-menu' });
     } else {
         tbar_items.push({ text: _('Login'), handler: function(){ Cla.login(); } });
@@ -280,7 +280,7 @@ Ext.onReady(function(){
         });
     });
 
-    var icon_home = '/static/images/icons/home.gif';
+    var icon_home = '/static/images/icons/home.svg';
 
     if( Prefs.site.show_calendar ) {
         Cla.calpanel = new Cla.Calendar({

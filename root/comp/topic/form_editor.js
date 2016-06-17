@@ -224,7 +224,7 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                                  objTemp.list_type = value=='S' ? 'single' : value=='M' ? 'multiple' : value=='G' ? 'grid' : value;
                                             }
                                             
-                                            var d = { id: id, id_field: id_field, name: name_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
+                                            var d = { id: id, id_field: id_field, name: name_field, params: objTemp , img: '/static/images/icons/icon_wand.svg' };
                                         }else{
                                             //attr.params.id_field = id_field;
                                             //attr.params.name_field = name_field;
@@ -237,7 +237,7 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                             objTemp.bd_field = id_field;
                                             objTemp.origin = 'custom';
                                             
-                                            var d = { id: id, id_field: id_field, name: name_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
+                                            var d = { id: id, id_field: id_field, name: name_field, params: objTemp, img: '/static/images/icons/icon_wand.svg' };
                                         }
                                         
                                         try{

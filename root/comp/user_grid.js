@@ -81,7 +81,7 @@
 
     var btn_surrogate = new Ext.Toolbar.Button({
         text: _('Surrogate'),
-        icon:'/static/images/icons/surrogate.png',
+        icon:'/static/images/icons/surrogate.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
@@ -107,7 +107,7 @@
                 
     var btn_buzon = new Ext.Toolbar.Button({
         text: _('Inbox'),
-        icon:'/static/images/icons/envelope.png',
+        icon:'/static/images/icons/envelope.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function(){
@@ -147,7 +147,7 @@
 
         var btn_asignar_roles_projects = new Ext.Toolbar.Button({
                 text: _('Assign roles/projects'),
-                icon:'/static/images/icons/key_add.png',
+                icon:'/static/images/icons/key_add.svg',
                 cls: 'x-btn-text-icon ui-comp-users-edit-window-assign-roles',
                 disabled: true,
                 handler: function() {
@@ -212,7 +212,7 @@
         
         var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
             text: _('Unassign roles/projects'),
-            icon:'/static/images/icons/key_delete.png',
+            icon:'/static/images/icons/key_delete.svg',
             cls: 'x-btn-text-icon ui-comp-users-unassign-roles',
             disabled: true,
             handler: function() {
@@ -488,7 +488,7 @@
 
         var btn_delete_row = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon:'/static/images/icons/delete_red.png',
+            icon:'/static/images/icons/delete_red.svg',
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -520,9 +520,8 @@
 
         var btn_delete_all = new Ext.Toolbar.Button({
             text: _('Delete All'),
-            icon:'/static/images/icons/del_all.png',
+            icon:'/static/images/icons/del_all.svg',
             cls: 'x-btn-text-icon',
-            // disabled: true,
             handler: function() {
                 Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){ 
                     if(btn=='yes') {
@@ -841,7 +840,7 @@
     
     var btn_prefs = new Ext.Toolbar.Button({
         text: _('Preferences'),
-        icon:'/static/images/icons/prefs.png',
+        icon:'/static/images/icons/prefs.svg',
         cls: 'x-btn-text-icon ui-comp-users-prefs',
         disabled: true,
         handler: function() {
@@ -859,7 +858,7 @@
     
     var btn_duplicate = new Ext.Toolbar.Button({
         text: _('Duplicate'),
-        icon:'/static/images/icons/copy.gif',
+        icon:'/static/images/icons/copy.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -886,7 +885,7 @@
     
     var btn_delete = new Ext.Toolbar.Button({
         text: _('Delete'),
-        icon:'/static/images/icons/delete_.png',
+        icon:'/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon ui-comp-users-delete',
         disabled: true,
         handler: function() {
@@ -917,7 +916,7 @@
     
     var btn_change_password = new Ext.Toolbar.Button({
         text: _('Change password'),
-        icon:'/static/images/icons/delete_.png',
+        icon:'/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

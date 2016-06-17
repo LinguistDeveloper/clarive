@@ -6,7 +6,7 @@
 
     var menu_services = new Ext.Button({
         text: _('Services'),
-        icon:'/static/images/icons/service.png',
+        icon:'/static/images/icons/service.svg',
         cls: 'x-btn-icon-text',
         disabled: !can_save,
         menu: { items:[] }
@@ -182,7 +182,7 @@
 
         var btn_data = new Ext.Button({
             text: _('Data'),
-            icon:'/static/images/icons/detail.png',
+            icon:'/static/images/icons/detail.svg',
             cls: 'x-btn-icon-text',
             pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: show_data

@@ -604,7 +604,7 @@
         
     var button_submit = new Ext.Button({
             xtype:'button', text: _('Create'),
-            icon:'/static/images/icons/write.gif',
+            icon:'/static/images/icons/write.svg',
             cls: 'x-btn-text-icon',
             handler: function(){
                 if( window_check.checked && txtComment.getValue().length == 0 ) {
@@ -659,7 +659,7 @@
             {
             xtype: 'button',
             text: _('Remove Job Item'),
-            icon:'/static/images/icons/del_all.png',
+            icon:'/static/images/icons/del_all.svg',
             cls: 'x-btn-text-icon',
             handler: function() {
                 var sm = jc_grid.getSelectionModel();

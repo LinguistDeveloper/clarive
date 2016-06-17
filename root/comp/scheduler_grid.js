@@ -197,7 +197,7 @@
     var button_delete_schedule = new Ext.Toolbar.Button({
         text: _('Delete'),
         hidden: true,
-        icon: '/static/images/icons/delete_.png',
+        icon: '/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon',
         handler: delete_schedule_handler
     });
@@ -205,7 +205,7 @@
     var button_duplicate_schedule = new Ext.Toolbar.Button({
         text: _('Duplicate'),
         hidden: true,
-        icon: '/static/images/icons/copy.gif',
+        icon: '/static/images/icons/copy.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -257,7 +257,7 @@
     });
 
     var name_renderer = function(value, metadata, rec, rowIndex, colIndex, store) {
-        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img src="/static/images/icons/moredata.svg" /></a>', rec.data.id_last_log);
+        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img class="force_size_in_icon" src="/static/images/icons/moredata.svg" /></a>', rec.data.id_last_log);
         return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + str + "</div>";
     };
 
@@ -350,7 +350,7 @@
             button_run_schedule.show();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
-            button_toggle_activation.setIcon('/static/images/icons/stop.png');
+            button_toggle_activation.setIcon('/static/images/icons/stop.svg');
             button_toggle_activation.show();
         } else if (r.data.status == 'KILLED') {
             button_delete_schedule.show();
@@ -374,7 +374,7 @@
             button_run_schedule.hide();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
-            button_toggle_activation.setIcon('/static/images/icons/stop.png');
+            button_toggle_activation.setIcon('/static/images/icons/stop.svg');
             button_toggle_activation.show();
         }
         button_edit_schedule.show();

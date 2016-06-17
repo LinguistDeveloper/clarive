@@ -367,11 +367,11 @@ sub job_icon {
     my ($status, $rollback) = @_;
 
     given( $status ) {
-        when( 'RUNNING' ) { 'gears.gif'; }
+        when( 'RUNNING' ) { 'gears.svg'; }
         when( 'READY' ) { 'waiting.png'; }
-        when( 'APPROVAL' ) { 'user_delete.gif'; }
+        when( 'APPROVAL' ) { 'user_delete.svg'; }
         when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.svg' } }
-        when( 'IN-EDIT' ) { 'log_w.png'; }
+        when( 'IN-EDIT' ) { 'log_w_1.svg'; }
         when( 'WAITING' ) { 'waiting.png'; }
         when( 'PAUSED' ) { 'paused.png'; }
         when( 'TRAPPED_PAUSED' ) { 'paused.png'; }

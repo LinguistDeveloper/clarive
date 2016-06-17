@@ -51,7 +51,7 @@
             my $r= $_;
             my ($sd,$ed,$psd,$ped) = @{ $r }{qw/start_date end_date plan_start_date plan_end_date/}; 
             if( defined $ped && $now>$ped && !defined $ed ) {
-                $r->{end_date} = \'<img src="/static/images/icons/error.png" />' ;
+                $r->{end_date} = \'<img src="/static/images/icons/error.svg" />' ;
                 $r->{overdue} = 1;
             }
             $r;
@@ -76,7 +76,7 @@
 %    my $val = $row->{ $$h{key} };
 <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html"><% 
                             $$h{type} =~ /checkbox|cbox/ 
-                                ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/cancel.png">' : '<img src="/static/images/icons/checkbox.png">')
+                                ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/cancel.png">' : '<img src="/static/images/icons/checkbox.svg">')
                             : $$h{type} eq 'index' 
                                 ? ++$ix
                             : $$h{type} eq 'datefield' 

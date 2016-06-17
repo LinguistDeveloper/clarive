@@ -1349,7 +1349,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
         },
         columns: [
           //{ header: _('ID'), width: 60, hidden: true, dataIndex: 'id' },
-          { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.gif" />'} },
+          { header: '', width: 20, dataIndex: 'id', renderer: function(){ return '<img style="float:right" src="/static/images/icons/tag.svg" />'} },
           { header: _('Name'), width: 240, dataIndex: 'name',
               renderer: function(v,metadata,rec){
                   return Baseliner.render_wrap( String.format('<span id="boot"><h5>{0}</h5></span>', v ) );
@@ -1782,7 +1782,7 @@ Baseliner.DataEditor = function(c) {
         self.getLayout().setActiveItem( 1 );
     };
     var btn_json = new Ext.Button({
-        tooltip: _('JSON'), icon:'/static/images/icons/script_edit.png', handler: view_json,
+        tooltip: _('JSON'), icon:'/static/images/icons/script_edit.svg', handler: view_json,
         allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
 
     var close_comp = function( saved ){
@@ -1845,7 +1845,7 @@ Baseliner.DataEditor = function(c) {
         btn_json,
         '-',
         { icon:'/static/images/icons/add.svg',  tooltip: _('Create'), handler: add_row },
-        { icon:'/static/images/icons/delete_.png',  tooltip: _('Delete'), handler: self.del_row },
+        { icon:'/static/images/icons/delete.svg',  tooltip: _('Delete'), handler: self.del_row },
         '->'
     ];
 
@@ -2349,7 +2349,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             items:[
                 { layout:'form', border: false, columnWidth:.9, items:[field], labelWidth: 200, labelAlign: 'right' },
                 { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({
-                        icon:'/static/images/icons/delete_.png',
+                        icon:'/static/images/icons/delete.svg',
                         handler: function(){
                             self.deleting = true;
                             self.remove( pn );
@@ -2474,7 +2474,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 }
             }
         }});
-        self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete_.png', handler:function(){
+        self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete.svg', handler:function(){
             if( self.variable_name ) {
                     self.del_field( self.variable_name );
             } else {

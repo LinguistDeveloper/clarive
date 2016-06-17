@@ -75,7 +75,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: 'Etc',
-                    icon:'/static/ext/resources/images/default/dd/drop-yes.gif',
+                    icon:'/static/images/icons/drop-yes.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         document.location.href = '<% "sistemas.mas?fid=&cam=&par1=&envname=&state="  %>';

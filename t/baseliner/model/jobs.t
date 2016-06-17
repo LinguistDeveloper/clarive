@@ -272,7 +272,7 @@ sub _create_job {
                                     {
                                         "attributes" => {
                                             "icon" =>
-                                              "/static/images/icons/if.gif",
+                                              "/static/images/icons/if.svg",
                                             "palette"        => 0,
                                             "on_drop_js"     => undef,
                                             "holds_children" => 1,

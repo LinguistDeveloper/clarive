@@ -1,1 +1,11 @@
-<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><path d="M2.421,3.85l0,9.7l11.217,0l0,-9.7l-2.763,0l0,-1.561l4.325,0l0,12.822l-14.34,0l0,-12.822l4.882,0l0,1.561l-3.321,0Z" style="fill:#3c3c3b;"/><path d="M11.357,6.913l-3.213,4.495l-3.129,-4.465l1.363,0l0,-6.038l3.606,0l0,6.003l1.373,0.005Z" style="fill:#f7a808;fill-rule:nonzero;"/></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+	.st1{fill:none;stroke:#3C3C3B;stroke-width:2;stroke-miterlimit:10;}
+</style>
+<path class="st0" d="M11.6,5.7L8,10.9L4.4,5.8h1.6V1.2h4.1v4.6C10.1,5.7,11.6,5.7,11.6,5.7z"/>
+<polyline class="st1" points="14,11 12.8,13.9 3.1,13.9 2,11 "/>
+</svg>

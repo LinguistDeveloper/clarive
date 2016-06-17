@@ -225,7 +225,7 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('View'),
-                    icon:'/static/images/icons/drop-view.gif',
+                    icon:'/static/images/icons/drop-view.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -243,7 +243,7 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/icons/delete_.png',
+                    icon:'/static/images/icons/delete.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -291,8 +291,7 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete all'),
-                    //icon:'/static/images/del.gif',
-                    icon:'/static/images/delete_all.png',
+                    icon:'/static/images/icons/delete_all.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete all the inbox messages?'),

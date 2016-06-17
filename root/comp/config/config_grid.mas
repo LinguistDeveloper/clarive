@@ -102,7 +102,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('View'),
-                    icon:'/static/images/icons/drop-yes.gif',
+                    icon:'/static/images/icons/drop-yes.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -116,7 +116,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: '<% _loc('Delete') %>',
-                    icon:'/static/images/icons/del_all.png',
+                    icon:'/static/images/icons/del_all.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

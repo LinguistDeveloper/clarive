@@ -3,6 +3,6 @@ use Moose::Role;
 with 'Baseliner::Role::CI';
 with 'Baseliner::Role::CI::Infrastructure';
 
-sub icon { '/static/images/icons/catalog.gif' }
+sub icon { '/static/images/icons/catalog.svg' }
 
 1;

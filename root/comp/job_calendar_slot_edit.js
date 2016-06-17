@@ -127,17 +127,17 @@ for(my $hh=0; $hh<=24; $hh++) {
         url: '/job/calendar_submit', 
         buttons: [
 %if($c->stash->{create}){		
-            {  icon:'/static/images/icons/slot_green.png', text: _('Create Active Slot'), handler: function(){ modify_window('A') } }
-            ,{ icon:'/static/images/icons/slot_red.png', text: _('Create Inactive Slot'), handler: function(){ modify_window('AD') } }
+            {  icon:'/static/images/icons/slot_green.svg', text: _('Create Active Slot'), handler: function(){ modify_window('A') } }
+            ,{ icon:'/static/images/icons/slot_red.svg', text: _('Create Inactive Slot'), handler: function(){ modify_window('AD') } }
 %} else {
             {  icon:'/static/images/icons/edit.svg', text: _('Modify Slot'), handler: function(){ modify_window('A') } }
             ,{  icon:'/static/images/icons/add.svg', text: _('Overwrite'), handler: function(){ modify_window('A', true) } }
 
 %}
 % unless( $c->stash->{create} ) { #las ventanas cerradas no se borran 
-            ,{  icon:'/static/images/icons/delete_.png', text: _('Delete'), handler: function(){ modify_window('B') } }
+            ,{  icon:'/static/images/icons/delete.svg', text: _('Delete'), handler: function(){ modify_window('B') } }
 %   if( $activa ) {
-            ,{ icon:'/static/images/icons/stop.png', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
+            ,{ icon:'/static/images/icons/stop.svg', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
 %   } else {
             ,{ icon:'/static/images/icons/start.png', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
 % 	}

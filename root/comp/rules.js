@@ -326,7 +326,7 @@
             v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
         var type = rec.data.rule_type;
         var icon = type=='dashboard' ? IC('dashboard.svg')
-                : type=='form' ? IC('form')
+                : type=='form' ? IC('form.svg')
                 : type=='event' ? IC('event.svg')
                 : type=='report' ? IC('report.svg')
                 : type=='pipeline' ? IC('job.svg')
@@ -402,7 +402,7 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder_new.gif' }
+                    { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder_new.svg' }
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -411,7 +411,7 @@
             var stmts_menu = new Ext.menu.Menu({
                 items: [
                     { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/rename_.png' },
-                    { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder_delete.gif' } 
+                    { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder_delete.svg' }
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -419,7 +419,7 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Remove from folder'), handler: function(item){ delete_rule_from_folder(node);  }, icon:'/static/images/icons/delete.gif' } 
+                    { text: _('Remove from folder'), handler: function(item){ delete_rule_from_folder(node);  }, icon:'/static/images/icons/delete.svg' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -467,7 +467,7 @@
 
     var get_icon_category = function(rule_category){
         var icon = rule_category=='dashboard' ? IC('dashboard.svg')
-            : rule_category=='form' ? IC('form')
+            : rule_category=='form' ? IC('form.svg')
             : rule_category=='event' ? IC('event.svg')
             : rule_category=='report' ? IC('report.svg')
             : rule_category=='pipeline' ? IC('job.svg')
@@ -763,7 +763,7 @@
         }});
         var win = new Baseliner.Window({ 
             height: 400, width: 800, 
-            tbar: [btn_beau, '->', { xtype:'button', text:_('Import'), icon: '/static/images/icons/import.png', handler: importer }],
+            tbar: [btn_beau, '->', { xtype:'button', text:_('Import'), icon: '/static/images/icons/import.svg', handler: importer }],
             items: impbox, layout:'fit' });       
         win.show();
     };
@@ -1160,7 +1160,7 @@
 
                     if( res.success ) {
                         var msgcfg = {};
-                        if( res.detected_errors ) msgcfg.image = '/static/images/icons/warn.png';
+                        if( res.detected_errors ) msgcfg.image = '/static/images/icons/warn.svg';
                         Baseliner.message( _('Rule'), res.msg, msgcfg );
                         if( !Ext.getCmp(rt_id) ) return;  // in case the save is too long and the tree is gone
                         rule_tree.is_dirty = false;
@@ -1187,7 +1187,7 @@
                             ], 
                             bbar: [
                                 '->',
-                                { xtype:'button', icon: '/static/images/icons/left.png', text: _('Go Back'), handler: function(){ errwin.close() } },
+                                { xtype:'button', icon: '/static/images/icons/left.svg', text: _('Go Back'), handler: function(){ errwin.close() } },
                                 { xtype:'button', icon: '/static/images/icons/save.png', text: _('Always Ignore for this Rule and Save'), handler: function(){
                                     save_action({ ignore_dsl_errors: 1, ignore_error_always: 1 }); // repeat    
                                     errwin.close();
@@ -1329,16 +1329,16 @@
                     { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.svg' },
                     { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/rename_.png' },
                     { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/properties.svg' },
-                    { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.png' },
-                    { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
-                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut_edit.gif' },
-                    { text: _('Copy Shortcut'), handler: function(item){ copy_shortcut( node ) }, icon:'/static/images/icons/shortcut-add.png' },
-                    { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
+                    { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.svg' },
+                    { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.svg' },
+                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut_edit.svg' },
+                    { text: _('Copy Shortcut'), handler: function(item){ copy_shortcut( node ) }, icon:'/static/images/icons/shortcut-add.svg' },
+                    { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.svg' },
                     { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.svg' },
-                    { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
-                    { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.png' },
-                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/restart_new.png' },
-                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete_.png' } 
+                    { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.svg' },
+                    { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.svg' },
+                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/restart_new.svg' },
+                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.svg' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -1364,7 +1364,7 @@
         
         // node search system
         var btn_search = new Ext.Button({ icon:IC('wrench.svg'), menu:[
-            { text: _('Search'), icon:'/static/images/icons/search-small.png',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
+            { text: _('Search'), icon:'/static/images/icons/search-small.svg',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
             { text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
             { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } },
@@ -1801,14 +1801,14 @@
     });
 
     var toggle_button = new Ext.Button(
-        { 
-            tooltip:_('Tree view'), 
+        {
+            tooltip:_('Tree view'),
             pressed: false,
             stateful: true,
-            toggleGroup:'rule-tree-group'+Ext.id(), 
-            icon: '/static/images/icons/workflow.png', 
-            cls: 'x-btn-icon', 
-            handler: activate_tree_view 
+            toggleGroup:'rule-tree-group'+Ext.id(),
+            icon: '/static/images/icons/workflow.svg',
+            cls: 'x-btn-icon',
+            handler: activate_tree_view
         }
     );
 
@@ -1848,15 +1848,15 @@
             { xtype:'button', tooltip:_('Refresh'), handler: function(){ reload_data() }, icon:'/static/images/icons/refresh.svg', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.svg', cls: 'x-btn-icon ui-comp-rule-create', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.svg', id: 'x-btn-edit', cls: 'x-btn-icon', handler: function(){ rule_edit(); }, disabled: true },
-            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete_.png', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
-            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.svg', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
+            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.svg', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             toggle_button,
             { xtype:'button', icon: '/static/images/icons/wrench.svg', tooltip:_('Import/Export'), cls: 'x-btn-icon', menu:[
-                { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
-                { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
+                { text: _('Import YAML'), icon: '/static/images/icons/import.svg', handler: rule_import },
+                { text: _('Import from File'), icon: '/static/images/icons/import.svg', handler: rule_import_file },
                 '-',
-                { text: _('Export YAML'), icon: '/static/images/icons/export.png', handler: rule_export },
-                { text: _('Export to File'), icon: '/static/images/icons/export.png', handler: rule_export_file }
+                { text: _('Export YAML'), icon: '/static/images/icons/downloads_favicon.svg', handler: rule_export },
+                { text: _('Export to File'), icon: '/static/images/icons/downloads_favicon.svg', handler: rule_export_file }
             ]}
         ]
     });

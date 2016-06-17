@@ -17,7 +17,6 @@ has ts       => qw(is rw isa TS coerce 1), default => sub { Class::Date->now->st
 #has _ci      => qw(is rw isa Any);  # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
-#sub icon { '/static/images/icons/ci.png' }
 
 has name        => qw(is rw isa Maybe[Str]);
 has bl          => qw(is rw isa BL coerce 1 default *);

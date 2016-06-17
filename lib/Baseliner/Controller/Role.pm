@@ -162,7 +162,7 @@ sub action_tree : Local {
             if ( List::MoreUtils::all( sub { $txt =~ $_ }, @qrs ) ) {
                 my $icon = '/static/images/icons/lock_small.png';
                 if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
-                    $icon = '/static/images/icons/checkbox.png';
+                    $icon = '/static/images/icons/checkbox.svg';
                 }
 
                 push @tree_query,
@@ -213,7 +213,7 @@ sub action_tree : Local {
                     $folders{$fkey}->{icon} = '/static/images/icons/folder.gif';
                 }
 
-                $icon = '/static/images/icons/checkbox.png';
+                $icon = '/static/images/icons/checkbox.svg';
             }
 
             my $node =

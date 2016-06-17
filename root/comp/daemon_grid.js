@@ -63,7 +63,7 @@
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    var img =
-		    value == '1' ? 'start.png' : 'stop.png';
+		    value == '1' ? 'start.png' : 'stop.svg';
 		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
     };
 
@@ -99,7 +99,7 @@
 
         var btn_stop = new Ext.Toolbar.Button({
 	    text: _('Deactivate'),
-	    icon:'/static/images/icons/stop.png',
+	    icon:'/static/images/icons/stop.svg',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
 	    handler: function() {
@@ -154,7 +154,7 @@
     
         var btn_delete = new Ext.Toolbar.Button({
 		    text: _('Delete'),
-		    icon:'/static/images/icons/delete_.png',
+		    icon:'/static/images/icons/delete.svg',
 		    cls: 'x-btn-text-icon',
 		    disabled: true,
 		    handler: function() {

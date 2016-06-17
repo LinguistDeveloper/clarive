@@ -381,9 +381,9 @@
         });
         win_ren.show();
     };
-    var button_create = { text: _("Create"), handler: revision_create, icon: '/static/images/icons/revision_create.gif', cls: 'x-btn-text-icon' };
-    var button_del = new Ext.Button({ text: _("Delete"), disabled: true, handler: revision_del, icon: '/static/images/icons/revision_del.gif', cls: 'x-btn-text-icon' });
-    var button_rename = new Ext.Button({ text: _("Rename"), disabled: true, handler: revision_rename_form, icon: '/static/images/icons/revision_rename.gif', cls: 'x-btn-text-icon' });
+    var button_create = { text: _("Create"), handler: revision_create, icon: '/static/images/icons/revision_create.svg', cls: 'x-btn-text-icon' };
+    var button_del = new Ext.Button({ text: _("Delete"), disabled: true, handler: revision_del, icon: '/static/images/icons/revision_del.svg', cls: 'x-btn-text-icon' });
+    var button_rename = new Ext.Button({ text: _("Rename"), disabled: true, handler: revision_rename_form, icon: '/static/images/icons/revision_rename.svg', cls: 'x-btn-text-icon' });
 
     var resultTpl = new Ext.XTemplate(
         '<tpl for="."><div class="search-item {recordCls}">',
@@ -461,7 +461,7 @@
     var grid = new Ext.grid.GridPanel({
         title: _("Revisions"),
         header: false,
-        tab_icon: '/static/images/icons/revision.gif',
+        tab_icon: '/static/images/icons/revision.svg',
         autoScroll: true,
         tpl: resultTpl,
         autoWidth: true,

@@ -412,21 +412,21 @@
             search_field,
             btn_create,
             btn_delete,
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/export.png', cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
-                    { text:_('JSON'), icon: '/static/images/icons/json.png', handler:function(){ ci_export('json') } },
+                    { text:_('JSON'), icon: '/static/images/icons/json.svg', handler:function(){ ci_export('json') } },
                     { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
                     { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } },
-                    { text:_('CSV'), icon: '/static/images/icons/csv.png', handler:function(){ ci_export('csv', params.item) } },
-                    { text: _('CSV File'), icon: '/static/images/icons/csv.png', handler: function() {
+                    { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_export('csv', params.item) } },
+                    { text: _('CSV File'), icon: '/static/images/icons/csv.svg', handler: function() {
                         ci_export_file('/ci/export_file', 'csv', params.item, 'FrameDownload')} }
                 ]
             },
-            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.png', cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.svg', cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_import('yaml') } },
-                    { text:_('CSV'), icon: '/static/images/icons/csv.png', handler:function(){ ci_import('csv', params.item) } }
+                    { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_import('csv', params.item) } }
                 ]
             },
 	       '->',

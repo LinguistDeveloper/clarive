@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
-<g id="Layer_1_1_" display="none">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{display:none;}
+	.st1{fill:#FF6F6F;}
+	.st2{fill:none;stroke:#FF6F6F;stroke-width:1.5;stroke-miterlimit:10;}
+	.st3{fill:none;}
+</style>
+<g id="Layer_1_1_" class="st0">
 </g>
-<rect x="4.5" y="7.1" fill="#404040" width="7" height="2.3"/>
-<circle fill="none" stroke="#404040" stroke-width="1.5" stroke-miterlimit="10" cx="8" cy="8" r="6.6"/>
-<rect fill="none" width="16" height="16"/>
+<rect x="3.3" y="4.8" class="st1" width="4.9" height="1.6"/>
+<path class="st2" d="M6,10.4c-2.5,0-4.6-2.1-4.6-4.6S3.5,1.2,6,1.2s4.6,2.1,4.6,4.6"/>
+<rect x="7.7" y="9.1" class="st1" width="4.9" height="1.6"/>
+<circle class="st2" cx="10.2" cy="9.8" r="4.6"/>
+<rect class="st3" width="16" height="16"/>
 </svg>

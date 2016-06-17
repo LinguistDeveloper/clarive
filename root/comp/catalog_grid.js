@@ -71,7 +71,7 @@
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
         var active = rec.data.active;
         if( active!=undefined && !active ) {
-            value = '/static/images/icons/inactive.gif';
+            value = '/static/images/icons/inactive.svg';
         }
         return Baseliner.render_icon( value, metadata, rec, rowIndex, colIndex, store );
     }
@@ -112,8 +112,8 @@
         });
     });
     store_types.load();
-    var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/new.gif', cls: 'x-btn-text-icon' });
-    var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete.gif', function(){
+    var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/new.svg', cls: 'x-btn-text-icon' });
+    var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete.svg', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         var row = sel.data;
@@ -132,8 +132,8 @@
         if( sel.data.row.active == undefined ) sel.data.row.active = true;
         Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
     } ;
-    var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.gif', edit_action ); 
-    var button_clone = Baseliner.button(_('Clone'), '/static/images/icons/copy.gif', function(){
+    var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.svg', edit_action ); 
+    var button_clone = Baseliner.button(_('Clone'), '/static/images/icons/copy.svg', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         if( sel.data.row['id'] != undefined ) sel.data.row['id'] = '';
@@ -155,7 +155,7 @@
             var win = new Ext.Window({
                 title: _("YAML"),
                 tbar: [ 
-                    { xtype:'button', text: _('Save'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/write.gif',
+                    { xtype:'button', text: _('Save'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/write.svg',
                         handler: function(){
                             // convert the yaml text to a json object
                             Baseliner.ajaxEval('/from_yaml', { yaml: ta.getValue() }, function(res) {
@@ -197,7 +197,7 @@
     });
     var button_by_type = new Ext.Button({
        text: _('Type'),
-       icon: '/static/images/icons/catalog.gif',
+       icon: '/static/images/icons/catalog.svg',
        cls: 'x-btn-text-icon',
        pressed: true,
        enableToggle: true,

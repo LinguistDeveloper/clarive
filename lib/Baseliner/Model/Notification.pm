@@ -64,7 +64,7 @@ register 'service.daemon.email' => {
 
 register 'service.email.flush' => {
     name => 'Email Flush Queue Once',
-    icon => '/static/images/icons/envelope.png',
+    icon => '/static/images/icons/envelope.svg',
     config => 'config.comm.email',
     handler => sub {
         my $self = shift;

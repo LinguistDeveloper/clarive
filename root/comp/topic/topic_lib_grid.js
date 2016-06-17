@@ -39,7 +39,7 @@ Cla.open_grid_from_field = function(el,mid,category,field_title){
     var el = $(el);
     var topics = [];
     $(el).find('.topic-row').each(function(){ topics.push($(this).attr('mid')); });
-    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon:IC('topic_out'), topic_list: topics });
+    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon:IC('topic_out.svg'), topic_list: topics });
 };
 
 Baseliner.open_monitor_query = function(q){
@@ -618,7 +618,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv.png',
+        icon: '/static/images/icons/csv.svg',
         text: _('CSV'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload'});
@@ -648,7 +648,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_clear_state = new Ext.Button({
-        icon: '/static/images/icons/reset-grey.png',
+        icon: '/static/images/icons/reset-grey.svg',
         tooltip: _('Reset Grid Columns'),
         iconCls: 'x-btn-icon',
         handler: function(){
@@ -696,7 +696,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_mini = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/updown_.gif',
+        icon:'/static/images/icons/updown.svg',
         tooltip: _('Collapse Rows'),
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: mini_mode || false, allowDepress: true,
@@ -746,7 +746,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_custom = new Ext.Button({
-        icon: '/static/images/icons/table_edit.png',
+        icon: '/static/images/icons/table_edit.svg',
         iconCls: 'x-btn-icon',
         enableToggle: true,
         pressed: false,
@@ -1103,7 +1103,7 @@ Cla.topic_grid = function(params){
             // open children
             ret.push("<a href='javascript:void(0);' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", \""+rec.data.topic_mid+"\"); return false'>");
             ret.push("<span class='label' style='cursor:pointer; color:#333; borderx: 1px #2ECC71 solid; padding-left: 0px; background-color: transparent; font-size:10px; margin-top:0px'>");
-            ret.push("<img src='/static/images/icons/"+img+".png'>");
+            ret.push("<img src='/static/images/icons/"+img+".svg'>");
             ret.push( refs.length );
             ret.push("</span>");
             ret.push("</a>&nbsp;");
@@ -1121,7 +1121,7 @@ Cla.topic_grid = function(params){
         }
         if(rec.data.num_file){
             swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' style='height:16px;width:16px;'/> ");
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.svg' style='height:16px;width:16px;'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
             actions_html.push("</span>");
         }

@@ -225,7 +225,7 @@
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv.png',
+        icon: '/static/images/icons/csv.svg',
         text: _('CSV'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
@@ -240,7 +240,7 @@
     });
 
     var btn_clear_state = new Ext.Button({
-        icon: '/static/images/icons/reset-grey.png',
+        icon: '/static/images/icons/reset-grey.svg',
         tooltip: _('Reset Grid Columns'),
         iconCls: 'x-btn-icon',
         handler: function(){
@@ -630,11 +630,11 @@
                         handler:function(){trap_do(mid,'retry')} },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
                 { flex:1, layout:'hbox', padding: 20,
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.png',
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.svg',
                         handler:function(){trap_do(mid,'skip')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
-                { flex:1, layout:'hbox', padding: 20,
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete_.png',
+                { flex:1, layout:'hbox', padding: 20, 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.svg',
                         handler:function(){trap_do(mid,'abort')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
                 { flex:1, layout:'hbox', padding: 20,
@@ -803,11 +803,10 @@
         );
     };
 
-    // TODO this button is deprecated, remove it after a month from this commit
     var button_resume = new Ext.Toolbar.Button({
         text: _('Resume'),
         hidden: true,
-        icon:'/static/images/icons/play.png',
+        icon:'/static/images/icons/play.svg',
         cls: 'x-btn-text-icon',
         handler: function(){
             var sm = grid.getSelectionModel();
@@ -828,7 +827,7 @@
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
         disabled: true,
-        icon:'/static/images/icons/delete_.png',
+        icon:'/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -870,7 +869,7 @@
     var button_rollback = new Ext.Toolbar.Button({
         text: _('Rollback'),
         disabled: true,
-        icon:'/static/images/icons/left.png',
+        icon:'/static/images/icons/left.svg',
         cls: 'x-btn-text-icon',
         handler: function() { do_backout() }
     });
@@ -878,7 +877,7 @@
     var button_rerun = new Ext.Toolbar.Button({
         text: _('Rerun'),
         disabled: true,
-        icon:'/static/images/icons/restart.gif',
+        icon:'/static/images/icons/restart.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -1088,11 +1087,11 @@
         var status = rec.data.status_code;
         var type   = rec.data.type_raw;
         var rollback = rec.data.rollback;
-        if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
+        if( status=='RUNNING' ) { icon='gears.svg'; bold=true }
         else if( status=='READY' ) icon='waiting.png';
-        else if( status=='APPROVAL' ) icon='user_delete.gif';
+        else if( status=='APPROVAL' ) icon='user_delete.svg';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w.png';
+        else if( status=='IN-EDIT' ) icon='log_w_1.svg';
         else if( status=='WAITING' ) icon='waiting.png';
         else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='TRAPPED' ) icon='paused.png';
@@ -1127,7 +1126,7 @@
         }
         if( icon!=undefined ) {
             var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
-            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.png" />' : '';
+            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w_1.svg" />' : '';
             return div1
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
@@ -1178,7 +1177,7 @@
                     var link = '<span style="text-align: center;vertical-align: middle;"><a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
                     var comments = '';
                     if ( record.data.cs_comments[cs.mid] ) {
-                      comments = "<img src='/static/images/icons/paperclip.gif' style='cursor:pointer;height:12px;width:12px;' onclick='javascript:( new Baseliner.view_field_content({ username: \"<% $c->username %>\", mid: \""+ cs.mid + "\", field: \"" + record.data.cs_comments[cs.mid] + "\", title: \"" + cs.category.name + ' #' + cs.mid + ' - ' + cs.title + "\" }))'/>";
+                      comments = "<img src='/static/images/icons/paperclip.svg' style='cursor:pointer;height:12px;width:12px;' onclick='javascript:( new Baseliner.view_field_content({ username: \"<% $c->username %>\", mid: \""+ cs.mid + "\", field: \"" + record.data.cs_comments[cs.mid] + "\", title: \"" + cs.category.name + ' #' + cs.mid + ' - ' + cs.title + "\" }))'/>";
                     }
                     return_value.push(link + '&nbsp' + comments + '</span>');
                   });

@@ -649,7 +649,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
 
         var btn_redraw = new Ext.Button({
             tooltip: _('Redraw'),
-            icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw(); }
+            icon:'/static/images/icons/redraw.svg', handler: function(){ self.redraw(); }
         });
         self.btn_to_img = new Ext.Button({
             tooltip: _('Generate Image'),
@@ -657,24 +657,24 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
         self.btn_st = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/spacetree.png',
+            icon: '/static/images/icons/spacetree.svg',
             text: _('SpaceTree'), handler: function(){ self.load_st(); }
         });
         self.btn_rg = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/rgraph.png',
+            icon: '/static/images/icons/rgraph.svg',
             text: _('RGraph'), handler: function(){ self.load_rg(); }
         });
 
         // TODO Sunburst has issues, disabled for now
         self.btn_sunburst = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/spacetree.png',
+            icon: '/static/images/icons/spacetree.svg',
             text: _('Sunburst'), handler: function(){ self.load_sunburst(); }
         });
         self.btn_d3g = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/d3graph.png', hidden: Ext.isIE9m,
+            icon: '/static/images/icons/d3graph.svg', hidden: Ext.isIE9m,
             text: _('d3G'), handler: function(){ self.load_d3g(); }
         });
         // depth
@@ -707,8 +707,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             modal: true, closeAction: 'hide',
             tbar: [
                 '->',
-                new Ext.Button({ text:_('Clear All'), icon:IC('delete.gif'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig; } }),
-                new Ext.Button({ text:_('Filter'), icon:IC('search-small'), handler: function(){ self.filter_win.hide(); } })
+                new Ext.Button({ text:_('Clear All'), icon:IC('delete.svg'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig; } }),
+                new Ext.Button({ text:_('Filter'), icon:IC('search-small.svg'), handler: function(){ self.filter_win.hide(); } })
             ],
             items: [ self.include_cl_combo, self.not_in_class_check ]
         });
@@ -723,14 +723,14 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
 
         self.show_filter = new Ext.Button({
-            text: _('Filter (None)'), icon: IC('search-small'), handler: function(){
+            text: _('Filter (None)'), icon: IC('search-small.svg'), handler: function(){
                 self.filter_win.show();
             }
         });
 
         // recenter on last mid
         self.btn_recenter = new Ext.Button({
-            icon: '/static/images/icons/startlast.png',
+            icon: '/static/images/icons/startlast.svg',
             tooltip: _('Start on Last'), handler: function(){ self.mid = self.last_mid; self.reload_current(); }, hidden: true
         });
         self.lab_depth = new Ext.Container({ hidden: true, html:_('dph')+':' });

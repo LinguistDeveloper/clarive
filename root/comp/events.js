@@ -168,10 +168,9 @@
         tbar: [  _('Search') + ': ', ' ',
             search_field,' ',' ',
             { icon:'/static/images/icons/refresh.svg', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
-            { icon:'/static/images/icons/delete_.png', handler: del_event , 
-            //text:_('Delete event')},
+            { icon:'/static/images/icons/delete.svg', handler: del_event , 
             text:_('Delete')},
-            { icon:'/static/images/icons/restart_new.png', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
+            { icon:'/static/images/icons/restart_new.svg', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
         ],
         bbar: ptool
     });

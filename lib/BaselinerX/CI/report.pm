@@ -41,11 +41,11 @@ sub root_reports {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ),
-            icon    => '/static/images/icons/report_default.png',
+            icon    => '/static/images/icons/report_default.svg',
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/report_default.png',
+                    icon    => '/static/images/icons/report_default.svg',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,
@@ -116,7 +116,7 @@ sub report_list {
     if ($p->{show_reports} eq 'true'){
         push @trees, ({
             text => _loc('Internal Reports'),
-            icon => '/static/images/icons/table.png',
+            icon => '/static/images/icons/report.svg',
             mid => -1,
             draggable => \0,
             children => $reports_available,
@@ -126,7 +126,7 @@ sub report_list {
         });
         push @trees, ({
             text => _loc('Rule Reports'),
-            icon => '/static/images/icons/table.png',
+            icon => '/static/images/icons/report.svg',
             mid => -1,
             draggable => \0,
             children => $reports_from_rule,
@@ -294,7 +294,7 @@ sub my_searches {
             {
                 mid     => $folder->mid,
                 text    => $name,
-                icon    => '/static/images/icons/report_default.png',
+                icon    => '/static/images/icons/report_default.svg',
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
@@ -303,13 +303,13 @@ sub my_searches {
                     },
                     {
                         text   => _loc('Delete') . '...',
-                        icon   => '/static/images/icons/delete_.png',
+                        icon   => '/static/images/icons/delete.svg',
                         eval   => { handler => 'Baseliner.delete_search' }
                     }
                 ],
                 data    => {
                     click   => {
-                        icon    => '/static/images/icons/report_default.png',
+                        icon    => '/static/images/icons/report_default.svg',
                         url     => '/comp/lifecycle/report_run.js',
                         type    => 'eval',
                         title   => $name,
@@ -350,11 +350,11 @@ sub public_searches {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ),
-            icon    => '/static/images/icons/report_default.png',
+            icon    => '/static/images/icons/report_default.svg',
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/report_default.png',
+                    icon    => '/static/images/icons/report_default.svg',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,
@@ -521,7 +521,7 @@ sub all_fields {
                             my ($prefix,$data_key) = split( /\./, $key, 2);
                             {
                                 text     => $key,
-                                icon     => '/static/images/icons/field-add.png',
+                                icon     => '/static/images/icons/field-add.svg',
                                 id_field => $prefix,
                                 data_key => $data_key,
                                 type     => 'select_field',
@@ -541,7 +541,7 @@ sub all_fields {
             push @tree, {
                 text        => _loc($user_categories_fields_meta->{$name_category}->{$_}->{name_field}),
                 id_field    => $_,
-                icon        => '/static/images/icons/field-add.png',
+                icon        => '/static/images/icons/field-add.svg',
                 type        => 'select_field',
                 meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
                 collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},

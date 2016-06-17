@@ -9,21 +9,21 @@ use Try::Tiny;
 register 'dashlet.job.last_jobs' => {
     form=> '/dashlets/last_jobs_config.js',
     name=> 'Last jobs by app',
-    icon=> '/static/images/icons/report_default.png',
+    icon=> '/static/images/icons/report_default.svg',
     js_file => '/dashlets/last_jobs.js'
 };
 
 register 'dashlet.job.list_jobs' => {
     form=> '/dashlets/list_jobs_config.js',
     name=> 'List jobs',
-    icon=> '/static/images/icons/report_default.png',
+    icon=> '/static/images/icons/report_default.svg',
     js_file => '/dashlets/list_jobs.js'
 };
 
 register 'dashlet.job.list_baseline' => {
     form=> '/dashlets/baselines_config.js',
     name=> 'List baselines',
-    icon=> '/static/images/icons/report_default.png',
+    icon=> '/static/images/icons/report_default.svg',
     js_file => '/dashlets/baselines.js'
 };
 
@@ -59,14 +59,14 @@ register 'dashlet.topic.number_of_topics' => {
 register 'dashlet.topic.list_topics' => {
     form=> '/dashlets/list_topics_config.js',
     name=> 'List topics',
-    icon=> '/static/images/icons/report_default.png',
+    icon=> '/static/images/icons/report_default.svg',
     js_file => '/dashlets/list_topics.js'
 };
 
 register 'dashlet.topic.topics_by_date_line' => {
     form=> '/dashlets/topics_by_date_line_config.js',
     name=> 'Topics time line',
-    icon=> '/static/images/icons/chart_curve.png',
+    icon=> '/static/images/icons/chart_curve.svg',
     js_file => '/dashlets/topics_by_date_line.js'
 };
 
@@ -95,14 +95,14 @@ register 'dashlet.topic.gauge' => {
     form=> '/dashlets/topics_gauge_config.js',
     name=> 'Topics gauge',
     field_width => '80%',
-    icon=> '/static/images/icons/gauge.png',
+    icon=> '/static/images/icons/gauge.svg',
     js_file => '/dashlets/topics_gauge_d3.js'
 };
 
 register 'dashlet.topic.topic_roadmap' => {
     form=> '/dashlets/topic_roadmap_config.js',
     name=> 'Topic Roadmap',
-    icon=> '/static/images/icons/roadmap.png',
+    icon=> '/static/images/icons/roadmap.svg',
     js_file => '/dashlets/topic_roadmap.js',
     no_boot => 1,
 };
@@ -125,7 +125,7 @@ register 'dashlet.iframe' => {
 register 'dashlet.email' => {
     form=> '/dashlets/emails_config.js',
     name=> 'Email messages',
-    icon=> '/static/images/icons/envelope.png',
+    icon=> '/static/images/icons/envelope.svg',
     js_file => '/dashlets/emails.js'
 };
 

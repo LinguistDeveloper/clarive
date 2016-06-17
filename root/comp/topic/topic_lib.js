@@ -802,7 +802,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         self.btn_delete_form = new Ext.Button({
             text: _('Delete'),
-            icon:'/static/images/icons/delete_.png',
+            icon:'/static/images/icons/delete.svg',
             cls: 'x-btn-icon-text',
             // type: 'submit',
             hidden: self.permDelete,
@@ -852,7 +852,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_detail = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/detail.png',
+            icon:'/static/images/icons/detail.svg',
             tooltip:_('Detail View'),
             cls: 'x-btn-icon',
             enableToggle: true,
@@ -936,7 +936,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
 
         self.btn_docgen = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/document.png',
+            icon:'/static/images/icons/document.svg',
             tooltip: _('Generate Document'),
             handler: function(){ self.show_docgen() },
             hidden: self.viewDocs==undefined?true:!self.viewDocs
@@ -953,7 +953,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_life_cicle = new Ext.Toolbar.Button({
-            icon: IC('diagram'),
+            icon: IC('diagram.svg'),
             cls: 'x-btn-icon',
             enableToggle: true,
             tooltip: _('Open life cycle'),
@@ -963,7 +963,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_timeline = new Ext.Toolbar.Button({
-            icon: IC('timeline'),
+            icon: IC('timeline.svg'),
             cls: 'x-btn-icon',
             enableToggle: true,
             tooltip: _('Open timeline'),

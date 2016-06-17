@@ -473,7 +473,7 @@ Baseliner.new_jsonstore = function(params) {
 Baseliner.button = function(text,icon,handler){ 
     return new Ext.Button({
        text: text,
-       icon: icon || '/static/images/icons/revision_create.gif',
+       icon: icon || '/static/images/icons/revision_create.svg',
        cls: 'x-btn-text-icon',
        handler: handler || function(){} 
     });
@@ -481,7 +481,7 @@ Baseliner.button = function(text,icon,handler){
 
 Baseliner.img_button = function(icon,handler){ 
     return new Ext.Button({
-       icon: icon || '/static/images/icons/revision_create.gif',
+       icon: icon || '/static/images/icons/revision_create.svg',
        cls: 'x-btn-icon',
        handler: handler || function(){} 
     });
@@ -592,7 +592,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/delete_.png',
+                icon: '/static/images/icons/delete.svg',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = self.getSelectionModel().getSelected();
@@ -740,7 +740,7 @@ Baseliner.array_field = function( args ) {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/del_all.png',
+                icon: '/static/images/icons/del_all.svg',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = fgrid.getSelectionModel().getSelected();
@@ -1116,7 +1116,7 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Delete'),
-            icon: IC('delete_.png'),
+            icon: IC('delete.svg'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1140,7 +1140,7 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Deactivate'),
-            icon:'/static/images/icons/stop.png',
+            icon:'/static/images/icons/stop.svg',
             disabled: true,
             cls: 'x-btn-text-icon'
         }, config);
@@ -1409,7 +1409,7 @@ Baseliner.ImportWindow = Ext.extend( Baseliner.Window, {
         self.items = self.data_paste;
         self.tbar = [
             { text: self.title, 
-                icon: '/static/images/icons/import.png',
+                icon: '/static/images/icons/import.svg',
                 handler: function(){
                     Baseliner.ajaxEval( self.url, { text: self.data_paste.getValue(), format: self.format, ci_type: self.ci_type }, function(res){
                         if( !res.success ) {
@@ -1653,14 +1653,13 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
            fields: ['name', 'archive', 'abstract', 'version', 'author', 
                     'url', 'date', 'release', 'size' ]
        });
-       
-       var ic = '/static/images/icons/downloads_favicon.png';
+       var ic = '/static/images/icons/downloads_favicon.svg';
        this.btns = {
            download: new Ext.Button({ text:_('Download'), icon: ic, handler: function(){ self.download() } }),
            get: new Ext.Button({ text:_('Get'), icon: ic, hidden: true, handler: function(){ self.get() } }),
-           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete_.png', 
+           del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete.svg',
                hidden: true, handler: function(){ self.del() } }),
-           install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database_save.png',
+           install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database_save.svg',
                hidden: true, handler: function(){ self.install() } })
        };
 
@@ -1672,7 +1671,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                 icon: '/static/images/icons/local.svg',
                allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_local() } },
            { text:_('Installed'), pressed: false,
-                icon: '/static/images/icons/perl.png',
+                icon: '/static/images/icons/perl.svg',
                allowDepress:false, enableToggle:true, toggleGroup:'cpan_btns', handler: function(){ self.show_installed() } },
            new Baseliner.SearchField({ store: store_remote }),
            this.btns.download,
@@ -2613,11 +2612,11 @@ Baseliner.run_service = function(params, service){
     var deditor= service.form 
         ? new Baseliner.FormEditor({ data: initial_data, form_url: service.form })
         : new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
-    var btn_restart = new Ext.Button({ icon:'/static/images/icons/left.png', text:_('Restart'), hidden: true, handler: function(){ 
+    var btn_restart = new Ext.Button({ icon:'/static/images/icons/left.svg', text:_('Restart'), hidden: true, handler: function(){ 
         btn_restart.hide();
         card.getLayout().setActiveItem(0); 
     }});
-    var btn_output = new Ext.Button({ icon:'/static/images/icons/down.png', text:_('Output'), hidden: true, handler: function(){ 
+    var btn_output = new Ext.Button({ icon:'/static/images/icons/down.svg', text:_('Output'), hidden: true, handler: function(){ 
         card.getLayout().setActiveItem(2); 
     }});
     var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
@@ -2999,11 +2998,11 @@ Cla.render_date_format = function(v){
 };
 Baseliner.render_checkbox = function(v){
     return v 
-        ? '<img src="/static/images/icons/checkbox.png">'
+        ? '<img src="/static/images/icons/checkbox.svg">'
         : '<img src="/static/images/icons/delete_.png">';
 };
 Baseliner.render_avatar = function(v){
-    return '<img width="16" src="/user/avatar/'+v+'/checkbox.png">'
+    return '<img width="16" src="/user/avatar/'+v+'/checkbox.svg">'
 };
         
 Baseliner.render_ago = function(t,p){
@@ -3346,7 +3345,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var button_load = new Ext.Button({
             text: '',
             tooltip: _('Load'),
-            icon: '/static/images/icons/csv.png',
+            icon: '/static/images/icons/csv.svg',
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.show_load_csv() }
         });
@@ -3828,7 +3827,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             tbar: [
                 { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
                 '->',
-                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete_.png', handler: file_del }
+                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete.svg', handler: file_del }
             ],
             viewConfig: {
                 headersDisabled: true,
@@ -4068,7 +4067,7 @@ Baseliner.request_approval = function(mid,id_grid){
         });
         var btn_reject = new Ext.Button({
             text: _('Reject'),
-            icon: '/static/images/icons/del_all.png',
+            icon: '/static/images/icons/del_all.svg',
             handler: function(){
                 var comments = user_comments.getValue();
                 if( comments.length == 0 ) {

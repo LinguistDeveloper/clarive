@@ -1427,7 +1427,7 @@ sub json_tree : Local {
             : {
                 id=>_nowstamp,
                 name=>'search',
-                data => { icon=>'/static/images/icons/ci.png', %node_data },
+                data => { icon=>'/static/images/icons/ci.svg', %node_data },
                 children => \@all
             };
         { success=>\1, data=>$ret, count=>$k };

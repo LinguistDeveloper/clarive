@@ -324,11 +324,11 @@ sub palette : Local {
     my @tree;
     my $cnt = 1;
 
-    my $if_icon = '/static/images/icons/if.gif';
+    my $if_icon = '/static/images/icons/if.svg';
     my %types = (
-        if     => { icon=>'/static/images/icons/if.gif' },
-        let    => { icon=>'/static/images/icons/if.gif' },
-        for    => { icon=>'/static/images/icons/if.gif' },
+        if     => { icon=>'/static/images/icons/if.svg' },
+        let    => { icon=>'/static/images/icons/if.svg' },
+        for    => { icon=>'/static/images/icons/if.svg' },
     );
     #my @ifs = (
     #    { text => _loc('if var'),  statement=>'if_var', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
@@ -490,7 +490,7 @@ sub palette : Local {
         } @rules ]
     };
     my @fieldlets = grep { $_ !~ /required/ } sort Baseliner::Core::Registry->starts_with('fieldlet.');
-    my $default_icon = '/static/images/icons/detail.png';
+    my $default_icon = '/static/images/icons/detail.svg';
     push @tree, {
         id=>$cnt++,
         leaf=>\0,

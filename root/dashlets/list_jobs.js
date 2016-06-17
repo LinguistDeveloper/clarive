@@ -20,11 +20,11 @@ my $iid = Util->_md5;
         var rollback = obj.rollback;
         var div1   = '<div style="white-space:normal !important;">';
         var div2   = '</div>';
-        if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
-        else if( status=='READY' ) icon='log_d.gif';
-        else if( status=='APPROVAL' ) icon='verify.gif';
+        if( status=='RUNNING' ) { icon='gears.svg'; bold=true }
+        else if( status=='READY' ) icon='log_d.svg';
+        else if( status=='APPROVAL' ) icon='verify.svg';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w.png';
+        else if( status=='IN-EDIT' ) icon='log_w_1.svg';
         else if( status=='CANCELLED' ) icon='close.svg';
         else { icon='log_e.png'; bold=true; };
         

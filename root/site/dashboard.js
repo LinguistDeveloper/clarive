@@ -201,7 +201,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         }
                     };
                     var btn_csv = {
-                        icon: '/static/images/icons/csv.png',
+                        icon: '/static/images/icons/csv.svg',
                         current_dashlet: dashlet.id,
                         text: _('CSV'),
                         handler: function() {

@@ -282,9 +282,9 @@
 
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
-        if( value=='debug' ) icon='debug_view.png';
+        if( value=='debug' ) icon='debug_view.svg';
         else if( value=='info' ) icon='log_i.png';
-        else if( value=='warning' || value=='warn' ) icon='log_w.png';
+        else if( value=='warning' || value=='warn' ) icon='log_w_1.svg';
         else if( value=='error' ) icon='log_e.png';
         else if( value=='comment' ) icon='sms.svg';
         if( icon!=undefined ) {
@@ -323,7 +323,7 @@
            if( value.more=='jes' ) {
              ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.data.id + "&jobId=" + rec.data.mid + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/icons/host.svg'/></a> " ;
            } else if( value.more=='link'  ) {
-               ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
+               ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.svg'</a>", rec.data.data );
            } else if( value.more!='' && value.more!=undefined && value.data ) {
                var img;
                if( value.more=='zip' ) {
@@ -338,7 +338,7 @@
                    if( data_name==undefined || data_name.length<1 ) {
                        data_name = "Log Data " + rec.data.id;
                    }
-                   ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 src='/static/images/icons/moredata.svg'/></a> " + datalen ;
+                   ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/moredata.svg'/></a> " + datalen ;
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
                    ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
@@ -411,7 +411,7 @@
         } 
     });
 
-    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete_.png', cls: 'x-btn-text-icon', hidden: false,
+    var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete.svg', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
             Baseliner.ajaxEval( '/job/log/delete', { mid: current_job().mid, job_exec: job_exec,
                 confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().mid, job_exec) }, function(res) {
@@ -420,7 +420,7 @@
         } 
     };
 
-    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.png', cls: 'x-btn-text-icon', hidden: false,
+    var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.svg', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
                     var mid = current_job().mid;
                     Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", mid ), { mid: mid } );
@@ -518,7 +518,7 @@
 % if( $user_action->{'action.job.advanced_menu'} ) {
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
-                    icon: '/static/images/icons/password.png', 
+                    icon: '/static/images/icons/password.svg', 
                     cls: 'x-btn-text-icon',
                     menu: { 
                         items: [ menu_stash, menu_delete, menu_logfile ]
@@ -528,7 +528,7 @@
 <%doc>
                 new Ext.Toolbar.Button({
                     text: _('View Log'),
-                    icon:'/static/ext/resources/images/default/dd/drop-yes.gif',
+                    icon:'/static/images/icons/drop-yes.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         Baseliner.addNewTab('/job/log/list', _('Job Log') );
