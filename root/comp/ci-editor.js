@@ -15,7 +15,7 @@
     var load_form = function(opts){
         if( opts.rec == undefined ) opts.rec = {};            // master row record
         var mid = opts.mid;
-        var ci_form = opts.ci_form; 
+        var ci_form = opts.ci_form;
         var has_bl = Cla.eval_boolean( opts.rec.has_bl );
         var has_description = Cla.eval_boolean( opts.rec.has_description );
         var beforesubmit = [];
@@ -40,13 +40,14 @@
                     params.action = opts.action = 'edit';
                     set_txt(opts.action,opts.collection,mid);
                     cardpanel.setTitle( _('CI: %1' , form_data.name ) );
+                    cardpanel.fireEvent("title_loaded");
                     Baseliner.message(_('Success: %1', mid), res.msg );
                     if( close_form ) {  // who's using this?
                         cardpanel.destroy();
                         return;
                     }
                     if( opts.reload_on_save ) {
-                        // TODO not working due to tbar dups, but the idea is that a given 
+                        // TODO not working due to tbar dups, but the idea is that a given
                         //    CI class can request a reload everytime, ie. variable
                         cardpanel.remove(form);
                         edit_form(mid);
@@ -108,13 +109,13 @@
                 cardpanel.getLayout().setActiveItem( 0 );
             }
         }
-        
+
         var data_panel;
         var show_data = function(){
             if( btn_data.pressed ) {
                 if( ! data_panel ) {
                     var save_foo = function(de, de_data){
-                        form.getForm().setValues( de_data ); 
+                        form.getForm().setValues( de_data );
                     };
                     data_panel = new Baseliner.DataEditor({ data: opts.rec, hide_cancel: true, save_only: true, on_save: save_foo, disabled: !can_save, hide_save: !can_save });
                     cardpanel.add( data_panel );
@@ -132,8 +133,8 @@
             if( btn_depends.pressed ) {
                 if( ! depend_panel ) {
                     //depend_panel = new Baseliner.CIDepends({ data: opts.rec });
-                    depend_panel = new Baseliner.CIGrid({ ci: { role:'CI' }, 
-                        from_mid: opts.mid, 
+                    depend_panel = new Baseliner.CIGrid({ ci: { role:'CI' },
+                        from_mid: opts.mid,
                         collection: opts.collection,
                         field: children,
                         disabled: !can_save,
@@ -147,7 +148,7 @@
                 cardpanel.getLayout().setActiveItem( 0 );
             }
         };
-        
+
         var btn_form_ok = new Ext.Button({
             text: _('Close'),
             icon:'/static/images/icons/close.svg',
@@ -162,7 +163,7 @@
             cls: 'x-btn-icon-text ui-comp-ci-editor-save',
             type: 'submit',
             hidden: !can_save,
-            handler: function() { 
+            handler: function() {
                 btn_form_save.disable();
                 submit_form( false )
             }
@@ -175,7 +176,7 @@
             text: text_button,
             icon: text_img,
             cls: 'x-btn-icon-text',
-            pressed: true, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
+            pressed: true, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: function(){ cardpanel.getLayout().setActiveItem(form) }
         });
 
@@ -183,7 +184,7 @@
             text: _('Data'),
             icon:'/static/images/icons/detail.png',
             cls: 'x-btn-icon-text',
-            pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
+            pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: show_data
         });
 
@@ -191,7 +192,7 @@
             text: _('Dependencies'),
             icon:'/static/images/expand.gif',
             cls: 'x-btn-icon-text',
-            pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
+            pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: show_depends
         });
 
@@ -200,7 +201,7 @@
             icon:'/static/images/icons/calendar.svg',
             cls: 'x-btn-icon-text',
             disabled: !can_save,
-            pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false, 
+            pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: show_calendar
         });
 
@@ -210,15 +211,15 @@
         cardpanel.doLayout();
         var fieldset = new Ext.form.FieldSet({
             defaults: {
-               //anchor: '100%',  
+               //anchor: '100%',
                msgTarget: 'under'
             },
             hidden: true,
             //padding: 0,
-            style: { 
+            style: {
                 //margin: '30px 0px 0px -20px'
                 margin: '0px 0px 0px -10px'
-                //'border-top' : '#eee 1px solid', 
+                //'border-top' : '#eee 1px solid',
                 //'border-left' : '#f5f0f0 6px solid' }
             },
             //title: _(opts.collection),
@@ -244,7 +245,7 @@
             },
             bodyStyle: {
                 'background-color': 'white',
-                'overflow-y': 'auto' 
+                'overflow-y': 'auto'
             },
             items: [
                 txt_cont,
@@ -300,7 +301,7 @@
                     });
             };
             if( ci_form ) {
-                if(ci_form.constructor === Array) 
+                if(ci_form.constructor === Array)
                     form.pending_fields = form.pending_fields+ci_form.length; else form.pending_fields++;
                 // XXX deprecated: (ci_form inconsistent with cache)
                 Ext.each( ci_form, function(form_url){
@@ -402,6 +403,7 @@
             cardpanel.add( f );
             cardpanel.getLayout().setActiveItem( f );
             cardpanel.setTitle( _('CI: %1' , rec.name ) );
+            cardpanel.fireEvent("title_loaded");
             cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
             cardpanel.body.setStyle({ overflow: 'hidden' });
             cardpanel.doLayout(); // otherwise, no tbar
@@ -419,13 +421,13 @@
         } else {
             // someone sent me full row data (DEPRECATED)
             Baseliner.ajax_json( '/ci/new_ci', { 'collection': params.collection }, function(res) {
-                var f = load_form({ 
-                    action:'add', 
-                    rec: res.rec, 
+                var f = load_form({
+                    action:'add',
+                    rec: res.rec,
                     ci_form: res.rec.ci_form,
-                    "class": params.collection, 
-                    classname: params.collection, 
-                    collection: params.collection 
+                    "class": params.collection,
+                    classname: params.collection,
+                    collection: params.collection
                 }); //Ext.apply( res.data, params ) );
                 cardpanel.add( f );
                 cardpanel.getLayout().setActiveItem( f );

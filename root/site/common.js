@@ -1,4 +1,14 @@
-
+Ext.Panel.prototype.setTabTip = function(msg) {
+    var tabPanel = this.findParentByType(Ext.TabPanel);
+    if (tabPanel) {
+        var tabEl = Ext.fly(tabPanel.getTabEl(this).id);
+        if (tabEl) {
+            var tsTxt = tabEl.child('span.x-tab-strip-text', true);
+            if (tsTxt)
+                tsTxt.qtip = msg.toString();
+        }
+    }
+};
 // Cookies
 Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
@@ -1255,9 +1265,11 @@ Baseliner.read_pdf = function( url ) {
   win.show();
 };
 
-Baseliner.show_revision = function( mid ) {
-    Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-        var title =  res.url.title;
+Baseliner.show_revision = function(mid) {
+    Baseliner.ajaxEval('/ci/url', {
+        mid: mid
+    }, function(res) {
+        var title = res.url.title;
         var sha = res.url.rev_num;
         var branch = title == sha ? sha : res.url.branch;
         var params = {

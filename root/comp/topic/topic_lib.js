@@ -1493,7 +1493,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             var objtab = tabpanel.getActiveTab();
                             var category = res.category;
                             var title = Baseliner.topic_title(res.topic_mid, category.name, category.color, null, self.id_field);
-                            //objtab.setTitle( title );
+                            var title_length = title ? ($(title).length ? $(title).text().length : title.length) : 0;
+                            title_length > 29 ? self.setTabTip(title) : self.setTabTip('');
+                            if ($(title).length) {
+                                title = title.replace($(title).text(), truncate_string($(title).text()));
+                            } else {
+                                title = truncate_string(title);
+                            }
                             var info = Baseliner.panel_info(objtab);
                             info.params.topic_mid = res.topic_mid;
                             info.title = title;
