@@ -119,6 +119,7 @@ Baseliner.js_reload = function(msg) {
     Baseliner.loadFile( '/static/final.css', 'css' );
     Cla.use([
         '/i18n/js', 
+        '/site/globals.js', 
         '/site/common.js', 
         '/site/tabfu.js', 
         '/site/model.js', 

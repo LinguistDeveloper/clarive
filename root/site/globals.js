@@ -2,7 +2,7 @@
 
 Global vars and data structures.
 
-This is non reloadable, otherwise everything is reset. 
+This is non reloadable, otherwise everything is reset.
 
 */
 
@@ -20,7 +20,7 @@ Baseliner.DEBUG = <% Baseliner->debug ? 'true' : 'false' %>;
 
 IC = function(icon){
     var path = '/static/images/icons/';
-    return /\./.test(icon) ? path+icon : path+icon+'.svg'; 
+    return /\./.test(icon) ? path+icon : path+icon+'.svg';
 }
 
 Cla.isIE = !(window.ActiveXObject) && "ActiveXObject" in window;
@@ -33,39 +33,44 @@ Cla.BrowserVersion = function(){
 
 // our own, simpler requirejs
 Cla.loaded_scripts = new Array();
-Cla.use = function(urls, callback, cache){
-    var load_url = function(url,cb){
-        if( !cache ) {
+Cla.use = function(urls, callback, cache) {
+    var load_url = function(url, cb) {
+        if (!cache) {
             var sep = (url.indexOf('?') > -1) ? '&' : '?';
             url += sep + 'clarnd=' + Math.random();
         }
         if ($.inArray(url, Cla.loaded_scripts) > -1) {
             cb();
-        }
-        else {
-            Cla.loaded_scripts.push(url);       
+        } else {
+            Cla.loaded_scripts.push(url);
             jQuery.ajax({
                 type: "GET",
                 url: url,
                 success: cb,
                 dataType: "script",
-                cache: cache
+                cache: cache,
+                error: function(xhr, textStatus, err) {
+                    Cla.error(_('Error Loading Library'), _('%1: %2', textStatus, err));
+                    console.log(err);
+                }
             });
         }
     };
-    if( urls instanceof Array ) {
+    if (urls instanceof Array) {
         var counter = urls.length;
         var rets = [];
-        var done_cb = function(a,b){
-            rets.push([a,b]);
+        var done_cb = function(a, b) {
+            rets.push([a, b]);
             counter--;
-            if( counter <= 0 ) {
+            if (counter <= 0) {
                 callback(rets);
             }
         };
-        $(urls).each(function(ix,url){ load_url(url,done_cb) });
+        $(urls).each(function(ix, url) {
+            load_url(url, done_cb)
+        });
     } else {
-        load_url( urls, callback );
+        load_url(urls, callback);
     }
 };
 
