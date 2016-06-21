@@ -116,7 +116,7 @@ sub lc_for_project {
         'icon' => '/static/images/icons/views.svg',
         'menu' => [
                     {
-                      'icon' => '/static/images/icons/folder_new.gif',
+                      'icon' => '/static/images/icons/folder_new.svg',
                       'text' => 'New Folder',
                       'url' => '/fileversion/new_folder',
                        'eval' => {
@@ -164,7 +164,7 @@ sub lc_for_project {
                   active  => 1,
                   draggable => \0,
                   leaf    => \1,
-                  icon    => '/static/images/icons/error.png',
+                  icon    => '/static/images/icons/error.svg',
                   data    => { id_repo => $id_repo }
                 };
 
@@ -224,7 +224,7 @@ sub lc_for_project {
           active  => 1,
           draggable => \0,
           leaf    => \1,
-          icon    => '/static/images/icons/error.png',
+          icon    => '/static/images/icons/error.svg',
         };
     }
 

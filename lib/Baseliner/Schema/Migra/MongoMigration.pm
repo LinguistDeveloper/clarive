@@ -217,12 +217,12 @@ sub topic_categories_to_rules {
                     && $fieldlet->{params}->{get_method} eq 'get_topics'
                     && $fieldlet->{params}->{set_method} eq 'set_topics' )
                 {
-                    $attributes->{icon}   = '/static/images/icons/listbox.png';
+                    $attributes->{icon}   = '/static/images/icons/listbox.svg';
                     $attributes->{key}    = 'fieldlet.system.list_topics';
                     $data->{hidden} = 1;
                 }
                 elsif ( $fieldlet->{params}->{type} eq 'textfield' ) {
-                    $attributes->{icon}   = '/static/images/icons/field.png';
+                    $attributes->{icon}   = '/static/images/icons/field.svg';
                     $attributes->{key}    = 'fieldlet.text';
                     $data->{hidden} = 1;
                 }
@@ -231,7 +231,7 @@ sub topic_categories_to_rules {
             if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
                 if ($data->{list_type} && $data->{list_type} eq 'grid') {
                     $attributes->{key} = 'fieldlet.ci_grid';
-                    $attributes->{icon} = '/static/images/icons/grid.png';
+                    $attributes->{icon} = '/static/images/icons/grid.svg';
                 }
                 else {
                     $attributes->{key} = 'fieldlet.system.cis';
@@ -261,7 +261,7 @@ sub topic_categories_to_rules {
 
             if ( $attributes->{key} eq 'fieldlet.text' &&
              (!$attributes->{icon}|| $attributes->{icon} eq '/static/images/icons/lock_small.png')) {
-                $attributes->{icon} = '/static/images/icons/field.png';
+                $attributes->{icon} = '/static/images/icons/field.svg';
             }
 
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
@@ -1753,7 +1753,7 @@ sub get_initial_dashboards {
 - rule_active: '1'
   rule_compile_mode: none
   rule_name: Topics
-  rule_tree: '[{"attributes":{"icon":"/static/images/icons/let.gif","palette":false,"disabled":false,"on_drop_js":null,"key":"statement.var.set_expr","who":"root","text":"SET
+  rule_tree: '[{"attributes":{"icon":"/static/images/icons/let.svg","palette":false,"disabled":false,"on_drop_js":null,"key":"statement.var.set_expr","who":"root","text":"SET
     six_months_ago","expanded":true,"id":"rule-ext-gen10859-1431204661737","run_sub":true,"leaf":true,"ts":"2015-05-03T16:58:32","name":"SET
     EXPR","active":1,"holds_children":false,"data":{"expr":"my $now = Class::Date->now();\n''''.($now
     - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-19T00:41:12","active":1,"name":"Topics
@@ -1766,9 +1766,9 @@ sub get_initial_dashboards {
     burndown","active":1,"data":{"date_type":"today","autorefresh":"0","date_field":"created_on","columns":"6","categories":"","rows":"1"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Today''s
     topics burndown","expanded":true,"id":"rule-ext-gen10861-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_line.png","isTarget":false,"html":"","text":"Topics
     burndown - two weeks","key":"dashlet.topic.topics_period_burndown","leaf":true,"id":"rule-ext-gen5637-1446676660439","name":"Topics
-    period burndown","data":{"rows":"1","columns":"6","autorefresh":"0","date_field":"created_on","type":"area","group":"day","days_before":"-7","days_after":"7","categories":""},"ts":"2015-11-04T23:42:16","who":"root","expanded":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-05-15T09:31:46","name":"Topics
+    period burndown","data":{"rows":"1","columns":"6","autorefresh":"0","date_field":"created_on","type":"area","group":"day","days_before":"-7","days_after":"7","categories":""},"ts":"2015-11-04T23:42:16","who":"root","expanded":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.svg","disabled":false,"ts":"2015-05-15T09:31:46","name":"Topics
     by date line chart","active":1,"data":{"days_until":"","days_from":"-365","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"6","type":"stack-area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
-    created monthly - Last year","expanded":true,"id":"rule-ext-gen10863-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-11-04T23:35:24","name":"Topics
+    created monthly - Last year","expanded":true,"id":"rule-ext-gen10863-1431204661738","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.svg","disabled":false,"ts":"2015-11-04T23:35:24","name":"Topics
     by date line chart","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","statuses":"","condition":"","days_from":"-30","days_until":"","date_field":"created_on","group":"day","type":"stack-area"},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
     created daily - Last month","expanded":true,"id":"rule-ext-gen4853-1446676471109","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"ts":"2015-11-04T23:34:16","name":"List
     topics","active":1,"data":{"rows":"1","columns":"12","autorefresh":60000,"fields":"","limit":"100","categories":"","statuses":"","assigned_to":"","condition":"{\"created_on\":{\"$lte\":\"${six_months_ago}\"},\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","html":"","who":"root","text":"Open
@@ -1777,7 +1777,7 @@ sub get_initial_dashboards {
 - rule_active: '1'
   rule_compile_mode: none
   rule_name: Releases
-  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.png","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
+  rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/chart_curve.svg","disabled":false,"ts":"2015-05-11T12:47:30","name":"Topics
     by date line chart","active":1,"data":{"days_until":"0","days_from":"-60","categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","type":"area","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
     created monthly","expanded":false,"id":"rule-ext-gen12563-1431198379635","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","isTarget":false,"html":"","text":"Releases
     aprobadas","key":"dashlet.topic.number_of_topics","leaf":true,"id":"rule-ext-gen6948-1431424514648","name":"Topics
@@ -1798,7 +1798,7 @@ sub get_initial_dashboards {
     chart","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","type":"donut","group_by":"topics_by_status","group_threshold":"5","categories":"","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","html":"","who":"root","text":"My
     open topics by status","expanded":true,"id":"rule-ext-gen4715-1431988673581","leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/chart_pie.png","disabled":false,"ts":"2015-11-04T23:52:24","name":"Topics
     chart","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","type":"donut","group_by":"topics_by_category","group_threshold":"5","categories":"","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.number_of_topics","who":"root","html":"","text":"My
-    open topics by category","expanded":true,"id":"rule-ext-gen4884-1431988740944","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_curve.png","palette":false,"disabled":false,"ts":"2015-11-04T23:52:29","active":1,"name":"Topics
+    open topics by category","expanded":true,"id":"rule-ext-gen4884-1431988740944","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/chart_curve.svg","palette":false,"disabled":false,"ts":"2015-11-04T23:52:29","active":1,"name":"Topics
     time line","data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","statuses":"","condition":"","days_from":"-60","days_until":"","date_field":"created_on","group":"month","type":"stack-area"},"key":"dashlet.topic.topics_by_date_line","who":"root","html":"","text":"Topics
     open last trimester","expanded":true,"id":"rule-ext-gen8029-1431988988253","leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-11-04T23:52:33","active":1,"name":"List
     topics","data":{"rows":"1","columns":"6","autorefresh":"0","fields":"","limit":"100","categories":"","statuses":"","assigned_to":"Actual","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"My

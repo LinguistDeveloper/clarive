@@ -21,7 +21,7 @@ has url            => ( is => 'rw', isa => 'Str', default => '' );
 
 has data           => ( is => 'rw', isa => 'HashRef', default => sub { {} } );   # data for the custom form
 has form           => ( is => 'rw', isa => 'Str', default => '' );
-has icon           => ( is => 'rw', isa => 'Str', default=>'/static/images/icons/report_default.png');
+has icon           => ( is => 'rw', isa => 'Str', default=>'/static/images/icons/report_default.svg');
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

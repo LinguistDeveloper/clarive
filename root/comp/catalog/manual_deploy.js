@@ -68,7 +68,7 @@
         defaults: {
             width: 450
         },
-        tab_icon: '/static/images/icons/keyboard.png',
+        tab_icon: '/static/images/icons/keyboard.svg',
         items: [
             { xtype:'hidden', value: params.ns, name: 'id' },
             { xtype:'hidden', value: params.ns, name: 'ns' },
@@ -91,7 +91,7 @@
         height: '100%',
         width: 600,
         autoScroll:true,
-        tbar: [ Baseliner.button(_('Save'), '/static/images/icons/keyboard_add.png', function(){
+        tbar: [ Baseliner.button(_('Save'), '/static/images/icons/keyboard_add.svg', function(){
             form.getForm().submit({
                 url: '/manualdeploy/save',
                 waitMsg: _('Saving...'),

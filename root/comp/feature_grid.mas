@@ -64,7 +64,7 @@
                 }),
                 {
                     text: '<% _loc('Install') %>', 
-                    icon:'/static/images/icons/downloads_favicon.png',
+                    icon:'/static/images/icons/downloads_favicon.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -96,12 +96,12 @@
                 }),
                 {
                     text: '<% _loc('Search for updates') %>', 
-                    icon:'/static/images/icons/update.png',
+                    icon:'/static/images/icons/update.svg',
                     cls: 'x-btn-text-icon'
                 },
                 new Ext.Toolbar.Button({
                     text: '<% _loc('Turn Off') %>',
-                    icon:'/static/images/icons/del_all.png',
+                    icon:'/static/images/icons/del_all.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

@@ -422,8 +422,8 @@
         if( type =='value' ) 
             its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='sort_field' ) {
-            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.gif' });
-            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.gif' });
+            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.svg' });
+            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.svg' });
         }
         if( !/^(categories|select|sort)$/.test(type) )
             its.push({  text: _('Delete'), 
@@ -448,7 +448,7 @@
                             }
                             node.remove();
                         }, 
-                        icon:'/static/images/icons/delete_.png' });
+                        icon:'/static/images/icons/delete.svg' });
             var stmts_menu = new Ext.menu.Menu({
             items: its 
         });
@@ -494,7 +494,7 @@
             }
 
             if( ttype=='select' || ttype=='select_field' ) {
-                n.attributes.icon = '/static/images/icons/field.png',
+                n.attributes.icon = '/static/images/icons/field.svg',
                 n.expanded = true;
                 if( n.attributes.category ) {
                     if (n.attributes.text.search(':') == '-1'){
@@ -508,14 +508,14 @@
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
                 if( type!='value' ) nn.type = (ttype=='categories') || ttype=='where' ? ttype+'_field': ttype;
                 if( ttype == 'sort') nn.type = ttype+'_field';
-                var icon = type=='value' ? '/static/images/icons/search.png' 
-                    : type=='sort' ? '/static/images/icons/arrow-down.gif' 
-                    : '/static/images/icons/field.png';
+                var icon = type=='value' ? '/static/images/icons/search.png'
+                    : type=='sort' ? '/static/images/icons/arrow-down.svg'
+                    : '/static/images/icons/field.svg';
                 nn.leaf = ttype == 'where' ? false : true;
                 var copy = new Ext.tree.TreeNode(nn);
-                
+
                 if (ttype=='where_field') {
-                    
+
                 }else if (ttype == 'categories' || ttype == 'categories_field'){
                     //ok-console.dir(target.attributes);
                     var root = tree_selected.getRootNode();
@@ -572,7 +572,7 @@
                     copy.appendChild({
                         id: Ext.id()
                         ,text: _(meta_type)
-                        ,icon: '/static/images/icons/where.png'
+                        ,icon: '/static/images/icons/where.svg'
                         ,type: 'value'
                         ,leaf: false
                         ,where: meta_type
@@ -603,10 +603,10 @@
     
     var initialize_folders = function(){
         tree_selected.root.appendChild([ 
-            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder_database.png' },
+            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder_database.svg' },
             { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder_magnify.png' },
-            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder_find.png' },
-            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.png' }
+            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder_find.svg' },
+            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.svg' }
         ]);
     };
     var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.svg', handler: function(){ 

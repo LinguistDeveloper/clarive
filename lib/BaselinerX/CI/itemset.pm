@@ -2,7 +2,7 @@ package BaselinerX::CI::itemset;
 use Baseliner::Moose;
 
 with 'Baseliner::Role::CI::Group';
-sub icon       { '/static/images/icons/ci.png' }
+sub icon       { '/static/images/icons/ci.svg' }
 
 has_cis items => 'Baseliner::Role::CI::Item'; #qw(is rw isa ArrayRef[Baseliner::Role::CI::Item]);
 

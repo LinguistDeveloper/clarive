@@ -351,7 +351,7 @@
             search_grid, '->',
             new Ext.Toolbar.Button({
                 text: _('Remove Selection'),
-                icon: '/static/images/icons/delete_red.png',
+                icon: '/static/images/icons/delete_red.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = roleGridPanel.getSelectionModel();
@@ -364,7 +364,7 @@
             }),
             new Ext.Toolbar.Button({
                 text: _('Remove All'),
-                icon: '/static/images/icons/del_all.png',
+                icon: '/static/images/icons/del_all.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     roleGridPanel.getStore().removeAll();

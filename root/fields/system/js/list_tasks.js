@@ -144,8 +144,7 @@ params:
         if(!value){
             cad = "Seleccionar estado";
         }else{
-            //cad = "<div style='font-weight:bold; font-size: 12px;'>" + value + "</div>" ;
-            var img = value=="OK" ? "drop-yes.gif" : value=="KO" ? "cancel.png" : "help.svg";
+            var img = value=="OK" ? "drop-yes.svg" : value=="KO" ? "cancel.png" : "help.svg";
             cad = String.format('<img src="/static/images/icons/{0}" />', img );
         }
         return cad;
@@ -157,7 +156,7 @@ params:
     var time_tpl = new Ext.XTemplate(
         '<tpl for=".">',
         '<div class="search-item">', 
-        '<table><tr><td><img src="/static/images/icons/{[ values.status=="OK" ? "drop-yes.gif" : values.status=="KO" ? "cancel.png" : "help.svg" ]}"/></td>',
+        '<table><tr><td><img src="/static/images/icons/{[ values.status=="OK" ? "drop-yes.svg" : values.status=="KO" ? "cancel.png" : "help.svg" ]}"/></td>',
         '<td><span><b>{name}</span></b></td></tr></table></div>',
         '</tpl>'
     );

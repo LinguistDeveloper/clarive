@@ -328,7 +328,7 @@ subtest 'tree_project_releases: build releases tree' => sub {
       {
         'json' => [
             {
-                'icon' => '/static/images/icons/release.png',
+                'icon' => '/static/images/icons/release.svg',
                 'text' => 'New Topic',
                 'menu' => [
                     {

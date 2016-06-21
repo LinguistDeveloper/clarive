@@ -158,7 +158,7 @@ Cla.help_show = function(params) {
         }
     });
 
-    var btn_home = new Ext.Button({ icon: IC('home.gif'), tooltip: _('Show Help Index'), handler: function(){
+    var btn_home = new Ext.Button({ icon: IC('home.svg'), tooltip: _('Show Help Index'), handler: function(){
         search_box.setValue('');
         docs_tree.getLoader().baseParams.query = '';
         docs_tree.getLoader().load(docs_tree.root);
@@ -233,7 +233,6 @@ Cla.help_show = function(params) {
 };
 
 Cla.help_on = function() {
-    //Cla.help_button.setIcon('/static/images/icons/lightbulb.png');
     Cla.help_button.setIconClass('help-on');
 };
 Cla.help_off = function() {
@@ -266,7 +265,7 @@ Cla.help_button_flash = function(params) {
     // there's new content, show the bulb on
     Cla.help_button.setIcon(IC('loading-fast.gif'));
     setTimeout(function(){
-        Cla.help_button.setIcon(IC('lightbulb.png'));
+        Cla.help_button.setIcon(IC('lightbulb.svg'));
     },400);
 }
 

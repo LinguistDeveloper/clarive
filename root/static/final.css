@@ -319,7 +319,7 @@ body {
     display:none;
 }
 .icon-forum {
-    background-image:url(/static/images/icons/track.gif) !important;
+    background-image:url(/static/images/icons/track.svg) !important;
 }
 
 .icon-no {
@@ -562,7 +562,7 @@ a {
 }
 
 .x-tree-node-leaf .default_folders {
-     background-image:url('/static/images/icons/leaf.png');
+     background-image:url('/static/images/icons/leaf.svg');
 }
 
 .x-tree-node-loading .x-tree-node-icon {

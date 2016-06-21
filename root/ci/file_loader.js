@@ -85,7 +85,7 @@ Baseliner.GridArrayField = Ext.extend( Ext.grid.EditorGridPanel, {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/delete_.png',
+                icon: '/static/images/icons/delete.svg',
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = self.getSelectionModel().getSelected();

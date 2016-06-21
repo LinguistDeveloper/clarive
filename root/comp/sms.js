@@ -23,7 +23,7 @@
             });
         });
     }});
-    var btn_del = new Ext.Button({ icon:IC('delete_.png'), hidden: false, text:_('Delete'), handler:function(){
+    var btn_del = new Ext.Button({ icon:IC('delete.svg'), hidden: false, text:_('Delete'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -45,7 +45,7 @@
             });
         }
     } });
-    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('copy.gif'), handler:function(){ 
+    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('copy.svg'), handler:function(){ 
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();

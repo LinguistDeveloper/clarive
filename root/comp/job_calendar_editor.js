@@ -117,7 +117,7 @@
                         });
                     }
                 }, {
-                    icon: '/static/images/icons/delete_.png',
+                    icon: '/static/images/icons/delete.svg',
                     text: _loc('Delete'),
                     handler: function() {
                         var ff = cal_form.getForm();

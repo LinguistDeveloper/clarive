@@ -4,26 +4,22 @@
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#F7A808;}
-	.st1{fill:#404040;}
-	.st2{fill:none;stroke:#404040;stroke-linecap:square;}
-	.st3{fill:none;stroke:#F7A808;stroke-width:0.83;stroke-linejoin:bevel;}
-	.st4{fill:none;stroke:#F7A808;stroke-width:0.85;stroke-linejoin:bevel;}
-	.st5{fill:none;stroke:#F90B6C;stroke-width:0.94;stroke-miterlimit:10;}
-	.st6{fill:none;stroke:#F90B6C;stroke-miterlimit:10;}
-	.st7{fill:none;}
+	.st1{fill:none;stroke:#F7A808;stroke-width:0.83;stroke-linejoin:bevel;}
+	.st2{fill:none;stroke:#F7A808;stroke-width:0.85;stroke-linejoin:bevel;}
+	.st3{fill:none;stroke:#F90B6C;stroke-miterlimit:10;}
+	.st4{fill:none;}
+	.st5{fill:none;stroke:#414141;stroke-width:1.5;stroke-miterlimit:10;}
+	.st6{fill:none;stroke:#414141;stroke-miterlimit:10;}
 </style>
+<polygon class="st0" points="14,5.2 9.1,7.8 9,13.3 14,11.1 "/>
 <title>nature</title>
-<polygon class="st0" points="8.1,6.9 14.7,3.2 14.6,9.5 8,15 "/>
-<g>
-	<path class="st1" d="M13.7,4.9l0,5l-5.7,4L2.4,10V5l5.2,2.8L8.1,8l0.5-0.3L13.7,4.9 M14.7,3.2L8.1,6.9L1.4,3.3v7.2L8,15.1l6.7-4.7
-		L14.7,3.2L14.7,3.2z"/>
-</g>
-<polyline class="st2" points="1.9,3.3 8,1.4 14.1,3.5 "/>
-<path class="st0" d="M5.6,11.5l1,0.7l-1.2-5L4.5,6.9l-1.2,3.2l0.6,0.3L4,9.7l1.3,0.7L5.6,11.5z M4.4,8.9l0.4-0.9l0.2,0.1l0.3,1.1
-	L4.4,8.9z"/>
-<path class="st3" d="M9,12.7"/>
-<path class="st4" d="M2.8,10.5"/>
-<path class="st5" d="M6.4,6.9"/>
-<path class="st6" d="M3.9,6.1"/>
-<rect class="st7" width="16" height="16"/>
+<path class="st0" d="M6,11.5l0.8,0.6l-1-4.2L5.1,7.5l-1.1,2.8l0.5,0.3l0.3-0.8l0.9,0.5L6,11.5z M5,9.3l0.3-0.8l0.2,0.1l0.2,1L5,9.3z
+	"/>
+<path class="st1" d="M9,12.7"/>
+<path class="st2" d="M2.8,10.5"/>
+<path class="st3" d="M3.9,6.1"/>
+<rect class="st4" width="16" height="16"/>
+<polygon class="st5" points="2.8,11.2 2.9,4.8 8.4,1.6 14,4.8 14,11.1 8.4,14.3 "/>
+<polyline class="st6" points="3.4,5 8.6,7.7 13.5,4.9 "/>
+<line class="st6" x1="8.5" y1="14.5" x2="8.6" y2="7.7"/>
 </svg>

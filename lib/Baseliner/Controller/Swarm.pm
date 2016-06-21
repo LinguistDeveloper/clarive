@@ -12,7 +12,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 register 'dashlet.swarm' => {
     form    => '/dashlets/swarm_config.js',
     name    => 'Swarm',
-    icon    => '/static/images/icons/swarm.png',
+    icon    => '/static/images/icons/swarm.svg',
     js_file => '/dashlets/swarm_dash.js'
 };
 

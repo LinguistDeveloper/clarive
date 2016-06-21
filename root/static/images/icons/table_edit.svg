@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;stroke:#404040;stroke-miterlimit:10;}
+	.st1{fill:#CDCDCD;}
+	.st2{fill:none;stroke:#CDCDCD;stroke-width:0.5;stroke-miterlimit:10;}
+	.st3{fill:none;stroke:#CDCDCD;stroke-miterlimit:10;}
+	.st4{fill:#404040;}
+</style>
+<rect x="1.5" y="1.8" class="st0" width="13.1" height="12.8"/>
+<rect x="2.9" y="3.3" class="st1" width="10.4" height="1.4"/>
+<line class="st2" x1="5.4" y1="5.9" x2="5.4" y2="12.7"/>
+<line class="st2" x1="8.1" y1="5.9" x2="8.1" y2="12.7"/>
+<line class="st2" x1="10.3" y1="5.9" x2="10.3" y2="12.7"/>
+<line class="st2" x1="3.1" y1="8.2" x2="13.1" y2="8.2"/>
+<rect x="3.2" y="5.9" class="st3" width="9.7" height="6.8"/>
+<line class="st2" x1="3.4" y1="10.5" x2="13.1" y2="10.6"/>
+<polygon class="st4" points="9.5,12.5 5.6,8.6 6.9,7.2 10.9,11 "/>
+<polygon class="st4" points="11.6,13.2 9.8,12.7 11.1,11.3 "/>
+<rect x="4.5" y="6.6" transform="matrix(0.6795 -0.7337 0.7337 0.6795 -3.5126 6.3404)" class="st4" width="2" height="1.2"/>
+</svg>

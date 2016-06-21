@@ -247,7 +247,7 @@ sub get_menu_folder {
     my $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.home.generate_docs' );
     if ( $has_permission || $is_root ) {
         push @menu_folder, {  text => _loc('Doc'),
-                                    icon => '/static/images/icons/document.png',
+                                    icon => '/static/images/icons/document.svg',
                                     url     => '/comp/lifecycle/report_run.js',
                                     eval => {
                                         url => '/comp/doc_from_tree.js',
@@ -262,20 +262,20 @@ sub get_menu_folder {
                             };
     # push @menu_folder, '-';
     push @menu_folder, { text => _loc('New Folder'),
-                            icon => '/static/images/icons/folder_new.gif',
+                            icon => '/static/images/icons/folder_new.svg',
                             eval => {
                                 handler => 'Baseliner.new_folder'
                             }
                         };
     push @menu_folder, { text => _loc('Rename Folder'),
-                            icon => '/static/images/icons/folder_edit.png',
+                            icon => '/static/images/icons/folder_edit.svg',
                             eval => {
                                 handler => 'Baseliner.rename_folder'
                             }
                         };
 
     push @menu_folder, {  text => _loc('Delete Folder'),
-                                icon => '/static/images/icons/folder_delete.gif',
+                                icon => '/static/images/icons/folder_delete.svg',
                                 eval => {
                                     handler => 'Baseliner.delete_folder'
                                 }

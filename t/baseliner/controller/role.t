@@ -68,7 +68,7 @@ subtest 'action_tree: returns action tree' => sub {
                         '_modified' => 1,
                         'children'  => [
                             {
-                                'icon' => '/static/images/icons/checkbox.png',
+                                'icon' => '/static/images/icons/checkbox.svg',
                                 'text' => undef,
                                 'id'   => 'action.topics.category.view',
                                 'leaf' => \1,
@@ -115,7 +115,7 @@ subtest 'action_tree: searches through actions' => sub {
       {
         'json' => [
             {
-                'icon' => '/static/images/icons/checkbox.png',
+                'icon' => '/static/images/icons/checkbox.svg',
                 'text' => 'View topics',
                 'id'   => 'action.topics.category.view',
                 'leaf' => \1

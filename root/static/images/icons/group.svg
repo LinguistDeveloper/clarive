@@ -1,1 +1,18 @@
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27.54 27.54"><defs><style>.cls-1{fill:#f7a808;}.cls-2{fill:none;stroke:#404040;stroke-miterlimit:10;stroke-width:0.88px;}.cls-3{fill:#6b6b6b;}.cls-4{fill:#b7b7b7;}</style></defs><title>group</title><circle class="cls-1" cx="9.19" cy="9.21" r="5.09"/><circle class="cls-2" cx="13.77" cy="13.77" r="13.33"/><circle class="cls-3" cx="20.3" cy="11.02" r="5.09"/><circle class="cls-4" cx="12.97" cy="19.83" r="5.09"/></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+	.st1{fill:#F7A808;}
+	.st2{fill:none;}
+</style>
+<title>group</title>
+<g>
+	<path class="st0" d="M4.1,2.2c1.3,0,2.4,1.1,2.4,2.4S5.4,7,4.1,7S1.8,5.9,1.8,4.6S2.8,2.2,4.1,2.2 M4.1,1.2c-1.9,0-3.4,1.5-3.4,3.4
+		S2.3,8,4.1,8s3.4-1.5,3.4-3.4S6,1.2,4.1,1.2L4.1,1.2z"/>
+</g>
+<circle class="st0" cx="8" cy="11.7" r="3.4"/>
+<circle class="st1" cx="12" cy="4.6" r="3.4"/>
+<rect class="st2" width="16" height="16"/>
+</svg>

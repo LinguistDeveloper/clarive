@@ -84,7 +84,7 @@ var edit_config = function(rec) {
             }
         },{
             text: _('Reset') ,
-            icon: '',
+            icon: '/static/images/icons/reset-grey.svg',
             handler: function() {
                 if( rec!=undefined ) {
                     form.getForm().loadRecord(rec);

@@ -486,7 +486,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:'/static/images/icons/debug_view.png',
+                icon:'/static/images/icons/debug_view.svg',
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },
@@ -506,7 +506,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Export all to file'),
-                icon:'/static/images/icons/drive_go.gif',
+                icon:'/static/images/icons/drive_go.svg',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Baseliner.ajaxEval('/repl/save_to_file',{},function(res){
@@ -520,7 +520,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Delete'),
-                icon:'/static/images/icons/delete_.png',
+                icon:'/static/images/icons/delete.svg',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();
@@ -544,7 +544,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Tidy'),
-                icon:'/static/images/icons/tidy.gif',
+                icon:'/static/images/icons/tidy.svg',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var lang = btn_lang.lang;
@@ -577,7 +577,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 menu: config_menu
             },
             { xtype:'button',
-                icon: '/static/images/icons/fullscreen.png',
+                icon: '/static/images/icons/fullscreen.svg',
                 tooltip:_('Fullscreen'),
                 enableToggle: true,
                 pressed: false,

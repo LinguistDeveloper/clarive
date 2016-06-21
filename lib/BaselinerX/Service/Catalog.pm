@@ -27,7 +27,6 @@ register 'statement.catalog.if.var' => {
     text => 'Catalogue - IF var THEN',
     type => 'if',
     icon => '/static/images/icons/catalogue.svg',
-    #icon => '/static/images/icons/if.gif',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
     dsl => sub {

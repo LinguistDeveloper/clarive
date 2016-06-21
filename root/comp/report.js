@@ -54,7 +54,7 @@
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv.png',
+        icon: '/static/images/icons/csv.svg',
         text: _('CSV'),
         handler: function() {
             //form_report_submit({ url: '/topic/report_csv', target: 'FrameDownload' });
@@ -62,7 +62,7 @@
     };
 	
     var btn_reports = new Ext.Button({
-        icon: '/static/images/icons/reports.png',
+        icon: '/static/images/icons/reports.svg',
         iconCls: 'x-btn-icon',
         menu: [ btn_html, btn_html_desc, btn_csv, btn_yaml ]
     });

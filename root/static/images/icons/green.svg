@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="ffd1125c-29e4-4fde-a6fe-56e8b4279547"
+<svg version="1.1" id="ffd1125c-29e4-4fde-a6fe-56e8b4279547"
 	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 16 16"
 	 style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#4FBC78;}
+	.st0{fill:#4FBC78;stroke:#44935F;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#FFFFFF;stroke-linecap:round;stroke-miterlimit:10;}
 </style>
 <title>Untitled-1</title>
 <circle class="st0" cx="8" cy="8" r="7.1"/>
+<path class="st1" d="M9.2,3.1c0.8,0.3,1.6,0.8,2.2,1.3c0.5,0.5,0.9,1.2,1.2,1.9"/>
 </svg>

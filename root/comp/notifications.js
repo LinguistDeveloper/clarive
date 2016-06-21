@@ -1432,7 +1432,7 @@
             items: [data_paste, results],
             tbar: [{
                 text: _('Import'),
-                icon: '/static/images/icons/import.png',
+                icon: '/static/images/icons/import.svg',
                 handler: function() {
                     Baseliner.ajaxEval('/notification/import_notification', {
                         yaml: data_paste.getValue()
@@ -1463,13 +1463,13 @@
         disabled: false,
         menu: [{
             text: _('Import'),
-            icon: '/static/images/icons/import.png',
+            icon: '/static/images/icons/import.svg',
             handler: function() {
                 notify_import();
             }
         }, {
             text: _('Export'),
-            icon: '/static/images/icons/export.png',
+            icon: '/static/images/icons/downloads_favicon.svg',
             handler: function() {
                 var sm = grid.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -1543,7 +1543,7 @@
 
     var show_active = function(value, metadata, rec, rowIndex, colIndex, store) {
         var img =
-            value == '1' ? 'start.png' : 'stop.png';
+            value == '1' ? 'start.png' : 'stop.svg';
         return "<img alt='" + value + "' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/" + img + "' />";
     };
 
