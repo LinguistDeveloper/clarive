@@ -1733,6 +1733,42 @@ msgstr ""
 msgid "Topic not found"
 msgstr ""
 
+#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Reports/listado_jobs.pm
+#: root/comp/catalog/item_deploy.js root/comp/catalog_grid.js
+#: root/comp/ci-editor.js root/comp/configlist/grid.mas
+#: root/comp/git/tag_commit.js root/comp/job_calendar_editor.js
+#: root/comp/job_new.js root/comp/lifecycle/report_edit.js
+#: root/comp/role_grid.js root/comp/rule_new.js root/comp/rules.js
+#: root/comp/scheduler_grid.js root/comp/topic/form_editor.js
+#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
+#: root/comp/user_grid.js root/comp/user_info.mas
+#: root/dashlets/filtered_topics.html root/dashlets/my_topics.html
+#: root/dashlets/status_changes.html root/fields/system/js/list_revisions.js
+#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
+#: root/fields/templates/config/projects.js root/forms/ci_invoke.js
+#: root/site/common.js root/site/explorer.js root/site/model.js
+msgid "Name"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "E-mail"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm root/comp/user_grid.js
+#: root/comp/user_info.mas
+msgid "Phone Number"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "No user details available"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Reports/listado_jobs.pm
+#: root/comp/sms.js root/forms/create_job.js root/forms/system_messages.js
+#: root/site/login.js root/site/tabfu.js root/site/timeline-graph.js
+msgid "Username"
+msgstr ""
+
 #: lib/Baseliner/Controller/Topic.pm
 msgid "The user %1 does not exist in Clarive"
 msgstr ""
@@ -4935,23 +4971,6 @@ msgstr ""
 msgid "Weekly Job Stats"
 msgstr ""
 
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/catalog/item_deploy.js
-#: root/comp/catalog_grid.js root/comp/ci-editor.js
-#: root/comp/configlist/grid.mas root/comp/git/tag_commit.js
-#: root/comp/job_calendar_editor.js root/comp/job_new.js
-#: root/comp/lifecycle/report_edit.js root/comp/role_grid.js
-#: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/topic/form_editor.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/user_info.mas root/dashlets/filtered_topics.html
-#: root/dashlets/my_topics.html root/dashlets/status_changes.html
-#: root/fields/system/js/list_revisions.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/projects.js root/forms/ci_invoke.js
-#: root/site/common.js root/site/explorer.js root/site/model.js
-msgid "Name"
-msgstr ""
-
 #: lib/BaselinerX/Reports/listado_jobs.pm
 msgid "Changes"
 msgstr ""
@@ -4986,12 +5005,6 @@ msgstr ""
 #: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
 #: root/dashlets/pending_jobs.html root/site/common.js
 msgid "End"
-msgstr ""
-
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/sms.js
-#: root/forms/create_job.js root/forms/system_messages.js root/site/login.js
-#: root/site/tabfu.js root/site/timeline-graph.js
-msgid "Username"
 msgstr ""
 
 #: lib/BaselinerX/Reports/listado_jobs.pm
@@ -10344,6 +10357,10 @@ msgid "Enter or select topics"
 msgstr ""
 
 #: root/comp/topic/topic_lib.js
+msgid "User details %1"
+msgstr ""
+
+#: root/comp/topic/topic_lib.js
 msgid "Add Comment"
 msgstr ""
 
@@ -10649,10 +10666,6 @@ msgstr ""
 
 #: root/comp/user_grid.js root/site/tabfu.js
 msgid "Confirm Password"
-msgstr ""
-
-#: root/comp/user_grid.js root/comp/user_info.mas
-msgid "Phone Number"
 msgstr ""
 
 #: root/comp/user_grid.js root/comp/user_info.mas
