@@ -18,7 +18,7 @@ my $iid = Util->_md5;
         var status = obj.status;
         var type   = obj.type;
         var rollback = obj.rollback;
-        var div1   = '<div style="white-space:normal !important;">';
+        var div1   = '<div class="list_jobs_item" style="white-space:normal !important;">';
         var div2   = '</div>';
         if( status=='RUNNING' ) { icon='gears.svg'; bold=true }
         else if( status=='READY' ) icon='log_d.svg';
