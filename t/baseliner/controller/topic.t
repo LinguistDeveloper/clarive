@@ -2677,6 +2677,108 @@ subtest 'view: does not allow users without action to see job monitor to see it'
     is $stash->{permissionJobs},  '0';
 };
 
+subtest 'category_list: returns the category that is of type release' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category( is_release => '1' );
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { is_release => '1' } }
+    );
+
+    my $controller = _build_controller();
+    $controller->category_list($c);
+
+    is $c->stash->{json}->{data}[0]->{id}, $category_2;
+    is $c->stash->{json}->{totalCount}, 1;
+};
+
+subtest 'category_list: returns empty if not exist categories of type release' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { is_release => '1' } }
+    );
+
+    my $controller = _build_controller();
+    $controller->category_list($c);
+
+    is $c->stash->{json}->{totalCount}, 0;
+};
+
+subtest 'category_list: returns all the categories if is_release = 0' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { is_release => '0' } }
+    );
+
+    my $controller = _build_controller();
+    $controller->category_list($c);
+
+    is $c->stash->{json}->{totalCount}, 3;
+};
+
+subtest 'category_list: returns all categories' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $category_1 = TestSetup->create_category();
+    my $category_2 = TestSetup->create_category();
+    my $category_3 = TestSetup->create_category();
+
+    my $c = _build_c( username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->category_list($c);
+
+    is $c->stash->{json}->{totalCount}, 3;
+};
+
 done_testing;
 
 sub _create_user_with_drop_rules {

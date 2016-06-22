@@ -2849,55 +2849,65 @@ sub set_labels {
     # XXX do nothing, now labels are in the mongo doc
 }
 
-sub get_categories_permissions{
-    my ($self, %param) = @_;
+sub get_categories_permissions {
+    my ( $self, %param ) = @_;
 
-    # my $cache_key = { d=>'topic:meta', p=>\%param };
-    # ref($_) && return @$_ for cache->get($cache_key);
-
-    my $username = delete $param{username};
-    my $type = delete $param{type};
-    my $order = delete $param{order};
-    my $topic_mid = delete $param{topic_mid};
+    my $username   = delete $param{username};
+    my $type       = delete $param{type};
+    my $order      = delete $param{order};
+    my $topic_mid  = delete $param{topic_mid};
+    my $is_release = delete $param{is_release};
 
     my $dir = $order->{dir} && $order->{dir} =~ /desc/i ? -1 : 1;
     my $sort = $order->{sort} || 'name';
 
     my $re_action;
 
-    if ( $type eq 'view') {
+    if ( $type eq 'view' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(view|edit|create)$/;
-    } elsif ($type eq 'edit') {
+    }
+    elsif ( $type eq 'edit' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
-    } elsif ($type eq 'create') {
+    }
+    elsif ( $type eq 'create' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
-    } elsif ($type eq 'delete') {
+    }
+    elsif ( $type eq 'delete' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(delete)$/;
-    } elsif ($type eq 'comment') {
+    }
+    elsif ( $type eq 'comment' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(comment)$/;
-    } elsif ($type eq 'activity') {
+    }
+    elsif ( $type eq 'activity' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(activity)$/;
-    } elsif ($type eq 'jobs') {
+    }
+    elsif ( $type eq 'jobs' ) {
         $re_action = qr/^action\.topics\.(.*?)\.(jobs)$/;
     }
 
     my @permission_categories;
-    my $where = { id=>"$param{id}" } if $param{id};
+    my $where = {};
+    $where->{id}         = "$param{id}" if $param{id};
+    $where->{is_release} = $is_release  if $is_release;
+
     my $rs = mdb->category->find($where);
-    $rs->fields({ id=>1, name=>1, color=>1 }) if !$param{all_fields};
-    my @categories  = $rs->sort({ $sort=>$dir })->all;
-    if ( Baseliner::Model::Permissions->new->is_root( $username) ) {
+    $rs->fields( { id => 1, name => 1, color => 1 } ) if !$param{all_fields};
+    my @categories = $rs->sort( { $sort => $dir } )->all;
+    if ( Baseliner::Model::Permissions->new->is_root($username) ) {
         return @categories;
     }
     push @permission_categories, _unique map {
         $_ =~ $re_action;
         $1;
-    } Baseliner::Model::Permissions->new->user_actions_list( username => $username, action => $re_action, mid => $topic_mid);
+        } Baseliner::Model::Permissions->new->user_actions_list(
+        username => $username,
+        action   => $re_action,
+        mid      => $topic_mid
+        );
 
     my %granted_categories = map { $_ => 1 } @permission_categories;
-    @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
+    @categories = grep { $granted_categories{ _name_to_id( $_->{name} ) } } @categories;
 
-    # cache->set($cache_key, \@categories );
     return @categories;
 }
 

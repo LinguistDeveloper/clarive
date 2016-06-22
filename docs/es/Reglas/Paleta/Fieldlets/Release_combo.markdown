@@ -33,6 +33,14 @@ icon: combo_box
 ### Campo obligatorio
 * Indica si el campo tiene que ser completado obligatoriamente.
 
+### Selecciona tópicos en categorías
+* Selecciona una o más categorías a mostrar de tipo Release.
+
+### Selecciona tópicos por estados
+* Selecciona uno o más estados para mostrar.
+
+### Excluir los estados seleccionadas
+* Excluye los estados seleccionados en el punto anterior y muestra el resto que **no** están seleccionados.
 
 ### Tipo
 * Este fieldlet unicamente acepta que se añada una única opción en el formulario del tópico.

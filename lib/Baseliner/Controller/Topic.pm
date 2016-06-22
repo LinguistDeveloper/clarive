@@ -961,18 +961,22 @@ sub comment : Local {
     $c->forward('View::JSON');
 }
 
-sub category_list : Local { #this is for ComboCategories
-    my ($self, $c) = @_;
-    my @cats = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view');
-    # my @cats = mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
+sub category_list : Local {    #this is for ComboCategories
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    my $is_release = "$p->{is_release}" if $p->{is_release};
 
+    my @categories = Baseliner::Model::Topic->get_categories_permissions(
+        username   => $c->username,
+        type       => 'view',
+        is_release => $is_release
+    );
     my $return = {
         data => [
             map { +{ id => $_->{id}, name => $_->{name} } }
-            sort { lc $a->{name} cmp lc $b->{name} }
-            @cats
+            sort { lc $a->{name} cmp lc $b->{name} } @categories
         ],
-        totalCount=>scalar @cats
+        totalCount => scalar @categories
     };
     $c->stash->{json} = $return;
     $c->forward('View::JSON');
