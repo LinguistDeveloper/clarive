@@ -6,7 +6,7 @@ use File::Basename qw(basename dirname);
 use URI;
 use String::CRC32 ();
 
-has user => qw(is rw isa Str);
+has user => qw(is rw isa Maybe[Str]);
 
 has auth_username => qw(is rw isa Str);
 has auth_password => qw(is rw isa Str);
