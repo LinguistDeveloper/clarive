@@ -797,6 +797,52 @@ subtest 'default: call a rule as json webservice' => sub {
     is $c->res->{content_type}, 'baz';
 };
 
+subtest 'get_rule_ts: adds ts to json if the rule exists' => sub {
+    _setup();
+
+    my $id_rule = _create_rule();
+
+    mock_time '2016-01-01 12:15:00', sub {
+        Baseliner::Model::Rules->new->write_rule(
+            id_rule  => $id_rule,
+            username => 'someuser',
+        );
+    };
+
+    my $c = mock_catalyst_c( req => { params => { id_rule => $id_rule } } );
+
+    my $controller = _build_controller();
+
+    $controller->get_rule_ts($c);
+
+    is_deeply $c->stash,
+        {
+        json => {
+            ts      => '2016-01-01 12:15:00',
+            msg     => 'ok',
+            success => \1,
+        }
+        };
+};
+
+subtest 'get_rule_ts: returns error if rule not found' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c( req => { params => { id_rule => '' } } );
+
+    my $controller = _build_controller();
+
+    $controller->get_rule_ts($c);
+
+    is_deeply $c->stash,
+        {
+        json => {
+            msg     => 'Rule not found',
+            success => \0,
+        }
+        };
+};
+
 done_testing;
 
 sub _setup {

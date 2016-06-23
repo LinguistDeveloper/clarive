@@ -614,7 +614,7 @@ sub get_rule_ts : Local{
     } catch {
         my $err = shift;
         _error $err;
-        $c->stash->{json} = { success=>\0, msg => $err };
+        $c->stash->{json} = { success=>\0, msg => _loc('Rule not found') };
     };
     $c->forward("View::JSON");
 }
