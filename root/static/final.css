@@ -759,6 +759,8 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     height:7px;
     position:absolute;
     left: 55%;
+    width: auto !important;
+    height: 100% !important;
 }
 
 .x-fieldlet-type-height {
@@ -919,4 +921,11 @@ img[src$='.svg'][src^='/static/images'] {
 
 .list_jobs_item img {
     margin-right: 3px !important;
+
+.x-tab-strip-top.x-tab-right {
+    padding-bottom: 3px;
+}
+
+ul.x-tab-strip li {
+    margin-bottom: -1px;
 }
