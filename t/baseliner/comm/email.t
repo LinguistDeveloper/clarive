@@ -61,6 +61,23 @@ subtest 'send: builds correct email with unicode' => sub {
     like $msg_string, qr#Subject: \Q=?utf-8?B?0J/RgNC40LLQtdGCIQ==?=\E#;
 };
 
+subtest 'send: does not fail when message send fails' => sub {
+    my $msg = Test::MonkeyMock->new;
+    $msg->mock( send   => sub { die 'error' } );
+    $msg->mock( attach => sub { } );
+
+    my $comm = Baseliner::Comm::Email->new(@_);
+    $comm = Test::MonkeyMock->new($comm);
+    $comm->mock( _build_msg => sub { $msg } );
+
+    ok $comm->send(
+        from    => 'me@localhost',
+        to      => 'you@localhost',
+        subject => 'hi',
+        body    => 'body',
+    );
+};
+
 subtest 'group_queue: groups queue' => sub {
     _setup();
 
