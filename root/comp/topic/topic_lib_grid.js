@@ -548,7 +548,7 @@ Cla.topic_grid = function(params){
             for (var row = 0; row < 9999; row++) {
                 if (!gv.getRow(row)) break;
                 var d = {};
-                for (var col = 0; col < 9999; col++) {
+                for (var col = 1; col < 9999; col++) {
                     if (!cfg[col]) break;
                     if (cfg[col].hidden || cfg[col]._checker) continue;
                     var cell = gv.getCell(row, col);
@@ -573,7 +573,7 @@ Cla.topic_grid = function(params){
 
         }
 
-        for (var i = 0; i < cfg.length; i++) {
+        for (var i = 1; i < cfg.length; i++) {
 
             if (!cfg[i].hidden && !cfg[i]._checker)
                 data.columns.push({
