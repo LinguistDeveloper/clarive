@@ -9,7 +9,6 @@ To do:
 
 */
 (function(){
-    var last_mode = { eval: true };
     var last_name = "";
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
 
@@ -40,7 +39,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 */}.heredoc();
 
     // setup defaults
-    if( Cla.AceEditor == undefined ) Cla.AceEditor = { theme: 'eclipse', mode: { name:'perl' } };
+    if( Cla.AceEditor === undefined ) Cla.AceEditor = { theme: 'eclipse', mode: { name:'perl' } };
 
     var aceditor = new Cla.AceEditor({
         name: 'code',
@@ -72,7 +71,6 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 	    onTrigger1Click : function(){ // clear button
 		    if(this.hasSearch){
 			    this.el.dom.value = '';
-		        var v = this.getRawValue();
                 // reset tree
                 reload_root();
                 // hide clear button
@@ -92,14 +90,14 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             results.expand();
             tree.root.eachChild( function(n) {
                 var url = n.attributes.url;
-                if( url == undefined ) return;
+                if( url === undefined ) return;
                 var bb = { query: v };
                 Ext.apply(bb, n.attributes.data, bb );
                 xxx += "\n" + url;
                 set_output( xxx );
                 Baseliner.ajaxEval( url, bb, function(res) {
                     //set_output( Ext.encode( res ) );
-                    if( res != undefined && typeof(res) == 'object' ){
+                    if( res !== undefined && typeof(res) == 'object' ){
                         results.appendChild( res );
                     }
                 });
@@ -108,7 +106,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 		    this.triggers[0].show();
 	    }
     });
-    search.on('click', function(){ alert('ok') });
+    search.on('click', function(){ alert('ok'); });
     
     function reload_root() {
         var loader = tree.getLoader();
@@ -153,8 +151,8 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     //root.appendChild( tsave );
     
     tree.getLoader().on("beforeload", function(loader, node) {
-        if( node.attributes.url != undefined ) {
-            if( node.attributes.url == "" ) return false;
+        if( node.attributes.url !== undefined ) {
+            if( node.attributes.url === "" ) return false;
             loader.dataUrl = node.attributes.url;
         }
         loader.baseParams = node.attributes.data;
@@ -162,7 +160,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     // code loading on click
     tree.on('click', function(n,e) {
-        if( n.attributes.url_click != undefined ) {
+        if( n.attributes.url_click !== undefined ) {
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
                 if( res.code ) { 
                     last_name= n.text;
@@ -216,7 +214,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         height: 350,
         items: [ output ],
         tbar: [
-            Baseliner.button('Clear', '/static/images/icons/clear.svg', function(b) { set_output("") } ),
+            Baseliner.button('Clear', '/static/images/icons/clear.svg', function(b) { set_output(""); } ),
             Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) { 
                 cons.items.each(function(comp) {
                     if( comp.initialConfig.closable ) {
@@ -235,14 +233,13 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 }
             }),
             Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function(b) { 
-                var tab = cons.getActiveTab();
                 var ww = window.open('about:blank', '_blank' );
                 ww.document.title = _('REPL');
                 ww.document.write( '<pre>' + output.getValue() + '</pre>' );
                 ww.document.close();
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { cons.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { cons.collapse(true); } )
         ],
         region: 'south'
     });
@@ -250,7 +247,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     function set_output( data ) {
         output.setValue( data );
         cons.setActiveTab( output );
-        if( data && data != '' )
+        if( data && data !== '' )
             cons.expand(true);
     }
 
@@ -258,12 +255,12 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         var dt = new Date();
         var short = params.c.substring(0,20);
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
-        if( params.save!=undefined && params.save ) {
+        if( params.save!==undefined && params.save ) {
             last_name = node_name;
             var f = form.getForm();
             f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o } });
         }
-    }
+    };
 
     var show_table = function( d ) {
         try {
@@ -293,14 +290,14 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         Baseliner.ajaxEval( '/repl/save_hist', { code: aceditor.getValue(), lang: btn_lang.lang }, function(res){ 
             reload_hist();
         });
-    }
+    };
 
     var reload_hist = function(){
         var hist = tree.root.firstChild;
         if( hist && hist.isExpanded() ) {
             hist.reload();
         }
-    }
+    };
 
     function processPacket(show, packet) {
         if (!packet.length) {
@@ -314,8 +311,9 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             return;
         }
 
+        var value = output.getValue();
+
         if (packet.type === 'output') {
-            var value = output.getValue();
             output.setValue(value + packet.data);
         } else if (packet.type === 'result') {
             Cla.tabpanel().changeTabIcon(panel, IC('console'));
@@ -329,14 +327,12 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                         show_data_editor(packet.data.result);
                     }
                 } else {
-                    var value = output.getValue();
                     output.setValue(value + packet.data.result);
 
                     status.setValue("OK");
                     document.getElementById(output.getId()).style.color = "#10c000"; // green
                 }
             } else {
-                var value = output.getValue();
                 output.setValue(value + packet.data.error);
 
                 status.setValue("ERROR");
@@ -354,8 +350,8 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         var dump = 'yaml', show = 'cons';
         if( btn_out.out == 'yaml' ) dump = 'yaml';
         else if( btn_out.out == 'json' ) dump = 'json';
-        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table' }
-        else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor' }
+        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table'; }
+        else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor'; }
 
         if( lang == 'perl' || lang == 'js-server' || lang == 'sql' ) {
             Cla.tabpanel().changeTabIcon(panel, "/static/images/loading-fast.gif");
@@ -401,9 +397,9 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 save_hist();
                 eval("d=(function(){ " + aceditor.getValue() + " }) ");
                 d = d();
-                if( show == 'table' && d != undefined ) {
+                if( show == 'table' && d !== undefined ) {
                     show_table( d ); 
-                } else if( show == 'data_editor' && d != undefined ) {
+                } else if( show == 'data_editor' && d !== undefined ) {
                     show_data_editor( d );
                 } else {
                     if( Ext.isObject( d ) || Ext.isArray( d ) ) d = Ext.util.JSON.encode( d );
@@ -428,8 +424,6 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             aceditor.setValue( txt );
         }
     };
-    var default_lang = function(x) { return Cla.AceEditor.mode.name == x; };
-    var default_theme = function(x) { return Cla.AceEditor.theme == x; };
     var change_lang = function(x) {
         if( x.checked && aceditor.editor ) { 
             var txt = aceditor.getValue();
@@ -546,7 +540,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();
-                    if( selectedNode == undefined ) return;
+                    if( selectedNode === undefined ) return;
                     var id = selectedNode.text;
                     Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the entry %1?', id), 
                             function(btn){ 
