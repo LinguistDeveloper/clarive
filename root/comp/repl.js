@@ -302,6 +302,53 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     }
 
+    function processPacket(show, packet) {
+        if (!packet.length) {
+            return;
+        }
+
+        try {
+            packet = JSON.parse(packet);
+        } catch (e) {
+            console.log('error parsing JSON ' + e);
+            return;
+        }
+
+        if (packet.type === 'output') {
+            var value = output.getValue();
+            output.setValue(value + packet.data);
+        } else if (packet.type === 'result') {
+            Cla.tabpanel().changeTabIcon(panel, IC('console'));
+            elapsed.setValue(packet.data.elapsed);
+
+            if (!packet.data.error) {
+                if (show == 'table' || show == 'data_editor') {
+                    if (show == 'table') {
+                        show_table(packet.data.result);
+                    } else {
+                        show_data_editor(packet.data.result);
+                    }
+                } else {
+                    var value = output.getValue();
+                    output.setValue(value + packet.data.result);
+
+                    status.setValue("OK");
+                    document.getElementById(output.getId()).style.color = "#10c000"; // green
+                }
+            } else {
+                var value = output.getValue();
+                output.setValue(value + packet.data.error);
+
+                status.setValue("ERROR");
+                document.getElementById(output.getId()).style.color = "#f54"; // red
+            }
+
+            save_hist();
+            aceditor.focus();
+            reload_hist();
+        }
+    }
+
     var run_repl = function(){
         var lang = btn_lang.lang;
         var dump = 'yaml', show = 'cons';
@@ -316,56 +363,31 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             output.setValue('');
 
             var xhr = new XMLHttpRequest();
-            xhr.responseType = "text";
             var params = "lang=" + lang + "&dump=" + dump + "&code=" + encodeURIComponent(aceditor.getValue());
 
-            var response = '';
             var offset = 0;
             xhr.open("POST", "/repl/eval", true);
             xhr.onprogress = function(e) {
-                var message = xhr.responseText.substr(offset);
-                offset += message.length;
+                var messagePayload = '';
+                var messageLength = 0;
 
-                var messages = message.split("\n");
-                for (var i = 0; i < messages.length; i++) {
-                    var packet = messages[i];
+                while (offset < xhr.responseText.length) {
+                    var indexOfSep = xhr.responseText.indexOf("\n", offset);
+                    if (indexOfSep != -1) {
+                        messageLength = parseInt(xhr.responseText.substr(offset, indexOfSep - offset));
+                        messagePayload = xhr.responseText.substr(indexOfSep + 1, messageLength);
 
-                    if (!packet.length) {
-                        continue;
-                    }
+                        if (messagePayload.length >= messageLength) {
+                            offset += (indexOfSep - offset) + 1 + messageLength;
 
-                    packet = JSON.parse(packet);
-
-                    if (packet.type === 'output') {
-                        response = response + packet.data;
-                        output.setValue(response);
-                    } else if (packet.type === 'result') {
-                        Cla.tabpanel().changeTabIcon(panel, IC('console'));
-                        elapsed.setValue(packet.data.elapsed);
-
-                        if (!packet.data.error) {
-                            if (show == 'table' || show == 'data_editor') {
-                                if (show == 'table') {
-                                    show_table(packet.data.result);
-                                } else {
-                                    show_data_editor(packet.data.result);
-                                }
-                            } else {
-                                output.setValue($.grep([response, packet.data.result], Boolean).join("\n"));
-
-                                status.setValue("OK");
-                                document.getElementById(output.getId()).style.color = "#10c000"; // green
-                            }
-                        } else {
-                            output.setValue($.grep([response, packet.data.error], Boolean).join("\n"));
-
-                            status.setValue("ERROR");
-                            document.getElementById(output.getId()).style.color = "#f54"; // red
+                            processPacket(show, messagePayload);
                         }
-
-                        save_hist();
-                        aceditor.focus();
-                        reload_hist();
+                        else {
+                            return;
+                        }
+                    }
+                    else {
+                        return;
                     }
                 }
             };

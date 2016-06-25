@@ -42,14 +42,16 @@ subtest 'eval: executes code and returns correct results' => sub {
     my ($message1) = $fh->mocked_call_args( 'write', 0 );
     my ($message2) = $fh->mocked_call_args( 'write', 1 );
 
-    my ($json1) = split "\n", $message1;
-    my ($json2) = split "\n", $message2;
+    my ($length1, $json1) = split "\n", $message1;
+    my ($length2, $json2) = split "\n", $message2;
 
+    ok $length1;
     is_deeply JSON::decode_json($json1),
       {
         type => 'output',
         data => 'output'
       };
+    ok $length2;
     cmp_deeply JSON::decode_json($json2),
       {
         type => 'result',
@@ -89,7 +91,7 @@ subtest 'eval: returns result as json' => sub {
     $controller->eval($c);
 
     my ($message2) = $fh->mocked_call_args( 'write', 0 );
-    my ($json2) = split "\n", $message2;
+    my ($length2, $json2) = split "\n", $message2;
 
     is JSON::decode_json($json2)->{data}->{result}, qq/{\n   "foo" : "bar"\n}\n/;
 };
@@ -119,7 +121,7 @@ subtest 'eval: returns correct results with exceptions' => sub {
 
     my ($message1) = $fh->mocked_call_args( 'write', 0 );
 
-    my ($json1) = split "\n", $message1;
+    my ($length1, $json1) = split "\n", $message1;
 
     cmp_deeply JSON::decode_json($json1),
       {
@@ -161,7 +163,7 @@ subtest 'eval: returns result value as json' => sub {
 
     my ($message) = $fh->mocked_call_args( 'write', 1 );
 
-    my ($json) = split "\n", $message;
+    my ($length, $json) = split "\n", $message;
 
     cmp_deeply JSON::decode_json($json),
       {
@@ -204,7 +206,7 @@ subtest 'eval: javascript code executed' => sub {
 
     my ($message) = $fh->mocked_call_args( 'write', 1 );
 
-    my ($json) = split "\n", $message;
+    my ($length, $json) = split "\n", $message;
 
     cmp_deeply JSON::decode_json($json),
       {
@@ -247,14 +249,16 @@ subtest 'eval: correctly decodes unicode' => sub {
     my ($message1) = $fh->mocked_call_args( 'write', 0 );
     my ($message2) = $fh->mocked_call_args( 'write', 1 );
 
-    my ($json1) = split "\n", $message1;
-    my ($json2) = split "\n", $message2;
+    my ($length1, $json1) = split "\n", $message1;
+    my ($length2, $json2) = split "\n", $message2;
 
+    ok $length1;
     is_deeply JSON::decode_json($json1),
       {
         type => 'output',
         data => "\x{1F627}"
       };
+    ok $length2;
     cmp_deeply JSON::decode_json($json2),
       {
         type => 'result',

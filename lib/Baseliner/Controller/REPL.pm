@@ -188,7 +188,8 @@ sub eval : Local {
 
         $data = Encode::decode( 'UTF-8', $data );
 
-        $fh->write( JSON::XS::encode_json( { type => 'output', data => $data } ) . "\n" );
+        my $response = JSON::XS::encode_json( { type => 'output', data => $data } );
+        $fh->write( length( Encode::decode( 'UTF-8', $response ) ) . "\n" . $response );
       };
 
     my $elapsed = $capture_ret->{ret}->{elapsed};
@@ -202,21 +203,20 @@ sub eval : Local {
         $ret = JSON::XS->new->pretty->encode( _damn($ret) );
     }
 
-    $fh->write(
-        JSON::XS::encode_json(
-            {
-                type => 'result',
-                data => {
-                    stdout  => Encode::decode( 'UTF-8', $capture_ret->{stdout} ),
-                    stderr  => Encode::decode( 'UTF-8', $capture_ret->{stderr} ),
-                    elapsed => $elapsed,
-                    result  => $ret,
-                    error   => $err,
-                }
+    my $response = JSON::XS::encode_json(
+        {
+            type => 'result',
+            data => {
+                stdout  => Encode::decode( 'UTF-8', $capture_ret->{stdout} ),
+                stderr  => Encode::decode( 'UTF-8', $capture_ret->{stderr} ),
+                elapsed => $elapsed,
+                result  => $ret,
+                error   => $err,
             }
-          )
-          . "\n"
+        }
     );
+
+    $fh->write( length( Encode::decode( 'UTF-8', $response ) ) . "\n" . $response );
 
     $fh->close;
 }
