@@ -135,7 +135,7 @@
                                <table class="table table-bordered table-condensed" style="width: 90%">
                               <thead>
                                    <tr>
-                                       <th id='[%= code_section[changes[i].path] %]' style="font-family: Courier New, Courier, monospace;" colspan=3>
+                                       <th id='[%= code_section[changes[i].path] %]' data-file="[%= changes[i].path %]" style="font-family: Courier New, Courier, monospace;" colspan=3>
                                            [%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
                                            [% 
                                               if(branch == undefined || controller == 'gittree'){
@@ -449,14 +449,14 @@
                                 lines.pop();
                             lines.forEach(function(element, index, array){
                                 if(element.search(regexp_add)>=0){
-                                    res = res+"<tr><td width=\"1\" class=\"line-number\">"+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
+                                    res = res+"<tr><td width=\"1\">"+"</td><td width=\"1\" data-action=\"add\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
                                     last_start++;
                                 }else if(element.search(regexp_del)>=0){
-                                    res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+"</td><td class=\"deleted-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
+                                    res = res + "<tr><td width=\"1\" class=\"line-number\" data-action=\"delete\">"+origin_start+"</td><td width=\"1\">"+"</td><td class=\"deleted-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
                                     origin_start++;
                                 }else if(element.search("\\ No newline at end of file")>=0){
                                 } else {
-                                    res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"permanent-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
+                                    res = res + "<tr><td width=\"1\" class=\"line-number\" data-action=\"permanent\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"permanent-code\">" + escapeHtmlEntities(element.substr(1)) + "</td></tr>";
                                     origin_start++;
                                     last_start++;
                                 }
@@ -488,6 +488,57 @@
         if (panel.rendered) {
             panel.update(html);
         }
+
+        function renderReview(review) {
+            var created_by = '<b>' + (review.created_by || 'n/a') + '</b>';
+            var date = review.created_on;
+            return '<tr><td colspan="3">' + created_by + ' (' + date + ')' + '<br />' + review.text + '</td></tr>';
+        }
+
+        $('td.line-number').each(function() {
+            var $td = $(this);
+            $td.css('cursor', 'pointer').click(function() {
+                Ext.Msg.prompt('Add comment', '', function(button, text) {
+                    if (button === 'ok') {
+                        var comment_params = {
+                            repo_mid: params.repo_mid,
+                            rev_num: params.rev_num,
+                            branch: params.branch,
+                            file: $td.closest('table').find('th').attr('data-file'),
+                            line: parseInt($td.html()),
+                            action: $td.attr('data-action'),
+                            text: text
+                        };
+                        Baseliner.ajax_json('/review/add', comment_params, function(res) {
+                            $(renderReview(res.data)).insertAfter($td.closest('tr'));
+                        }, function(res) {
+                            Baseliner.error(_('Error'), _(res.msg));
+                        });
+
+                    }
+                }, undefined, true); // true is for multiline
+            });
+        });
+
+        Baseliner.ajax_json('/review/list', {repo_mid: params.repo_mid, rev_num: params.rev_num}, function(res) {
+            if (res && res.data) {
+                for (file in res.data) {
+                    $('[data-file="' + file + '"]').each(function() {
+                        $th = $(this);
+
+                        for (var i = 0; i < res.data[file].length; i++) {
+                            var review = res.data[file][i];
+
+                            var $line = $th.closest('table').find('td.line-number:contains("' + review.line + '")');
+
+                            if ($line.length) {
+                                $(renderReview(review)).insertAfter($line[0].closest('tr'));
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, params_view_diff, generate_diff, function(res){
