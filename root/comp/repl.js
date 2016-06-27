@@ -461,7 +461,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         items: [
             {
                 text: _('Theme'),
-                icon:'/static/images/icons/wrench.gif',
+                icon:'/static/images/icons/theme.svg',
                 menu: { items: [
                         { text: 'Eclipse', theme: 'eclipse', checked: true, group: 'theme', checkHandler: change_theme },
                         { text: 'Chaos', theme: 'chaos', checked: true, group: 'theme', checkHandler: change_theme },
