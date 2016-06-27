@@ -311,22 +311,14 @@
 
 
 <script language="javascript">
-    function render_level ( ) {
-        var icon;
-	    var bold = false;
-	    var status = "<% $resumen->{status} %>";
-	    var type   = '<% $resumen->{type} %>';
-	    var rollback = '<% $resumen->{rollback} %>';
-	    var div1   = '<div style="white-space:normal !important;">';
+    function render_level () {
+        var status = "<% $resumen->{status} %>";
+        var type   = '<% $resumen->{type} %>';
+        var rollback = '<% $resumen->{rollback} %>';
+        var icon = Baseliner.getJobStatusIcon(status, rollback);
+        var div1   = '<div style="white-space:normal !important;">';
         var div2   = '</div>';
-        if( status=='RUNNING' ) { icon='gears.svg'; bold=true }
-        else if( status=='READY' ) icon='waiting.png';
-        else if( status=='APPROVAL' ) icon='verify.gif';
-        else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w_1.svg';
-        else if( status=='CANCELLED' ) icon='close.svg';
-        else { icon='log_e.png'; bold=true; }
-        var value = (bold?'<b><% _loc($resumen->{status}) %></b>':'<% _loc($resumen->{status}) %>');
+        var value = '<b><% _loc($resumen->{status}) %></b>';
 
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {

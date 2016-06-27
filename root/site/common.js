@@ -4740,3 +4740,30 @@ Baseliner.escapeHtmlEntities.entityTable = {
     8250: 'rsaquo',
     8364: 'euro'
 };
+
+Baseliner.getJobStatusIcon = function(status, rollback) {
+    switch (status) {
+        case 'RUNNING':
+            return 'gears.gif';
+        case 'READY':
+            return 'waiting.png';
+        case 'APPROVAL':
+            return 'user_delete.svg';
+        case 'FINISHED':
+            return (rollback != 1) ? 'log_i.png' : 'log_e.png';
+        case 'IN-EDIT':
+            return 'log_w_1.svg';
+        case 'WAITING':
+            return 'waiting.png';
+        case 'PAUSED':
+            return 'paused.png';
+        case 'TRAPPED':
+            return 'paused.png';
+        case 'TRAPPED_PAUSED':
+            return 'paused.png';
+        case 'CANCELLED':
+            return 'close.svg';
+        default:
+            return 'log_e.png';
+    }
+};

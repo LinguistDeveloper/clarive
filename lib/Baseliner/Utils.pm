@@ -367,7 +367,7 @@ sub job_icon {
     my ($status, $rollback) = @_;
 
     given( $status ) {
-        when( 'RUNNING' ) { 'gears.svg'; }
+        when( 'RUNNING' ) { 'gears.gif'; }
         when( 'READY' ) { 'waiting.png'; }
         when( 'APPROVAL' ) { 'user_delete.svg'; }
         when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.svg' } }

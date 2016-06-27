@@ -1081,24 +1081,13 @@
         return rec.data.ago;
     };
 
-    var render_level = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon;
-        var bold = false;
-        var status = rec.data.status_code;
-        var type   = rec.data.type_raw;
+    
+    var render_level = function(value,metadata,rec,rowIndex,colIndex,store,status) {
         var rollback = rec.data.rollback;
-        if( status=='RUNNING' ) { icon='gears.svg'; bold=true }
-        else if( status=='READY' ) icon='waiting.png';
-        else if( status=='APPROVAL' ) icon='user_delete.svg';
-        else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w_1.svg';
-        else if( status=='WAITING' ) icon='waiting.png';
-        else if( status=='PAUSED' ) icon='paused.png';
-        else if( status=='TRAPPED' ) icon='paused.png';
-        else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
-        else if( status=='CANCELLED' ) icon='close.svg';
-        else { icon='log_e.png'; bold=true; }
-        value = (bold?'<b>':'') + value + (bold?'</b>':'');
+        var status = rec.data.status_code;
+        var icon = Baseliner.getJobStatusIcon(status, rollback);
+        var type   = rec.data.type_raw;
+        var value = '<b>'+ value + '</b>';
 
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
