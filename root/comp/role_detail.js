@@ -493,7 +493,7 @@
                             if (grid) {
                                 grid.getStore().load();
                             }
-
+                            Baseliner.showLoadingMask(action_tree.getEl());
                             action_tree.getRootNode().reload();
 
                             rolePanel.setTitle(_('Role: %1', roleForm.findField('name').getValue()));
