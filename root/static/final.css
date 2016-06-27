@@ -13,6 +13,10 @@ body {
     margin-left: 1.5em !important;
 }
 
+.help-doc  h3, .help-doc  h4,.help-doc  h5, .help-doc  h6 {
+    padding: 0px 0 8px 0 !important;
+}
+
 .help-doc ol {
     list-style-position: inside !important;
     margin-bottom: 8px !important;

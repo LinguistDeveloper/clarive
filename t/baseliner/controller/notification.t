@@ -188,6 +188,30 @@ subtest 'save_notification: saves bl in the scope of event.job' => sub {
 
 };
 
+subtest 'save_notification: saves the step in the scope of event.job.start_step' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                notification_id => '-1',
+                step            => 'RUN',
+                event           => 'event.job.start_step',
+                step_names      => '["RUN"]',
+                recipients      => '{}',
+                project         => '',
+                bl              => ''
+            }
+        }
+    );
+    $controller->save_notification($c);
+
+    my $notification = mdb->notification->find_one( { "data.scopes.step.name" => 'RUN' } );
+
+    is $notification->{data}->{scopes}->{step}[0]->{name}, 'RUN';
+};
+
 done_testing;
 
 sub _setup {

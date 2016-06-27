@@ -71,6 +71,7 @@ sub list_notifications : Local {
                 data.scopes.project.name
                 data.scopes.bl.name
                 data.scopes.status.name
+                data.scopes.step.name
                 data.scopes.field
                 username
                 template_path
@@ -218,42 +219,55 @@ sub save_notification : Local {
     my $recipient;
     my $data;
 
-    try{
-        if($p->{event}){
-            if (Baseliner::Core::Registry->get( $p->{event} )->notify){
+    try {
+        if ( $p->{event} ) {
+            if ( Baseliner::Core::Registry->get( $p->{event} )->notify ) {
                 my $scope = Baseliner::Core::Registry->get( $p->{event} )->notify->{scope};
-
-                map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
+                my @scopes = grep { exists $p->{$_} && $p->{$_} ne '' } _array $scope;
+                foreach my $key (@scopes) {
+                    if ( $p->{$key} eq 'on' ) {
+                        $scope{$key} = { '*' => _loc('All') };
+                    }
+                    else {
+                        $scope{$key} = _decode_json( $p->{ $key . '_names' } );
+                    }
+                }
             }
         }
-        $data->{scopes} = \%scope;
-        $data->{recipients} = _decode_json($p->{recipients});
-        #convert data to mongo style
-        $data = Baseliner::Model::Notification->new->decode_data(_dump $data);
+
+        $data->{scopes}     = \%scope;
+        $data->{recipients} = _decode_json( $p->{recipients} );
+
+        $data = Baseliner::Model::Notification->new->decode_data( _dump $data);
         my $id_notification = $p->{notification_id} eq '-1' ? '' : $p->{notification_id};
         my $notification = mdb->notification->update(
-            {
-                _id             => mdb->oid($id_notification)
+            { _id => mdb->oid($id_notification) },
+            {   event_key     => $p->{event},
+                action        => $p->{action},
+                data          => $data,
+                is_active     => '1',
+                template_path => $p->{template},
+                subject       => $p->{subject},
             },
-            {   event_key       => $p->{event},
-                action          => $p->{action},
-                data            => $data,
-                is_active       => '1',
-                template_path   => $p->{template},
-                subject         => $p->{subject},
-            },
-            {'upsert' => 1}
+            { 'upsert' => 1 }
         );
 
-        if($p->{notification_id} eq '-1'){
-            $c->stash->{json} = { success => \1, msg => _loc('Notification added'), notification_id => $notification->{upserted}->{value} };
-        }else{
-            $c->stash->{json} = { success => \1, msg => _loc('Notification updated'), notification_id => $p->{notification_id} };
+        if ( $p->{notification_id} eq '-1' ) {
+            $c->stash->{json} = {
+                success         => \1,
+                msg             => _loc('Notification added'),
+                notification_id => $notification->{upserted}->{value}
+            };
         }
-    }catch{
+        else {
+            $c->stash->{json}
+                = { success => \1, msg => _loc('Notification updated'), notification_id => $p->{notification_id} };
+        }
+    }
+    catch {
         my $err = shift;
-        _error( $err );
-        $c->stash->{json} = { success => \0, msg => _loc('Error adding notification: %1', $err )};
+        _error($err);
+        $c->stash->{json} = { success => \0, msg => _loc( 'Error adding notification: %1', $err ) };
     };
     $c->forward('View::JSON');
 }

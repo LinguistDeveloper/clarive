@@ -30,7 +30,9 @@ icon: email
 
     *Entorno*: Indica el entorno definido para la notificación.
 
-    *Estado*: Indica el estado final que se quiere para la notificación. 
+    *Estado*: Indica el estado final que se quiere para la notificación.
+
+    *Paso*: Indica el paso que se quiere para la notificación. 
     
     *Categoría*: Indica las categorías por las que el evento podrá activarse.  
     
@@ -145,7 +147,7 @@ Segunda selección - Selecciona los destinatarios, estos pueden ser:
 
 En algunos casos se necesita información adicional sobre el ámbito del evento, por ejemplo, las condiciones que se tienen que cumplir en un evento de despliegue. 
 
-*Evento de tipo job*. Campo adicional: Proyecto/Entorno/Estado - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, entorno o estado. 
+*Evento de tipo job*. Campo adicional: Proyecto/Entorno/Estado - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, entorno o estado. Los eventos de tipo step tiene un campo adicional Paso, el cuál permite avisar en función del paso.
 
 *Post*. Campos adicionales - Proyecto/Categoría/Estado. - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, categoría o estado.
 

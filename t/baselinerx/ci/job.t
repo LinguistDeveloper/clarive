@@ -151,17 +151,17 @@ subtest 'finish: create notify in event.job.end_step' => sub {
     my $notify = $event->{notify};
 
     is_deeply $notify,
-        {
+      {
         status  => 'FINISHED',
         bl      => $bl->{mid},
-        project => [ $project->{mid} ]
-        };
-
+        project => [ $project->{mid} ],
+        step    => 'CHECK'
+      };
 };
 
 subtest 'finish: creates notify in event.job.end' => sub {
     _setup();
-    use Data::Dumper;
+
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
@@ -182,7 +182,8 @@ subtest 'finish: creates notify in event.job.end' => sub {
         {
         status  => 'CANCELLED',
         bl      => $bl->{mid},
-        project => [ $project->{mid} ]
+        project => [ $project->{mid} ],
+        step    => 'POST'
         };
 };
 
@@ -234,6 +235,38 @@ subtest 'reset: creates correct event event.job.rerun with parameters step POST 
 
     is $event_data->{job}->{last_finish_status}, 'OK';
     is $event_data->{job}->{step},               'POST';
+};
+
+subtest 'run: creates notify with job step in event.job.start_step' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $job = _build_ci( changesets => [$changeset], bl => 'QA' );
+
+    capture {
+        $job->run();
+    };
+
+    my @event  = mdb->event->find_one( { event_key => 'event.job.start_step' } );
+    my $event  = _load( $event[0]->{event_data} );
+    my $notify = $event->{notify};
+
+    is $notify->{step}, 'CHECK';
+};
+
+subtest 'steps: returns list of steps' => sub {
+    _setup();
+
+    my $job = _build_ci();
+
+    my @steps = $job->steps();
+
+    is_deeply \@steps, [ 'CHECK', 'INIT', 'PRE', 'RUN', 'POST' ];
 };
 
 done_testing;

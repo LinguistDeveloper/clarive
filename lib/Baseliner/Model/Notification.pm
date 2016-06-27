@@ -125,32 +125,43 @@ sub get_recipients{
 
 sub isValid {
     my ( $self, $p ) = @_;
-    my $data = $p->{data} or _throw 'Missing parameter data';
+    my $data         = $p->{data}         or _throw 'Missing parameter data';
     my $notify_scope = $p->{notify_scope} or _throw 'Missing parameter notify_scope';
-    my $mid = $p->{mid};
-    my $valid = 1;
+    my $mid          = $p->{mid};
+    my $valid        = 1;
 
-    SCOPE: foreach my $key (keys %{$data->{scopes}}){
-        my @data_scope = _array keys %{$data->{scopes}->{$key}};
+SCOPE: foreach my $key ( keys %{ $data->{scopes} } ) {
+        my @data_scope;
+        if ( $key eq 'step' ) {
+            my @steps = _array $data->{scopes}->{$key};
+
+            foreach my $step (@steps) {
+                push( @data_scope, $step->{name} );
+            }
+        }
+        else {
+            @data_scope = _array keys %{ $data->{scopes}->{$key} };
+        }
+
         if ( $data_scope[0] eq '*' ) {
             next SCOPE;
         }
 
-        if ( !exists $notify_scope->{$key} || scalar(_array($notify_scope->{$key})) == 0 ) {
+        if ( !exists $notify_scope->{$key} || scalar( _array( $notify_scope->{$key} ) ) == 0 ) {
             if ( $mid && $key eq 'project' ) {
-                my @chi = ci->new($mid)->children( where => { collection => 'topic'} );
-                my @projs = _unique map{ $_->{mid}} map {$_->projects} @chi;
+                my @chi = ci->new($mid)->children( where => { collection => 'topic' } );
+                my @projs = _unique map { $_->{mid} } map { $_->projects } @chi;
                 my $found = 0;
-                PROJECT: for (@projs) {
-                        if ( $_ ~~ @data_scope ) {
-                            $found = 1;
-                            last PROJECT;
-                        }
+            PROJECT: for (@projs) {
+                    if ( $_ ~~ @data_scope ) {
+                        $found = 1;
+                        last PROJECT;
                     }
-                    if ( !$found ) {
-                        $valid = 0;
-                        last SCOPE;
-                    }
+                }
+                if ( !$found ) {
+                    $valid = 0;
+                    last SCOPE;
+                }
             }
             else {
                 $valid = 0;
@@ -161,7 +172,7 @@ sub isValid {
             my @event_scope = _array $notify_scope->{$key};
 
             my $found = 0;
-            EVENT: for (@event_scope) {
+        EVENT: for (@event_scope) {
                 if ( $_ ~~ @data_scope ) {
                     $found = 1;
                     last EVENT;
@@ -173,29 +184,6 @@ sub isValid {
             }
         }
     }
-    # if ($valid == 1) {
-    #     foreach my $key (keys $notify_scope){
-    #         if( exists $data->{scopes}->{$key}->{'*'} ){
-    #             $valid = 1;
-    #         }
-    #         else{
-    #             if( ref $notify_scope->{$key} eq 'ARRAY'){
-    #                 foreach my $value (@{$notify_scope->{$key}}){
-    #                     if (exists $data->{scopes}->{$key}->{$value}) {
-    #                         $valid = 1;
-    #                         last;
-    #                     }else{ $valid = 0;}
-    #                 }
-    #             }
-    #             else{
-    #                 if (exists $data->{scopes}->{$key}->{$notify_scope->{$key}}) {
-    #                     $valid = 1;
-    #                 }else{ $valid = 0; }
-    #             }
-    #             last unless $valid == 1;
-    #         }
-    #     }
-    # }
     return $valid;
 }
 
@@ -406,21 +394,31 @@ sub decode_data {
         if($data->{scopes}->{status}){
             $data->{scopes}->{status} = $self->decode_scopes($data,'status');
         }
+        if($data->{scopes}->{step}){
+            $data->{scopes}->{step} = $self->decode_scopes($data,'step');
+        }
     }
     return $data;
 }
 
 sub decode_scopes {
-    my ($self, $data, $p) = @_;
-    if($p eq 'field'){
-       $data->{scopes}->{field} = [values $data->{scopes}->{field}];
+    my ( $self, $data, $p ) = @_;
+    if ( $p eq 'field' ) {
+        $data->{scopes}->{field} = [ values $data->{scopes}->{field} ];
     }
-    else{
-       my @ar;
-       foreach (keys $data->{scopes}->{$p}){
-          push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}};
-       }
-       $data->{scopes}->{$p} = \@ar;
+    else {
+        my @scopes;
+        if ( $p eq 'step' ) {
+            foreach my $scope ( _array $data->{scopes}->{step} ) {
+                push @scopes, { 'name' => $scope };
+            }
+        }
+        else {
+            foreach ( keys $data->{scopes}->{$p} ) {
+                push @scopes, { 'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_} };
+            }
+        }
+        $data->{scopes}->{$p} = \@scopes;
     }
 }
 
