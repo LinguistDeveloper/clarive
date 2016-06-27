@@ -403,7 +403,8 @@ subtest 'save: saves code' => sub {
 
     my $controller = _build_controller();
     my $c          = _build_c(
-        req => {
+        username => 'tester',
+        req      => {
             params => {
                 id   => 'foo',
                 text => 'bar'
@@ -415,7 +416,7 @@ subtest 'save: saves code' => sub {
 
     my $repl = mdb->repl->find_one;
 
-    cmp_deeply $repl, { _id => 'foo', id => 'foo', text => 'bar' };
+    cmp_deeply $repl, { _id => 'foo', id => 'foo', text => 'bar', username => 'tester' };
 };
 
 subtest 'save: overwrites existing id' => sub {
@@ -423,7 +424,8 @@ subtest 'save: overwrites existing id' => sub {
 
     my $controller = _build_controller();
     my $c          = _build_c(
-        req => {
+        username => 'tester',
+        req      => {
             params => {
                 id   => 'foo',
                 text => 'baz'
@@ -435,7 +437,7 @@ subtest 'save: overwrites existing id' => sub {
 
     my $repl = mdb->repl->find_one;
 
-    cmp_deeply $repl, { _id => 'foo', id => 'foo', text => 'baz' };
+    cmp_deeply $repl, { _id => 'foo', id => 'foo', text => 'baz', username => 'tester' };
 };
 
 subtest 'load: throws when no entry found' => sub {
