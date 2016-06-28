@@ -376,8 +376,13 @@ sub duplicate : Local {
         if( $r ) {
             delete $r->{_id};
             my $id_duplicated_role = $r->{id};
-            $r->{role} = $r->{role} . "-" . $r->{id};
+            my $new_role_title = "Duplicate of " . $r->{role};
+            my $num_of_duplicates = 2;
             $r->{id} = mdb->seq('role');
+            while (mdb->role->find( { role => $new_role_title} )->next) {
+                $new_role_title = "Duplicate of " . $r->{role} . " " . $num_of_duplicates++;
+            }
+            $r->{role}  = $new_role_title;
             mdb->role->insert($r);
             my $dashboards = mdb->dashboard->find()->all;
             foreach my $dashboard ($dashboards){

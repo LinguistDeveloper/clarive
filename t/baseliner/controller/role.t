@@ -364,6 +364,29 @@ subtest 'delete: deletes role without users' => sub {
     );
 };
 
+subtest 'duplicate: returns correct name when a role has been duplicated before' => sub {
+    _setup();
+
+    my $id_role1 = TestSetup->create_role(role => 'Role');
+    my $id_role2 = TestSetup->create_role(role => 'Duplicate of Role');
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { id_role => $id_role1, role => 'Role'} }, authenticate => {} );
+    $controller->duplicate($c);
+
+    ok(mdb->role->find_one( {role => 'Duplicate of Role 2'}));
+};
+
+subtest 'duplicate: returns correct name' => sub {
+    _setup();
+
+    my $id_role1 = TestSetup->create_role(role => 'Role');
+    my $controller = _build_controller( actions => [ { key => 'action.topics.category.view' } ] );
+    my $c = _build_c( req => { params => { id_role => $id_role1, role => 'Role'} }, authenticate => {} );
+    $controller->duplicate($c);
+
+    ok(mdb->role->find_one( {role => 'Duplicate of Role'}));
+};
+
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
