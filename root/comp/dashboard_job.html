@@ -320,24 +320,20 @@
         var div2   = '</div>';
         var value = '<b><% _loc($resumen->{status}) %></b>';
 
-        // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value = ' <% _loc("Rollback OK") %>';
             icon = 'log_i.png';
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value = ' <% _loc("Rollback Failed") %>';
-             icon = 'log_e.png';
+            icon = 'log_e.png';
         }
-        //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
-	    if( status == 'APPROVAL' ) { // add a link to the approval main
-		    //value = '<a href="javascript:Baseliner.addNewTabComp(' + '"/request/main", '<% _loc("Approvals") %>, value ); 
-		    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status ); 
-	    }
-        //alert(icon);
-	    var tdStatus = document.getElementById('<% $status_id %>');
+        if( status == 'APPROVAL' ) {
+            value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status );
+        }
+        var tdStatus = document.getElementById('<% $status_id %>');
         if( icon!=undefined ) {
-            tdStatus.innerHTML = div1 
+            tdStatus.innerHTML = div1
                 + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/icons/"+icon+"' />"
                 + value + div2 ;
         } else {
