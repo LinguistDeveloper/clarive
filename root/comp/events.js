@@ -52,9 +52,9 @@
     };
     
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = value == 'ok' ? '/static/images/icons/log_i.png' :
-                   value == 'ko' ? '/static/images/icons/log_e.png' :
-                   value == 'new' ? '/static/images/icons/hourglass.png' : 
+        var icon = value == 'ok' ? '/static/images/icons/active.svg' :
+                   value == 'ko' ? '/static/images/icons/error_red.svg' :
+                   value == 'new' ? '/static/images/icons/busy.svg' :
                    '/static/images/unknown.gif' ;
 
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );

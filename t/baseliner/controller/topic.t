@@ -2256,7 +2256,7 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
                 title => 'To Promote',
                 url => '/comp/lifecycle/deploy.js',
             },
-            icon => "/static/images/silk/arrow_down.gif",
+            icon => "/static/images/silk/arrow_down.svg",
             id_status_from => $status->mid,
             text => ignore(),
         }],

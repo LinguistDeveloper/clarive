@@ -24,11 +24,11 @@ my $iid = Util->_md5;
 
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' ('+ _("Rollback OK")+') ';
-            icon = 'log_i.png';
+            icon = 'active.svg';
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value +=  ' ('+ _("Rollback Failed")+') ';
-            icon = 'log_e.png';
+            icon = 'error_red.svg';
         }
 
         if( status == 'APPROVAL' ) {

@@ -569,7 +569,7 @@ register 'statement.delete.key' => {
 register 'statement.parallel.wait' => {
     text => 'WAIT for children',
     form => '/forms/wait_for_children.js',
-    icon => '/static/images/icons/time.png',
+    icon => '/static/images/icons/slot.svg',
     holds_children => 0,
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -671,7 +671,7 @@ register 'statement.sub' => {
 register 'statement.fail' => {
     text => 'FAIL',
     data => { msg => 'abort here' },
-    icon => '/static/images/icons/log_e.png',
+    icon => '/static/images/icons/error_red.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -682,7 +682,7 @@ register 'statement.fail' => {
 
 register 'statement.shortcut' => {
     text => 'Task Shortcut',
-    icon => '/static/images/icons/shortcut.png',
+    icon => '/static/images/icons/shortcut.svg',
     form => '/forms/shortcut.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;

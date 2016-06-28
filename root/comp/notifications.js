@@ -1038,7 +1038,7 @@
                     }
                 }, {
                     text: _('Save'),
-                    icon: '/static/images/icons/save.png',
+                    icon: '/static/images/icons/action_save.svg',
                     handler: function() {
                         add_recipients();
                     }
@@ -1325,8 +1325,7 @@
                 }
             }, {
                 text: _('Save'),
-                icon: '/static/images/icons/save.png',
-                //text: _('Accept') ,
+                icon: '/static/images/icons/action_save.svg',
                 handler: function() {
                     save_notification();
                 }
@@ -1642,7 +1641,7 @@
 
     var show_active = function(value, metadata, rec, rowIndex, colIndex, store) {
         var img =
-            value == '1' ? 'start.png' : 'stop.svg';
+            value == '1' ? 'start.svg' : 'stop.svg';
         return "<img alt='" + value + "' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/" + img + "' />";
     };
 

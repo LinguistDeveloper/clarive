@@ -148,7 +148,7 @@ subtest 'stmts_load: returns rule tree with versions' => sub {
       {
         'json' => [
             {
-                'icon'       => '/static/images/icons/history.png',
+                'icon'       => '/static/images/icons/slot.svg',
                 'is_current' => \1,
                 'text'       => 'Current: 2016-01-02 12:15:00 (newuser)',
                 'children'   => [
@@ -165,7 +165,7 @@ subtest 'stmts_load: returns rule tree with versions' => sub {
                 'leaf' => \0
             },
             {
-                'icon'     => '/static/images/icons/history.png',
+                'icon'     => '/static/images/icons/slot.svg',
                 'text'     => 'Version: 2016-01-01 12:15:00 (someuser)',
                 'children' => [
                     {
@@ -295,7 +295,7 @@ subtest 'rollback_version: rolls back to previous version' => sub {
 
     cmp_deeply $c->stash->{json}->[0],
       {
-        'icon'       => '/static/images/icons/history.png',
+        'icon'       => '/static/images/icons/slot.svg',
         'is_current' => \1,
         'text'       => 'Current: 2016-01-03 12:15:00 (someuser) was: 2016-01-01 12:15:00',
         'children'   => [

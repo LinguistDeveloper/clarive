@@ -43,7 +43,8 @@
     var menu_view = new Ext.Toolbar.Button({
         text: _('View'),
         width: 60,
-        icon: '/static/images/icons/watch.png',
+        cls: 'x-btn-text-icon',
+        icon: '/static/images/icons/views.svg',
         menu: [
             { text: _('All'), value: '', checked: true, group: 'view', checkHandler: view_change },
             { text: _('Original Values'), value: 'original', checked: false, group: 'view', checkHandler: view_change },

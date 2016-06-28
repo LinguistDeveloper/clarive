@@ -160,7 +160,7 @@ sub action_tree : Local {
             my $name = $act->{name};
             my $txt  = "$key,$name";
             if ( List::MoreUtils::all( sub { $txt =~ $_ }, @qrs ) ) {
-                my $icon = '/static/images/icons/lock_small.png';
+                my $icon = '/static/images/icons/action.svg';
                 if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
                     $icon = '/static/images/icons/checkbox.svg';
                 }
@@ -204,13 +204,13 @@ sub action_tree : Local {
                 parents   => \@kp
             };
 
-            my $icon = '/static/images/icons/lock_small.png';
+            my $icon = '/static/images/icons/action.svg';
 
             my $text = $act->{name};
             if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
                 if (!$folders{$fkey}->{_modified}) {
                     $folders{$fkey}->{_modified}++;
-                    $folders{$fkey}->{icon} = '/static/images/icons/folder.gif';
+                    $folders{$fkey}->{icon} = '/static/images/icons/file.svg';
                 }
 
                 $icon = '/static/images/icons/checkbox.svg';
@@ -248,7 +248,7 @@ sub action_tree : Local {
             else {
                 if ( !$fnode->{_modified} && $fnode->{children} && grep { $_->{_modified} } @{ $fnode->{children} } ) {
                     $fnode->{_modified}++;
-                    $fnode->{icon} = '/static/images/icons/folder.gif';
+                    $fnode->{icon} = '/static/images/icons/file.svg';
                 }
             }
         };

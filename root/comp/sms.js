@@ -10,7 +10,7 @@
             new Baseliner.CLEditor({ name:'more', fieldLabel:_('More Info'), height:340 })
         ]
     });
-    var btn_new = new Ext.Button({ icon:IC('save.png'), text:_('Publish'), hidden: true, handler:function(){
+    var btn_new = new Ext.Button({ icon:IC('action_save.svg'), text:_('Publish'), hidden: true, handler:function(){
         if( !form.getForm().isValid() ) return;
         var d = form.getValues();
         var m = d.username 

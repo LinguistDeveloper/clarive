@@ -176,7 +176,7 @@ Baseliner.message = function(title, msg, config){
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, 'class': 'baseliner-message',
         time: 2200,
-        image: '/static/images/infomsg.png'
+        image: '/static/images/icons/about.svg'
     }, config));
     /*
     setTimeout( function(){ $.gritter.remove( id, { fade: true }); }, timeout);
@@ -184,7 +184,7 @@ Baseliner.message = function(title, msg, config){
 };
 
 Baseliner.warning = function(title, msg ){
-    Baseliner.message( title, msg, { image: '/static/images/warnmsg.png', time: 3000 } );
+    Baseliner.message( title, msg, { image: '/static/images/icons/error.svg', time: 3000 } );
 };
 
 Baseliner.message_gray = function(title, format){
@@ -1128,7 +1128,7 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Activate'),
-            icon:'/static/images/icons/start.png',
+            icon:'/static/images/icons/start.svg',
             cls: 'x-btn-text-icon',         
             disabled: true
         }, config);
@@ -2619,7 +2619,7 @@ Baseliner.run_service = function(params, service){
     var btn_output = new Ext.Button({ icon:'/static/images/icons/down.svg', text:_('Output'), hidden: true, handler: function(){ 
         card.getLayout().setActiveItem(2); 
     }});
-    var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
+    var btn_run = new Ext.Button({ icon:'/static/images/icons/play.svg', text:_('Run'), handler: function(){ 
             btn_run.disable();
             if(!params) params = {};
             btn_restart.show();
@@ -3022,7 +3022,7 @@ Cla.truncateTooltip = function (tooltip, max_length){
 Baseliner.render_checkbox = function(v){
     return v 
         ? '<img src="/static/images/icons/checkbox.svg">'
-        : '<img src="/static/images/icons/delete_.png">';
+        : '<img src="/static/images/icons/delete.svg">';
 };
 Baseliner.render_avatar = function(v){
     return '<img width="16" src="/user/avatar/'+v+'/checkbox.svg">'
@@ -4078,7 +4078,7 @@ Baseliner.request_approval = function(mid,id_grid){
         //console.log( res );
         var btn_approve = new Ext.Button({
             text: _('Approve'),
-            icon: '/static/images/yes.png',
+            icon: '/static/images/icons/active.svg',
             handler: function(){
                 var comments = user_comments.getValue();
                 Baseliner.ci_call(mid,'approve', { comments: comments }, function(res){

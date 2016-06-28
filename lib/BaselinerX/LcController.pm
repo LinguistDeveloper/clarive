@@ -476,7 +476,7 @@ sub list_repo_contents : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/log_e.png',
+            icon => '/static/images/icons/error_red.svg',
             leaf=>\1,
             expandable => \0
         };
@@ -539,7 +539,7 @@ sub branches : Local {
             push @tree, {
                 text => substr($msg,0,255),
                 data => {},
-                icon => '/static/images/icons/log_e.png',
+                icon => '/static/images/icons/error_red.svg',
                 leaf=>\1,
                 expandable => \0
             };
@@ -784,7 +784,7 @@ sub changeset : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/log_e.png',
+            icon => '/static/images/icons/error_red.svg',
             leaf=>\1,
             expandable => \0
         };
@@ -952,7 +952,7 @@ sub promotes_and_demotes {
                         status_to_name => _loc($status->{name}),
                     },
                     id_status_from => $id_status_from_lc,
-                    icon => '/static/images/silk/arrow_down.gif'
+                    icon => '/static/images/silk/arrow_down.svg'
                 };
             }
         }
@@ -997,7 +997,7 @@ sub promotes_and_demotes {
                                 status_to_name => _loc( $status->{name} ),
                             },
                             id_status_from => $id_status_from_lc,
-                            icon => '/static/images/silk/arrow_up.gif'
+                            icon => '/static/images/silk/arrow_up.svg'
                         };
                     }
                 } else {
@@ -1026,7 +1026,7 @@ sub promotes_and_demotes {
                             status_to_name => _loc( $status->{name} ),
                         },
                         id_status_from => $id_status_from_lc,
-                        icon => '/static/images/silk/arrow_up.gif'
+                        icon => '/static/images/silk/arrow_up.svg'
                     };
 
                 }
@@ -1290,7 +1290,7 @@ sub tree : Local {
         $c->stash->{json} = [{
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/log_e.png',
+            icon => '/static/images/icons/error_red.svg',
             leaf=>\1,
             expandable => \0
         }];
@@ -1387,7 +1387,7 @@ sub tree_workspaces : Local {
     for my $node ( map {$wks->{$_}} sort { $a<=>$b } keys %{$wks||{}} ) {
         ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
         $node->{text} //= $node->{name};
-        $node->{icon} //= '/static/images/icons/workspaces.png';
+        $node->{icon} //= '/static/images/icons/connected.svg';
         push @tree, $node;
     }
     $c->stash->{json} = \@tree;

@@ -56,7 +56,7 @@ sub build_doc_tree {
                 if ( $dir_has_markdown ) {
                     my $data = $self->parse_body( $md_file, $docs_root, { rel=>$rel, %$opts } );
                     next if exists $data->{active} && !$data->{active};
-                    my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.png' );
+                    my $icon = Util->icon_path( $data->{icon} || '/static/images/icons/catalog-folder.svg' );
                     $data->{rel} = "$rel";
                     $uniq_dirs{ $data->{uniq_id} } = 1;
                     my $dir_data = {
@@ -80,7 +80,7 @@ sub build_doc_tree {
                     my $dir_data = {
                         leaf     => \0,
                         expanded => \1,
-                        icon     => '/static/images/icons/catalog-folder.png',
+                        icon     => '/static/images/icons/catalog-folder.svg',
                         data     => { path => "$rel" },
                         children => \@children,
                         text     => $name,

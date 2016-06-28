@@ -508,7 +508,7 @@
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
                 if( type!='value' ) nn.type = (ttype=='categories') || ttype=='where' ? ttype+'_field': ttype;
                 if( ttype == 'sort') nn.type = ttype+'_field';
-                var icon = type=='value' ? '/static/images/icons/search.png'
+                var icon = type=='value' ? '/static/images/icons/search-small.svg'
                     : type=='sort' ? '/static/images/icons/arrow-down.svg'
                     : '/static/images/icons/field.svg';
                 nn.leaf = ttype == 'where' ? false : true;
@@ -604,7 +604,7 @@
     var initialize_folders = function(){
         tree_selected.root.appendChild([ 
             { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder_database.svg' },
-            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder_magnify.png' },
+            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder_explore.svg' },
             { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder_find.svg' },
             { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.svg' }
         ]);
@@ -695,7 +695,7 @@
             ,{ 
                 id: 'btnSave',
                 text: _('Save'),
-                icon:'/static/images/icons/save.png', 
+                icon:'/static/images/icons/action_save.svg', 
                 handler: save_form
             } 
         ] 

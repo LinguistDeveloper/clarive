@@ -410,7 +410,7 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/rename_.png' },
+                    { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/item_rename.svg' },
                     { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder_delete.svg' }
                 ]
             });
@@ -665,7 +665,7 @@
                 data: { call_shortcut: clipboard.node.attributes.sub_name, source_key: clipboard.node.attributes.key },
                 key: 'statement.shortcut',
                 leaf: true,
-                icon: '/static/images/icons/shortcut.png',
+                icon: '/static/images/icons/shortcut.svg',
                 id: Cla.id('rule')
             });
         } else if( clipboard ) {
@@ -833,7 +833,7 @@
             enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, debug_mode,
             error_trap, trap_timeout, trap_timeout_action, trap_rollback, sub_name
         ]});
-        var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
+        var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/action_save.svg', handler:function(){
             node.attributes = de.getData();
             if( !node.attributes.data ) node.attributes.data={};
             var dk = data_key.getValue();
@@ -923,7 +923,7 @@
                             tbar: [
                                 '->',
                                 { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ form.destroy() } },
-                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
+                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/action_save.svg', handler: function(){ save_form() } }
                             ],
                             bodyCssClass: 'rule-op-edit-form',
                             items: comp
@@ -1161,11 +1161,11 @@
                             bbar: [
                                 '->',
                                 { xtype:'button', icon: '/static/images/icons/left.svg', text: _('Go Back'), handler: function(){ errwin.close() } },
-                                { xtype:'button', icon: '/static/images/icons/save.png', text: _('Always Ignore for this Rule and Save'), handler: function(){
+                                { xtype:'button', icon: '/static/images/icons/action_save.svg', text: _('Always Ignore for this Rule and Save'), handler: function(){
                                     save_action({ ignore_dsl_errors: 1, ignore_error_always: 1 }); // repeat
                                     errwin.close();
                                 }},
-                                { xtype:'button', icon: '/static/images/icons/save.png', text: _('Ignore and Save'), handler: function(){
+                                { xtype:'button', icon: '/static/images/icons/action_save.svg', text: _('Ignore and Save'), handler: function(){
                                     save_action({ ignore_dsl_errors: 1 }); // repeat
                                     errwin.close();
                                 }}
@@ -1313,7 +1313,7 @@
             var stmts_menu = new Ext.menu.Menu({
                 items: [
                     { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.svg' },
-                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/rename_.png' },
+                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.svg' },
                     { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/properties.svg' },
                     { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.svg' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.svg' },
@@ -1329,7 +1329,7 @@
             });
             stmts_menu.showAt(event.xy);
         };
-        var btn_save_tree = new Ext.Button({ cls: 'ui-comp-rule-view-save', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
+        var btn_save_tree = new Ext.Button({ cls: 'ui-comp-rule-view-save', text: _('Save'), icon:'/static/images/icons/action_save.svg', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ tooltip: _('Refresh'), icon:'/static/images/icons/refresh.svg', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.svg', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
@@ -1369,7 +1369,7 @@
             }
         });
 
-        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, tooltip: _('History'), icon:'/static/images/icons/history.png',
+        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, tooltip: _('History'), icon:'/static/images/icons/slot.svg',
             handler: function() {
                 if( btn_version_tree.pressed ) {
                     var ok = rule_load( btn_refresh_tree, true );
@@ -1416,10 +1416,10 @@
                 btn_dsl,
                 btn_search,
                 '->',
-                { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
+                { xtype:'button', icon:'/static/images/icons/expandall.svg', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.svg',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
                 btn_version_tree,
-                { xtype:'button', icon:'/static/images/icons/html.png', tooltip:_('HTML'),  handler: function() { rule_tree.view_docs() } }
+                { xtype:'button', icon:'/static/images/icons/html.svg', tooltip:_('HTML'),  handler: function() { rule_tree.view_docs() } }
             ],
             root: {
                 text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ),
@@ -1565,7 +1565,7 @@
                 if( debug_mode.length ) badges += debug_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#404040; text-transform: uppercase;">DEBUG: '+r+'</span>&nbsp;' }).join('');
                 if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
                 if( parallel_stash_keys.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+parallel_stash_keys+'</span>&nbsp;';
-                if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
+                if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.svg" />';
                 if( blame ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+blame+'</span>&nbsp;';
                 if( badges.length ) {
                     nel.insertAdjacentHTML( 'afterEnd',
@@ -1608,7 +1608,7 @@
                     var win = new Baseliner.Window({
                         layout: 'border', width: 1024, height: 650, maximizable: true,
                         title: _('DSL: %1', name ),
-                        tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
+                        tbar: [ { text:_('Run'), icon:'/static/images/icons/play.svg', handler: dsl_run } ],
                         keys: [{
                             key:[10,13],
                             ctrl: true,

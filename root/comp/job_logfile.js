@@ -24,10 +24,10 @@
             layout: 'fit',
             bodyCssClass:'job_logfile_panel',
             tbar: [
-                { xtype: 'button', icon: '/static/images/icons/html.gif', cls: 'x-btn-icon', handler: function(){ Baseliner.open_pre_page( panel.title, logfile.getValue() ) } },
+                { xtype: 'button', icon: '/static/images/icons/html.svg', cls: 'x-btn-icon', handler: function(){ Baseliner.open_pre_page( panel.title, logfile.getValue() ) } },
                 { xtype: 'button', text: _('Reload'), handler: load_logfile, icon:'/static/images/icons/refresh.svg', cls:'x-btn-text-icon' }
             ],
-            tab_icon: '/static/images/icons/page.gif',
+            tab_icon: '/static/images/icons/page.svg',
             items: [ logfile ]
         });
         panel.on('afterrender', function(){

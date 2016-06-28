@@ -53,7 +53,7 @@
 
     var button_grant = new Ext.Button({
         text: _('Grant'),
-        icon:'/static/images/icons/start.png',
+        icon:'/static/images/icons/start.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -142,7 +142,7 @@
     });
 
     var button_del = new Ext.Button({
-        icon:'/static/images/icons/delete2.png',
+        icon:'/static/images/icons/delete_green.svg',
         cls: 'x-btn-text-icon',
         handler: function() {  }
     });
@@ -194,7 +194,7 @@
         var up = rowIndex == 0
             ? '<img src="/static/images/icons/arrow-up.svg" style="visibility: hidden"></img>'
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'up\', \''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex-1).id+'\' )">'
-                + '<img src="/static/images/icons/arrow-up.svg"></img></a>';
+                + '<img src="/static/images/icons/arrow-up.g"></img></a>';
         var down = rowIndex == store_queue.getCount() -1  
             ? ''
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'down\',\''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex+1).id +'\')">'
@@ -205,20 +205,19 @@
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
         var img = value;
         if( value == 'waiting' ) 
-            img = '<img src="/static/images/icons/waiting.png" alt="'+value+'"/>';
-        else if( value == 'granted' ) 
-            //img = '<img src="/static/images/icons/asterisk_orange.gif" alt="'+value+'"/>';
-            img = '<img src="/static/images/icons/start.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/busy.svg" alt="'+value+'"/>';
+        else if( value == 'granted' )
+            img = '<img src="/static/images/icons/start.svg" alt="'+value+'"/>';
         else if( value == 'busy' ) 
             img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 
             img = '<img src="/static/images/icons/write.svg" alt="'+value+'"/>';
         else if( value == 'done' ) 
-            img = '<img src="/static/images/icons/log_i.gif" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/active.svg" alt="'+value+'"/>';
         else if( value == 'cancelled' ) 
             img = '<img src="/static/images/icons/stop.svg" alt="'+value+'"/>';
         else if( value == 'killed' ) 
-            img = '<img src="/static/images/icons/log_e.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/error_red.svg" alt="'+value+'"/>';
         return img;
     };
 
@@ -317,10 +316,10 @@
             _('Legend') + ': ',
             '<img class="icon_standar_size" src="/static/images/icons/busy.svg" />', _('Waiting'),
             '<img class="icon_standar_size" src="/static/images/icons/small_loading_static.svg" />', _('Busy'),
-            '<img src="/static/images/icons/start.png" />', _('Granted'),
+            '<img class="icon_standar_size" src="/static/images/icons/start.svg" />', _('Granted'),
             '<img class="icon_standar_size" src="/static/images/icons/stop.svg" />', _('Cancelled'),
-            '<img src="/static/images/icons/log_i.gif" />', _('Done'),
-            '<img src="/static/images/icons/log_e.png" />', _('Killed')
+            '<img src="/static/images/icons/active.svg" />', _('Done'),
+            '<img class="icon_standar_size" src="/static/images/icons/error_red.svg" />', _('Killed')
         ],
         view: gview,
         viewConfig: {

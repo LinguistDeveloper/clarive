@@ -16,7 +16,6 @@ register 'service.scripting.local' => {
     name => 'Run a local script',
     form => '/forms/script_local.js',
     icon => $ICON_DEFAULT,
-    #icon => '/static/images/icons/script-local.png',
     job_service  => 1,
     handler => \&run_local,
 };

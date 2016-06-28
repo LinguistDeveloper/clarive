@@ -243,7 +243,7 @@ Ext.onReady(function(){
                  handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.svg" } ); },
                  icon : '/static/images/icons/envelope.png' 
              },
-             { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/lock_small.png' },
+             { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/action.svg' },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         
@@ -472,7 +472,7 @@ Ext.onReady(function(){
                             window.location.href = window.location.href; 
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     },function(){
-                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/warnmsg.png' } );
+                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/icons/error.svg' } );
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     });
                 } else {

@@ -63,7 +63,7 @@
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    var img =
-		    value == '1' ? 'start.png' : 'stop.svg';
+		    value == '1' ? 'start.svg' : 'stop.svg';
 		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
     };
 
@@ -77,7 +77,7 @@
  
         var btn_start = new Ext.Toolbar.Button({
 	    text: _('Activate'),
-	    icon:'/static/images/icons/start.png',
+	    icon:'/static/images/icons/start.svg',
 	    disabled: true,
 	    cls: 'x-btn-text-icon',
 	    handler: function() {
@@ -228,7 +228,7 @@
             url: '/daemon/update',
             buttons: [{
                 text: _('Save'),
-                icon: '/static/images/icons/save.png',
+                icon: '/static/images/icons/action_save.svg',
                 type: 'submit',
                 handler: function() {
                     var form = form_daemon.getForm();

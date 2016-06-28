@@ -159,7 +159,7 @@
 
         var btn_form_save = new Ext.Button({
             text: _('Save'),
-            icon:'/static/images/icons/save.png',
+            icon:'/static/images/icons/action_save.svg',
             cls: 'x-btn-icon-text ui-comp-ci-editor-save',
             type: 'submit',
             hidden: !can_save,

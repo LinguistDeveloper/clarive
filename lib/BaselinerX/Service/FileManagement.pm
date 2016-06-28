@@ -131,7 +131,7 @@ register 'service.fileman.rmtree' => {
 register 'service.fileman.parse_config' => {
     name => 'Parse a Config File',
     form => '/forms/parse_config.js',
-    icon => '/static/images/icons/page_lens.png',
+    icon => '/static/images/icons/detail.svg',
     job_service  => 1,
     handler => \&run_parse_config,
 };

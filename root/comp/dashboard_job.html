@@ -235,7 +235,7 @@
                         } else if( obj.more!='' && obj.more!=undefined && obj.data ) {
                             var img;
                             if( obj.more=='zip' ) {
-                               img = '/static/images/icons/mime/file_extension_zip.png';
+                               img = '/static/images/icons/mime/file_extension_zip.svg';
                             } else {
                                img = '/static/images/download.gif';
                         } 
@@ -249,7 +249,7 @@
                                 ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + obj.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/moredata.svg'/></a> " + datalen ;
                             }
                             else if( obj.file!=undefined && obj.file!='' && obj.data ) { // alternative file
-                                ret += "<a href='/job/log/highlight/" + obj.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
+                                ret += "<a href='/job/log/highlight/" + obj.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.svg'></a> "
                                 ret += "&nbsp;<a href='/job/log/download_data?id=" + obj.id + "&file_name=" + obj.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
                             }
                         }
@@ -322,11 +322,11 @@
 
         if( status == 'FINISHED' && rollback == 1 )  {
             value = ' <% _loc("Rollback OK") %>';
-            icon = 'log_i.png';
+            icon = 'active.svg';
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value = ' <% _loc("Rollback Failed") %>';
-            icon = 'log_e.png';
+             icon = 'error_red.svg';
         }
         if( status == 'APPROVAL' ) {
             value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status );

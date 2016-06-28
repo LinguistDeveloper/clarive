@@ -59,7 +59,7 @@
             dataIndex: 'action',
             sortable: false,
             renderer: function() {
-                return String.format('<img src="{0}"/>', IC('lock_small.png'))
+                return String.format('<img src="{0}"/>', IC('action.svg'))
             }
         }, {
             header: _('Description'),

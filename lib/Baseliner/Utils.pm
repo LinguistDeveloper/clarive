@@ -368,15 +368,15 @@ sub job_icon {
 
     given( $status ) {
         when( 'RUNNING' ) { 'gears.gif'; }
-        when( 'READY' ) { 'waiting.png'; }
+        when( 'READY' ) { 'busy.svg'; }
         when( 'APPROVAL' ) { 'user_delete.svg'; }
-        when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.svg' } }
+        when( 'FINISHED' ) { if (!$rollback) { 'active.svg' } else { 'close.svg' } }
         when( 'IN-EDIT' ) { 'log_w_1.svg'; }
-        when( 'WAITING' ) { 'waiting.png'; }
-        when( 'PAUSED' ) { 'paused.png'; }
-        when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
+        when( 'WAITING' ) { 'busy.svg'; }
+        when( 'PAUSED' ) { 'control_pause.svg'; }
+        when( 'TRAPPED_PAUSED' ) { 'control_pause.svg'; }
         when( 'CANCELLED' ) { 'close.svg'; }
-        default { 'log_e.png' }
+        default { 'error_red.svg' }
     }
 }
 

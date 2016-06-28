@@ -461,7 +461,7 @@ sub list_tree_fields : Local {
                             id_field    => $_->{id_field},
                             text        => _loc ($_->{params}->{name_field}),
                             params        => $_->{params},
-                            icon        => '/static/images/icons/lock_small.png',
+                            icon        => '/static/images/icons/action.svg',
                             leaf        => \1
                         }
     }
@@ -712,7 +712,7 @@ sub get_conf_fields : Local {
                             id_field    => $_->{id_field},
                             name        => _loc ($_->{params}->{name_field} // $_->{id_field}),
                             params        => $_->{params},
-                            img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/lock_small.png' : '/static/images/icons/icon_wand.svg',
+                            img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/action.svg' : '/static/images/icons/icon_wand.svg',
                             meta => {
                                 bd_field    => { read_only => \0 },
                                 field_order => { read_only => \0 },

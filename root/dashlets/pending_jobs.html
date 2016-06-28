@@ -27,7 +27,7 @@ title: Pending jobs
 
                 if( status == 'FINISHED' && rollback == 1 )  {
                     value += ' (<% _loc("Rollback OK") %>)';
-                    icon = 'log_e.png';
+                    icon = 'error_red.svg';
                 }
                 else if( status == 'ERROR' && rollback == 1 )  {
                     value += ' (<% _loc("Rollback Failed") %>)';

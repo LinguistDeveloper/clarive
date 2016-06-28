@@ -88,7 +88,7 @@
                     }),
                 ],
                 buttons: [{
-                    icon: '/static/images/icons/save.png',
+                    icon: '/static/images/icons/action_save.svg',
                     text: _loc('Save'),
                     handler: function() {
                         var ff = cal_form.getForm();

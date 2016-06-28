@@ -24,14 +24,14 @@
         tbar: [{
             xtype: 'button',
             text: _('HTML'),
-            icon: '/static/images/icons/html.gif',
+            icon: '/static/images/icons/html.svg',
             handler: function() {
                 Baseliner.open_pre_page(panel.title, stash.getValue())
             }
         }, {
             xtype: 'button',
             text: _('Save'),
-            icon: '/static/images/icons/save.png',
+            icon: '/static/images/icons/action_save.svg',
             handler: save_stash
         }, {
             xtype: 'button',
@@ -39,7 +39,7 @@
             icon: '/static/images/icons/refresh.svg',
             handler: load_stash
         }],
-        tab_icon: '/static/images/icons/stash.gif',
+        tab_icon: '/static/images/icons/stash.svg',
         items: [stash]
     });
         panel.on('afterrender', function(){

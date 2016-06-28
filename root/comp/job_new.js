@@ -547,7 +547,7 @@
     var button_cis = new Ext.Button({
         text: _('Dependencies'),
         disabled: true,
-        icon:'/static/images/ci/ci.png',
+        icon:'/static/images/ci/ci.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = jc_grid.getSelectionModel();
@@ -717,7 +717,7 @@
         } else {
             //add_node(n,bl_hash);
             if( jc_store.find('mid', data.topic_mid ) > -1 ) {
-                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
+                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error_red.svg' });
             } else {
                 var project = data.id_project;
                 if ( data.is_release  == 1 ) {

@@ -163,7 +163,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         var self = this;
         return {
             text: _('Add to Favorites...'),
-            icon: '/static/images/icons/favorite_grey.png',
+            icon: '/static/images/icons/favorite_grey.svg',
             handler: function(n) {
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
@@ -214,7 +214,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         var self = this;
         return {
             text: _('Rename'),
-            icon: '/static/images/icons/rename_.png',
+            icon: '/static/images/icons/item_rename.svg',
             handler: function(n) {
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
@@ -735,7 +735,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         var button_refresh = new Ext.Button({
             cls: 'x-btn-icon',
             tooltip: _('Refresh All Nodes'),
-            icon: '/static/images/icons/refresh-grey.gif',
+            icon: '/static/images/icons/refresh.svg',
             id: 'button_refresh',
             handler: function(){
                 var that = this;
