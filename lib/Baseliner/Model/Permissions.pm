@@ -10,6 +10,8 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use BaselinerX::Type::Model::Actions;
 
+register 'action.admin.root' => { name=>'Root action - can do anything' };
+
 sub role_exists ($self, $role_name) {
     return !!mdb->role->find_one( { role => $role_name }, { _id => 1 } );
 }
