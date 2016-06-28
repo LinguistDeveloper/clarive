@@ -500,14 +500,8 @@ Or if its username is 'root'
 our $root_username;
 
 sub is_root ($self, $username) {
-    my $cached_key = "user:is_root:$username:";
-    my $cached = cache->get($cached_key);
-    return $cached if defined $cached;
-
     my $is_root = $username eq 'root'
       || scalar( grep { 'action.admin.root' eq $_ } $self->_get_actions_from_user($username) );
-
-    cache->set( $cached_key, $is_root );
 
     return $is_root;
 }
