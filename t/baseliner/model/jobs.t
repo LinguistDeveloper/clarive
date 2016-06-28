@@ -65,6 +65,30 @@ subtest 'monitor: returns progress in beetween' => sub {
     is $rows[0]->{progress}, ' 25% (1/4)';
 };
 
+subtest 'monitor: does not return progress over 100%' => sub {
+    _setup();
+
+    my $changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+
+    for ( 1 .. 5 ) {
+        mdb->job_log->insert(
+            {
+                mid        => $job->mid,
+                lev        => 'debug',
+                stmt_level => 1,
+            }
+        );
+    }
+
+    my $model = _build_model();
+
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
+
+    is $rows[0]->{progress}, ' 25% (1/4)';
+};
+
 subtest 'monitor: return the job filtered by status' => sub {
     _setup();
 
