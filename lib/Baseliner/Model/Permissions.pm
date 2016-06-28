@@ -10,6 +10,8 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use BaselinerX::Type::Model::Actions;
 
+register 'action.admin.root' => { name=>'Root action - can do anything' };
+
 sub role_exists ($self, $role_name) {
     return !!mdb->role->find_one( { role => $role_name }, { _id => 1 } );
 }
@@ -498,14 +500,8 @@ Or if its username is 'root'
 our $root_username;
 
 sub is_root ($self, $username) {
-    my $cached_key = "user:is_root:$username:";
-    my $cached = cache->get($cached_key);
-    return $cached if defined $cached;
-
     my $is_root = $username eq 'root'
       || scalar( grep { 'action.admin.root' eq $_ } $self->_get_actions_from_user($username) );
-
-    cache->set( $cached_key, $is_root );
 
     return $is_root;
 }
