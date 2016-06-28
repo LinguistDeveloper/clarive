@@ -687,3 +687,162 @@ a:hover {
   -moz-transform: translateX(0) translateY(-.2em) rotate(45deg);
   -webkit-transform: translateX(0) translateY(-.2em) rotate(45deg);
 }
+
+
+/**** LOGIN PAGE STYLES ****/
+
+#login-page input,#login-page textarea {}
+
+#login-page input:focus,
+#login-page textarea:focus {
+    box-shadow: 0 0 3px rgba(164, 110, 192, 1);
+    border: 1px solid rgba(164, 110, 192, 1);
+}
+
+body#login-page {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-repeat: repeat-x;
+    background-image: url(/static/themes/clarive/images/gradient.gif);
+}
+
+#login-page #login-box {
+    margin: 0 auto;
+    top: 60px;
+    width: 500px;
+    background-color: transparent;
+    padding: 5px;
+}
+
+#login-page .logos {
+    text-align: right;
+}
+
+#login-page .logo {
+    padding: 8px;
+    width:100%;
+}
+
+#login-page .logo-powered {
+    height: 30px;
+    padding: 5px;
+}
+
+#login-page .logo-lower {
+    padding: 5px;
+}
+
+#login-page .bottom {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 150px;
+}
+
+#login-page .copyright {
+    text-align: right;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 9px;
+    padding: 5px;
+    margin-top: 18px;
+    line-height: 16px;
+}
+
+#login-page .x-form-item-label {
+    margin-left: 30px;
+    text-align: right;
+}
+
+#login-page .x-form-item {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+}
+
+#login-page .x-form-field {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 18px;
+    outline: none;
+    border: 1px solid #DDDDDD;
+}
+
+#login-page button.x-btn-text {
+    font-size: 9pt;
+}
+
+#login-page #login_btn button.x-btn-text {
+    font-weight: bold;
+}
+
+#login-page .x-form-invalid-msg {
+    float: right;
+    width: 190px !important;
+    text-align: left;
+    padding: 5px 69px 5px 20px;
+}
+
+#login-page .ext-webkit .x-form-invalid:focus {
+    box-shadow: 0 0 3px #ff7870;
+}
+
+#login-page input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #FAF8FD inset;
+}
+
+@media (max-width: 500px) {
+    .x-form-item-label {
+        margin: 0 auto;
+        width: 50% !important;
+        text-align: center !important;
+    }
+    .x-form-text.x-form-field {
+        max-width: 32% !important;
+        height: 24px !important;
+        float: left;
+        clear: both;
+        margin-bottom: 5px;
+    }
+    .x-form-invalid-msg {
+        display: block;
+        float: left !important;
+        clear: both !important;
+    }
+    #login-page .logos {
+        text-align: left;
+    }
+    .x-panel-footer {
+        float: left;
+        margin-left: 16%;
+        width: 35% !important;
+    }
+    .copyright {
+        width: 50% !important;
+    }
+}
+
+@media (max-width: 500px) {
+    #login-page .logos img {
+        width: auto;
+        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
+}
+
+@media (max-width: 360px) {
+    #login-page .logos img {
+        width: 65%;
+        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
+    }
+}
+
+@media (max-width: 320px) {
+    #login-page .logos img {
+        width: 60%;
+        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
+    }
+}
+img[src$='.svg'][src^='/static/images'] {
+  height:16px;
+  width: 16px;
+}
