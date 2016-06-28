@@ -1414,7 +1414,9 @@
                 name: _('Start: %1', event_name || short_name),
                 draggable: false,
                 id: 'root',
-                icon: (rule_type=='pipeline'?'/static/images/icons/job.svg':'/static/images/icons/event.svg'), expanded: true }
+                icon: icon,
+                expanded: true
+            }
         });
 
         rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
