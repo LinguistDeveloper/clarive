@@ -1734,3 +1734,9 @@ textarea.x-form-field.job_logfile_textarea, x:-moz-any-link, x:default {
     max-width: 99.5% !important;
     padding: 0 1px !important;
 }
+
+img[src$='.svg'][src^='/static/images'] {
+	height:16px;
+	width: 16px;
+}
+			

@@ -918,11 +918,6 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
     max-height: 16px;
 }
 
-img[src$='.svg'][src^='/static/images'] {
-   height: 16px;
-   width: 16px;
-}
-
 .list_jobs_item img {
     margin-right: 3px !important;
 
