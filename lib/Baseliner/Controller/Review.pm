@@ -20,7 +20,7 @@ sub add : Local {
         file     => { isa => 'Str' },
         line     => { isa => 'PositiveInt' },
         text     => { isa => 'Str' },
-        action   => { isa => 'Str' },
+        action   => { isa => 'Str', default => undef },
       );
 
     my $repo_mid = $params->{repo_mid};
@@ -77,8 +77,6 @@ sub add : Local {
         docs_only => 1
     );
     $users_to_notify{$_}++ for @other_reviews_users;
-
-    #use Data::Dumper; warn Dumper(\%users_to_notify);
 
     my $subject = _loc( "@%1 created a review for %2", $c->username, $rev->sha );
     my $notify = {

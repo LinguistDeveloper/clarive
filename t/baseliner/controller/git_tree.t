@@ -721,6 +721,37 @@ subtest 'view_diff: returns diff' => sub {
       };
 };
 
+subtest 'view_diff: add at first of the code chunks a whitespace if it is not a diff' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $sha = TestGit->commit(
+        $repo,
+        file    => 'fich.txt',
+        content => "Primera linea\nSegunda linea\nTercera linea",
+        message => 'primer commit'
+    );
+    my $sha2 = TestGit->commit(
+        $repo,
+        file    => 'fich.txt',
+        content => "Primera linea\nModif Segunda linea\nTercera linea",
+        message => 'segundo commit',
+        action  => 'replace',
+    );
+
+    my $controller = _build_controller();
+
+    my $params = { file => 'fich.txt', repo_mid => $repo->mid, sha => $sha2 };
+
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->view_diff($c);
+
+    is $c->stash->{json}->{changes}[0]->{code_chunks}[0]->{code},
+        "  Primera linea\n-Segunda linea\n+Modif Segunda linea\n Tercera linea";
+};
+
 subtest 'get_file_history: returns validation errors' => sub {
     _setup();
 
