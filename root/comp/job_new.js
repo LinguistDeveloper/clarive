@@ -370,7 +370,6 @@
         topics = [];
         var topics_json = '[]';
         store_transitions.baseParams.topics= topics_json;
-        store_transitions.reload();
         jc_store_topics = {};
         store_search.removeAll();
         hidden_baseline.setValue(null);
