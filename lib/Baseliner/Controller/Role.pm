@@ -54,14 +54,14 @@ sub json : Local {
 
     $start ||= 0;
     $limit ||= 60;
-    my $rs = mdb->role->find();
-    $cnt = $rs->count();
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(role description mailbox)]) : {};
+    my $rs = mdb->role->find($where);
+    $cnt = $rs->count($where);
     $rs->skip($start);
     $rs->limit($limit);
     $rs->sort($sort ? { $sort => $dir } : { role => 1 });
 
     my @rows;
-    my $reg = $c->registry;
     while( my $r = $rs->next ) {
         my $rs_actions = $r->{actions};
         my @actions;
@@ -70,7 +70,7 @@ sub json : Local {
             my $key = $act->{action};
             my $bl = $act->{bl};
             try {
-                my $action = $reg->get( $key );
+                my $action = Baseliner::Core::Registry->get( $key );
                 my $str = { name=>$action->name,  key=>$key };
                 $str->{bl} = $bl if $bl ne '*';
                 push @actions, $str;

@@ -148,10 +148,9 @@ subtest 'update: creates new role' => sub {
     _setup();
 
     my $controller = _build_controller();
-    my $c = _build_c(
+    my $c          = _build_c(
         req => {
-            params =>
-              { name => 'Developer', description => 'New Role', dashboards => 1, role_actions => '[]' }
+            params => { name => 'Developer', description => 'New Role', dashboards => 1, role_actions => '[]' }
         }
     );
 
@@ -160,7 +159,7 @@ subtest 'update: creates new role' => sub {
     my $role = mdb->role->find_one();
 
     ok $role;
-    is $role->{role}, 'Developer';
+    is $role->{role},        'Developer';
     is $role->{description}, 'New Role';
     is_deeply $role->{dashboards}, [1];
 
@@ -180,10 +179,9 @@ subtest 'update: creates new role with multiple dashboards' => sub {
     _setup();
 
     my $controller = _build_controller();
-    my $c = _build_c(
+    my $c          = _build_c(
         req => {
-            params =>
-              { name => 'Developer', dashboards => [ 1, 2, 3 ], role_actions => '[]' }
+            params => { name => 'Developer', dashboards => [ 1, 2, 3 ], role_actions => '[]' }
         }
     );
 
@@ -191,7 +189,7 @@ subtest 'update: creates new role with multiple dashboards' => sub {
 
     my $role = mdb->role->find_one();
 
-    is_deeply $role->{dashboards}, [1, 2, 3];
+    is_deeply $role->{dashboards}, [ 1, 2, 3 ];
 };
 
 subtest 'update: returns an error when creating a new role with existing name' => sub {
@@ -385,6 +383,45 @@ subtest 'duplicate: returns correct name' => sub {
     $controller->duplicate($c);
 
     ok(mdb->role->find_one( {role => 'Duplicate of Role'}));
+
+};
+
+subtest 'json: returns correct successful response with filter' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role(
+            role    => 'Role',
+    );
+    my $id_role2 = TestSetup->create_role(
+            role    => 'Role5',
+    );
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { query => 'Role5' } });
+    $controller->json($c);
+
+    is $c->stash->{json}{data}[0]->{id}, $id_role2;
+    is $c->stash->{json}{totalCount}, 1;
+
+};
+
+subtest 'json: returns correct successful response without filter' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role(
+            role    => 'Role',
+    );
+    my $id_role2 = TestSetup->create_role(
+            role    => 'Role5',
+    );
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+    $controller->json($c);
+
+    is $c->stash->{json}{data}[0]->{id}, $id_role;
+    is $c->stash->{json}{data}[1]->{id}, $id_role2;
+    is $c->stash->{json}{totalCount}, 2;
 };
 
 sub _setup {
