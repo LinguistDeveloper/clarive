@@ -127,7 +127,7 @@ sub run_tail {
     die sprintf "ERROR: file does not exist: %s\n", $self->log_file unless -e $self->log_file;
     my $file = File::Tail->new(
         name        => $self->log_file,
-        tail        => $opts{tail} // 500,
+        reset_tail  => $opts{tail} // 500,
         interval    => $opts{interval} // .5,
         maxinterval => $opts{maxinterval} // 1,
     );
