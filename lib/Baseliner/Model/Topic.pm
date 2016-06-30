@@ -3220,7 +3220,6 @@ sub cache_topic_remove {
 
 sub change_bls {
     my ($self,%opts) = @_;
-    my $action = $opts{action} // _throw 'Missing parameter action [add|delete]';
     my $bls = $opts{bls} // _throw 'Missing parameter bls';
     my $mid = $opts{mid} // _throw 'Missing parameter mid';
     my $username = $opts{username} // _throw 'Missing parameter username';
@@ -3231,20 +3230,21 @@ sub change_bls {
         my @cs_bls = _array $topic->{bls};
         if (!( $id_bl ~~ @cs_bls)) {
             push @cs_bls,$id_bl;
-            my %p;
-            $p{topic_mid} = $mid;
-            $p{bls} = \@cs_bls;
-            $p{username} = $username;
-            Baseliner->model('Topic')->update( { action => 'update', %p } );
-            _info( _loc("Added %1 to changeset %2 bls",$bl,$mid) );
-            mdb->master_rel->remove({from_mid=>$mid,rel_type=>'topic_bl',rel_field=>'bls'},{multiple=>1});
-            for my $bl_id ( @cs_bls ) {
-                mdb->master_rel->update(
-                    {from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'},
-                    {'$set'=>{ from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls', from_cl=>'topic', to_cl=>'bl' } },
-                    {upsert=>1}
-                );
-            }
+        }
+
+        my %p;
+        $p{topic_mid} = $mid;
+        $p{bls} = \@cs_bls;
+        $p{username} = $username;
+        $self->update( { action => 'update', %p } );
+        _info( _loc("Added %1 to changeset %2 bls",$bl,$mid) );
+        mdb->master_rel->remove({from_mid=>$mid,rel_type=>'topic_bl',rel_field=>'bls'},{multiple=>1});
+        for my $bl_id ( @cs_bls ) {
+            mdb->master_rel->update(
+                {from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'},
+                {'$set'=>{ from_mid=>$mid, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls', from_cl=>'topic', to_cl=>'bl' } },
+                {upsert=>1}
+            );
         }
     }
 }

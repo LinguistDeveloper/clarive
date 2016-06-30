@@ -2995,6 +2995,152 @@ subtest 'set_revisions: set value of old revisions in modify_field event when no
 
 };
 
+subtest 'change_bls: sets new bl and relationships' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $bl = TestUtils->create_ci('bl', bl => 'TEST');
+
+    my $status_new = TestUtils->create_ci('status');
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = _create_release_form();
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_rule,
+    );
+    my $topic_mid = TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'New Release',
+        status          => $status_new,
+        release_version => '1.0',
+        project         => $project,
+        username        => $user->name,
+    );
+
+    $model->change_bls( mid => $topic_mid, bls => ['TEST'], username => $user->username );
+
+    my $topic = mdb->topic->find_one({mid => $topic_mid});
+
+    is_deeply $topic->{bls}, [ $bl->mid ];
+
+    my $rel = mdb->master_rel->find_one(
+        {
+            from_mid  => $topic_mid,
+            to_mid    => $bl->mid,
+            rel_type  => 'topic_bl',
+            rel_field => 'bls',
+            from_cl   => 'topic',
+            to_cl     => 'bl'
+        }
+    );
+    ok $rel;
+};
+
+subtest 'change_bls: adds new bl and relationships' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $old_bl = TestUtils->create_ci('bl', bl => 'DEMO');
+    my $bl = TestUtils->create_ci('bl', bl => 'TEST');
+
+    my $status_new = TestUtils->create_ci('status');
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = _create_release_form();
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_rule,
+    );
+    my $topic_mid = TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'New Release',
+        status          => $status_new,
+        release_version => '1.0',
+        project         => $project,
+        username        => $user->name,
+        bls => [$old_bl->mid]
+    );
+
+    $model->change_bls( mid => $topic_mid,  bls => ['TEST'], username => $user->username );
+
+    my $topic = mdb->topic->find_one({mid => $topic_mid});
+
+    is_deeply $topic->{bls}, [ $old_bl->mid, $bl->mid ];
+
+    my $rel = mdb->master_rel->find_one(
+        {
+            from_mid  => $topic_mid,
+            to_mid    => $bl->mid,
+            rel_type  => 'topic_bl',
+            rel_field => 'bls',
+            from_cl   => 'topic',
+            to_cl     => 'bl'
+        }
+    );
+    ok $rel;
+};
+
+subtest 'change_bls: overwrites bl and relationships' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $bl = TestUtils->create_ci('bl', bl => 'TEST');
+
+    my $status_new = TestUtils->create_ci('status');
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = _create_release_form();
+
+    my $id_category = TestSetup->create_category(
+        name       => 'Release',
+        is_release => '1',
+        id_rule    => $id_rule,
+    );
+    my $topic_mid = TestSetup->create_topic(
+        id_category     => $id_category,
+        title           => 'New Release',
+        status          => $status_new,
+        release_version => '1.0',
+        project         => $project,
+        username        => $user->name,
+        bls => [$bl->mid]
+    );
+
+    $model->change_bls( mid => $topic_mid, bls => ['TEST'], username => $user->username );
+
+    my $topic = mdb->topic->find_one({mid => $topic_mid});
+
+    is_deeply $topic->{bls}, [ $bl->mid ];
+
+    my $rel = mdb->master_rel->find_one(
+        {
+            from_mid  => $topic_mid,
+            to_mid    => $bl->mid,
+            rel_type  => 'topic_bl',
+            rel_field => 'bls',
+            from_cl   => 'topic',
+            to_cl     => 'bl'
+        });
+    ok $rel;
+};
+
 done_testing();
 
 sub _setup {
@@ -3061,5 +3207,46 @@ sub _create_form {
             },
             @{$params{rule_tree} || []}
         ],
+    );
+}
+
+sub _create_release_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "status_new",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "name_field"   => "Status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    text  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"     => "release_version",
+                        "fieldletType" => "fieldlet.system.release_version",
+                        "name_field"   => "Version",
+                    },
+                    "key" => "fieldlet.system.release_version",
+                    text  => 'Version',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "Project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project',
+                }
+            },
+        ]
     );
 }
