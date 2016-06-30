@@ -1,5 +1,5 @@
 ---
 title: Clarive Concepts
-index: 200
+index: 250
 icon: catalog-folder
 ---
