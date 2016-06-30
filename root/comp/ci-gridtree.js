@@ -264,7 +264,7 @@
         var ret = '<table><tr><td width="1">';
         ret += '<img style="margin-top:-2px; width: 16px;" '+( active ? '':'class="gris"')+' src="' + rec.data.icon + '" alt="edit" />';  //including max width in <img> for a better icon definition
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #aaa;')
+        ret += '</td><td><b><a href="#" class="ui-ci-edit" onclick="'+ed+'; return false" style="'+(active?'':'color: #aaa;')
             +'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
@@ -403,6 +403,7 @@
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: Cla.ci_loc(params.item),
+        cls: 'ui-ci-grid',
         autoScroll: true,
         autoWidth: true,
         sortable: true,

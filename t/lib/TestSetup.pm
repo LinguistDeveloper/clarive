@@ -74,6 +74,224 @@ sub create_rule {
     return "$id_rule";
 }
 
+sub create_rule_pipeline {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_rule = $class->create_rule(
+        rule_name => 'Main Pipeline',
+        rule_type => 'pipeline',
+        rule_when => 'promote',
+        %params,
+        rule_tree => [
+            {
+                "attributes" => {
+                    "disabled" => 0,
+                    "active"   => 1,
+                    "key"      => "statement.step",
+                    "text"     => "CHECK",
+                    "expanded" => 1,
+                    "leaf"     => \0,
+                },
+                "children" => []
+            },
+            {
+                "attributes" => {
+                    "disabled" => 0,
+                    "active"   => 1,
+                    "key"      => "statement.step",
+                    "text"     => "INIT",
+                    "expanded" => 1,
+                    "leaf"     => \0,
+                },
+                "children" => []
+            },
+            {
+                "attributes" => {
+                    "disabled" => 0,
+                    "active"   => 1,
+                    "key"      => "statement.step",
+                    "text"     => "PRE",
+                    "expanded" => 1,
+                    "leaf"     => \0,
+                },
+                "children" => [
+                    {
+                        "attributes" => {
+                            "palette"        => 0,
+                            "disabled"       => 0,
+                            "on_drop_js"     => undef,
+                            "key"            => "statement.code.server",
+                            "who"            => "root",
+                            "text"           => "Server CODE",
+                            "expanded"       => 1,
+                            "run_sub"        => 1,
+                            "leaf"           => \1,
+                            "active"         => 1,
+                            "name"           => "Server CODE",
+                            "holds_children" => 0,
+                            "data"           => {
+                                "lang" => "perl",
+                                "code" => "sleep(10);"
+                            },
+                            "nested"  => "0",
+                            "on_drop" => ""
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "palette"        => 0,
+                            "disabled"       => 0,
+                            "on_drop_js"     => undef,
+                            "key"            => "statement.if.var",
+                            "text"           => "IF var THEN",
+                            "expanded"       => 1,
+                            "run_sub"        => 1,
+                            "leaf"           => \0,
+                            "name"           => "IF var THEN",
+                            "active"         => 1,
+                            "holds_children" => 1,
+                            "data"           => {},
+                            "nested"         => "0",
+                            "on_drop"        => ""
+                        },
+                        "children" => [
+                            {
+                                "attributes" => {
+                                    "palette"        => 0,
+                                    "disabled"       => 0,
+                                    "on_drop_js"     => undef,
+                                    "key"            => "statement.code.server",
+                                    "text"           => "INSIDE IF",
+                                    "expanded"       => 1,
+                                    "run_sub"        => 1,
+                                    "leaf"           => \1,
+                                    "name"           => "Server CODE",
+                                    "active"         => 1,
+                                    "holds_children" => 0,
+                                    "data"           => {},
+                                    "nested"         => "0",
+                                    "on_drop"        => ""
+                                },
+                                "children" => []
+                            },
+                            {
+                                "attributes" => {
+                                    "icon"           => "/static/images/icons/if.svg",
+                                    "palette"        => 0,
+                                    "on_drop_js"     => undef,
+                                    "holds_children" => 1,
+                                    "nested"         => "0",
+                                    "key"            => "statement.if.var",
+                                    "text"           => "IF var THEN",
+                                    "run_sub"        => 1,
+                                    "leaf"           => \0,
+                                    "on_drop"        => "",
+                                    "name"           => "IF var THEN",
+                                    "data"           => {},
+                                    "expanded"       => 1
+                                },
+                                "children" => [
+                                    {
+                                        "attributes" => {
+                                            "palette"        => 0,
+                                            "on_drop_js"     => undef,
+                                            "holds_children" => 0,
+                                            "nested"         => "0",
+                                            "key"            => "statement.code.server",
+                                            "text"           => "INSIDE IF2",
+                                            "run_sub"        => 1,
+                                            "leaf"           => \1,
+                                            "on_drop"        => "",
+                                            "name"           => "Server CODE",
+                                            "data"           => {},
+                                            "expanded"       => 1
+                                        },
+                                        "children" => []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "attributes" => {
+                    "disabled" => 0,
+                    "active"   => 1,
+                    "key"      => "statement.step",
+                    "text"     => "RUN",
+                    "expanded" => 1,
+                    "leaf"     => \0,
+                },
+                "children" => [
+                    {
+                        "attributes" => {
+                            "palette"        => 0,
+                            "disabled"       => 0,
+                            "on_drop_js"     => undef,
+                            "key"            => "statement.code.server",
+                            "who"            => "root",
+                            "text"           => "Server CODE",
+                            "expanded"       => 1,
+                            "run_sub"        => 1,
+                            "leaf"           => \1,
+                            "active"         => 1,
+                            "name"           => "Server CODE",
+                            "holds_children" => 0,
+                            "data"           => {
+                                "lang" => "perl",
+                                "code" => "sleep(10);"
+                            },
+                            "nested"  => "0",
+                            "on_drop" => ""
+                        },
+                        "children" => []
+                    }
+                ]
+            },
+            {
+                "attributes" => {
+                    "disabled" => 0,
+                    "active"   => 1,
+                    "key"      => "statement.step",
+                    "text"     => "POST",
+                    "expanded" => 1,
+                    "leaf"     => \0,
+                },
+                "children" => [
+                    {
+                        "attributes" => {
+                            "palette"        => 0,
+                            "disabled"       => 0,
+                            "on_drop_js"     => undef,
+                            "key"            => "statement.code.server",
+                            "who"            => "root",
+                            "text"           => "Server CODE",
+                            "expanded"       => 1,
+                            "run_sub"        => 1,
+                            "leaf"           => \1,
+                            "active"         => 1,
+                            "name"           => "Server CODE",
+                            "holds_children" => 0,
+                            "data"           => {
+                                "lang" => "perl",
+                                "code" => "sleep(10);"
+                            },
+                            "nested"  => "0",
+                            "on_drop" => ""
+                        },
+                        "children" => []
+                    }
+                ]
+            }
+        ]
+    );
+
+    return "$id_rule";
+}
+
 sub create_rule_with_code {
     my $class = shift;
     my (%params) = @_;
@@ -109,6 +327,45 @@ sub create_rule_form {
         rule_name => 'Form',
         rule_type => "form",
         rule_when => 'post-offline',
+        %params
+    );
+}
+
+sub create_rule_form_changeset {
+    my $class = shift;
+    my (%params) = @_;
+
+    return TestSetup->create_rule_form(
+        rule_name => 'Changeset',
+        rule_tree => [
+            _build_stmt(
+                id   => 'title',
+                name => 'Title',
+                type => 'fieldlet.system.title'
+            ),
+            _build_stmt(
+                id       => 'status_new',
+                bd_field => 'id_category_status',
+                name     => 'Status',
+                type     => 'fieldlet.system.status_new'
+            ),
+            _build_stmt(
+                id   => 'project',
+                name => 'Project',
+                type => 'fieldlet.system.projects'
+            ),
+            _build_stmt(
+                id   => 'release',
+                name => 'Release',
+                type => 'fieldlet.system.release'
+            ),
+            _build_stmt(
+                id   => 'revisions',
+                name => 'Revisions',
+                type => 'fieldlet.system.revisions'
+            ),
+            @{ delete $params{rule_tree} || [] }
+        ],
         %params
     );
 }
@@ -175,6 +432,26 @@ sub create_topic {
     return $topic_mid;
 }
 
+sub create_comment {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $topic_mid = $params{topic_mid};
+    my $text      = $params{text};
+
+    my $post = ci->post->new(
+        {
+            topic      => $topic_mid,
+            created_by => $params{created_by} || 'Developer',
+            created_on => mdb->ts,
+        }
+    );
+    $post->save;
+    $post->put_data($text);
+
+    return $post->mid;
+}
+
 sub create_role {
     my $class = shift;
     my (%params) = @_;
@@ -199,6 +476,10 @@ sub create_user {
     my $id_role = delete $params{id_role};
     my $project = delete $params{project};
     my $area    = delete $params{area};
+
+    if ($id_role && ref $id_role eq 'HASH') {
+        $id_role = $class->create_role(%$id_role);
+    }
 
     my $username = delete $params{username} || 'developer';
     my $password = delete $params{password} || 'password';
@@ -509,6 +790,31 @@ sub _setup_label {
     my $id = mdb->seq('label');
     mdb->label->insert({ color=> '#99CC00', id=> '', name=>'label', sw_allprojects=>1 });
     return $id;
+}
+
+sub _build_stmt {
+    my (%params) = @_;
+
+    return {
+        attributes => {
+            active => 1,
+            data   => {
+                active       => 1,
+                id_field     => $params{id},
+                bd_field     => $params{bd_field} || $params{id},
+                fieldletType => $params{type},
+            },
+            disabled       => \0,
+            expanded       => 1,
+            leaf           => \1,
+            holds_children => \0,
+            palette        => \0,
+            key            => $params{type},
+            name           => $params{name},
+            text           => $params{name},
+        },
+        children => []
+    };
 }
 
 1;

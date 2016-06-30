@@ -49,6 +49,7 @@
         var v = String.format('{0} (<code>{1}</code>)', _(value), rec.data.action);
         return v;
     }
+
     var cm = new Ext.grid.ColumnModel({
         defaults: {
             sortable: true // columns are not sortable by default           
@@ -331,6 +332,7 @@
 
     var roleGridPanel = new Ext.grid.EditorGridPanel({
         title: _('Role Actions'),
+        id: 'role_grid',
         region: 'center',
         autoScroll: true,
         store: action_store,

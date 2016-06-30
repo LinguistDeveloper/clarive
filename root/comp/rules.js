@@ -1833,6 +1833,7 @@
 
 
     var panel = new Ext.Panel({
+        cls: 'ui-panel-rules',
         layout: 'border',
         items: [ left_panel, tabpanel, palette ]//rules_grid,
     });

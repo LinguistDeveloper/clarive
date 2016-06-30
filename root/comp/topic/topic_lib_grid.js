@@ -394,6 +394,7 @@ Cla.topic_grid = function(params){
 
 
     var btn_add = new Baseliner.Grid.Buttons.Add({
+        cls: 'ui-btn-create',
         disabled: false,
         hidden : id_report,
             handler: function() {
@@ -626,6 +627,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
+        cls: 'ui-btn-edit',
         disabled: true,
         hidden: id_report,
         handler: function() {
@@ -1468,6 +1470,7 @@ Cla.topic_grid = function(params){
 
  
     var grid_topics = new Ext.grid.GridPanel({
+        id: 'topics-grid',
         region: 'center',
         plugins: [filters],
         stripeRows: true,
@@ -2112,6 +2115,7 @@ Cla.topic_grid = function(params){
     } // if !id_report
 
     var panel = new Ext.Panel({
+        id: 'topics-panel',
         layout : "border",
         defaults: {layout:'fit'},
         title: _('Topics'),

@@ -456,6 +456,7 @@
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
         // create the grid
         var grid = new Ext.grid.EditorGridPanel({
+            id: 'job-log',
             title: _('Job Log'),
             header: false,
             autoScroll: true,
@@ -516,6 +517,7 @@
                 button_resume,
 % if( $user_action->{'action.job.advanced_menu'} ) {
                 new Ext.Toolbar.Button({ 
+                    id: 'advanced',
                     text: _('Advanced'),
                     icon: '/static/images/icons/password.svg', 
                     cls: 'x-btn-text-icon',

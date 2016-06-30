@@ -21,7 +21,6 @@ sub run {
     my $smoke_db              = 'test_smoke';
     my $smoke_port            = 50000 + ( int( rand() * 1500 ) + abs($$) ) % 1500;
     my $smoke_conf            = "config/$smoke_env.yml";
-    my $smoke_nightwatch_conf = 'ui-tests/smoke.json';
 
     my $is_headless = !!delete $opts{args}->{headless};
 

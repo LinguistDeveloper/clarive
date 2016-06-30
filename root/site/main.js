@@ -247,15 +247,16 @@ Ext.onReady(function(){
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         
+        //if( Prefs.stash.can_change_password ) {
         if( Prefs.stash.can_change_password ) {
-            user_menu.push({ text: _('Change password'), handler: function(){ Cla.change_password(); }, icon:'/static/images/icons/password.svg' });
+            user_menu.push({ text: _('Change password'), id: 'user-menu-change-password', handler: function(){ Cla.change_password(); }, icon:'/static/images/icons/password.svg' });
         }
         if( Prefs.stash.can_surrogate ) {
-            user_menu.push({ text: _('Surrogate...'), handler: function(){ Cla.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.svg' });
+            user_menu.push({ text: _('Surrogate...'), id: 'user-menu-surrogate', handler: function(){ Cla.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.svg' });
         }
         
-        user_menu.push({ text: _('Logout') , handler: function(){ Cla.logout(); }, index: 999, icon: '/static/images/icons/logout.svg', cls: 'ui-user-menu-logout' });
-        tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu, cls: 'ui-user-menu' });
+        user_menu.push({ text: _('Logout') , id: 'user-menu-logout', handler: function(){ Cla.logout(); }, index: 999, icon: '/static/images/icons/logout.svg', cls: 'ui-user-menu-logout' });
+        tbar_items.push({ xtype:'button', id: 'user-menu', text: '<b>'+Prefs.username+'</b>', menu: user_menu, cls: 'ui-user-menu' });
     } else {
         tbar_items.push({ text: _('Login'), handler: function(){ Cla.login(); } });
     }
