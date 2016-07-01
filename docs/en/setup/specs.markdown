@@ -42,7 +42,7 @@ similar to that of a client application, but from any system on the network.
 Realising the process of building and deploying applications, Clarive needs
 to communicate with servers on the network: with proprietary agents or via SSH.
 
-<img src="/static/images/docs/arch2.png" height="100%" width="100%" />
+<img src="/static/images/docs/arch2.png" class="img_help" />
 
 Clarive agents are compatible with any UNIX, Linux or Windows technology.
 
