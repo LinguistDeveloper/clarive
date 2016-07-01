@@ -2,102 +2,10 @@
 <head>
     <& '/site/nocache.html' &>
     <& '/site/includes/headers.html' &>
+    <meta name="viewport" content="width=device-width" />
 
-    <style type="text/css" media="screen">
-        input, textarea {
-        }
-        input:focus, textarea:focus {
-            box-shadow: 0 0 3px rgba(164, 110, 192, 1);
-            border: 1px solid rgba(164, 110, 192, 1);
-        }
-
-        body {
-            height: 100%;
-            padding: 0;
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background-repeat: repeat-x;
-            background-image: url(/static/themes/clarive/images/gradient.gif);
-        }
-        .centered {
-            position: absolute;
-            margin-top: 18px;
-            top: 60px;
-            left: 35%;
-            width: 30%;
-            background-color: transparent;
-            padding: 5px;
-        }
-        .logos {
-            text-align: right;
-        }
-        .logo {
-            padding: 8px;
-        }
-        .logo-powered {
-            height: 30px;
-            padding: 5px;
-        }
-        .logo-lower {
-             padding: 5px;
-        }
-        .bottom {
-            display:block;
-            position:absolute;
-            bottom:0;
-            right:0;
-            width: 150px;
-        }
-        .copyright {
-            text-align: right;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 9px;
-            padding: 5px;
-            margin-top: 18px;
-            line-height: 16px;
-        }
-        .x-form-item-label {
-            margin-left: 30px;
-            text-align: right;
-        }
-        .x-form-item {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 11pt;
-        }
-        .x-form-field {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 18px;
-            -webkit-transition: all 0.20s ease-in-out;
-            -moz-transition: all 0.20s ease-in-out;
-            -ms-transition: all 0.20s ease-in-out;
-            -o-transition: all 0.20s ease-in-out;
-            outline: none;
-            border: 1px solid #DDDDDD;
-        }
-        button.x-btn-text {
-            font-size: 9pt;
-        }
-        #login_btn button.x-btn-text {
-            font-weight: bold;
-        }
-        .x-form-invalid-msg {
-          float: right;
-          width: 190px !important;
-          text-align: left;
-          padding: 5px 69px 5px 20px;
-        }
-
-        .ext-webkit .x-form-invalid:focus {
-          box-shadow: 0 0 3px #ff7870;
-        }
-        input:-webkit-autofill {
-            -webkit-box-shadow: 0 0 0px 1000px #FAF8FD inset;
-          }
-
-    </style>
 </head>
-<body>
+<body id="login-page">
     <& '/site/includes/loading.html' &>
 
     <div id="login-box" class="centered">
