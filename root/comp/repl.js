@@ -177,6 +177,13 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     cons.expand( true );
                     //output_tabs.
                 }
+                if(!(n instanceof Ext.tree.AsyncTreeNode)){
+                    var tooltip = Cla.truncateTooltip(n.text);
+                    panel.setTabTip(tooltip);
+                    n.text = Cla.truncateText(n.text);
+                    panel.setTitle("REPL - " + n.text);
+
+                }
             });
         }
     });
@@ -517,6 +524,10 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
                             save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true, lang: btn_lang.lang });
+                            var tooltip = Cla.truncateTooltip(text);
+                            panel.setTabTip(tooltip);
+                            text = Cla.truncateText(text);
+                            panel.setTitle("REPL - " + text);
                         }
                     }, undefined, false, last_name );
                 }

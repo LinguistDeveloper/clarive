@@ -2996,6 +2996,17 @@ Cla.render_date_format = function(v){
     try { d=Cla.user_date_formatted(v) } catch(ee){ d='' }
     return d;
 };
+
+Cla.truncateText = function (text, max_length){
+        max_length = max_length ? max_length : 29;
+        return text.length > max_length ?  text.substr(0, max_length-3) + '...' : text;
+};
+
+Cla.truncateTooltip = function (tooltip, max_length){
+        max_length = max_length ? max_length : 29;
+        return tooltip.length > max_length ?  tooltip : '';
+};
+
 Baseliner.render_checkbox = function(v){
     return v 
         ? '<img src="/static/images/icons/checkbox.svg">'
