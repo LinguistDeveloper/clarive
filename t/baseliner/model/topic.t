@@ -461,6 +461,58 @@ subtest 'update: creates correct event.topic.modify' => sub {
     like $event_data->{subject}, qr/Topic updated: Category #\d+/;
 };
 
+subtest 'update: updates project security' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_name => 'Changeset',
+        rule_tree => [
+            {
+                id   => 'title',
+                data => {
+                    id_field => 'title'
+                },
+                name => 'Title',
+                key  => 'fieldlet.system.title'
+            },
+            {
+                id   => 'status_new',
+                data => {
+                    bd_field => 'id_category_status',
+                },
+                name => 'Status',
+                key  => 'fieldlet.system.status_new'
+            },
+            {
+                id   => 'project',
+                data => {
+                    id_field => 'project'
+                },
+                name => 'Project',
+                key  => 'fieldlet.system.projects'
+            },
+        ],
+    );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $topic_mid = TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => 'Topic' );
+
+    my $topic = mdb->topic->find_one( { mid => "$topic_mid" } );
+
+    is_deeply $topic->{_project_security}, {
+        project => [
+            $project->mid
+        ]
+    };
+};
+
 subtest 'upload: uploads file' => sub {
     _setup();
     TestSetup->_setup_user();

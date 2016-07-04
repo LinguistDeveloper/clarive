@@ -63,7 +63,7 @@
             }
             this.focus();
         },
-        name: 'ci_class_box',
+        name: 'project_type',
         xtype: 'combo',
         fieldLabel: _('CI class'),
         store: ci_store,
@@ -73,7 +73,7 @@
         displayField: 'name',
         singleMode: true,
         mode: 'remote',
-        value: data.collection || 'project',
+        value: data.project_type || 'project',
         listeners:{
             'removeitem': function(obj){
                 return this.deal_combo_change(obj);

@@ -1937,17 +1937,24 @@ sub save_data {
 } ## save_data
 
 sub update_project_security {
-    my ($self, $doc )=@_;
+    my ( $self, $doc ) = @_;
 
-    my $meta = Baseliner::Model::Topic->new->get_meta ($doc->{mid}, $doc->{id_category});
+    my $meta = Baseliner::Model::Topic->new->get_meta( $doc->{mid}, $doc->{id_category} );
+
     my %project_collections;
-    for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
-        my @secs = _array($doc->{ $field->{id_field} });
-        push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
+    for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' } @$meta ) {
+        my $project_type = $field->{collection};
+        ($project_type) = _array $field->{project_type} unless $project_type;
+        $project_type ||= 'project';
+
+        my @values = _array( $doc->{ $field->{id_field} } );
+        push @{ $project_collections{$project_type} }, @values if @values;
     }
-    if( keys %project_collections ) {
+
+    if ( keys %project_collections ) {
         return $doc->{_project_security} = \%project_collections;
-    } else {
+    }
+    else {
         delete $doc->{_project_security};
         return undef;
     }
