@@ -59,7 +59,7 @@ This command has different options, they are:
 
 `disp-tail`: Follows log file, it accepts some arguments when called to configure the output, these are:
 
-- **tail**: Number of lines displayed, default is 500.
+- **tail**: Number of lines displayed, default is 500. We can modify this value executing : cla disp-tail -tail=<number_of_lines>.
 
 - **interval**: The initial number of seconds that will be spent sleeping, before the file is first checked, default is .5.
 

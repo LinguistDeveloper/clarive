@@ -3,21 +3,24 @@ title: cla disp - Gestion del Dispatcher
 index: 20
 icon: console.svg
 ---
-* `cla disp`: Realiza operaciones relacionadas con el dispatcher.
-* Ejecutandolo sin ningún argumento, se inicia el servicio del dispatcher, encargado de iniciar todos los demonios.La manera en la que se inicie, esté duplicado o no, es utilizando la configuración de servicio.
-* El Dispatcher se comporta de la siguiente manera en función al estado de los demonios. <br />
+`cla disp`: Realiza operaciones relacionadas con el dispatcher.
 
-&nbsp; &nbsp;• Si un demonio ha sido desactivado desde la herramienta, el dispatcher para el demonio <br />
+Ejecutandolo sin ningún argumento, se inicia el servicio del dispatcher, encargado de iniciar todos los demonios.La manera en la que se inicie, esté duplicado o no, es utilizando la configuración de servicio.
 
-&nbsp; &nbsp;• Si el demonio ha sido activado, el dispatcher arranca el servicio. <br />
+El Dispatcher se comporta de la siguiente manera en función al estado de los demonios.
 
-&nbsp; &nbsp;• Si un demonio está activo, el dispatcher comprueba si se está ejecutando o no, si no lo está intentará rearrancar el servicio de nuevo.
+- Si un demonio ha sido desactivado desde la herramienta, el dispatcher para el demonio.
 
-* La frecuencia que el dispatcher comprueba el estado de un demonio es un parametro configurable llamado `frecuency`. Este valor, por defecto, son 30 segundos.
-* Este comando soporta dos opciones diferentes:
+- Si el demonio ha sido activado, el dispatcher arranca el servicio.
 
-&nbsp; &nbsp;• `-h`: Muestra una breve ayuda en la pantalla: <br />
-       
+- Si un demonio está activo, el dispatcher comprueba si se está ejecutando o no, si no lo está intentará rearrancar el servicio de nuevo.
+
+La frecuencia que el dispatcher comprueba el estado de un demonio es un parametro configurable llamado `frecuency`. Este valor, por defecto, son 30 segundos.
+
+Este comando soporta dos opciones diferentes:
+
+- `-h`:  Muestra una breve ayuda en la pantalla:
+
 
     > cla disp –h
 
@@ -38,28 +41,28 @@ icon: console.svg
      tail
       follows the server log file.
 
- <br />
 
-&nbsp; &nbsp;• `-daemon`: Ejecuta el servicio en segundo plano.  <br />
 
-&nbsp; &nbsp;&nbsp; &nbsp;• Este comando tiene diferentes opciones: <br />
+- `-daemon`: Ejecuta el servicio en segundo plano.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-start`: Igual que el `cla disp`, descrito arriba.  <br />
+Este comando tiene diferentes opciones:
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-stop`:  Para el dispatcher y sus servicios. A su vez, este comando dispone de dos opciones más. <br />
+`disp-start`: Igual que el `cla disp`, descrito arriba.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• *no_wait_kill* - El dispatcher se elimina sin esperas. si está opción se está indicada, el dispatcher esperará 30 segundos antes de pararse. <br />
+`disp-stop`:  Para el dispatcher y sus servicios. A su vez, este comando dispone de dos opciones más.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• *keep_pidfile* - Mantiene en el fichero el PID del proceso. <br />
+- *no_wait_kill* - El dispatcher se elimina sin esperas. si está opción se está indicada, el dispatcher esperará 30 segundos antes de pararse.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-log`: Imprime el log en la pantalla.  <br />
+- *keep_pidfile* - Mantiene en el fichero el PID del proceso.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;• `disp-tail`: Muestra el final del fichero log, acepta los siguientes argumentos: <br />
+`disp-log`: Imprime el log en la pantalla.
 
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *tail* - Número de lineas para mostrar. Por defecto muestra las últimas 500 líneas del log. <br />
+`disp-tail`: Muestra el final del fichero log, acepta los siguientes argumentos:
 
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *interval* - El número mínimo de segundos que va a esperar antes de que el fichero sea mostrado. Por defecto es 0,5 segundos. <br />
+- *tail* - Número de lineas para mostrar. Por defecto muestra las últimas 500 líneas del log. Podemos modificar este número ejecutando el comando: cla disp-tail -tail=**numero_de_lineas**.
 
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;• *maxinternal* - El número máximo de segundos que el sistema esperará, por defecto es 1.
+- *interval* - El número mínimo de segundos que va a esperar antes de que el fichero sea mostrado. Por defecto es 0,5 segundos.
+
+- *maxinternal* - El número máximo de segundos que el sistema esperará, por defecto es 1.
 
 
