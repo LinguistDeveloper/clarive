@@ -1211,11 +1211,11 @@ subtest 'get_system_tags: get tags without project just bl ' => sub {
 
     TestUtils->create_ci( 'bl', bl => 'SUPPORT' );
     TestUtils->create_ci( 'bl', bl => 'TEST' );
-    TestUtils->create_ci( 'bl', bl => 'COMUN' );
+    TestUtils->create_ci( 'bl', bl => 'COMMON' );
 
     my @tags = $repo->get_system_tags($repo);
 
-    is_deeply \@tags, [qw/SUPPORT TEST COMUN/];
+    is_deeply \@tags, [qw/SUPPORT TEST COMMON/];
 };
 
 subtest 'get_system_tags: get tags with project' => sub {
@@ -1291,6 +1291,22 @@ subtest 'get_system_tags: get tags with release,project' => sub {
     my @tags = $repo->get_system_tags($repo);
 
     is_deeply \@tags, [qw/3.0-SUPPORT 1.0-SUPPORT/];
+};
+
+subtest 'get_system_tags: gets tags of bls actives' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( tags_mode => 'bl' );
+
+    TestUtils->create_ci( 'bl', bl => 'SUPPORT', active => '0' );
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'COMMON' );
+
+    my @tags = $repo->get_system_tags($repo);
+
+    is @tags, 2;
+    is $tags[0], 'TEST';
+    is $tags[1], 'COMMON';
 };
 
 done_testing;
