@@ -92,8 +92,8 @@ sub lc_for_project {
         has_query => 1,
         type => 'component'
     };
-    my $is_root = Baseliner->model('Permissions')->is_root($username);
-    my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.job.monitor' );
+    my $is_root = Baseliner::Model::Permissions->new->is_root($username);
+    my $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.job.view_monitor' );
     if ($has_permission || $is_root){
 
         push @nodes, {
@@ -109,7 +109,7 @@ sub lc_for_project {
                   comp => { url => '/job/monitor' },
                 }
             ],
-          }
+          };
     };
     push @nodes,{
         'node' => 'Views',
@@ -134,7 +134,7 @@ sub lc_for_project {
                   },
         'type' => 'component',
     };
-    $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.home.hide_project_repos' );
+    $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.home.hide_project_repos' );
     if ( !$has_permission || $is_root ){
         my @repos =
             map { values %$_ }
@@ -175,8 +175,8 @@ sub lc_for_project {
     # Show states only if user has action for that project
 
     my @states;
-    my @projects_with_lc = Baseliner->model('Permissions')->user_projects_with_action( username => $username, action => 'action.project.see_lc');
-    my @user_workflow = _unique map {$_->{id_status_from} } Baseliner->model("Topic")->user_workflow( $username );
+    my @projects_with_lc = Baseliner::Model::Permissions->new->user_projects_with_action( username => $username, action => 'action.project.see_lc');
+    my @user_workflow = _unique map {$_->{id_status_from} } Baseliner::Model::Topic->new->user_workflow( $username );
 
     if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {
 
