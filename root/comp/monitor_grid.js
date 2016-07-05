@@ -1081,26 +1081,14 @@
         return rec.data.ago;
     };
 
-    var render_level = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon;
-        var bold = false;
-        var status = rec.data.status_code;
-        var type   = rec.data.type_raw;
+    
+    var render_level = function(value,metadata,rec,rowIndex,colIndex,store,status) {
         var rollback = rec.data.rollback;
-        if( status=='RUNNING' ) { icon='gears.svg'; bold=true }
-        else if( status=='READY' ) icon='waiting.png';
-        else if( status=='APPROVAL' ) icon='user_delete.svg';
-        else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w_1.svg';
-        else if( status=='WAITING' ) icon='waiting.png';
-        else if( status=='PAUSED' ) icon='paused.png';
-        else if( status=='TRAPPED' ) icon='paused.png';
-        else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
-        else if( status=='CANCELLED' ) icon='close.svg';
-        else { icon='log_e.png'; bold=true; }
-        value = (bold?'<b>':'') + value + (bold?'</b>':'');
+        var status = rec.data.status_code;
+        var icon = Baseliner.getJobStatusIcon(status, rollback);
+        var type   = rec.data.type_raw;
+        var value = '<b>'+ value + '</b>';
 
-        // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
             icon = 'log_i.png';
@@ -1112,12 +1100,11 @@
             value += ' (' + _('Rollback') + ')';
         }
 
-        //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
-        if( status == 'APPROVAL' ) { // add a link to the approval main
+        if( status == 'APPROVAL' ) {
             value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id );
         }
 % if( $c->stash->{user_action}->{'action.job.resume'} ) {
-        else if( status == 'PAUSED' ) { // add a link to the approval main
+        else if( status == 'PAUSED' ) {
             value = String.format("<a href='javascript:Baseliner.resume_job(\"{0}\",\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name );
         }
 % }
@@ -1125,7 +1112,7 @@
             value = String.format("<a href='javascript:Baseliner.trap_check(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id );
         }
         if( icon!=undefined ) {
-            var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
+            var err_warn = '';
             err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w_1.svg" />' : '';
             return div1
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"

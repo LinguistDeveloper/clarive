@@ -212,7 +212,7 @@ subtest '_size_unit: human readable format' => sub {
 };
 
 subtest 'job_icon: builds and icon from status' => sub {
-    is (Util->job_icon ('RUNNING'),'gears.svg');
+    is (Util->job_icon ('RUNNING'),'gears.gif');
     is (Util->job_icon ('READY'),'waiting.png');
     is (Util->job_icon ('APPROVAL'),'user_delete.svg');
     is (Util->job_icon ('FINISHED'),'log_i.png');
