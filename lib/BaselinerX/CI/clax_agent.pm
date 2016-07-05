@@ -5,9 +5,10 @@ use HTTP::Tiny;
 use File::Basename qw(basename dirname);
 use URI;
 use String::CRC32 ();
+use Baseliner::Utils qw(:logging _file _dir _array);
+use BaselinerX::Type::Model::ConfigStore;
 
 has user => qw(is rw isa Maybe[Str]);
-
 has auth_username => qw(is rw isa Str);
 has auth_password => qw(is rw isa Str);
 has
@@ -53,9 +54,16 @@ sub execute {
         $cmd = join ' ', $cmd, $self->_quote_cmd(@args);
     }
 
+    my $env = join "\n", _array $options->{env};
+
     my $response = $ua->post_form(
         $url,
-        { command => $cmd, chdir => $options->{chdir}, user => $self->user },
+        {
+            command => $cmd,
+            $env ? ( env => $env ) : (),
+            chdir => ( $options->{chdir} // '' ),
+            user  => ( $self->user       // '' )
+        },
         {
             data_callback => sub {
                 my ($chunk) = @_;

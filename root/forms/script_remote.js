@@ -24,14 +24,21 @@
     return [
         Baseliner.ci_box({ name: 'server', role:'Baseliner::Role::HasAgent', fieldLabel:_('Server'), with_vars: 1, value: data.server, force_set_value: true }),
         { xtype:'textfield', fieldLabel: _('User'), name: 'user', value: data.user },
-        new Baseliner.MonoTextArea({ fieldLabel: _('Path'), height: 80, name: 'path', value: data.path }),
-        new Baseliner.ArrayGrid({ 
-            fieldLabel:_('Arguments'), 
-            name: 'args', 
+        new Baseliner.MonoTextArea({ fieldLabel: _('Command'), height: 80, name: 'path', value: data.path }),
+        new Baseliner.ArrayGrid({
+            fieldLabel:_('Arguments'),
+            name: 'args',
             value: data.args,
-            description:_('Command arguments'), 
-            default_value:'.' 
-        }), 
+            description:_('Command arguments'),
+            default_value:'.'
+        }),
+        new Baseliner.ArrayGrid({
+            fieldLabel:_('Environment'),
+            name: 'environment',
+            value: data.environment,
+            description:'',
+            default_value: ''
+        }),
         new Baseliner.MonoTextArea({ fieldLabel: _('Home Directory'), height: 50, name: 'home', value: data.home }),
         errors, custom_error,
         new Baseliner.ErrorOutputTabs({ data: data }) 

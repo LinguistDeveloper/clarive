@@ -118,8 +118,8 @@ msgstr ""
 
 #: lib/Baseliner/Controller/About.pm root/ci/item.js
 #: root/comp/catalog/item_deploy.js root/comp/feature_grid.mas
-#: root/forms/file_foreach.js root/forms/script_local.js
-#: root/forms/script_remote.js root/forms/sed.js root/forms/write_file.js
+#: root/forms/file_foreach.js root/forms/script_local.js root/forms/sed.js
+#: root/forms/write_file.js
 msgid "Path"
 msgstr "Ruta"
 
@@ -4468,7 +4468,7 @@ msgstr ""
 #: lib/BaselinerX/Fieldlets.pm lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
 #: root/comp/catalog_grid.js root/comp/dashboard_job.html
 #: root/dashlets/job_stats_by_env.html root/forms/script_local.js
-#: root/site/about.html
+#: root/forms/script_remote.js root/site/about.html
 msgid "Environment"
 msgstr "Entorno"
 
@@ -12715,7 +12715,11 @@ msgstr "Stdin"
 
 #: root/forms/script_remote.js
 msgid "Run Remote Script"
-msgstr ""
+msgstr "Ejecutar un script remoto"
+
+#: root/forms/script_remote.js
+msgid "Command"
+msgstr "Comando"
 
 #: root/forms/sed.js
 msgid "Slurp"
