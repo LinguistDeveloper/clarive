@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::Deep;
+use Test::TempDir::Tiny;
 use TestEnv;
 
 my $root;
@@ -185,6 +186,42 @@ subtest 'doc_matches: doesnt find simple string' => sub {
 
     ok !$help->doc_matches( $doc, 'noooo' );
     ok !exists $doc->{found};
+};
+
+
+subtest 'parse_body: parses windows line endings' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+    TestUtils->write_file( "---\r\ntitle: Test\r\n---\r\n\r\nContent\r\n", "$tempdir/test.markdown" );
+
+    my $help = Baseliner::Model::Help->new;
+
+    my $data = $help->parse_body(
+        _file("$tempdir/test.markdown"),
+        _dir("$tempdir")
+    );
+
+    cmp_deeply $data, {
+        'name' => 'test',
+        'path' => ignore(),
+        'tags' => ignore(),
+        'body' => '
+Content
+',
+        'index' => ignore(),
+        'tpl'   => ignore(),
+        'html'  => '<p>Content</p>
+',
+        'uniq_id' => ignore(),
+        'yaml'    => '---
+title: Test
+',
+        'text' => 'Content
+',
+        'id'    => 'test',
+        'title' => 'Test'
+    };
 };
 
 subtest 'parse_body: parses body' => sub {

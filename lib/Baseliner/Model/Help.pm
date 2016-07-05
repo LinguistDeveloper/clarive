@@ -190,8 +190,9 @@ sub parse_body {
     close $ff;
 
     # parse
-    my ( $yaml, $body ) = $contents =~ /(---.+?)---\n(.*)/s;
-
+    my ( $yaml, $body ) = $contents =~ /(---.+?)---\r?\n(.*)/s;
+    $yaml =~ s/\r\n/\n/g;
+    $body =~ s/\r\n/\n/g;
     # convert
     my $html;
     if ( !defined $type || $type eq 'html' ) {
