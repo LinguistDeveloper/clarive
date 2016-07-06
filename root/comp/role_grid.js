@@ -16,7 +16,7 @@
             {  name: 'mailbox' }
         ]
     });
-
+    Cla.help_push({ title:_('Roles'), path:'admin/roles' });
     var role_detail = function(id_role, role){
         Baseliner.add_tabcomp('/comp/role_detail.js', null, { id_role: id_role, role: role, id_grid: grid.getId()  } );
     }
