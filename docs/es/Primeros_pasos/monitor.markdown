@@ -9,6 +9,8 @@ Los siguientes botones se encuentran disponibles arriba de la lista de pases:
 
 <img src="/static/images/icons/html.gif" /> **HTML**: Muestra el log de el pase seleccionado en formato html.
 
+<img src="/static/images/icons/project.svg" /> **Projecto**: Filtra los pases por proyecto.
+
 <img src="/static/images/icons/baseline.gif" /> **Entorno**: Filtra los pases por entorno.
 
 <img src="/static/images/icons/nature.png" /> **Naturaleza**: Filtra los pases por naturaleza.

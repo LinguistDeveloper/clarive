@@ -265,6 +265,7 @@
 
     var nature_menu = [{
           text: _('All-f'),
+          icon: '/static/images/icons/nature.svg',
           handler: function (item) {
             item.parentMenu.ownerCt.setText('');
             delete store.baseParams.filter_nature;
@@ -282,7 +283,7 @@
                       ;
       return {
         text: nature_name,
-        //icon: '/static/images/nature/' + x.icon + '.png',
+        icon: '/static/images/icons/nature.svg',
         handler: function (item) {
           item.parentMenu.ownerCt.setText( '<b>' + _('Natures: %1',  nature_name) + '</b>' );
           //store.baseParams.filter_nature = x.ns ;
@@ -336,17 +337,25 @@
       }
       return;
     };
-    var item_job_states = [
-        {  text: _('All'), hideOnClick:false, handler: function(){
-              menu_job_states.items.each( function(i){
-                  if( i.checked===false ) i.setChecked(true,false);
-              });
-        }},
-        {  text: _('Check None'), hideOnClick:false, handler: function(){
-              menu_job_states.items.each( function(i){
-                  if( i.checked===true ) i.setChecked(false,false);
-              });
-        }},
+    var item_job_states = [{
+            text: _('All'),
+            hideOnClick: false,
+            icon: '/static/images/icons/state.svg',
+            handler: function() {
+                menu_job_states.items.each(function(i) {
+                    if (i.checked === false) i.setChecked(true, false);
+                });
+            }
+        }, {
+            text: _('Check None'),
+            hideOnClick: false,
+            icon: '/static/images/icons/state.svg',
+            handler: function() {
+                menu_job_states.items.each(function(i) {
+                    if (i.checked === true) i.setChecked(false, false);
+                });
+            }
+        },
         '-'
     ];
     item_job_states.push(
@@ -374,11 +383,59 @@
       items: item_job_states
     });
 
+    Baseliner.ajaxEval('/project/user_projects', {
+        collection: 'area'
+    }, function(res_area) {
+        Baseliner.ajaxEval('/project/user_projects', {}, function(res) {
+            res.data = res.data.concat(res_area.data);
+
+            if (res.data == undefined || res.data.length < 1) {
+                menu_projects.disable();
+                menu_projects.setText(_('No Projects'));
+            } else {
+                menu_projects.menu.add({
+                    text: _('All'),
+                    icon: '/static/images/icons/project.svg',
+                    handler: function(item) {
+                        item.parentMenu.ownerCt.setText('');
+                        delete store.baseParams.filter_project;
+                        store.reload();
+
+                    }
+                }, '-');
+                Ext.each(res.data, function(data) {
+                    menu_projects.menu.add({
+                        text: data.name,
+                        mid: data.mid,
+                        icon: data.icon,
+                        handler: function(item) {
+                            var text = ('<b>' + _('Project: %1', data.name) + '</b>');
+                            text = Cla.truncateText(text);
+                            item.parentMenu.ownerCt.setText(text);
+                            store.baseParams.filter_project = data.mid;
+                            store.reload();
+                        }
+                    });
+                });
+            }
+        });
+    });
+
+    var menu_projects = new Ext.Button({
+        tooltip: _("Projects"),
+        icon: '/static/images/icons/project.svg',
+        cls: 'x-btn-icon-text',
+        menu: {
+            items: []
+        }
+    });
+
     // Baseline Filter
 
     var menu_list = [];
     menu_list.push({
       text: _('All'),
+      icon: '/static/images/icons/baseline.svg',
       handler: function (item) {
         item.parentMenu.ownerCt.setText('');
         delete store.baseParams.filter_bl;
@@ -1235,7 +1292,7 @@
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
                 { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },
-                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
+                { header: _('Project'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
@@ -1272,6 +1329,7 @@
         tbar: is_portlet ? [] : [
                 search_field,
                 button_html,
+                menu_projects,
                 menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.svg', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {

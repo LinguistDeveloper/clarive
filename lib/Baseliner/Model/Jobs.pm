@@ -159,6 +159,18 @@ sub monitor {
         $where->{job_type} = $p->{filter_type};
     }
 
+    if ( length $p->{filter_project} ) {
+        if ( !$permissions->is_root($username) ) {
+            my @projects = _array $where->{projects}->{'$in'};
+            if ( $p->{filter_project} ~~ @projects ) {
+                $where->{projects} = $p->{filter_project};
+            }
+        }
+        else {
+            $where->{projects} = $p->{filter_project};
+        }
+    }
+
     $query_id ||= '';
     if ( $query_id ne '-1' ) {
         my @jobs = split( ",", $query_id );

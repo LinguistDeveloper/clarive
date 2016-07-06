@@ -398,6 +398,93 @@ subtest 'monitor_json: returns the jobs filtered by nature' => sub {
     is $c->stash->{json}->{totalCount}, 1;
 };
 
+subtest 'monitor_json: returns the jobs filtered by project' => sub {
+    _setup();
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.job.viewall',
+                bl     => 'PROD'
+            },
+        ]
+    );
+    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $other_project       = TestUtils->create_ci('project');
+    my $other_changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $other_project,
+        is_changeset => 1
+    );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    my $job_ci;
+    capture {
+        $job_ci = TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+            bl           => 'PROD'
+        );
+    };
+    my $other_job_ci;
+    capture {
+        $other_job_ci = TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$other_changeset_mid],
+            bl           => 'PROD'
+        );
+    };
+
+    my $project_mid = $project->{mid};
+    my $c           = mock_catalyst_c(
+        username => 'user',
+        req      => { params => { query_id => '-1', filter_project => $project_mid } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->monitor_json($c);
+
+    is $c->stash->{json}->{totalCount}, 1;
+    is $c->stash->{json}->{data}[0]->{mid}, $job_ci->mid;
+};
+
 subtest 'pipeline_versions: returns versions data' => sub {
     _setup();
 
@@ -611,6 +698,7 @@ sub _setup {
 
     mdb->rule->drop;
     mdb->rule_version->drop;
+    mdb->role->drop;
 
     TestUtils->create_ci('bl', name => 'Common', bl => '*');
     TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD');
