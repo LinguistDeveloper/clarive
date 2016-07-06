@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 
 use Test::More;
 use Test::Deep;
@@ -112,7 +113,7 @@ subtest 'build_doc_tree: help tree is built from directory by language' => sub {
     my $help = Baseliner::Model::Help->new;
     my @tree = $help->build_doc_tree( { query => '' }, _dir("$root/../../data/app-base/app-home/docs/es") );
 
-    is $tree[0]->{text}, 'Ayuda Test';
+    is $tree[0]->{text}, 'Extraña Ayuda Test';
 };
 
 subtest 'build_doc_tree: help tree merges directories from plugins' => sub {
@@ -239,20 +240,20 @@ subtest 'parse_body: parses body' => sub {
         'path' => re(qr{app-home/docs/es/test\.markdown$}),
         'tags' => [],
         'body' => '
-Ayuda Test.
+Extraña Ayuda Test.
 ',
         'index' => 100,
         'tpl'   => 'default',
-        'html'  => '<p>Ayuda Test.</p>
+        'html'  => '<p>Extraña Ayuda Test.</p>
 ',
         'uniq_id' => 'test',
         'yaml'    => '---
-title: Ayuda Test
+title: Extraña Ayuda Test
 ',
-        'text' => 'Ayuda Test.
+        'text' => 'Extraña Ayuda Test.
 ',
         'id'    => 'test',
-        'title' => 'Ayuda Test'
+        'title' => 'Extraña Ayuda Test'
     };
 };
 

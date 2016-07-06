@@ -207,7 +207,7 @@ sub parse_body {
     }
 
     my $data = try {
-        YAML::XS::Load($yaml);
+        YAML::XS::Load(Encode::encode('UTF-8', $yaml));
     }
     catch {
         my $err = shift;
