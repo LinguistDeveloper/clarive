@@ -1736,6 +1736,6 @@ textarea.x-form-field.job_logfile_textarea, x:-moz-any-link, x:default {
 }
 
 img[src$='.svg'][src^='/static/images'] {
-  height:16px;
-  width: 16px;
+   height: 16px;
+   width: 16px;
 }

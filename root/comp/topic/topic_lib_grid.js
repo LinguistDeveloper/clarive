@@ -536,24 +536,20 @@ Cla.topic_grid = function(params){
             rows: [],
             columns: []
         };
-
         var cfg = grid_topics.getColumnModel().config;
 
         if (!args.store_data) {
-
             var row = 0,
                 col = 0;
             var gv = grid_topics.getView();
-
             for (var row = 0; row < 9999; row++) {
                 if (!gv.getRow(row)) break;
                 var d = {};
-                for (var col = 0; col < 9999; col++) {
+                for (var col = 1; col < 9999; col++) {
                     if (!cfg[col]) break;
                     if (cfg[col].hidden || cfg[col]._checker) continue;
                     var cell = gv.getCell(row, col);
                     if (!cell) break;
-                    //console.log( cell.innerHTML );
                     var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
                     text = text.replace(/^\s+/, '');
                     text = text.replace(/\s+$/, '');
@@ -561,9 +557,7 @@ Cla.topic_grid = function(params){
                 }
                 data.rows.push(d);
             }
-
         } else {
-
             store_topics.each(function(rec) {
                 var d = rec.data;
                 var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid)
@@ -573,8 +567,7 @@ Cla.topic_grid = function(params){
 
         }
 
-        for (var i = 0; i < cfg.length; i++) {
-
+        for (var i = 1; i < cfg.length; i++) {
             if (!cfg[i].hidden && !cfg[i]._checker)
                 data.columns.push({
                     id: cfg[i].dataIndex,
