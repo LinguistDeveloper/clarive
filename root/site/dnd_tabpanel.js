@@ -116,22 +116,15 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
 
                 // Update the drag proxy ghost element
                 , onStartDrag: function () {
-                  // if (this.dropEl.iconCls) 
+                    var el, proxyText;
                     if (this.dropEl) {
-
-                        var el = this.getProxy().getGhost().select(".x-tab-strip-text");
-                       el.addClass('x-panel-inline-icon');
-                        // console.log(el);
-                        var proxyText = el.elements[0].innerHTML;
+                        el = this.getProxy().getGhost().select(".x-tab-strip-text");
+                        el.addClass('x-panel-inline-icon');
+                        proxyText = el.elements[0].innerHTML;
                         proxyText = Ext.util.Format.stripTags(proxyText);
-                        el.elements[0].innerHTML = proxyText;
-
-                        el.applyStyles({
-                            paddingLeft: "20px"
-                        });
+                        el.innerHTML = proxyText;
                     }
                 }
-     
 
                 // Activate this tab on mouse up
                 // (Fixes bug which prevents a tab from being activated by clicking it)

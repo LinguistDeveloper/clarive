@@ -1739,3 +1739,16 @@ img[src$='.svg'][src^='/static/images'] {
    height: 16px;
    width: 16px;
 }
+
+span.x-tab-strip-text.x-panel-inline-icon {
+    padding-left: 20px;
+}
+
+
+.category-tab-ghost {
+    font-size:0px;
+    padding: 8px 8px 0px 0px;
+    margin : 0px 4px 0px 0px;
+    background-color: transparent;
+    border-radius:0px;
+}

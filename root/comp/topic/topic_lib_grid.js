@@ -1629,7 +1629,7 @@ Cla.topic_grid = function(params){
             var el = Ext.fly( tn );
             var mid = tn.getAttribute('mid');
             if( ! mid ) return;
-            var ix = grid_topics.store.find('topic_mid', mid); // getAt( this.index ).data;
+            var ix = grid_topics.store.find('topic_mid', mid);
             var row = grid_topics.store.getAt( ix );
             if( !row ) return false;
             var data = row.data;
@@ -1638,41 +1638,43 @@ Cla.topic_grid = function(params){
                 mid: mid,
                 data: data,
                 getDragData: function(e){
-                    var sourceEl = e.getTarget();
-                    var mid = this.mid;
-                    var data = this.data;
-                    // create new node
-                    var proxy_node = sourceEl.cloneNode(true);
-                    proxy_node.id = Ext.id();
-                    // TODO create topic node using the original data from attributes
-                      // inject into loader? Loader.newNode or something?
-                    var text = String.format('<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #{1};background-color: transparent;color:#{1};border-radius:0px"></span><b>{0}</b>{2}', data.topic_name, data.category_color, '' );
-                    proxy_node.innerHTML = text;
-                    //text = data.topic_name;
-                    var node = new Ext.tree.TreeNode({
-                        text: data.title,
-                        leaf: true,
-                        icon: "/static/images/icons/topic.svg",
-                        data: {
-                            topic_mid: mid
-                        },
-                        topic_name: {
-                            category_color: data.category_color,
-                            category_name: data.category_name,
-                            is_changeset: data.is_changeset,
-                            is_release: data.is_release,
-                            mid: mid
-                        }
-                    });
-                    Cla.style_topic_node(node);
-                    return {
-                        ddel: proxy_node,
-                        sourceEl: sourceEl,
-                        repairXY: Ext.fly(sourceEl).getXY(),
-                        node: node,
-                        sourceStore: null,
-                        draggedRecord: { }
-                    };
+                    var id, labelClass, sourceEl, proxy_node, data, text, mid, node;
+                    id = this.id;
+                    labelClass = e.target.className;
+                    if (labelClass != 'label') {
+                        sourceEl = e.getTarget();
+                        proxy_node = sourceEl.cloneNode(true);
+                        proxy_node.id = Ext.id();
+                        data = this.data;
+                        // TODO create topic node using the original data from attributes
+                        text = String.format('<span unselectable="on" class="category-tab-ghost" style="border : 2px solid #{1};color:#{1};"></span><b>{0}</b>{2}', data.topic_name, data.category_color, '');
+                        proxy_node.innerHTML = text;
+                        mid = this.mid;
+                        node = new Ext.tree.TreeNode({
+                            text: data.title,
+                            leaf: true,
+                            icon: "/static/images/icons/topic.svg",
+                            data: {
+                                topic_mid: mid
+                            },
+                            topic_name: {
+                                category_color: data.category_color,
+                                category_name: data.category_name,
+                                is_changeset: data.is_changeset,
+                                is_release: data.is_release,
+                                mid: mid
+                            }
+                        });
+                        Cla.style_topic_node(node);
+                        return {
+                            ddel: proxy_node,
+                            sourceEl: sourceEl,
+                            repairXY: Ext.fly(sourceEl).getXY(),
+                            node: node,
+                            sourceStore: null,
+                            draggedRecord: {}
+                        };
+                    }
                 }
             });
         });
