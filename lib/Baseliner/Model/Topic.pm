@@ -74,7 +74,7 @@ register 'event.post.mention' => {
 
 register 'event.file.create' => {
     text => '%1 posted a file: %3',
-    description => 'User uploaded a file',
+    description => 'User created a file',
     vars => ['username', 'ts', 'filename'],
 };
 
@@ -92,13 +92,13 @@ register 'event.file.remove' => {
 
 register 'event.file.labels' => {
     text => '%1 modify labels',
-    description => 'User modified a topic',
+    description => 'User modified labels',
     vars => ['username', 'ts'],
 };
 
 register 'event.file.labels_remove' => {
     text => '%1 remove labels',
-    description => 'User modified a topic',
+    description => 'User removed labels',
     vars => ['username', 'ts'],
 };
 
@@ -142,7 +142,7 @@ register 'event.topic.modify' => {
 
 register 'event.topic.modify_field' => {
     text => '%1 modified the field %2 from %3 to %4',
-    description => 'User modified a topic',
+    description => 'User modified a topic field',
     vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
     filter=>sub{
         my ($txt, @vars)=@_;
@@ -200,6 +200,7 @@ register 'event.topic.modify_field' => {
 
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3',
+    description => 'Topic status changed',
     vars => ['username', 'old_status', 'status', 'ts'],
     notify => {
         #scope => ['project', 'category', 'category_status', 'baseline'],
@@ -209,6 +210,7 @@ register 'event.topic.change_status' => {
 
 register 'event.topic_list.export' => {
     text => '%1 exported topic list',
+    description => 'Topic list exported',
     vars => [ 'username', 'format' ],
 };
 

@@ -114,11 +114,11 @@ sub list_events : Local {
     my @events = map {
         my $key = $_;
         my $event = $c->registry->get($_);
-        my ($kind) = $key =~ /^event\.([^.]+)\./;
+        my ($kind) = $key =~ /^event\.([^.]+)\./ ? $1 : 'event';
         +{
             key => $key,
             kind=>$kind,
-            description=> $event->description // $_
+            description=> _loc ($event->description ) // $_
          }
      } sort $c->registry->starts_with('event.');
 

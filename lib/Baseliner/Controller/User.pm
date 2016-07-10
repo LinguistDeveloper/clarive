@@ -52,7 +52,7 @@ register 'menu.admin.users' => {
 
 register 'event.user.create' => {
     text        => 'New user created: %2',
-    description => 'User posted a comment',
+    description => 'New user',
     vars        => [ 'username', 'realname', 'email' ]
 };
 
