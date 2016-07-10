@@ -1896,32 +1896,12 @@ msgstr ""
 msgid "This type of file is not allowed: %1 "
 msgstr ""
 
-#: lib/Baseliner/Controller/Topic.pm
-msgid "File id %1 not found"
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
+msgid "topic mid required"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "Deleted file %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "File deleted ok"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Detached file %1 from #%2 %3"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Deleting file %1 from topic %2"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "File not attached to topic"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Relationship deleted ok"
+msgid "Deleted files from topic %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
@@ -3021,7 +3001,27 @@ msgid "Error uploading file: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "File id %1 not found"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Deleting file %1"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Deleted file %1"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Error removing file from topic %1. Error: %2"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "Missing field"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "The related field does not exist for the topic: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/TopicExporter/Csv.pm root/comp/topic/topic_lib_grid.js
@@ -5736,6 +5736,10 @@ msgid "Error processing file body with templating %1: %2"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
+msgid "Remove files from a topic"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
 msgid "Topic %1 not found"
 msgstr ""
 
@@ -5889,11 +5893,12 @@ msgstr ""
 #: root/email/generic_post.html root/email/generic_rule.html
 #: root/email/generic_topic.html root/forms/asset_file.js
 #: root/forms/eval_remote.js root/forms/link_revision.js
-#: root/forms/retrieve_remote.js root/forms/script_local.js
-#: root/forms/script_remote.js root/forms/ship_remote.js
-#: root/forms/sync_remote.js root/forms/test_server_connect.js
-#: root/forms/topic_status.js root/forms/topic_status_deprecated.js
-#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
+#: root/forms/remove_file.js root/forms/retrieve_remote.js
+#: root/forms/script_local.js root/forms/script_remote.js
+#: root/forms/ship_remote.js root/forms/sync_remote.js
+#: root/forms/test_server_connect.js root/forms/topic_status.js
+#: root/forms/topic_status_deprecated.js root/forms/web_request.js
+#: root/reports/listado_jobs.js root/site/common.js
 msgid "User"
 msgstr ""
 
@@ -8145,7 +8150,7 @@ msgid "Users and roles"
 msgstr ""
 
 #: root/comp/lifecycle/report_edit.js root/comp/notifications.js
-#: root/forms/topic_related.js
+#: root/forms/remove_file.js root/forms/topic_related.js
 msgid "Fields"
 msgstr ""
 
@@ -12009,7 +12014,7 @@ msgstr ""
 msgid "File Path"
 msgstr ""
 
-#: root/forms/asset_file.js
+#: root/forms/asset_file.js root/forms/remove_file.js
 msgid "Topic mid"
 msgstr ""
 
@@ -12303,6 +12308,18 @@ msgstr ""
 
 #: root/forms/pause_job.js
 msgid "Reason"
+msgstr ""
+
+#: root/forms/remove_file.js
+msgid "Remove Files"
+msgstr ""
+
+#: root/forms/remove_file.js
+msgid "Asset mids"
+msgstr ""
+
+#: root/forms/remove_file.js
+msgid "Remove by"
 msgstr ""
 
 #: root/forms/repo_create_tags.js

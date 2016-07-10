@@ -3849,6 +3849,51 @@ sub upload {
     };
 }
 
+sub remove_file {
+    my ( $self, %params ) = @_;
+
+    my $topic_mid = $params{topic_mid} or _fail _loc('topic mid required');
+    my @asset_mid = _array_or_commas $params{asset_mid};
+    my $username  = $params{username};
+    my @fields    = _array $params{fields};
+
+    try {
+        if (@fields) {
+            @asset_mid = $self->_get_mid_files_from_fields(%params);
+        }
+
+        for my $mid ( @asset_mid ) {
+            my $asset = ci->find($mid);
+            _fail _loc( "File id %1 not found", $mid ) unless ref $asset;
+
+            my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+            my @projects
+                = mdb->master_rel->find_values( to_mid => { from_mid => "$topic_mid", rel_type => 'topic_project' } );
+            my @users = $self->get_users_friend(
+                id_category => $topic->{category}{id},
+                id_status   => $topic->{category_status}{id},
+                mid         => "$topic_mid",
+                projects    => \@projects
+            );
+            _log _loc( "Deleting file %1", $asset->mid );
+            my $subject = _loc( "Deleted file %1", $asset->filename );
+            event_new 'event.file.remove' => {
+                username       => $username,
+                mid            => $topic_mid,
+                id_file        => $asset->mid,
+                filename       => $asset->filename,
+                notify_default => \@users,
+                subject        => $subject
+            };
+            $asset->delete;
+        }
+        cache->remove( { mid => "$topic_mid" } );
+    }
+    catch {
+        _fail _loc( 'Error removing file from topic %1. Error: %2', $topic_mid, shift );
+    };
+    return;
+}
 
 sub get_downloadable_files {
     my ($self, $p) = @_;
@@ -3976,6 +4021,30 @@ sub build_in_and_nin_query {
     }
 
     return $query;
+}
+
+sub _get_mid_files_from_fields {
+    my ( $self, %params ) = @_;
+
+    my @asset_mid;
+    for my $file_field ( _array_or_commas( $params{fields} ) ) {
+        my $found = 0;
+        my $meta  = $self->get_meta( $params{topic_mid} );
+
+        for my $field ( _array $meta ) {
+            if ( ( $field->{id_field} eq $file_field ) and ( $field->{id} eq 'attach_file' ) ) {
+                $found = 1;
+            }
+        }
+        if ( !$found ) {
+            _fail _loc( "The related field does not exist for the topic: %1", $params{topic_mid} );
+        }
+        my $data = $self->get_data( $meta, $params{topic_mid} );
+        foreach my $asset ( _array $data->{$file_field} ) {
+            push @asset_mid, $asset->{mid};
+        }
+    }
+    return @asset_mid;
 }
 
 no Moose;

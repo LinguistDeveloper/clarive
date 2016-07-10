@@ -42,6 +42,14 @@ register 'service.topic.upload' => {
     form => '/forms/asset_file.js'
 };
 
+register 'service.topic.remove_file' => {
+    name => _locl('Remove files from a topic'),
+    handler => \&remove_file,
+    job_service  => 0,
+    icon => '/static/images/icons/topic.svg',
+    form => '/forms/remove_file.js'
+};
+
 register 'service.topic.load' => {
     name => 'Load topic data',
     handler => \&load,
@@ -315,6 +323,22 @@ sub upload {
         _fail _loc("Error asseting the file %1 to the topic %2. Error: %3",
             $p->{qqfile}, $p->{topic_mid}, $response{msg});
     }
+}
+
+sub remove_file {
+    my ( $self, $c, $config ) = @_;
+
+    my $username = $config->{username} && $config->{username} ne '' ? $config->{username} : 'clarive';
+    my $topic_mid = $config->{topic_mid} // _fail('Missing or invalid parameter topic_mid');
+    my $asset_mid = $config->{remove} eq 'asset_mid' ? $config->{asset_mid} : [];
+    my $fields    = $config->{remove} eq 'fields'    ? $config->{fields}    : [];
+
+    Baseliner::Model::Topic->remove_file(
+        topic_mid => $topic_mid,
+        asset_mid => $asset_mid,
+        username  => $username,
+        fields    => $fields
+    );
 }
 
 sub related {

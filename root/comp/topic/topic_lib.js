@@ -843,7 +843,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         Baseliner.Topic.file_del = function( topic_mid, mid, id_row ) {
-            Baseliner.ajaxEval( '/topic/file/delete', { asset_mid: mid, topic_mid: topic_mid }, function(res) {
+            Baseliner.ajaxEval( '/topic/remove_file', { asset_mid: mid, topic_mid: topic_mid }, function(res) {
                 if( res.success ) {
                     Baseliner.message( _('File'), res.msg );
                     Ext.fly( id_row ).remove();
