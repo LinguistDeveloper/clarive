@@ -30,7 +30,7 @@ my $table = $c->build_helper('Topics')->list_topics($c, $meta, $data, $user_secu
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
 
-% if( $table->{topics} && scalar @{$table->{topics}} > 0 ) {
+% if( $table->{topics} && @{ $table->{topics} } > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
               <thead>
                 <tr>

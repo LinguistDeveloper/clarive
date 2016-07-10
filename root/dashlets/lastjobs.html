@@ -9,6 +9,7 @@ title: Jobs
 -->
 <%perl>
     use Baseliner::Utils;
+    use Baseliner::Model::Permissions;
     my @lastjobs = $c->stash->{lastjobs};
     my $status_id = "status". _nowstamp;
 </%perl>
@@ -68,7 +69,7 @@ title: Jobs
                     <td>
                         <div style="width:550px; height:353px; overflow-y:auto;">
                             <table  class="table table-striped" width="550" >
-% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
+% if( Baseliner::Model::Permissions->user_has_action($c->username, 'action.job.view_monitor') ) {
 %my $row = 0;
 %foreach my $lastjob (_array @lastjobs){
 %$row = $row + 1;

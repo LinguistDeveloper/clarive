@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Try::Tiny;
 use experimental 'autoderef', 'smartmatch';
 require Girl;
+use BaselinerX::Type::Action;
 use Baseliner::Model::Topic;
 use Baseliner::Model::Permissions;
 use Baseliner::Core::Registry ':dsl';
@@ -373,7 +374,7 @@ sub tree_projects : Local {
     my $p = $c->req->params;
     my ($category_id) = _array($p->{category_id});
     my @tree;
-    my @projects_ids= Baseliner->model('Permissions')->user_projects_ids( username=>$c->username );
+    my @projects_ids= Baseliner::Model::Permissions->new->user_projects_ids( $c->username );
     my $projects =  ci->project->find({ active => mdb->true, mid => mdb->in(@projects_ids)})->sort({name=>1});
 
     while( my $r = $projects->next ) {
@@ -803,13 +804,7 @@ sub status_list {
     my $status   = $params{status}   || $topic->{category_status}->{id};
     my %statuses = $params{statuses} && ref $params{statuses} eq 'HASH' ? %{ $params{statuses} } : ci->status->statuses;
 
-    my @user_roles;
-    if ( Baseliner::Model::Permissions->new->is_root($username) ) {
-        @user_roles = map { $_->{id} } mdb->role->find->fields({_id => 0, id => 1})->all;
-    }
-    else {
-        @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $username, mid => $topic->{mid}  );
-    }
+    my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic->{mid} );
 
     my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow($username);
 

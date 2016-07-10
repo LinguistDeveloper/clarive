@@ -1,12 +1,16 @@
 package Baseliner::Helper::Topics;
 use Moose;
 
+use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_array _loc);
 
 has c => qw(is ro weak_ref 1);
 
 sub list_topics {
-    my ( $self, $c, $meta, $data, $user_security ) = @_;
+    my $self = shift;
+    my ( $meta, $data, $user_security ) = @_;
+
+    my $c = $self->c;
 
     my @topics;
     my @head;
@@ -25,7 +29,7 @@ sub list_topics {
 
     @topics = Util->_array( $data->{ $meta->{id_field} } );
     my $cols = ref $meta->{columns} ? $meta->{columns} : do {
-        [ map { [ split /,/ ] } split /;/, $meta->{columns} ];
+        [ map { [ split /,/ ] } split /;/, ($meta->{columns} // '') ];
     };
 
     @head = map {
@@ -61,13 +65,12 @@ sub list_topics {
 
     }
 
+    my $permissions = Baseliner::Model::Permissions->new;
+
     @topics = grep {
-        Baseliner::Model::Permissions->user_can_topic_by_project(
-            mid            => $_->{mid},
-            username       => $c->username,
-            topic_security => $_->{_project_security},
-            user_security  => $user_security
-            )
+        $permissions->user_has_action( $c->username, 'action.topics.view',
+            bounds => { id_category => $_->{id_category} } )
+          && $permissions->user_has_security( $c->username, $_->{_project_security} )
     } @topics;
 
     return {

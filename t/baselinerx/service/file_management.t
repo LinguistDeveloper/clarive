@@ -528,7 +528,14 @@ done_testing;
 sub _setup {
     TestUtils->cleanup_cis;
 
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'Baseliner::Model::Jobs' );
+    TestUtils->setup_registry(
+        'BaselinerX::CI',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'Baseliner::Model::Jobs',
+    );
 
     mdb->rule->drop;
     mdb->topic->drop;

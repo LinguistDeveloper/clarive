@@ -243,9 +243,8 @@ sub get_menu_folder {
                                 }
                             };
 
-    my $is_root = Baseliner->model::Permissions->is_root($username);
-    my $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.home.generate_docs' );
-    if ( $has_permission || $is_root ) {
+    my $has_permission = Baseliner::Model::Permissions->new->user_has_action( $username, 'action.home.generate_docs' );
+    if ( $has_permission ) {
         push @menu_folder, {  text => _loc('Doc'),
                                     icon => '/static/images/icons/document.svg',
                                     url     => '/comp/lifecycle/report_run.js',

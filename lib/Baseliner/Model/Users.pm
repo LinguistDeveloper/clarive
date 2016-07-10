@@ -4,6 +4,7 @@ use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use experimental 'smartmatch', 'autoderef';
+use Baseliner::Model::Topic;
 use Baseliner::Model::Permissions;
 
 sub get {
@@ -105,43 +106,6 @@ sub get_users_from_mid_roles {
 sub get_users_username {
     my @users = map { $_->{username} } ci->user->find({active => mdb->true})->fields({username => 1, _id => 0});
     return wantarray ? @users : \@users;
-}
-
-sub get_categories_fields_meta_by_user {
-    #Pendiente parametrizar por categorías
-    my ( $self, %p) = @_;
-    my $username = $p{username} or _throw 'Missing parameter username';
-    my %categories_fields;
-    my %categories;
-
-    %categories = %{$p{categories}} if $p{categories};
-
-    if(!%categories){
-        map { $categories{$_->{id}} = $_->{name} } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
-    }
-
-    my $is_root = model->Permissions->is_root( $username );
-    my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
-    my @user_read_actions_for_topic = $user_actions->{negative};
-
-    for my $key ( keys %categories ){
-        my %fields_perm;
-        my $parse_category =  _name_to_id($categories{$key});
-        my @fieldlets = _array (Baseliner->model('Topic')->get_meta(undef, $key, $username));
-        ##Se podría tener en cuenta para el metadato los permisos de escritura y lectura.
-        for my $field ( @fieldlets){
-            my $view_action = 'action.topicsfield.' .  $parse_category . '.' .  $field->{id_field} . '.read';
-
-            if (!($view_action ~~ @user_read_actions_for_topic)){
-            #if (!Baseliner::Model::Permissions->new->user_has_read_action( username=> $username, action => $view_action )){
-                $fields_perm{$field->{id_field}} = $field;
-            };
-        }
-
-        $categories_fields{$parse_category} = \%fields_perm;
-    }
-    return \%categories_fields;
 }
 
 sub get_users_from_mid_roles_topic {

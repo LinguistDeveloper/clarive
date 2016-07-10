@@ -1,11 +1,13 @@
 package Baseliner::Model::SystemMessages;
 use Moose;
+BEGIN { extends 'Catalyst::Model' };
+
+use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use Baseliner::Model::Users;
-extends qw/Catalyst::Model/;
 
 with 'Baseliner::Role::Service';
 
@@ -31,7 +33,6 @@ sub create {
     my ( $self, $p ) = @_;
 
     my $username = $p->{username} || undef;
-    Baseliner::Model::Permissions->new->user_has_action( username=>$p->{username}, action=>'action.admin.sms' ) || _fail _loc('Unauthorized');
 
     $self->sms_set_indexes;
 

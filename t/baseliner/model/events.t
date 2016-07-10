@@ -280,7 +280,13 @@ subtest 'new_event: rethrows error if catch block not provided' => sub {
 };
 
 sub _setup {
-    TestUtils->setup_registry('BaselinerX::Type::Event', 'Baseliner::Model::Rules');
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Event',
+        'Baseliner::Model::Rules'
+    );
 
     mdb->rule->drop;
     mdb->event->drop;

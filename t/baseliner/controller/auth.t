@@ -510,14 +510,15 @@ subtest 'login: cannot log in with local/root user and user_case uc' => sub {
 done_testing;
 
 sub _setup {
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Type::Service', 'BaselinerX::CI',
+        'BaselinerX::Auth' );
+
     TestUtils->cleanup_cis;
     mdb->user_login_attempts->drop;
 
     mdb->config->drop;
     mdb->event->drop;
     mdb->event_log->drop;
-
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::Auth' );
 
     my $user = ci->user->new( name => 'test' );
     $user->save;

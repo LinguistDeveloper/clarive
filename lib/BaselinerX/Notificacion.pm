@@ -8,8 +8,8 @@ with 'Baseliner::Role::Service';
 register 'action.admin.notification' => { name=>'Admin Notifications' };
 
 register 'menu.admin.notifications' => {
-    label    => 'Notifications',
-    title    => _loc('Notifications'),
+    label    => _locl('Notifications'),
+    title    => _locl('Notifications'),
     action   => 'action.admin.notification',
     url_comp => '/comp/notifications.js',
     icon     => '/static/images/icons/email.svg',

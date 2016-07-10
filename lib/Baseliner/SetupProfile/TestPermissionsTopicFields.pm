@@ -63,8 +63,9 @@ sub setup {
             role    => 'CanEditTopics',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.edit' }
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topics.edit', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topicsfield.read', bounds => [ {} ] },
             ]
         },
         project  => $project,
@@ -76,11 +77,29 @@ sub setup {
             role    => 'CanEditTopicFields',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.edit' },
-                { action => 'action.topics.changeset.edit' },
-                { action => 'action.topicsfield.changeset.project.new.write' },
-                { action => 'action.topicsfield.changeset.release.new.write' },
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topics.edit', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topicsfield.read', bounds => [ {} ] },
+                {
+                    action => 'action.topicsfield.write',
+                    bounds => [
+                        {
+                            id_category => $id_changeset_category,
+                            id_status   => $status_new->id_status,
+                            id_field    => 'project'
+                        }
+                    ]
+                },
+                {
+                    action => 'action.topicsfield.write',
+                    bounds => [
+                        {
+                            id_category => $id_changeset_category,
+                            id_status   => $status_new->id_status,
+                            id_field    => 'release'
+                        }
+                    ]
+                },
             ]
         },
         project  => $project,
@@ -92,10 +111,18 @@ sub setup {
             role    => 'CanSeeSomeTopicFields',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.edit' },
-                { action => 'action.topics.changeset.edit' },
-                { action => 'action.topicsfield.changeset.release.new.read' },
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topics.edit', bounds => [ { id_category => $id_changeset_category } ] },
+                {
+                    action => 'action.topicsfield.read',
+                    bounds => [
+                        {
+                            id_category => $id_changeset_category,
+                            id_status   => $status_new->id_status,
+                            id_field    => 'project'
+                        }
+                    ]
+                },
             ]
         },
         project  => $project,

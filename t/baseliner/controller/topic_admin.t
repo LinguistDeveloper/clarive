@@ -233,14 +233,17 @@ sub _create_form {
 }
 
 sub _setup {
-    TestUtils->cleanup_cis;
     TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
         'BaselinerX::Type::Event',
         'BaselinerX::CI',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
     );
+
+    TestUtils->cleanup_cis;
+
     mdb->topic->drop;
     mdb->role->drop;
     mdb->rule->drop;

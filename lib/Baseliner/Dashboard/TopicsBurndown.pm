@@ -4,6 +4,7 @@ use Moose;
 use Array::Utils qw(intersect);
 use JSON        ();
 use Class::Date ();
+use BaselinerX::Type::Action;
 use Baseliner::Model::Topic;
 use Baseliner::Utils qw(_now _array);
 
@@ -106,10 +107,7 @@ sub dashboard {
 
     my $perm = Baseliner::Model::Permissions->new;
 
-    my $is_root = $perm->is_root($username);
-    if ( $username && !$is_root ) {
-        $perm->build_project_security( $where, $username, $is_root, @user_categories );
-    }
+    $perm->inject_security_filter( $username, $where );
 
     Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
 

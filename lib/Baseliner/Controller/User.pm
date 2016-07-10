@@ -6,12 +6,13 @@ use Try::Tiny;
 use File::Copy ();
 use GD::Image;
 use Capture::Tiny qw(capture);
-use Baseliner::IdenticonGenerator;
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique);
 use Locale::Country qw(all_country_names country2code);
 use XML::Simple;
 use DateTime::TimeZone qw(all_names);
+use Baseliner::IdenticonGenerator;
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Model::Permissions;
+use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique);
 
 use experimental 'switch', 'autoderef';
 
@@ -111,15 +112,11 @@ sub infodetail : Local {
     my @actions;
     my @datas;
     my $data;
-    my $auth     = $c->model('permissions');
-    my $can_user = $auth->user_has_action(
-        username => $c->username,
-        action   => 'action.admin.users'
-    );
+    my $is_user_admin = $self->_is_user_admin($c);
     my $own_user = $username && $username eq $c->username;
 
     my @rows;
-    if ( $can_user || $own_user ) {
+    if ( $is_user_admin || $own_user ) {
         my ( $start, $limit, $query, $dir, $sort, $cnt )
             = ( @{$p}{qw/start limit query dir sort/}, 0 );
         $sort ||= 'role';
@@ -214,8 +211,9 @@ sub infodetail : Local {
 sub user_data : Local {
     my ( $self, $c ) = @_;
     my $params = $c->req->params;
+
     my $username
-        = $params->{username} && $c->has_action('action.admin.users')
+        = $params->{username} && $self->_is_user_admin($c)
         ? $params->{username}
         : $c->username;
     try {
@@ -276,19 +274,12 @@ sub infoactions : Local {
     my @datas;
     my $data;
 
-    my $auth      = $c->model('permissions');
-    my $can_roles = $auth->user_has_action(
-        username => $c->username,
-        action   => 'action.admin.roles'
-    );
-    my $can_user = $auth->user_has_action(
-        username => $c->username,
-        action   => 'action.admin.users'
-    );
+    my $is_user_admin = $self->_is_user_admin($c);
+    my $is_role_admin = $self->_is_role_admin($c);
     my $own_user = $username && $username eq $c->username;
 
     if ($id_role) {
-        if ($can_roles) {
+        if ($is_role_admin) {
             my $rs_actions
                 = mdb->role->find( { id => $id_role } )->next->{actions};
             foreach my $rs ( _array $rs_actions) {
@@ -314,7 +305,7 @@ sub infoactions : Local {
         }
     }
     else {
-        if ( $can_user || $own_user ) {
+        if ( $is_user_admin || $own_user ) {
             my @user_roles
                 = map {$_}
                 keys ci->user->find_one( { name => $username } )
@@ -816,19 +807,14 @@ sub grid : Local {
 sub can_surrogate : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;
-    $c->stash->{can_surrogate} = $c->model('Permissions')->user_has_action(
-        username => $c->username,
-        action   => 'action.surrogate'
-    );
+    $c->stash->{can_surrogate} = $c->model('Permissions')->user_has_action( $c->username, 'action.surrogate' );
 }
 
 sub can_maintenance : Local {
     my ( $self, $c ) = @_;
     return 0 unless $c->username;
-    $c->stash->{can_maintenance} = $c->model('Permissions')->user_has_action(
-        username => $c->username,
-        action   => 'action.admin.users'
-    );
+
+    $c->stash->{can_maintenance} = $self->_is_user_admin($c);
 }
 
 sub projects_list : Local {
@@ -1086,8 +1072,10 @@ sub avatar_refresh : Local {
 
     $username ||= $c->username;
 
-    if ( $username ne $c->username && !$self->_user_has_action( $c->username, 'action.admin.users' ) ) {
-        _fail _loc( 'Cannot change avatar for user %1: user %2 not administrator', $username, $c->username );
+    if ( $username ne $c->username && !$self->_is_user_admin($c) ) {
+        _fail _loc
+          'Cannot change avatar for user %1: user %2 not administrator',
+          $username, $c->username;
     }
 
     try {
@@ -1115,8 +1103,10 @@ sub avatar_upload : Local {
 
     _log "Uploading avatar";
 
-    if ( $username ne $c->username && !$self->_user_has_action( $c->username, 'action.admin.users' ) ) {
-        _fail _loc( 'Cannot change avatar for user %1: user %2 not administrator', $username, $c->username );
+    if ( $username ne $c->username && !$self->_is_user_admin($c) ) {
+        _fail _loc
+          'Cannot change avatar for user %1: user %2 not administrator',
+          $username, $c->username;
     }
 
     try {
@@ -1159,18 +1149,20 @@ sub avatar_upload : Local {
     return;
 }
 
-sub _user_has_action {
-    my $self = shift;
-    my ( $username, $action ) = @_;
+sub _is_user_admin {
+    my ( $self, $c, $username, $action ) = @_;
 
     my $permissions = Baseliner::Model::Permissions->new;
 
-    if ( $action =~ /%/ ) {
-        return $permissions->user_has_any_action( action => $action, username => $username );
-    }
-    else {
-        return $permissions->user_has_action( action => $action, username => $username );
-    }
+    return $permissions->user_has_action( $c->username, 'action.admin.users' );
+}
+
+sub _is_role_admin {
+    my ( $self, $c, $username, $action ) = @_;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    return $permissions->user_has_action( $c->username, 'action.admin.role' );
 }
 
 sub duplicate : Local {

@@ -20,8 +20,8 @@ register 'menu.job.calendar' => {
     icon     => '/static/images/icons/slot.svg'
 };
 register 'action.calendar.view' => { name => _locl('View Job Calendar') };
-register 'action.calendar.edit' => { name => _locl('Edit Job Calendar') };
-register 'action.calendar.admin' => { name => _locl('Admin Job Calendar')};
+register 'action.calendar.edit' => { name => _locl('Edit Job Calendar'), extends => ['action.calendar.view'] };
+register 'action.calendar.admin' => { name => _locl('Admin Job Calendar'), extends => ['action.calendar.view', 'action.calendar.edit']};
 
 register 'config.job.calendar' => {
     metadata=> [
@@ -813,17 +813,11 @@ sub getFirstDateTimeOfWeek {
 sub permissions_calendar {
     my ( $self, $c ) = @_;
 
-    $c->stash->{can_admin} = $c->model('Permissions')->is_root( $c->username )
-        || $c->model('Permissions')
-        ->user_has_action( username => $c->username, action => 'action.calendar.admin', bl => '*' );
+    $c->stash->{can_admin} = $c->model('Permissions')->user_has_action( $c->username, 'action.calendar.admin' );
+    $c->stash->{can_edit}  = $c->model('Permissions')->user_has_action( $c->username, 'action.calendar.edit' );
+    $c->stash->{can_view}  = $c->model('Permissions')->user_has_action( $c->username, 'action.calendar.view' );
 
-    $c->stash->{can_edit} = $c->model('Permissions')
-        ->user_has_action( username => $c->username, action => 'action.calendar.edit', bl => '*' );
-
-    $c->stash->{can_view} = $c->model('Permissions')
-        ->user_has_action( username => $c->username, action => 'action.calendar.view', bl => '*' );
-
-    if ( !$c->stash->{can_view} && !$c->stash->{can_edit} && !$c->stash->{can_admin} ) {
+    if ( !$c->stash->{can_view} ) {
         $c->stash->{json} = { success => \0, msg => _loc("You do not have permissions to open this calendar") };
         $c->forward('View::JSON');
     }

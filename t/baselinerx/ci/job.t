@@ -2,8 +2,9 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Fatal;
 use Test::Deep;
+use Test::Fatal;
+use Test::MonkeyMock;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
@@ -275,14 +276,60 @@ subtest 'save: throws an error when the job is already created' => sub {
     like exception {BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA')->save}, qr/is in an active job to bl QA/;
 };
 
+subtest 'run_inproc: runs job in process' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.run_in_proc' } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job;
+    capture {
+        $job = TestUtils->create_ci( 'job', changesets => [$changeset] );
+    };
+
+    $job = Test::MonkeyMock->new($job);
+    $job->mock( run => sub { } );
+
+    capture { $job->run_inproc( { username => $user->name } ) };
+
+    ok $job->mocked_called('run');
+};
+
+subtest 'run_inproc: throws when user does not have permission' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job;
+    capture {
+        $job = TestUtils->create_ci( 'job', changesets => [$changeset] );
+    };
+
+    like exception { $job->run_inproc( { username => $user->name } ) },
+      qr/User .*? does not have permissions to start jobs in process/;
+};
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Statement', 'BaselinerX::CI',
         'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs'
+        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
+        'Baseliner::Controller::Job',
     );
 
     TestUtils->cleanup_cis;

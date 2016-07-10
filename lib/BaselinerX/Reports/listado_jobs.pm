@@ -155,7 +155,6 @@ register 'report.clarive.jobs' => {
 
         my @rows;
         Baseliner->model('Jobs')->build_field_query( $query, $where, $username ) if length $query;
-        # Baseliner->model('Topic')->build_project_security( $where, $username );
 
         my $rs  = mdb->master_doc->find($where);
         my $cnt = $rs->count;

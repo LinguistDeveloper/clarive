@@ -14,7 +14,6 @@ use Capture::Tiny qw(capture);
 use Baseliner::CI;
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
-use Baseliner::Model::Topic;
 use BaselinerX::Type::Fieldlet;
 use BaselinerX::CI::job;
 
@@ -419,6 +418,63 @@ sub create_rule_form_changeset {
     );
 }
 
+sub create_common_topic_rule_form {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => "title",
+                        active   => '1',
+                    },
+                    key    => "fieldlet.system.title",
+                    name   => 'Title',
+                    active => '1',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field => "status_new",
+                        bd_field => "id_category_status",
+                        active   => '1',
+                    },
+                    key    => "fieldlet.system.status_new",
+                    name   => 'Status',
+                    active => '1',
+                }
+            },
+            {
+                "attributes" => {
+                    data => {
+                        id_field => 'project',
+                        active   => '1',
+                    },
+                    key    => "fieldlet.system.projects",
+                    name   => 'Project',
+                    active => '1',
+                }
+            },
+            {
+                "attributes" => {
+                    data => {
+                        id_field => 'description',
+                        active   => '1',
+                    },
+                    active => '1',
+                    key    => "fieldlet.system.description",
+                    name   => 'Description',
+                }
+            },
+        ],
+    );
+
+    return $id_rule;
+}
+
 sub create_category {
     my $class = shift;
     my (%params) = @_;
@@ -507,26 +563,32 @@ sub create_topic {
 
     my $ts = mdb->ts;
 
-    my $id_form = delete $params{form} || delete $params{id_rule} || TestSetup->create_rule_form;
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $username = delete $params{username} || 'developer';
     my $id_category =
       delete $params{id_category}
-      || TestSetup->create_category( id_rule => $id_form, name => 'Category', id_status => $status->mid );
+      || do {
+          my $id_rule = delete $params{form} || delete $params{id_rule} || TestSetup->create_rule_form;
+          TestSetup->create_category( id_rule => $id_rule, name => 'Category', id_status => $status->mid );
+      };
     my $project = delete $params{project} || TestUtils->create_ci_project;
+
+    my $id_rule = $params{id_rule} || mdb->category->find_one({ id => $id_category })->{default_form};
 
     my $base_params = {
         'project' => ref $project eq 'ARRAY'
         ? [ map { $_->mid } @$project ]
         : $project->mid,
         'category'           => $id_category,
+        'id_category'        => $id_category,
         'status_new'         => $status->mid,
         'status'             => $status->mid,
-        'id_rule'            => $id_form,
+        'id_rule'            => $id_rule,
         'category_status'    => { id => $status->mid },
         'id_category_status' => $status->mid,
     };
 
+    require Baseliner::Model::Topic;
     my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(
         {
             %$base_params,
@@ -787,6 +849,13 @@ sub create_job {
     capture { $job->save };
 
     return $job;
+}
+
+sub create_message {
+    my $class = shift;
+    my (%params) = @_;
+
+    mdb->message->insert( { %params } );
 }
 
 sub _topic_setup {

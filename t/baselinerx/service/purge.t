@@ -42,10 +42,16 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Jobs',
     );
 
     TestUtils->cleanup_cis;

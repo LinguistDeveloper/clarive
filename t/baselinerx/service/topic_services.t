@@ -29,7 +29,14 @@ subtest 'get_with_condition: returns topics with alphanumeric ids' => sub {
         id_status => [ $status->mid, $status2->mid, $status3->mid ]
     );
 
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view' } ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_release_category } ]
+            }
+        ]
+    );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
@@ -71,8 +78,6 @@ subtest 'get_with_condition: returns topics with alphanumeric ids' => sub {
     is $data[0][1]->{title}, 'Topic_Test_2';
     is $data[0][2]->{title}, 'Topic_Test_3';
 };
-
-
 
 subtest 'get_with_condition: returns topic filtering by not in status' => sub {
     _setup();
@@ -146,7 +151,14 @@ subtest 'get_with_condition: returns topics filtering by current user' => sub {
         id_status => [ $status->mid, $status2->mid, $status3->mid ]
     );
 
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view' } ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_release_category } ]
+            }
+        ]
+    );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid = TestSetup->create_topic(
@@ -489,13 +501,18 @@ sub _create_release_form {
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::CI',
-        'BaselinerX::Fieldlets',
-        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Config',
         'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
         'BaselinerX::Service::TopicServices',
+        'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
         'Baseliner::Model::Rules'
     );
+
     TestUtils->cleanup_cis;
 
     mdb->topic->drop;

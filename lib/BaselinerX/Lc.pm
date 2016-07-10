@@ -92,10 +92,10 @@ sub lc_for_project {
         has_query => 1,
         type => 'component'
     };
-    my $is_root = Baseliner::Model::Permissions->new->is_root($username);
-    my $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.job.view_monitor' );
-    if ($has_permission || $is_root){
 
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    if ($permissions->user_has_action($username, 'action.job.view_monitor')) {
         push @nodes, {
             'node' => 'Jobs',
             draggable => \0,
@@ -134,8 +134,8 @@ sub lc_for_project {
                   },
         'type' => 'component',
     };
-    $has_permission = Baseliner::Model::Permissions->new->user_has_action( username=> $username, action=>'action.home.hide_project_repos' );
-    if ( !$has_permission || $is_root ){
+
+    if ($permissions->user_has_action($username, 'action.home.view_project_repos')) {
         my @repos =
             map { values %$_ }
             mdb->master_rel->find({from_mid=>"$id_prj", rel_type=>'project_repository'})->fields({ to_mid=>1, _id=>0 })->all;
@@ -175,10 +175,10 @@ sub lc_for_project {
     # Show states only if user has action for that project
 
     my @states;
-    my @projects_with_lc = Baseliner::Model::Permissions->new->user_projects_with_action( username => $username, action => 'action.project.see_lc');
-    my @user_workflow = _unique map {$_->{id_status_from} } Baseliner::Model::Topic->new->user_workflow( $username );
+    #my @projects_with_lc = Baseliner::Model::Permissions->new->user_projects_with_action( username => $username, action => 'action.project.see_lc');
 
-    if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {
+    if ($permissions->user_has_action($username, 'action.project.see_lc', project => $id_prj)) {
+        my @user_workflow = _unique map {$_->{id_status_from} } Baseliner::Model::Topic->new->user_workflow( $username );
 
         # States-Statuses with bl and type = D (Deployable)
         my @deployable_statuses = map { $_->{id_status} } ci->status->find({ type=>'D' })->sort({ seq=>1 })->all;

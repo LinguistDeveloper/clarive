@@ -816,8 +816,18 @@ sub _build_controller {
 }
 
 sub _setup {
-    TestUtils->setup_registry( 'Baseliner::Model::Topic', 'BaselinerX::Fieldlets', 'BaselinerX::Type::Fieldlet' );
-    TestUtils->register_ci_events();
+    TestUtils->setup_registry(
+        'BaselinerX::CI',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Type::Fieldlet',
+        'Baseliner::Model::Topic',
+        'Baseliner::Controller::Slot',
+    );
+
     TestUtils->cleanup_cis;
 
     mdb->calendar->drop;

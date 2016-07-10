@@ -30,7 +30,7 @@ sub show : Local {
     my @about = map { { name=>$_, value=>$c->config->{About}->{$_} } } keys %{ $c->config->{About} || {} };
     push @about, { name=>_locl('Server Version'), value=>$Baseliner::VERSION };
 
-    if ( Baseliner::Model::Permissions->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
+    if ( Baseliner::Model::Permissions->user_has_action( $c->username,  'action.help.server_info' ) ) {
         push @about, { name=>_loc('Perl Version'), value=>$] };
         push @about, { name=>_loc('Hostname'), value=>Sys::Hostname::hostname() };
         push @about, { name=>_loc('Process ID'), value=>$$ };

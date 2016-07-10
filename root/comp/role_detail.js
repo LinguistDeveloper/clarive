@@ -64,17 +64,30 @@
             }
         }, {
             header: _('Description'),
-            width: 200,
+            width: 100,
             dataIndex: 'description',
             sortable: true,
             renderer: render_action
         }, {
-            header: _('Baseline'),
-            width: 50,
-            dataIndex: 'bl',
+            header: _('Bounds'),
+            width: 100,
+            dataIndex: 'bounds',
             sortable: true,
-            renderer: Baseliner.render_bl,
-            editor: new Baseliner.model.ComboBaseline()
+            renderer: function(val, meta, rec, rowIndex, colIndex, store) {
+                var meta = roleGridPanel.getStore().getAt(rowIndex);
+
+                if (meta.data.bounds_available) {
+                    if (val) {
+                        return '<b>' + _('Set') + '</b>';
+                    }
+                    else {
+                        return 'Any';
+                    }
+                }
+                else {
+                    return '';
+                }
+            }
         }]
     });
 
@@ -302,7 +315,9 @@
         }, {
             name: 'description'
         }, {
-            name: 'bl'
+            name: 'bounds'
+        }, {
+            name: 'bounds_available'
         }]
     });
 
@@ -329,6 +344,333 @@
             });
         }
     });
+
+    function buildAddBoundFormItems(action, bounds, boundsStore) {
+        var items = [];
+
+        var comboItems = [];
+        for (var i = 0; i < bounds.length; i++) {
+            var bound = bounds[i];
+
+            var combo = new Ext.form.ComboBox({
+                fieldLabel: bound.name,
+                typeAhead: true,
+                triggerAction: 'all',
+                lazyRender: true,
+                name: bound.key,
+                hiddenName: bound.key,
+                editable: false,
+                queryMode: 'local',
+                valueField: 'id',
+                displayField: 'title',
+                allowBlank: false,
+                msgTarget: 'under',
+                store: new Ext.data.JsonStore({
+                    autoDestroy: true,
+                    url: '/role/bounds',
+                    baseParams: {
+                        action: action,
+                        bound: bound.key,
+                        filter: '{}'
+                    },
+                    root: 'data',
+                    idProperty: 'id',
+                    fields: [{
+                        name: 'id'
+                    }, {
+                        name: 'title'
+                    }]
+                }),
+                listeners: {
+                    select: function() {
+                        for (var i = 0; i < comboItems.length; i++) {
+                            if (items[i].name === this.name) {
+                                continue;
+                            }
+
+                            var depends;
+                            for (var j = 0; j < bounds.length; j++) {
+                                if (bounds[j].key === items[i].name) {
+                                    depends = bounds[j].depends;
+                                    break;
+                                }
+                            }
+
+                            if (!depends || depends.indexOf(this.name) == -1) {
+                                continue;
+                            }
+
+                            var combo = items[i];
+                            combo.reset();
+
+                            var store = combo.getStore();
+
+                            var filter = JSON.parse(store.baseParams['filter']);
+                            filter[this.name] = this.getValue();
+                            filter = JSON.stringify(filter);
+
+                            store.setBaseParam('filter', filter);
+                            store.load({params: {filter: filter}});
+                            store.reload();
+                        }
+
+                        return true;
+                    }
+                }
+            });
+
+            comboItems.push(combo);
+
+            items.push(combo);
+        }
+
+        items.push(
+            {
+                xtype: 'checkbox',
+                name: '_deny',
+                fieldLabel: 'Negative'
+            },
+            new Ext.Toolbar.Button({
+                text: _('Add'),
+                handler: function() {
+                    var formPanel = this.findParentByType(Ext.form.FormPanel);
+                    var form = formPanel.getForm();
+
+                    if (form.isValid()) {
+                        var values = {};
+
+                        form.items.each(function(field) {
+                            if (typeof field.isXType !== 'function') {
+                                return;
+                            }
+
+                            if (field.isXType('checkbox')) {
+                                values[field.getName()] = field.getValue();
+                            }
+                            else if (field.isXType('combo')) {
+                                values[field.getName()] = field.getValue();
+                                values['_' + field.getName() + '_title'] = field.lastSelectionText;
+                            }
+                        });
+
+                        boundsStore.add(new Ext.data.Record(values));
+                    }
+                }
+            })
+        );
+
+        return items;
+    }
+
+    function buildBoundsStore(bounds, values) {
+        var boundsStoreFields = [];
+
+        for (var i = 0; i < bounds.length; i++) {
+            var bound = bounds[i];
+
+            boundsStoreFields.push({name: bound.key});
+        }
+
+        var boundsStore = new Ext.data.Store({
+            fields: boundsStoreFields
+        });
+
+        for (var i = 0; i < values.length; i++) {
+            var rec = {};
+            for (key in values[i]) {
+                if (!values[i].hasOwnProperty(key)) {
+                    continue;
+                }
+
+                rec[key] = values[i][key];
+            }
+
+            boundsStore.add(new Ext.data.Record(rec));
+        }
+
+        return boundsStore;
+    }
+
+    function buildBoundsColumnModel(bounds, values) {
+        var boundsColumnModelColumns = [{
+            header: 'Type',
+            dataIndex: '_deny',
+            renderer: function(value) {
+                if (!value)
+                    return 'Allow';
+
+                return 'Deny';
+            }
+        }];
+
+        for (var i = 0; i < bounds.length; i++) {
+            var bound = bounds[i];
+
+            boundsColumnModelColumns.push({
+                header: bound.name,
+                dataIndex: '_' + bound.key + '_title',
+                sortable: true,
+                renderer: function(value) {
+                    if (!value)
+                        return 'Any';
+
+                    return value;
+                }
+            });
+        }
+
+        var boundsColumnModel = new Ext.grid.ColumnModel({
+            defaults: { sortable: true },
+            columns: boundsColumnModelColumns
+        });
+
+        return boundsColumnModel;
+    }
+
+    function actionBoundsEditor(id_role, action, values, callback) {
+        if (!values) {
+            values = [];
+        }
+
+        Ext.Ajax.request({
+            url: '/role/action_info',
+            params: { action: action, current_bounds: JSON.stringify(values) },
+            success: function(response) {
+                var text = response.responseText;
+                var data = JSON.parse(text);
+
+                var bounds = data.info.bounds;
+                if (!bounds || !bounds.length) {
+                    return;
+                }
+
+                var values = data.info.values;
+
+                var boundsStore = buildBoundsStore(bounds, values);
+
+                var boundsSearch = new Baseliner.SearchSimple({
+                    width: 220,
+                    handler: function() {
+                        var query = this.getRawValue();
+                        if (!query || !query.length) {
+                            this.el.dom.value = '';
+                            boundsStore.clearFilter();
+                            return;
+                        }
+                        var queries = query.split(/\s+/).map(function(word) {
+                            return new RegExp(word, 'i')
+                        });
+                        boundsStore.filterBy(function(rec) {
+                            var matched = 0;
+                            for (var i = 0; i < queries.length; i++) {
+                                var values = [];
+                                for (var j = 0; j < bounds.length; j++) {
+                                    values.push(rec.data[bounds[j].key]);
+                                }
+
+                                if (queries[i].test(values.join(';'))) {
+                                    matched++;
+                                }
+                            }
+                            return matched == queries.length;
+                        });
+                    }
+                });
+
+                var win = new Ext.Window({
+                    title: _('Role bounds'),
+                    width: 730,
+                    closeAction: 'close',
+                    modal: true,
+                    items: [new Ext.Panel({
+                            layout: 'table',
+                            border: false,
+                            bodyBorder: false,
+                            hideBorders: true,
+                            html: action
+                        }),
+                        new Ext.grid.GridPanel({
+                            title: _('Bounds'),
+                            autoScroll: true,
+                            store: boundsStore,
+                            split: true,
+                            height: 300,
+                            stripeRows: true,
+                            viewConfig: {
+                                forceFit: true
+                            },
+                            cm: buildBoundsColumnModel(bounds, values),
+                            sm: new Baseliner.RowSelectionModel({
+                                singleSelect: false
+                            }),
+                            tbar: [
+                                boundsSearch, '->',
+                                new Ext.Toolbar.Button({
+                                    text: _('Remove Selection'),
+                                    icon: '/static/images/icons/delete_red.svg',
+                                    cls: 'x-btn-text-icon',
+                                    handler: function() {
+                                        var gridPanel = this.findParentByType(Ext.grid.GridPanel);
+
+                                        var sm = gridPanel.getSelectionModel();
+                                        if (sm.hasSelection()) {
+                                            var selections = sm.getSelections();
+                                            for (var i = 0; i < selections.length; i++) {
+                                                boundsStore.remove(selections[i]);
+                                            }
+                                        }
+                                    }
+                                }),
+                                new Ext.Toolbar.Button({
+                                    text: _('Remove All'),
+                                    icon: '/static/images/icons/del_all.svg',
+                                    cls: 'x-btn-text-icon',
+                                    handler: function() {
+                                        boundsStore.removeAll();
+                                    }
+                                })
+                            ],
+                        }),
+                        new Ext.form.FormPanel({
+                            frame: true,
+                            buttons: [{
+                                text: _('OK'),
+                                handler: function() {
+                                    if (callback) {
+                                        var values = [];
+
+                                        boundsStore.each(function(record) {
+                                            values.push(record.data);
+                                        });
+
+                                        callback(values.length ? values : '');
+                                    }
+
+                                    win.close();
+                                }
+                            }, {
+                                text: _('Cancel'),
+                                handler: function() {
+                                    var formPanel = this.findParentByType(Ext.form.FormPanel);
+                                    formPanel.getForm().reset();
+
+                                    win.close();
+                                }
+                            }],
+                            defaults: {
+                                msgTarget: 'under'
+                            },
+                            items: buildAddBoundFormItems(action, bounds, boundsStore)
+                        })
+                    ]
+                });
+
+                win.show();
+            },
+            failure: function() {
+            }
+        });
+    }
 
     var roleGridPanel = new Ext.grid.EditorGridPanel({
         title: _('Role Actions'),
@@ -372,7 +714,20 @@
                     tree_check(treeRoot);
                 }
             })
-        ]
+        ],
+        listeners: {
+            rowdblclick: function(comp, rowIndex, e) {
+                var sel = roleGridPanel.getSelectionModel().getSelected();
+
+                if (sel.data.bounds_available) {
+                    var values = roleGridPanel.getStore().getAt(rowIndex).get('bounds');
+                    actionBoundsEditor(params.id_role, sel.data.action, values, function(values) {
+                        var row = roleGridPanel.getStore().getAt(rowIndex);
+                        row.set("bounds", values);
+                    });
+                }
+            }
+        }
     });
 
     var convertGridPanelToJSON = function() {
@@ -395,19 +750,45 @@
             ddGroup: 'secondGridDDGroup',
             notifyDrop: function(dd, e, data) {
                 var n = dd.dragData.node;
-                var s = action_store;
+
+                var boundsAvailable = n.attributes.bounds_available;
+
+                var found;
+                action_store.each(function(record) {
+                    if (record.data.action === n.id) {
+                        found = record;
+                    }
+                });
+
+                if (found) {
+                    actionBoundsEditor(params.id_role, n.id, found.data.bounds, function(values) {
+                        found.set("bounds", values);
+                    });
+                    return true;
+                }
+
                 var add_node = function(node) {
                     var rec = new Ext.data.Record({
                         action: node.id,
                         description: node.text,
-                        bl: '*'
+                        bounds_available: boundsAvailable
                     });
-                    s.add(rec);
+                    action_store.add(rec);
                     tree_check_folder_enabled(node.parentNode);
+
+                    return rec;
                 };
 
                 if (n.leaf) {
-                    add_node(n);
+                    if (boundsAvailable) {
+                        actionBoundsEditor(params.id_role, n.id, [], function(values) {
+                            var rec = add_node(n);
+                            rec.set("bounds", values);
+                        });
+                    }
+                    else {
+                        add_node(n);
+                    }
                 } else {
                     n.expand();
                     n.eachChild(function(child) {

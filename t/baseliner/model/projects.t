@@ -79,7 +79,7 @@ subtest 'get_all_projects: return all projects with bls' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry('BaselinerX::CI');
+    TestUtils->setup_registry('BaselinerX::CI', 'BaselinerX::Type::Event');
     TestUtils->cleanup_cis();
     TestUtils->register_ci_events();
 }

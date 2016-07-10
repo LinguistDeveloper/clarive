@@ -613,9 +613,17 @@ sub _build_c {
 }
 
 sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Menu',
+        'Baseliner::Controller::User',
+        'Baseliner::Controller::Role',
+    );
 
-    Baseliner::Core::Registry->clear();
     TestUtils->register_ci_events();
+
     mdb->master->drop;
     mdb->master_rel->drop;
     mdb->master_doc->drop;

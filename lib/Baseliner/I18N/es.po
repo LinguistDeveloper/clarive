@@ -165,7 +165,8 @@ msgid "Missing User"
 msgstr "Falta el Usuario"
 
 #: lib/Baseliner/Controller/Auth.pm lib/Baseliner/Controller/FileVersion.pm
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/comp/rules.js
+#: root/comp/monitor_grid.js root/comp/revision/grid.mas
+#: root/comp/role_detail.js root/comp/rules.js
 #: root/fields/system/js/list_tasks.js root/site/common.js
 msgid "OK"
 msgstr "OK"
@@ -251,6 +252,14 @@ msgstr "Entornos"
 #: lib/Baseliner/Controller/Baseline.pm root/site/common.js root/site/model.js
 msgid "Common"
 msgstr "Común"
+
+#: lib/Baseliner/Controller/CI.pm
+msgid "View CIs"
+msgstr ""
+
+#: lib/Baseliner/Controller/CI.pm
+msgid "Admin CIs"
+msgstr ""
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Depends On"
@@ -469,6 +478,10 @@ msgid "Show dynamics fields"
 msgstr "Mostrar campos dinámicos"
 
 #: lib/Baseliner/Controller/Daemon.pm
+msgid "Administer daemons"
+msgstr ""
+
+#: lib/Baseliner/Controller/Daemon.pm
 msgid "Daemon started"
 msgstr "Demonio iniciado"
 
@@ -615,12 +628,6 @@ msgstr "No se ha encontrado el evento"
 #: lib/Baseliner/Controller/Event.pm
 msgid "Event status changed to: %1"
 msgstr "El estado del evento ha cambiado a: %1"
-
-#: lib/Baseliner/Controller/Feature.pm
-#: lib/Baseliner/Controller/SystemMessages.pm
-#: lib/Baseliner/Model/SystemMessages.pm
-msgid "Unauthorized"
-msgstr "No autorizado"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"
@@ -924,6 +931,30 @@ msgid "Invalid doc path: `%1`"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
+msgid "View All Jobs"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "Restart Jobs"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "Change default pipeline in job_new window"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "Run Jobs In-Proc, within the Web Server"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "Create a job outside of the available time slots"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "Can access the advanced menu in job detailed log"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
 msgid "Latest"
 msgstr "Última"
 
@@ -994,6 +1025,10 @@ msgstr "Error al borrar el job_log"
 #: lib/Baseliner/Controller/Job.pm lib/Baseliner/RuleFuncs.pm
 msgid "Job cancelled by user %1"
 msgstr "Pase cancelado por el usuario %1"
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "User %1 doesn't have permissions to create a job"
+msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "User %1 doesn't have permissions to create a job out of calendar"
@@ -1210,12 +1245,8 @@ msgid "Error importing: %1"
 msgstr "Error importando: %1"
 
 #: lib/Baseliner/Controller/REPL.pm
-msgid "Development"
-msgstr "Desarrollo"
-
-#: lib/Baseliner/Controller/REPL.pm root/comp/repl.js
-msgid "REPL"
-msgstr "REPL"
+msgid "Baseliner REPL"
+msgstr ""
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "JS Reload"
@@ -1226,16 +1257,32 @@ msgid "Wipe Cache"
 msgstr "Limpieza de caché"
 
 #: lib/Baseliner/Controller/REPL.pm
-msgid "ExtJS API"
-msgstr "ExtJS API"
+msgid "ExtJS API Reference"
+msgstr ""
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "ExtJS Examples"
 msgstr "ExtJS Ejemplos"
 
 #: lib/Baseliner/Controller/REPL.pm
+msgid "GUI Designer"
+msgstr ""
+
+#: lib/Baseliner/Controller/REPL.pm
 msgid "Sequences"
 msgstr "Secuencias"
+
+#: lib/Baseliner/Controller/REPL.pm
+msgid "Development"
+msgstr "Desarrollo"
+
+#: lib/Baseliner/Controller/REPL.pm root/comp/repl.js
+msgid "REPL"
+msgstr "REPL"
+
+#: lib/Baseliner/Controller/REPL.pm
+msgid "ExtJS API"
+msgstr "ExtJS API"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "Error getting sequences: %1"
@@ -1280,6 +1327,17 @@ msgstr "No se puede guardar: %1"
 #: lib/Baseliner/Controller/Review.pm
 msgid "@%1 created a review for %2"
 msgstr ""
+
+#: lib/Baseliner/Controller/Role.pm
+msgid "Admin Roles"
+msgstr ""
+
+#: lib/Baseliner/Controller/Role.pm root/comp/catalog/manual_deploy.js
+#: root/comp/role_grid.js root/fields/templates/config/ci_grid.js
+#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
+#: root/fields/templates/config/users.js
+msgid "Roles"
+msgstr "Roles"
 
 #: lib/Baseliner/Controller/Role.pm
 msgid "Role with this name already exists"
@@ -1335,6 +1393,10 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Root.pm
 msgid "CAS Failed auth: unknown ticket"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Admin Rules"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm root/ci/nature.js root/comp/rules.js
@@ -2330,12 +2392,6 @@ msgid "Error changing default dashboard %1"
 msgstr "Error cambiando el dashboard por defecto %1"
 
 #: lib/Baseliner/Controller/User.pm
-msgid "Cannot change avatar for user %1: user %2 not administrator"
-msgstr ""
-"No se puede cambiar el avatar para el usuario %1: usuario  %2 no es "
-"administrador"
-
-#: lib/Baseliner/Controller/User.pm
 msgid "Avatar refreshed"
 msgstr "Avatar refrescado"
 
@@ -2372,12 +2428,13 @@ msgid "Baseline Name"
 msgstr "Nombre del entorno"
 
 #: lib/Baseliner/Core/Registry.pm
-msgid "Could not find registry class %1 for key %2"
+msgid "Could not find registry class '%1' for key '%2'"
 msgstr ""
+"No se ha podido encontrar ninguna clase de registro '%1' para la clave '%2'"
 
 #: lib/Baseliner/Core/Registry.pm
 msgid "Could not find key '%1' in the registry"
-msgstr ""
+msgstr "No se ha podido encontrar la clave '%1' en el registro"
 
 #: lib/Baseliner/Helper/Topic.pm lib/Baseliner/Helper/Topics.pm
 #: lib/BaselinerX/Fieldlets.pm root/ci/topic.js root/comp/sms.js
@@ -2519,6 +2576,10 @@ msgid "internal"
 msgstr "interno"
 
 #: lib/Baseliner/Model/Notification.pm
+msgid "Admin Notifications"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
 msgid "Error reading recipients: %1"
 msgstr "Error leyendo los destinatarios: %1"
 
@@ -2531,16 +2592,8 @@ msgid "Could not find template for %1"
 msgstr "No se ha podido encontrar la plantilla para %1"
 
 #: lib/Baseliner/Model/Permissions.pm
-msgid "User %1 does not have permissions to action %2"
-msgstr "El usuario %1 no tiene permisos para la acción %2"
-
-#: lib/Baseliner/Model/Permissions.pm
-msgid "No action or username specified"
-msgstr "No action or username specified"
-
-#: lib/Baseliner/Model/Permissions.pm lib/Baseliner/Model/Users.pm
-msgid "User %1 not found"
-msgstr ""
+msgid "Root action - can do anything"
+msgstr "Acción root - puede hacer cualquier cosa"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
@@ -2879,6 +2932,42 @@ msgid "Change topic status logically (no deployment)"
 msgstr "Cambiar estado del tópico lógicamente (Sin despliegue)"
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "Create Topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "View Topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Edit Topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Delete Topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Add/View Topic Comments"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "View Topic Activity"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "View Topic jobs"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "View Topic Field"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Edit Topic Field"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "Topic added"
 msgstr "Tópico añadido"
 
@@ -3113,10 +3202,6 @@ msgid "Created"
 msgstr "Creado"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Error getting Topics ( %1 )"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
 msgid "File is already the latest version"
 msgstr "El fichero ya está en su última versión"
 
@@ -3167,6 +3252,10 @@ msgstr "Referencias"
 #: lib/Baseliner/Model/TopicExporter/Csv.pm
 msgid "Attachments"
 msgstr "Adjuntos"
+
+#: lib/Baseliner/Model/Users.pm
+msgid "User %1 not found"
+msgstr ""
 
 #: lib/Baseliner/Mongo.pm
 msgid "Mongo error connecting to %1: %2"
@@ -4529,10 +4618,10 @@ msgstr "Hitos"
 msgid "Environment Planner"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
-#: root/comp/catalog_grid.js root/comp/dashboard_job.html
-#: root/dashlets/job_stats_by_env.html root/forms/script_local.js
-#: root/forms/script_remote.js root/site/about.html
+#: lib/BaselinerX/Fieldlets.pm lib/BaselinerX/Job.pm
+#: lib/BaselinerX/Reports/estadisticas_jobs_bl.pm root/comp/catalog_grid.js
+#: root/comp/dashboard_job.html root/dashlets/job_stats_by_env.html
+#: root/forms/script_local.js root/forms/script_remote.js root/site/about.html
 msgid "Environment"
 msgstr "Entorno"
 
@@ -4672,6 +4761,22 @@ msgstr "Avance"
 
 #: lib/BaselinerX/GitBranch.pm root/comp/git/close.js
 msgid "Close branch"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "User can close branches"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Access git repository for pull/push"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Access git repository for pull"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Can update system tags in repositories"
 msgstr ""
 
 # ########## GIT
@@ -6366,11 +6471,10 @@ msgstr "Variables"
 #: root/comp/configlist/grid.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_new.js root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js
-#: root/comp/topic/topic_admin.js root/comp/user_info.mas
-#: root/comp/user_infoactions.mas root/dashlets/jobs.html
-#: root/dashlets/last_jobs.js root/fields/templates/config/ci_list.js
-#: root/fields/templates/config/cis.js
+#: root/comp/revision/grid.mas root/comp/topic/topic_admin.js
+#: root/comp/user_info.mas root/comp/user_infoactions.mas
+#: root/dashlets/jobs.html root/dashlets/last_jobs.js
+#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/model.js
 msgid "Baseline"
@@ -6477,7 +6581,8 @@ msgstr "Paquete Engine"
 
 #: root/ci/file_loader.js root/comp/catalog_grid.js
 #: root/comp/configlist/grid.mas root/comp/lifecycle/tasks.js
-#: root/comp/project_grid.mas root/comp/role_grid.js root/site/common.js
+#: root/comp/project_grid.mas root/comp/role_detail.js root/comp/role_grid.js
+#: root/site/common.js
 msgid "Add"
 msgstr "Crear"
 
@@ -7010,13 +7115,6 @@ msgstr "Despliegue Manual"
 #: root/site/model.js
 msgid "Enter or select the category tags"
 msgstr "Indica o selecciona las etiquetas de categoría"
-
-#: root/comp/catalog/manual_deploy.js root/comp/role_grid.js
-#: root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/users.js
-msgid "Roles"
-msgstr "Roles"
 
 #: root/comp/catalog/manual_deploy.js root/comp/role_grid.js
 #: root/comp/topic/topic_admin.js root/comp/user_actions.mas
@@ -9020,8 +9118,8 @@ msgid "Resume"
 msgstr "Reanudar"
 
 #: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/rules.js root/comp/sem.js
-#: root/comp/sms.js root/comp/topic/topic_drop.js
+#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/rules.js
+#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
 #: root/fields/system/js/list_tasks.js root/forms/shortcut.js
 #: root/site/common.js root/site/dashboard.js root/site/model.js
 msgid "Cancel"
@@ -9618,6 +9716,14 @@ msgid "Dashboards"
 msgstr "Dashboards"
 
 #: root/comp/role_detail.js
+msgid "Bounds"
+msgstr "Limites"
+
+#: root/comp/role_detail.js
+msgid "Set"
+msgstr "Establecer"
+
+#: root/comp/role_detail.js
 msgid "actions"
 msgstr "acciones"
 
@@ -9625,9 +9731,9 @@ msgstr "acciones"
 msgid "Available Actions"
 msgstr "Acciones Disponibles"
 
-#: root/comp/role_detail.js root/comp/user_infoactions.mas
-msgid "Role Actions"
-msgstr "Acciones del Rol"
+#: root/comp/role_detail.js
+msgid "Role bounds"
+msgstr "Role limites"
 
 #: root/comp/role_detail.js
 msgid "Remove Selection"
@@ -9636,6 +9742,10 @@ msgstr "Descartar Selección"
 #: root/comp/role_detail.js
 msgid "Remove All"
 msgstr "Descartar Todos"
+
+#: root/comp/role_detail.js root/comp/user_infoactions.mas
+msgid "Role Actions"
+msgstr "Acciones del Rol"
 
 #: root/comp/role_detail.js
 msgid "Loading..."
@@ -14487,6 +14597,12 @@ msgstr "destino"
 #~ msgid "Invalid text"
 #~ msgstr "Texto no válido"
 
+#~ msgid "User %1 does not have permissions to action %2"
+#~ msgstr "El usuario %1 no tiene permisos para la acción %2"
+
+#~ msgid "No action or username specified"
+#~ msgstr "No action or username specified"
+
 #~ msgid "Are you sure you want to rerun the job"
 #~ msgstr "¿Seguro que quiere reiniciar el pase"
 
@@ -14540,6 +14656,14 @@ msgstr "destino"
 
 #~ msgid "<Search>"
 #~ msgstr "<Buscar>"
+
+#~ msgid "Unauthorized"
+#~ msgstr "No autorizado"
+
+#~ msgid "Cannot change avatar for user %1: user %2 not administrator"
+#~ msgstr ""
+#~ "No se puede cambiar el avatar para el usuario %1: usuario  %2 no es "
+#~ "administrador"
 
 #~ msgid "ci:bl"
 #~ msgstr "Entorno"

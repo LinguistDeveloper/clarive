@@ -151,7 +151,14 @@ subtest 'export: produces correct export using JSON title' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'Baseliner::Model::Topic' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'Baseliner::Model::Topic',
+    );
+
     TestUtils->cleanup_cis;
 
     mdb->event->drop;

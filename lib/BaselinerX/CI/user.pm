@@ -81,7 +81,7 @@ sub general_prefs_save {
     my ($self,$p)=@_;
     my $data = $p->{data} // _fail(_loc('Missing data') );
     # check if user can edit prefs for somebody else
-    if( $p->{for_username} && !model->Permissions->user_has_action(username=>$p->{username}, action=>'action.admin.users') ){
+    if( $p->{for_username} && !model->Permissions->user_has_action($p->{username}, 'action.admin.users') ){
         _fail _loc('User does not have permission to edit users');
     }
     my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
@@ -128,7 +128,7 @@ sub encrypt_password {
 sub save_api_key  {
     my ($self, $p) = @_;
     # check if user can edit prefs for somebody else
-    if( $p->{for_username} && !model->Permissions->user_has_action(username=>$p->{username}, action=>'action.admin.users') ){
+    if( $p->{for_username} && !model->Permissions->user_has_action($p->{username}, 'action.admin.users') ){
         _fail _loc('User does not have permission to edit users');
     }
     my $username = $p->{for_username} || $p->{username};  # is it for me or somebody else?
@@ -177,16 +177,16 @@ method gen_project_security {
 }
 
 method is_root( $username=undef ) {
-    Baseliner->model('Permissions')->is_root( $username || $self->username );
+    Baseliner::Model::Permissions->new->is_root( $username || $self->username );
 }
 
-method has_action( $action ) {
-    return Baseliner->model('Permissions')->user_has_action( action=>$action, username=>$self->username );
+method has_action( $action, %options ) {
+    return Baseliner::Model::Permissions->new->user_has_action( $self->username, $action, %options );
 }
 
 method roles( $username=undef ) {
-    return grep { defined } map { $$_{id} }
-    Baseliner::Model::Permissions->new->user_roles( ref $self ? $self->username : $username );
+    return grep { defined }
+    Baseliner::Model::Permissions->new->user_roles_ids( ref $self ? $self->username : $username );
 }
 
 method save_dashlet_config ( :$username=undef, :$data, :$id_dashlet) {

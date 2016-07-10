@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils;
 use Baseliner::Model::Activity;
 use Baseliner::Model::Events;
+use Baseliner::Model::Permissions;
 with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);
@@ -202,8 +203,10 @@ sub activity {
     my ($self, $p )=@_;
     # activity (activities)
 
+    my $username = $p->{username};
+
     my $activity;
-    if ( ( Baseliner->config->{activity_from_event} // 0 ) == 1 ) {
+    if ( ( Clarive->config->{activity_from_event} // 0 ) == 1 ) {
         _debug "listing events";
         $activity = Baseliner::Model::Events->find_by_mid( $self->mid, min_level => 2, no_ci => 1 );
     }
@@ -212,24 +215,31 @@ sub activity {
         $activity = Baseliner::Model::Activity->find_by_mid( $self->mid, min_level => 2, no_ci => 1 );
     }
 
-    # control activity visualiz permissions
-    my $name_category = Util->_name_to_id($self->name_category);
-    my %topic_category = ();
-    my $user_categories_fields_meta = model->Users->get_categories_fields_meta_by_user(
-        username=>$$p{username}, categories=>{ $self->id_category => $self->name_category },
+    my $meta = $self->get_meta;
+    $meta = Baseliner::Model::Topic->new->get_meta_permissions(
+        username    => $username,
+        meta        => $meta,
+        id_category => $self->id_category,
+        id_status   => $self->id_category_status
     );
-    my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $activity );
-    if ( !Baseliner->model('Permissions')->user_has_action(username => $$p{username},action => "action.topics.$name_category.comment" )) {
-        @perm_events = grep { ($_->{event_key}//'') !~ /\.post\./ } @perm_events;
-    }
+
+    my %visible_fields = map { $_->{id_field} => 1 } @$meta;
+
+    my @perm_events = grep { !exists $_->{field} || exists $visible_fields{$_->{field}}} Util->_array( $activity );
+
+    # TODO this is not working and should be probably removed
+    #if ( !Baseliner::Model::Permissions->new->user_has_action(username => $$p{username},action => "action.topics.$name_category.comment" )) {
+    #    @perm_events = grep { ($_->{event_key}//'') !~ /\.post\./ } @perm_events;
+    #}
     @perm_events = map { $$_{text} = Util->_to_utf8( $$_{text} ); $_ } @perm_events;
-    wantarray ? @perm_events : \@perm_events;
+
+    return wantarray ? @perm_events : \@perm_events;
 }
 
 sub comments {
     my ($self, $p )=@_;
     # comments
-    my $is_root = model->Permissions->is_root($$p{username});
+    my $is_root = Baseliner::Model::Permissions->is_root($$p{username});
     my $comments = model->Topic->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
         #$$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format

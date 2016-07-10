@@ -23,97 +23,108 @@ register 'action.admin.topics' => { name=>'Admin topics' };
 register 'action.topics.view_graph' => { name=>'View related graph in topics' };
 
 register 'registor.menu.topics' => {
-    generator => sub {
-       # action.topics.<category_name>.[create|edit|view]
-       my @cats = mdb->category->find->fields({ name=>1, id=>1, color=>1 })->all;
-       my $seq = 10;
-       my $pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;';
-       my %menu_view = map {
-           my $data = $_;
-           my $name = _loc( $_->{name} );
-           my $id = _name_to_id( $name );
-           $data->{color} //= 'transparent';
-           "menu.topic.$id" => {
-                label    => qq[<span id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></span>],
-                title    => qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></span>],
-                index    => $seq++,
-                actions  => ["action.topics.$id.view","action.topics.$id.create","action.topics.$id.edit",
-                "action.topics.$id.delete","action.topics.$id.comment","action.topics.$id.jobs",
-                "action.topics.$id.activity"],
-                url_comp => "/topic/grid?category_id=" . $data->{id},
-                tab_icon => '/static/images/icons/topic.svg'
-           }
-       } sort { lc $a->{name} cmp lc $b->{name} } @cats;
-
-       my %menu_create = map {
-           my $data = $_;
-           my $name = _loc( $_->{name} );
-           my $id = _name_to_id( $name );
-           $data->{color} //= 'transparent';
-           "menu.topic.create.$id" => {
-                label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
-                index    => $seq++,
-                actions  => ["action.topics.$id.create"],
-                url_comp => '/topic/view?swEdit=1',
-                comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
-                tab_icon => '/static/images/icons/topic.svg'
-           }
-       } sort { lc $a->{name} cmp lc $b->{name} } @cats;
-
-       my %menu_statuses = map {
-           my $data = $_;
-           my $name = _loc( $_->{name} );
-           my $id = _name_to_id( $name );
-           $data->{color} //= 'transparent';
-           "menu.topic.status.$id" => {
-                label    => qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
-                title    => qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
-                index    => $seq++,
-                hideOnClick => 0,
-                #actions  => ["action.topics.$id.create"],
-                url_comp => '/topic/grid?status_id=' . $data->{id_status},
-                icon     => $data->{status_icon}||'/static/images/icons/state.svg',
-                tab_icon => $data->{status_icon}||'/static/images/icons/state.svg',
-           }
-       } sort { lc $a->{name} cmp lc $b->{name} }
-           ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
-
-       my $menus = {
-            'menu.topic' => {
-                    label => _locl('Topics'),
-                    title    => _locl('Topics'),
-                    actions  => ['action.topics.%'],
-            },
-            'menu.topic.topics' => {
-                    index => 1,
-                    label => _locl('All'),
-                    title    => _locl('Topics'),
-                    actions  => ['action.topics.%.view'],
-                    url_comp => '/topic/grid',
-                    comp_data => { tabTopic_force => 1 },
-                    icon     => '/static/images/icons/topic.svg',
-                    tab_icon => '/static/images/icons/topic.svg'
-            },
-            'menu.topic._sep_' => { index=>3, separator=>1 },
-            %menu_create,
-            %menu_statuses,
-            %menu_view,
-       };
-       $menus->{'menu.topic.status'} = {
-                    label    => _locl('Status'),
-                    icon     => '/static/images/icons/state.svg',
-                    index => 2,
-                    #actions  => ['action.topics.%.create'],
-             } if %menu_statuses;
-       $menus->{'menu.topic.create'} = {
-                    label    => _locl('Create'),
-                    icon     => '/static/images/icons/add.svg',
-                    index => 2,
-                    actions  => ['action.topics.%.create'],
-             } if %menu_create;
-       return $menus;
-    }
+    generator => sub { __PACKAGE__->generate_menus() }
 };
+
+sub generate_menus {
+    my $class = shift;
+
+    my @cats        = mdb->category->find->fields( { name => 1, id => 1, color => 1 } )->all;
+    my $seq         = 10;
+    my $pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;';
+
+    my %menu_view = map {
+        my $data = $_;
+        my $name = _loc( $_->{name} );
+        my $id   = _name_to_id($name);
+        $data->{color} //= 'transparent';
+        "menu.topic.$id" => {
+            label =>
+qq[<span id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></span>],
+            title =>
+qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></span>],
+            index    => $seq++,
+            actions  => [ { action => "action.topics.view", bounds => { id_category => $data->{id} } }, ],
+            url_comp => "/topic/grid?category_id=" . $data->{id},
+            tab_icon => '/static/images/icons/topic.svg'
+          }
+    } sort { lc $a->{name} cmp lc $b->{name} } @cats;
+
+    my %menu_create = map {
+        my $data = $_;
+        my $name = _loc( $_->{name} );
+        my $id   = _name_to_id($name);
+        $data->{color} //= 'transparent';
+        "menu.topic.create.$id" => {
+            label =>
+qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+            index    => $seq++,
+            actions  => [ { action => "action.topics.create", bounds => { id_category => $data->{id} } } ],
+            url_comp => '/topic/view?swEdit=1',
+            comp_data => { new_category_name => $name, new_category_id => $data->{id} },
+            tab_icon  => '/static/images/icons/topic.svg'
+          }
+    } sort { lc $a->{name} cmp lc $b->{name} } @cats;
+
+    my %menu_statuses = map {
+        my $data = $_;
+        my $name = _loc( $_->{name} );
+        my $id   = _name_to_id($name);
+        $data->{color} //= 'transparent';
+        "menu.topic.status.$id" => {
+            label =>
+qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
+            title =>
+qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
+            index       => $seq++,
+            hideOnClick => 0,
+
+            #actions  => ["action.topics.$id.create"],
+            url_comp => '/topic/grid?status_id=' . $data->{id_status},
+            icon     => $data->{status_icon} || '/static/images/icons/state.svg',
+            tab_icon => $data->{status_icon} || '/static/images/icons/state.svg',
+          }
+      } sort { lc $a->{name} cmp lc $b->{name} }
+      ci->status->find->fields( { id_status => 1, name => 1, color => 1, seq => 1, status_icon => 1 } )->all;
+
+    my $menus = {
+        'menu.topic' => {
+            label   => _locl('Topics'),
+            title   => _locl('Topics'),
+            actions => ['action.topics.%'],
+        },
+        'menu.topic.topics' => {
+            index     => 1,
+            label     => _locl('All'),
+            title     => _locl('Topics'),
+            actions   => ['action.topics.%'],
+            url_comp  => '/topic/grid',
+            comp_data => { tabTopic_force => 1 },
+            icon      => '/static/images/icons/topic.svg',
+            tab_icon  => '/static/images/icons/topic.svg'
+        },
+        'menu.topic._sep_' => { index => 3, separator => 1 },
+        %menu_create,
+        %menu_statuses,
+        %menu_view,
+    };
+
+    $menus->{'menu.topic.status'} = {
+        label => _locl('Status'),
+        icon  => '/static/images/icons/state.svg',
+        index => 2,
+    } if %menu_statuses;
+
+    $menus->{'menu.topic.create'} = {
+        label   => _locl('Create'),
+        icon    => '/static/images/icons/add.svg',
+        index   => 2,
+        actions => [ { action => 'action.topics.create', bounds => '*' } ],
+      }
+      if %menu_create;
+
+    return $menus;
+}
 
 sub grid : Local {
     my ( $self, $c, $typeApplication ) = @_;
@@ -538,6 +549,8 @@ sub view : Local {
 
     my $category;
 
+    my $is_root = Baseliner::Model::Permissions->new->is_root($c->username);
+
     try {
         my $topic_doc;
 
@@ -547,7 +560,7 @@ sub view : Local {
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
         my $topic_ci = ci->new($topic_mid) if $topic_mid;
-        $c->stash->{permissionGraph} = $topic_mid && Baseliner::Model::Permissions->user_has_action( username => $c->username, action => 'action.topics.view_graph') && $topic_ci->related(depth => -1, mids_only => 1);
+        $c->stash->{permissionGraph} = $topic_mid && Baseliner::Model::Permissions->user_has_action( $c->username, 'action.topics.view_graph') && $topic_ci->related(depth => -1, mids_only => 1);
         $c->stash->{permissionComment} = 0;
         $c->stash->{permissionActivity} = 0;
         $c->stash->{permissionJobs} = 0;
@@ -557,8 +570,7 @@ sub view : Local {
             try {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
-                my $is_root = Baseliner::Model::Permissions->is_root($c->username);
-                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));
+                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action(  $c->username, 'action.home.generate_docs' ));
                 $topic_doc = $topic_ci->get_doc;
 
             } catch {
@@ -572,12 +584,12 @@ sub view : Local {
             $c->stash->{viewDocs} = 0;
         }
 
-        if ($c->is_root){
-            $c->stash->{HTMLbuttons} = 0;
-        }
-        else{
-            $c->stash->{HTMLbuttons} = Baseliner::Model::Permissions->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
-        }
+        #if ($is_root){
+            #$c->stash->{HTMLbuttons} = 0;
+        #}
+        #else{
+            #$c->stash->{HTMLbuttons} = Baseliner::Model::Permissions->user_has_action( $c->username, 'action.GDI.HTMLbuttons' );
+        #}
 
         my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
         my %categories_delete = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
@@ -595,6 +607,7 @@ sub view : Local {
             }
 
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
+            _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
 
             $c->stash->{category_name} = $category->{name};
             $c->stash->{category_color} = $category->{color};
@@ -604,13 +617,12 @@ sub view : Local {
                 my $menu = $self->get_menu_deploy( { topic_mid => $topic_mid, username => $c->username } );
                 $c->stash->{menu_deploy} = _encode_json($menu);
             }
-            _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
 
             if ( !$categories_view{$category->{id} } ) {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
             }
 
-            if ( !Baseliner::Model::Permissions->user_can_topic_by_project( username => $c->username, mid => $topic_mid ) ) {
+            if ( !Baseliner::Model::Permissions->user_has_security( $c->username, $topic_doc->{project_security} ) ) {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
             }
 
@@ -632,7 +644,7 @@ sub view : Local {
                 $c->stash->{permissionDelete} = 0;
             }
             else{
-                if ($c->is_root){
+                if ($is_root){
                     $c->stash->{permissionEdit} = 1;
                     $c->stash->{permissionDelete} = 1;
                 }else{
@@ -657,7 +669,7 @@ sub view : Local {
                 $c->stash->{permissionActivity} = 0;
             }
 
-            if($c->stash->{permissionActivity} || $c->is_root ){
+            if($c->stash->{permissionActivity} || $is_root ){
                 $c->stash->{viewTimeline} = 1;
             } else {
                 $c->stash->{viewTimeline} = 0;
@@ -665,7 +677,7 @@ sub view : Local {
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
                 my $has_permission;
-                my $has_permission_link = Baseliner::Model::Permissions->new->user_has_action( username=> $c->username, action=>'action.job.view_monitor' );
+                my $has_permission_link = Baseliner::Model::Permissions->new->user_has_action( $c->username, 'action.job.view_monitor' );
                 if (exists ($categories_jobs{ $category->{id} })){
                     $c->stash->{permissionJobs} = 1;
                     $c->stash->{permissionJobsLink} = 1 if $has_permission_link;
@@ -709,7 +721,7 @@ sub view : Local {
             $c->stash->{permissionActivity} = 1 if exists $categories_activity{$id_category};
             $c->stash->{viewTimeline} = $c->stash->{permissionActivity};
             $c->stash->{permissionJobs} = 1 if exists $categories_jobs{$id_category};
-            my $has_permission_link = Baseliner::Model::Permissions->new->user_has_action( username=> $c->username, action=>'action.job.view_monitor' );
+            my $has_permission_link = Baseliner::Model::Permissions->new->user_has_action(  $c->username, 'action.job.view_monitor' );
             $c->stash->{permissionJobsLink} = 1 if exists $categories_jobs{$id_category} && $has_permission_link;
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';
@@ -733,9 +745,10 @@ sub view : Local {
                 $data->{$name} = _strip_html_editor($value);
             }
 
-            my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
+            #my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
+            #$data->{admin_labels} = Baseliner::Model::Permissions->user_has_any_action( username=> $c->username, action=>$write_action );
 
-            $data->{remove_labels} = Baseliner::Model::Permissions->user_has_any_action( username=> $c->username, action=>'action.labels.remove_labels' );
+            $data->{remove_labels} = Baseliner::Model::Permissions->user_has_action( $c->username, 'action.labels.remove_labels' );
             $c->stash->{topic_meta} = $meta;
             $c->stash->{topic_data} = $data;
             $c->stash->{template} = '/comp/topic/topic_msg.html';
@@ -1034,23 +1047,29 @@ sub list_category : Local {
     my @rows;
 
     if ( !$p->{categoryId} ) {
-        my @categories;
+        my $action = $p->{action} && $p->{action} eq 'create' ? 'create' : 'view';
+        my @categories = Baseliner::Model::Topic->get_categories_permissions(
+            username   => $c->username,
+            type       => $action,
+            order      => $order,
+            all_fields => 1
+        );
 
         if ( $p->{categories_filter} || $p->{categories_id_filter} ) {
-            @categories = $self->_filter_categories_permissions(
+            my %allowed_categories_map = map { $_->{id} => 1 } @categories;
+
+            my @filtered_categories = $self->_filter_categories_permissions(
                 username             => $c->username,
                 categories_id_filter => $p->{categories_id_filter},
                 categories_filter    => $p->{categories_filter}
             );
-        }
-        else {
-            my $action = $p->{action} && $p->{action} eq 'create' ? 'create' : 'view';
-            @categories = Baseliner::Model::Topic->get_categories_permissions(
-                username   => $c->username,
-                type       => $action,
-                order      => $order,
-                all_fields => 1
-            );
+
+            @categories = ();
+            foreach my $category (@filtered_categories) {
+                if ($allowed_categories_map{$category->{id}}) {
+                    push @categories, $category;
+                }
+            }
         }
 
         if (@categories) {
@@ -1988,26 +2007,7 @@ sub _filter_categories_permissions : Local {
     my $filter = _decode_json_safe( $params{categories_filter} );
     my $where = $self->_build_category_filter( categories_id_filter => $params{categories_id_filter}, filter => $filter );
 
-    my @category_data;
-
-    my $rs = mdb->category->find($where);
-    my @categories = $rs->sort( { name => 1 } )->all;
-
-    foreach my $category (@categories) {
-        if (
-            scalar Baseliner::Model::Topic->get_categories_permissions(
-                username   => $params{username},
-                type       => 'create',
-                id         => $category->{id},
-                all_fields => 1
-            )
-          )
-        {
-            push @category_data, $category;
-        }
-    }
-
-    return @category_data;
+    return mdb->category->find($where)->all;
 }
 
 sub _build_category_filter {
@@ -2185,33 +2185,33 @@ sub get_files : Local {
             ];
         }
         my $rel_data = ci->new($related->{mid})->get_data;
-        my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-        my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
-        my @user_actions_for_topic = $user_actions->{positive};
-        my @user_read_actions_for_topic = $user_actions->{negative};
 
         for my $field ( _array $cat_fields->{$related->{name_category}} ) {
             if ( _array($rel_data->{$field->{id_field}}) ) {
+                my $can_read_field = Baseliner::Model::Permissions->new->user_has_action(
+                    $username,
+                    'action.topicsfield.read',
+                    bounds =>
+                      { id_category => $related->{id_category}, id_status => '*', id_field => $field->{id_field} }
+                );
+                next unless $can_read_field;
 
-                my $read_action = 'action.topicsfield.'._name_to_id($related->{name_category}).'.'.$field->{id_field}.'.read';
-                if ( !( $read_action ~~ @user_read_actions_for_topic) ) {
-                    ###### TODO: get all file types not just ucm
-                    my ($field_meta) = grep {$_->{id_field} eq $field->{id_field}} _array($cat_meta->{ $related->{name_category} });
-                    if ( $field_meta->{ucmserver} ) {
-                        my $ucm = ci->new( $field_meta->{ucmserver} );
-                        my $related_path = $topic_path.'/'.$related->{name_category}.'_'.$related->{mid};
-                        _mkpath($related_path) if (!-d $related_path );
-                        foreach my $file ( _array($rel_data->{$field->{id_field}}) ) {
-                            my ( $file_name, $body, $status ) =
-                                $ucm->getfile( params => { docid => $file->{id} } );
-                            if(0+$status < 0){
-                                $file_name =  "ID_FILE_".$file->{id}."_NOT_PRESENT";
-                                $body = '';
-                            }
-                            open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
-                            print $temp_file $body;
-                            close $temp_file;
+                ###### TODO: get all file types not just ucm
+                my ($field_meta) = grep {$_->{id_field} eq $field->{id_field}} _array($cat_meta->{ $related->{name_category} });
+                if ( $field_meta->{ucmserver} ) {
+                    my $ucm = ci->new( $field_meta->{ucmserver} );
+                    my $related_path = $topic_path.'/'.$related->{name_category}.'_'.$related->{mid};
+                    _mkpath($related_path) if (!-d $related_path );
+                    foreach my $file ( _array($rel_data->{$field->{id_field}}) ) {
+                        my ( $file_name, $body, $status ) =
+                            $ucm->getfile( params => { docid => $file->{id} } );
+                        if(0+$status < 0){
+                            $file_name =  "ID_FILE_".$file->{id}."_NOT_PRESENT";
+                            $body = '';
                         }
+                        open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
+                        print $temp_file $body;
+                        close $temp_file;
                     }
                 }
             }

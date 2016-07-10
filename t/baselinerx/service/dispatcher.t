@@ -38,8 +38,13 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'Baseliner::Model::Registry', 'BaselinerX::Type::Service',
-        'Baseliner::Model::Events',   'BaselinerX::Type::Event',
-        'BaselinerX::Events'
+        'BaselinerX::Events',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Event',
+        'Baseliner::Model::Registry',
+        'Baseliner::Model::Events',
     );
 }

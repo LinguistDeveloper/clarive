@@ -9,6 +9,7 @@ html: /dashlets/baselines.html
 
 <%perl>
     use Baseliner::Utils;
+    use Baseliner::Model::Permissions;
     my @entornos = $c->stash->{entornos};
     my $dashboard_id = $c->stash->{dashboard_id};
     my $projects = $c->stash->{projects};
@@ -92,7 +93,7 @@ html: /dashlets/baselines.html
     <div style="clear:left;">
         <h2><% _loc("Baselines") %></h2>
 %foreach my $entorno (_array @entornos){
-% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor', bl => $entorno->{bl}) ) {
+% if( Baseliner::Model::Permissions->user_has_action($c->username, 'action.job.view_monitor', bounds => {bl => $entorno->{bl}}) ) {
         <h4><%$entorno->{bl}%></h4>
         
         <div class="progress">
@@ -106,7 +107,7 @@ html: /dashlets/baselines.html
         </div>        
 %}        
 %}        
-% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
+% if( Baseliner::Model::Permissions->user_has_action($c->username, 'action.job.view_monitor') ) {
         <div style="text-align:right;"><b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>', _('Running jobs'));"><% _loc("Running jobs") %></a></b></div>
 %}        
     </div>

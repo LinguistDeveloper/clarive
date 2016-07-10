@@ -17,6 +17,7 @@ use Clarive::mdb;
 # This is needed for tests, so Moose can find all the classes
 use BaselinerX::CI::balix_agent;
 use BaselinerX::CI::ssh_agent;
+use BaselinerX::Type::Action;
 
 use_ok 'Baseliner::Controller::CI';
 
@@ -123,7 +124,14 @@ subtest 'tree_roles: returns roles when user has permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Agent.balix_agent' } ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.admin',
+                bounds => [ { role => 'Baseliner::Role::CI::Agent', collection => 'balix_agent' } ]
+            }
+        ]
+    );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -137,7 +145,7 @@ subtest 'tree_roles: returns roles when user has all admin permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -151,7 +159,7 @@ subtest 'tree_roles: returns All as first item name in tree when sort = name' =>
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -228,7 +236,14 @@ subtest 'tree_classes: returns roles when user has permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Agent.balix_agent' } ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.admin',
+                bounds => [ { role => 'Baseliner::Role::CI::Agent', collection => 'balix_agent' } ]
+            }
+        ]
+    );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -248,7 +263,7 @@ subtest 'tree_classes: returns roles when user has all admin permissions' => sub
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -268,7 +283,7 @@ subtest 'tree_classes: returns 1 role when limit is 1' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -276,13 +291,12 @@ subtest 'tree_classes: returns 1 role when limit is 1' => sub {
     my ( $cnt, @tree ) = $controller->tree_classes(
         user      => $user->username,
         role      => 'Baseliner::Role::CI',
-        role_name => 'Todos',
+        role_name => 'All',
         limit     => 1
     );
 
     is scalar @tree, 1;
 };
-
 
 subtest 'tree_classes: returns all role when limit is 1' => sub {
     _setup();
@@ -347,7 +361,14 @@ subtest 'grid: set save to true when has permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Variable.variable' } ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.admin',
+                bounds => [ { role => 'Baseliner::Role::CI::Variable', collection => 'variable' } ]
+            }
+        ]
+    );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
@@ -367,7 +388,7 @@ subtest 'grid: set save to true when has admin permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
@@ -406,7 +427,8 @@ subtest 'edit: cannot save when not admin' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.ci.view.%.variable',
+                action => 'action.ci.view',
+                bounds => [{role => 'Baseliner::CI::Role::Variable', collection => 'variable'}]
             }
         ]
     );
@@ -432,7 +454,8 @@ subtest 'edit: can save when admin' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.ci.admin.%.variable',
+                action => 'action.ci.admin',
+                bounds => [{role => 'Baseliner::CI::Role::Variable', collection => 'variable'}]
             }
         ]
     );
@@ -485,8 +508,15 @@ subtest 'edit: sets save to false when no permission to admin' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.view.Variable.variable' } ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.view',
+                bounds => [ { role => 'Baseliner::CI::Role::Variable', collection => 'variable' } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
 
@@ -507,52 +537,14 @@ subtest 'edit: sets save to true when has admin permission' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Variable.variable' } ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $ci = TestUtils->create_ci('variable');
-
-    my $c = _build_c( req => { params => { mid => $ci->mid } }, username => $user->username );
-
-    my $controller = _build_controller();
-
-    $controller->edit($c);
-
-    is_deeply $c->stash,
-      {
-        'save'     => 'true',
-        'template' => '/comp/ci-editor.js'
-      };
-};
-
-subtest 'edit: sets save to true when has admin permission' => sub {
-    _setup();
-
-    my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $ci = TestUtils->create_ci('variable');
-
-    my $c = _build_c( req => { params => { mid => $ci->mid } }, username => $user->username );
-
-    my $controller = _build_controller();
-
-    $controller->edit($c);
-
-    is_deeply $c->stash,
-      {
-        'save'     => 'true',
-        'template' => '/comp/ci-editor.js'
-      };
-};
-
-subtest 'edit: sets save to true when has permission' => sub {
-    _setup();
-
-    my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions =>
-          [ { action => 'action.ci.view.Variable.variable' }, { action => 'action.ci.admin.Variable.variable' }, ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.admin',
+                bounds => [ { role => 'Baseliner::CI::Role::Variable', collection => 'variable' } ]
+            }
+        ]
+    );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
@@ -668,8 +660,15 @@ subtest 'load: sets CI when user has permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.view.Variable.variable' } ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.view',
+                bounds => [ { role => 'Baseliner::CI::Role::Variable', collection => 'variable' } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
 
@@ -693,7 +692,7 @@ subtest 'load: sets CI when user has admin permissions' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $ci = TestUtils->create_ci('variable');
@@ -718,7 +717,7 @@ subtest 'new_ci: loads ci when admin rights' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $c = _build_c( req => { params => { collection => 'variable' } }, username => $user->username );
@@ -741,7 +740,7 @@ subtest 'delete: deletes ci' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -771,7 +770,7 @@ subtest 'delete: asks user before deleting a project' => sub {
 
     my $project  = TestUtils->create_ci( 'project', name => 'Project1' );
     my $project2 = TestUtils->create_ci( 'project', name => 'Project2' );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user1 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo1' );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo2' );
@@ -812,7 +811,7 @@ subtest 'delete: deletes project when confirmed' => sub {
 
     my $project  = TestUtils->create_ci( 'project', name => 'Project1' );
     my $project2 = TestUtils->create_ci( 'project', name => 'Project2' );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user1 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo1' );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'foo2' );
@@ -845,7 +844,7 @@ subtest 'delete: updates user security when deleting a project' => sub {
     _setup();
 
     my $project = TestUtils->create_ci( 'project', name => 'Project1' );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -870,7 +869,7 @@ subtest 'delete: updates project security when deleting areas' => sub {
     my $project = TestUtils->create_ci( 'project', name => 'Project' );
     my $area    = TestUtils->create_ci( 'area',    name => 'Area' );
     my $area1   = TestUtils->create_ci( 'area',    name => 'Area1' );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user = TestSetup->create_user(
         id_role => $id_role,
         project => $project,
@@ -897,7 +896,7 @@ subtest 'delete: asks user before deleting an area' => sub {
     my $project = TestUtils->create_ci( 'project', name => 'Project' );
     my $area    = TestUtils->create_ci( 'area',    name => 'AREA' );
     my $area2   = TestUtils->create_ci( 'area',    name => 'AREA 2' );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user1 = TestSetup->create_user(
         id_role  => $id_role,
@@ -932,7 +931,7 @@ subtest 'delete: deletes area when confirmed' => sub {
     my $project = TestUtils->create_ci( 'project', name => 'Project' );
     my $area    = TestUtils->create_ci( 'area',    name => 'AREA' );
     my $area2   = TestUtils->create_ci( 'area',    name => 'AREA 2' );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user1 = TestSetup->create_user(
         id_role  => $id_role,
@@ -988,7 +987,7 @@ subtest 'export: exports ci to yaml' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -1013,7 +1012,7 @@ subtest 'export: exports ci to json' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -1039,7 +1038,7 @@ subtest 'export: exports ci to csv' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin', bounds => [{}] } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $variable = TestUtils->create_ci('variable');
@@ -1344,7 +1343,7 @@ subtest 'user_can_search: checks if user can search cis' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.search.ci' } ] );
     my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
 
     my $another_project = TestUtils->create_ci('project');
@@ -1667,7 +1666,14 @@ subtest 'service_run: service is run if user have permissions to do it' => sub {
     TestGit->commit($repo);
 
     my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin.Repository.GitRepository' } ] );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.ci.admin',
+                bounds => [ { role => 'Baseliner::Role::CI::Repository', collection => 'GitRepository' } ]
+            }
+        ]
+    );
     my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
 
     my $controller = _build_controller();
@@ -1775,11 +1781,19 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',   'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',            'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic',   'Baseliner::Model::Rules',
-        'BaselinerX::Type::Service', 'BaselinerX::CI::GitRepository',
-        'BaselinerX::CI::area'
+        'BaselinerX::CI',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::CI::GitRepository',
+        'BaselinerX::CI::area',
+        'Baseliner::Controller::CI',
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Topic',
     );
 
     TestUtils->cleanup_cis();
@@ -1788,7 +1802,6 @@ sub _setup {
     mdb->category->drop;
     mdb->topic->drop;
     mdb->rule->drop;
-    mdb->master_rel->drop;
 }
 
 package BaselinerX::CI::test_area;

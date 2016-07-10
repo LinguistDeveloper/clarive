@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Topic;
 use Path::Class;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
@@ -13,11 +14,11 @@ BEGIN { extends 'Catalyst::Model' }
 
 with 'Baseliner::Role::Service';
 
-register 'action.admin.notification' => { name=>'Admin Notifications' };
+register 'action.admin.notification' => { name=> _locl('Admin Notifications') };
 
 register 'menu.admin.notifications' => {
-    label    => 'Notifications',
-    title    => _loc('Notifications'),
+    label    => _locl('Notifications'),
+    title    => _locl('Notifications'),
     action   => 'action.admin.notification',
     url_comp => '/comp/notifications.js',
     icon     => '/static/images/icons/email.svg',

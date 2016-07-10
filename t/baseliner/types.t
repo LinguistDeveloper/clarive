@@ -59,7 +59,13 @@ subtest 'ExistingCI' => sub {
     mdb->master_doc->drop;
     mdb->master_rel->drop;
 
-    TestUtils->setup_registry(qw/ BaselinerX::CI BaselinerX::Type::Event /);
+    TestUtils->setup_registry(qw/
+        BaselinerX::CI
+        BaselinerX::Type::Action
+        BaselinerX::Type::Event
+        BaselinerX::Type::Service
+        BaselinerX::Type::Statement
+    /);
 
     like _validate_type('ExistingCI', '123'), qr/Validation failed/;
 

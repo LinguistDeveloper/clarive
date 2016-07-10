@@ -89,7 +89,7 @@ subtest 'does not compile when config flag is off and rule is off' => sub {
 };
 
 subtest 'statement.call' => sub {
-    TestUtils->setup_registry('Baseliner::Model::Rules');
+    _setup();
 
     my $statement = TestUtils->registry->registrar->{'statement.call'};
 
@@ -110,7 +110,7 @@ subtest 'statement.call' => sub {
 };
 
 subtest 'statement.call with parse_vars' => sub {
-    TestUtils->setup_registry('Baseliner::Model::Rules');
+    _setup();
 
     my $statement = TestUtils->registry->registrar->{'statement.call'};
 
@@ -133,7 +133,7 @@ subtest 'statement.call with parse_vars' => sub {
 };
 
 subtest 'statement.parallel.wait: saves result to data_key' => sub {
-    TestUtils->setup_registry('Baseliner::Model::Rules');
+    _setup();
 
     my $statement = TestUtils->registry->registrar->{'statement.parallel.wait'};
 
@@ -342,7 +342,7 @@ subtest 'meta key with attributes sent to service op' => sub {
                 [
                     {
                         "attributes" => {
-                            'icon'                => '/static/images/icons/cog.svg',
+                            'icon'                => '/static/images/icons/script-local.png',
                             'palette'             => 0,
                             'disabled'            => 0,
                             'who'                 => 'root',
@@ -1216,12 +1216,108 @@ subtest 'build_tree: returns steps when rule is a pipeline' => sub {
     is $tree[4]->{text}, 'POST';
 };
 
+subtest 'save_rule: data is correct' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $data = {
+        rule_active => '1',
+        rule_name  => 'Test rule',
+        rule_when  => 'post-offline',
+        rule_event => undef,
+        rule_type  => 'independent',
+        rule_compile_mode  => 'none',
+        rule_desc  => 'Test rule',
+        ts =>  mdb->ts,
+        username => 'john_doe',
+    };
+
+    my $ret = $rules->save_rule( %$data );
+
+    is_deeply(
+        mdb->rule->find_one(
+            { id => $ret->{id_rule} },
+            {
+                _id      => 0,
+                wsdl     => 0,
+                authtype => 0,
+                id       => 0,
+                rule_seq => 0,
+                subtype  => 0
+            }
+        ),
+        $data
+    );
+};
+
+subtest 'get_rules_info: returns nothing when user has no permissions' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user(project => $project, id_role => $id_role);
+
+    my (@rows) = $model->get_rules_info({username => $user->username});
+
+    is @rows, 0;
+};
+
+subtest 'get_rules_info: returns all rules when permissions without bounds' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(actions => [{action => 'action.admin.rules', bounds => [{}]}]);
+    my $user = TestSetup->create_user(project => $project, id_role => $id_role);
+
+    my (@rows) = $model->get_rules_info({username => $user->username});
+
+    is @rows, 1;
+};
+
+subtest 'get_rules_info: returns only allowed rules' => sub {
+    _setup();
+
+    TestSetup->create_rule();
+
+    my $model = _build_model();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(actions => [{action => 'action.admin.rules', bounds => [{id_rule => '1'}]}]);
+    my $user = TestSetup->create_user(project => $project, id_role => $id_role);
+
+    my (@rows) = $model->get_rules_info({username => $user->username});
+
+    is @rows, 1;
+    is $rows[0]->{id}, '1';
+};
+
+done_testing;
 
 sub _setup {
     my (%params) = @_;
 
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Events',
-        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules', 'BaselinerX::Type::Fieldlet', 'BaselinerX::Fieldlets');
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Events',
+        'Baseliner::Model::Rules',
+        'Baseliner::Controller::Rule',
+    );
+
+    TestUtils->cleanup_cis;
 
     my $code = $params{code} || q%return 'hi there';%;
     my $ts   = $params{ts}   || '' . Class::Date->now();
@@ -1229,6 +1325,7 @@ sub _setup {
     $iso_ts =~ s/\s/T/;
 
     mdb->event->drop;
+    mdb->role->drop;
     mdb->rule->drop;
     mdb->rule_version->drop;
 
@@ -1258,5 +1355,3 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.svg","key":"s
 sub _build_model {
     return Baseliner::Model::Rules->new();
 }
-
-done_testing;

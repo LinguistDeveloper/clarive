@@ -1,6 +1,7 @@
 package Baseliner::Model::Catalog;
 use Moose;
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Path::Class;
@@ -42,7 +43,7 @@ sub get_perm_catalog {
     my %perm_catalog;
 
     foreach my $action ( @actions ){
-        $perm_catalog{$action} = Baseliner->model('Permissions')->user_has_action( action => $action, username => $username );
+        $perm_catalog{$action} = Baseliner::Model::Permissions->new->user_has_action( $username, $action );
     }
 
     return \%perm_catalog;

@@ -17,7 +17,22 @@ use_ok 'Baseliner::Controller::Job';
 subtest 'monitor_json: returns empty data' => sub {
     _setup();
 
-    my $c = mock_catalyst_c( username => 'developer' );
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [{bl => 'PROD'}]
+            },
+            {
+                action => 'action.job.view_monitor',
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = mock_catalyst_c( username => $user->username );
 
     my $controller = _build_controller();
 
@@ -35,41 +50,31 @@ subtest 'monitor_json: returns empty data' => sub {
 subtest 'monitor_json: returns jobs data' => sub {
     _setup();
 
-    my $id_changeset_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "id_category_status",
-                        "name_field"   => "Status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                        "name_field"   => "status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                }
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [{bl => 'PROD'}]
             },
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project",
-                        meta_type      => 'project',
-                        collection     => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
+            {
+                action => 'action.job.view_monitor',
             },
         ]
     );
 
-    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $project_doc = ci->project->find_one;
-    my $project     = ci->new( $project_doc->{mid} );
-
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
     my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
 
     mdb->rule->insert( { id => '1', rule_when => 'promote' } );
@@ -85,9 +90,7 @@ subtest 'monitor_json: returns jobs data' => sub {
         );
     };
 
-    $job_ci = ci->project->find_one( { 'projects' => { '$in' => [ $project->mid ] } } );
-
-    my $c = mock_catalyst_c( username => 'developer', req => { params => { query_id => '-1' } } );
+    my $c = mock_catalyst_c( username => $user->username, req => { params => { query_id => '-1' } } );
 
     my $controller = _build_controller();
 
@@ -99,41 +102,31 @@ subtest 'monitor_json: returns jobs data' => sub {
 subtest 'monitor_json: returns the jobs filtered by bl' => sub {
     _setup();
 
-    my $id_changeset_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "id_category_status",
-                        "name_field"   => "Status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                        "name_field"   => "status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                }
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [{bl => 'PROD'}, {bl => 'QA'}]
             },
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project",
-                        meta_type      => 'project',
-                        collection     => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
+            {
+                action => 'action.job.view_monitor',
             },
         ]
     );
 
-    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $project_doc = ci->project->find_one;
-    my $project     = ci->new( $project_doc->{mid} );
-
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
 
     mdb->rule->insert( { id => '1', rule_when => 'promote' } );
 
@@ -159,7 +152,7 @@ subtest 'monitor_json: returns the jobs filtered by bl' => sub {
         );
     };
 
-    my $c = mock_catalyst_c( username => 'developer', req => { params => { query_id => '-1', filter_bl => 'PROD' } } );
+    my $c = mock_catalyst_c( username => $user->username, req => { params => { query_id => '-1', filter_bl => 'QA' } } );
 
     my $controller = _build_controller();
 
@@ -171,41 +164,31 @@ subtest 'monitor_json: returns the jobs filtered by bl' => sub {
 subtest 'monitor_json: returns the jobs filtered by status' => sub {
     _setup();
 
-    my $id_changeset_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "id_category_status",
-                        "name_field"   => "Status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                        "name_field"   => "status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                }
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [{bl => 'PROD'}, {bl => 'QA'}]
             },
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project",
-                        meta_type      => 'project',
-                        collection     => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
+            {
+                action => 'action.job.view_monitor',
             },
         ]
     );
 
-    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $project_doc = ci->project->find_one;
-    my $project     = ci->new( $project_doc->{mid} );
-
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
 
     mdb->rule->insert( { id => '1', rule_when => 'promote' } );
 
@@ -232,7 +215,7 @@ subtest 'monitor_json: returns the jobs filtered by status' => sub {
     };
 
     my $c = mock_catalyst_c(
-        username => 'developer',
+        username => $user->username,
         req      => { params => { query_id => '-1', job_state_filter => '{"FINISHED":1}' } }
     );
 
@@ -246,41 +229,31 @@ subtest 'monitor_json: returns the jobs filtered by status' => sub {
 subtest 'monitor_json: returns the jobs filtered by type' => sub {
     _setup();
 
-    my $id_changeset_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "id_category_status",
-                        "name_field"   => "Status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                        "name_field"   => "status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                }
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [{bl => 'PROD'}, {bl => 'QA'}]
             },
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project",
-                        meta_type      => 'project',
-                        collection     => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
+            {
+                action => 'action.job.view_monitor',
             },
         ]
     );
 
-    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $project_doc = ci->project->find_one;
-    my $project     = ci->new( $project_doc->{mid} );
-
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
 
     mdb->rule->insert( { id => '1', rule_when => 'promote' } );
 
@@ -308,8 +281,10 @@ subtest 'monitor_json: returns the jobs filtered by type' => sub {
         );
     };
 
-    my $c = mock_catalyst_c( username => 'developer',
-        req => { params => { query_id => '-1', filter_type => 'demote' } } );
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { query_id => '-1', filter_type => 'demote' } }
+    );
 
     my $controller = _build_controller();
 
@@ -321,41 +296,31 @@ subtest 'monitor_json: returns the jobs filtered by type' => sub {
 subtest 'monitor_json: returns the jobs filtered by nature' => sub {
     _setup();
 
-    my $id_changeset_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "id_category_status",
-                        "name_field"   => "Status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                        "name_field"   => "status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                }
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [{bl => 'PROD'}, {bl => 'QA'}]
             },
-            {   "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project",
-                        meta_type      => 'project',
-                        collection     => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
+            {
+                action => 'action.job.view_monitor',
             },
         ]
     );
 
-    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $project_doc = ci->project->find_one;
-    my $project     = ci->new( $project_doc->{mid} );
-
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
 
     mdb->rule->insert( { id => '1', rule_when => 'promote' } );
 
@@ -387,7 +352,7 @@ subtest 'monitor_json: returns the jobs filtered by nature' => sub {
     };
 
     my $c = mock_catalyst_c(
-        username => 'developer',
+        username => $user->username,
         req      => { params => { query_id => '-1', filter_nature => $nature->mid } }
     );
 
@@ -434,12 +399,13 @@ subtest 'monitor_json: returns the jobs filtered by project' => sub {
     my $project = TestUtils->create_ci('project');
     my $id_role = TestSetup->create_role(
         actions => [
-            {   action => 'action.job.viewall',
-                bl     => 'PROD'
+            {
+                action => 'action.job.viewall',
+                bounds => [ { bl => 'PROD' } ]
             },
         ]
     );
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $changeset_mid
         = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
@@ -473,7 +439,7 @@ subtest 'monitor_json: returns the jobs filtered by project' => sub {
 
     my $project_mid = $project->{mid};
     my $c           = mock_catalyst_c(
-        username => 'user',
+        username => $user->username,
         req      => { params => { query_id => '-1', filter_project => $project_mid } }
     );
 
@@ -483,6 +449,79 @@ subtest 'monitor_json: returns the jobs filtered by project' => sub {
 
     is $c->stash->{json}->{totalCount}, 1;
     is $c->stash->{json}->{data}[0]->{mid}, $job_ci->mid;
+};
+
+subtest 'monitor: sets correct empty values when use has no permissions to view any jobs' => sub {
+    _setup();
+
+    TestUtils->create_ci('bl', name => 'QA', bl => 'QA', seq => 1);
+    TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD', seq => 2);
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = mock_catalyst_c( username => $user->username, req => { params => {} } );
+
+    my $controller = _build_controller();
+
+    $controller->monitor($c);
+
+    is_deeply JSON::decode_json( $c->stash->{envs_json} ), [];
+};
+
+subtest 'monitor: sets correct envs_json' => sub {
+    _setup();
+
+    TestUtils->create_ci('bl', name => 'QA', bl => 'QA', seq => 1);
+    TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD', seq => 2);
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [ { } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = mock_catalyst_c( username => $user->username, req => { params => {} } );
+
+    my $controller = _build_controller();
+
+    $controller->monitor($c);
+
+    is_deeply JSON::decode_json( $c->stash->{envs_json} ),
+      [ { bl => 'QA', name => 'QA' }, { bl => 'PROD', name => 'PROD' } ];
+};
+
+subtest 'monitor: sets correct envs_json filtering by permissions' => sub {
+    _setup();
+
+    TestUtils->create_ci('bl', name => 'QA', bl => 'QA', seq => 1);
+    TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD', seq => 2);
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [ { bl => 'QA' } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $c = mock_catalyst_c( username => $user->username, req => { params => {} } );
+
+    my $controller = _build_controller();
+
+    $controller->monitor($c);
+
+    is_deeply JSON::decode_json( $c->stash->{envs_json} ),
+      [ { bl => 'QA', name => 'QA' } ];
 };
 
 subtest 'pipeline_versions: returns versions data' => sub {
@@ -535,13 +574,16 @@ subtest 'submit: returns an error when user does not have permission to create n
         role => 'Role no window',
         actions => [
             {
+                action => 'action.job.create',
+            },
+            {
                 action => 'action.job.viewall',
-                bl => 'PROD'
+                bounds => [{bl => 'PROD'}]
             },
         ]
     );
 
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'user' );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_rule = TestSetup->create_rule;
 
     my $id_changeset_rule     = _create_changeset_form();
@@ -572,7 +614,7 @@ subtest 'submit: returns an error when user does not have permission to create n
       {
         'json' => {
             success => \0,
-            msg => re(qr/Error creating job: User user doesn't have permissions to create a job out of calendar/)
+            msg => re(qr/Error creating job: User .*? doesn't have permissions to create a job out of calendar/)
         }
       };
 };
@@ -589,14 +631,26 @@ subtest 'submit: creates a new job' => sub {
         id_rule      => $id_changeset_rule,
     );
 
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.create',
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $changeset_mid = TestSetup->create_topic(
         id_rule     => $id_changeset_rule,
         id_category => $id_changeset_category,
         title       => 'Fix everything',
+        username    => $user->username,
     );
 
     my $c = mock_catalyst_c(
-        username => 'developer',
+        username => $user->username,
         req      => { params => { id_rule => $id_rule, changesets => $changeset_mid, window_type => 'N' } }
     );
 
@@ -678,14 +732,26 @@ subtest 'submit: creates a new job with rule version tag' => sub {
         id_rule      => $id_changeset_rule,
     );
 
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.create',
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $changeset_mid = TestSetup->create_topic(
         id_rule     => $id_changeset_rule,
         id_category => $id_changeset_category,
         title       => 'Fix everything',
+        username    => $user->username
     );
 
     my $c = mock_catalyst_c(
-        username => 'developer',
+        username => $user->username,
         req      => {
             params =>
               { id_rule => $id_rule, changesets => $changeset_mid, window_type => 'N', rule_version_tag => 'tag' }
@@ -724,14 +790,26 @@ subtest 'submit: creates a new job without version id when dynamic' => sub {
         id_rule      => $id_changeset_rule,
     );
 
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.create',
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $changeset_mid = TestSetup->create_topic(
         id_rule     => $id_changeset_rule,
         id_category => $id_changeset_category,
         title       => 'Fix everything',
+        username    => $user->username
     );
 
     my $c = mock_catalyst_c(
-        username => 'developer',
+        username => $user->username,
         req      => {
             params => {
                 id_rule              => $id_rule,
@@ -779,14 +857,18 @@ subtest 'by_status: returns the amount of jobs user has permissions to view and 
     my $id_role = TestSetup->create_role(
         actions => [
             {   action => 'action.job.viewall',
-                bl     => 'PROD'
+                bounds => [{bl     => 'PROD'}]
             },
         ]
     );
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
 
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        username     => $user->username,
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1
+    );
 
     my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
 
@@ -806,14 +888,14 @@ subtest 'by_status: returns the amount of jobs user has permissions to view and 
         );
     };
 
-    my $c = mock_catalyst_c( username => 'user' );
+    my $c = mock_catalyst_c( username => $user->username );
 
     my $controller = _build_controller();
 
     $controller->by_status($c);
 
-    is $c->stash->{json}->{data}[0][0], 'FINISHED';
     is $c->stash->{json}->{data}[0][1], 1;
+    is $c->stash->{json}->{data}[0][0], 'FINISHED';
 };
 
 subtest 'by_status: returns the amount of jobs and the status of the jobs filtering by bl' => sub {
@@ -827,14 +909,18 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
     my $id_role = TestSetup->create_role(
         actions => [
             {   action => 'action.job.viewall',
-                bl     => '*'
+                bounds => [{}]
             },
         ]
     );
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
 
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        username     => $user->username,
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1
+    );
 
     my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
 
@@ -855,7 +941,7 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
     };
 
     my $c = mock_catalyst_c(
-        username => 'user',
+        username => $user->username,
         req      => { params => { bls => 'DEV' } }
     );
 
@@ -863,8 +949,8 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
 
     $controller->by_status($c);
 
-    is $c->stash->{json}->{data}[0][0], 'FINISHED';
     is $c->stash->{json}->{data}[0][1], 1;
+    is $c->stash->{json}->{data}[0][0], 'FINISHED';
 };
 
 subtest 'by_status: returns the amount of jobs and the status of the jobs filtering by period' => sub {
@@ -878,14 +964,18 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
     my $id_role = TestSetup->create_role(
         actions => [
             {   action => 'action.job.viewall',
-                bl     => '*'
+                bounds => [{}]
             },
         ]
     );
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
 
-    my $changeset_mid
-        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid = TestSetup->create_topic(
+        username     => $user->username,
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1
+    );
 
     my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
 
@@ -905,7 +995,7 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
     };
 
     my $c = mock_catalyst_c(
-        username => 'user',
+        username => $user->username,
         req      => { params => { period => '1D' } }
     );
 
@@ -913,8 +1003,8 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
 
     $controller->by_status($c);
 
-    is $c->stash->{json}->{data}[0][0], 'FINISHED';
     is $c->stash->{json}->{data}[0][1], 1;
+    is $c->stash->{json}->{data}[0][0], 'FINISHED';
 };
 
 done_testing;
@@ -922,6 +1012,11 @@ done_testing;
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Registor',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Config',
         'BaselinerX::CI',
@@ -931,7 +1026,8 @@ sub _setup {
         'Baseliner::Model::Rules',
         'Baseliner::Model::Jobs',
         'BaselinerX::CI::job',
-        'BaselinerX::Type::Statement'
+        'BaselinerX::Type::Statement',
+        'Baseliner::Controller::Job',
     );
 
     TestUtils->cleanup_cis;
@@ -940,25 +1036,10 @@ sub _setup {
     mdb->rule_version->drop;
     mdb->role->drop;
     mdb->job_log->drop;
+    mdb->category->drop;
 
     TestUtils->create_ci('bl', name => 'Common', bl => '*');
     TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD');
-
-    my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.job.viewall',
-                bl => 'PROD'
-            },
-            {
-                action => 'action.job.no_cal',
-                bl => 'PROD'
-            },
-        ]
-    );
-
-    TestSetup->create_user( id_role => $id_role, project => $project );
 }
 
 sub _build_controller {

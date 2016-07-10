@@ -2,6 +2,7 @@ package Baseliner::Controller::I18N;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' };
 
+use Try::Tiny;
 use Baseliner::Utils;
 use Baseliner::I18N;
 

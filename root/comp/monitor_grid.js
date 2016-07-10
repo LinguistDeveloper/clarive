@@ -727,7 +727,7 @@
       tooltip: _('Tools'),
       icon: '/static/images/icons/wrench.svg',
       menu: [
-% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
+% if( model->Permissions->user_has_action($c->username, 'action.job.run_in_proc') ) {
             { cls: 'ui-run-in-process', text: _('Run In-process'), handler:function(){ run_inproc() },
               icon: '/static/images/icons/job.svg'
             },

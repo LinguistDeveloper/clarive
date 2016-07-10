@@ -62,10 +62,8 @@ sub attach : Local {
     my $p                 = $c->req->params;
     my $topic_mid         = $p->{topic_mid};
     my @ids         = _array( $p->{ids} );
-    my $attach_permission = Baseliner::Model::Permissions->user_has_action(
-        username => $c->username,
-        action   => 'action.labels.attach_labels'
-    );
+    my $attach_permission =
+      Baseliner::Model::Permissions->user_has_action( $c->username, 'action.labels.attach_labels' );
     try {
         if ( !$attach_permission ) {
             _fail _loc(
@@ -106,10 +104,8 @@ sub attach : Local {
 sub detach : Local {
     my ( $self, $c, $topic_mid, $id ) = @_;
 
-    my $detach_permission = Baseliner::Model::Permissions->user_has_action(
-        username => $c->username,
-        action   => 'action.labels.remove_labels'
-    );
+    my $detach_permission =
+      Baseliner::Model::Permissions->user_has_action( $c->username, 'action.labels.remove_labels' );
 
     try {
         if ( !$detach_permission ) {

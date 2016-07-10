@@ -123,8 +123,11 @@ after new_ci => sub {
 after delete => sub {
     my ($self, $mid)=@_;
     $mid //= $self->mid;
-    mdb->job_log->remove({ mid=>''.$mid }, { multiple=>1 });
-    mdb->grid->remove({ parent_mid=>''.$mid });
+
+    if ($mid) {
+        mdb->job_log->remove({ mid=>''.$mid }, { multiple=>1 });
+        mdb->grid->remove({ parent_mid=>''.$mid });
+    }
 };
 
 # report status in debug
@@ -471,7 +474,7 @@ sub run_inproc {
     Util->_log(Util->_loc('************** %1 Requested JOB IN-PROC %2 ***************', $p->{username}, $self->name) );
 
     # check permissions
-    if( ! model->Permissions->user_has_action(username=>$p->{username}, action=>'action.job.run_in_proc') ) {
+    if( ! Baseliner::Model::Permissions->new->user_has_action($p->{username}, 'action.job.run_in_proc') ) {
         Util->_fail( Util->_loc('User %1 does not have permissions to start jobs in process', $p->{username}) );
     }
 
@@ -633,10 +636,11 @@ sub cancel {
 method can_approve( :$username ) {
     my $config = $self->approval_config;  # this config gets set when the approve task executes in the rule
     my $user = Baseliner->user_ci( $username );
-    return 1 if $user->is_root || $user->has_action( 'action.job.approve_all' );
+    return 1 if $user->has_action( 'action.job.approve_all' );
     my %avr = map { $_=>1 } Util->_array( $config->{approvers} );
     return 1 if $avr{ 'user/' . $user->mid };
-    my @roles = keys Baseliner->model('Permissions')->user_projects_ids_with_collection( username=>$username, with_role=>1);
+
+    my @roles = Baseliner::Model::Permissions->new->user_roles_ids($username);
     for( @roles ) {
         return 1 if $avr{ 'role/'.$_ };
     }

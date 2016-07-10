@@ -403,22 +403,6 @@ sub language            { Baseliner::I18N->language }
 sub languages           { Baseliner::I18N->languages($_[1]) }
 sub installed_languages { Baseliner::I18N->installed_languages }
 
-sub has_action {
-    my ($c,$action) = @_;
-    my $v;
-    if( $action =~ /%/ ) {
-        $v = $c->model('Permissions')->user_has_any_action( action=>$action, username=>$c->username );
-    } else {
-        $v = $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
-    }
-    return $v;
-}
-
-sub is_root {
-    my ($c,$username) = @_;
-    Baseliner->model('Permissions')->is_root( $username || $c->username );
-}
-
 sub loghome {
     my $c = shift;
     my $loghome = $ENV{BASELINER_LOGHOME} // Baseliner->path_to( 'logs' );

@@ -150,11 +150,18 @@ sub _build_logger {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::CI',              'BaselinerX::Type::Event',
-        'Baseliner::Model::Events',    'Baseliner::Model::Topic',
-        'BaselinerX::Type::Fieldlet',  'BaselinerX::Fieldlets',
-        'BaselinerX::Type::Statement', 'Baseliner::Model::Jobs',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
+        'Baseliner::Model::Events',
+        'Baseliner::Model::Jobs',
         'Baseliner::Model::Rules',
+        'Baseliner::Model::Topic',
     );
 
     TestUtils->cleanup_cis();

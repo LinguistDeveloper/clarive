@@ -108,9 +108,12 @@ subtest 'get_usernames_from_user_mids: list usernames from mids' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry('BaselinerX::CI');
+    TestUtils->setup_registry(
+        'BaselinerX::CI',
+        'BaselinerX::Type::Event'
+    );
+
     TestUtils->cleanup_cis();
-    TestUtils->register_ci_events();
 }
 
 sub _build_model {

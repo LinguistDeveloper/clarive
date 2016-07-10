@@ -4,6 +4,7 @@
 <%perl>
     use Baseliner::Utils qw(_nowstamp _array);
     use Baseliner::Sugar qw(config_value);
+    use Baseliner::Model::Permissions;
     use utf8;
     my $iid = "div-" . _nowstamp;
     my $now = _dt();
@@ -11,8 +12,10 @@
     my $custom_forms = $c->stash->{custom_forms}; # config_value( 'job_new.custom_form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
-    my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' ) // 1;
-    my $has_chain_perm = $c->is_root || $c->has_action( 'action.job.chain_change' ) // 1;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+    my $has_no_cal = $permissions->user_has_action( $c->username, 'action.job.no_cal' );
+    my $has_chain_perm = $permissions->user_has_action( $c->username, 'action.job.chain_change' );
 </%perl>
 (function(opts){
     Cla.help_push({ title:_('New Job'), path:'concepts/job' });

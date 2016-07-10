@@ -27,10 +27,12 @@ subtest 'build_where: builds correct where project_security' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -47,18 +49,18 @@ subtest 'build_where: builds correct where project_security' => sub {
 
     cmp_deeply $where,
       {
+        'category.id' => {
+            '$in' => bag( $id_category1, $id_category2 )
+        },
         '$or' => [
             {
-                '_project_security.project' => {
-                    '$in' => [ $project->mid ]
-                },
-                'category.id' => {
-                    '$in' => bag($id_category1, $id_category2)
-                }
+                '_project_security' => undef
             },
             {
-                '_project_security' => undef
-            }
+                '_project_security.project' => {
+                    '$in' => [ undef, $project->mid ]
+                },
+            },
         ]
       };
 };
@@ -77,10 +79,12 @@ subtest 'build_where: builds correct where categories' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -112,10 +116,12 @@ subtest 'build_where: builds correct where categories from filter' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -545,10 +551,12 @@ subtest 'build_where: builds correct where merging filter' => sub {
     my $id_role  = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -695,10 +703,12 @@ subtest 'view: accepts limit and skip' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -731,10 +741,12 @@ subtest 'view: accepts limit and skip from filter' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -767,10 +779,12 @@ subtest 'view: accepts sort and dir' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -802,10 +816,12 @@ subtest 'view: accepts sort and dir as number' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}],
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}],
             }
         ]
     );
@@ -891,9 +907,15 @@ sub _build_view {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
 
     mdb->master->drop;

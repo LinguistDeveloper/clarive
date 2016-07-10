@@ -14,6 +14,25 @@ use BaselinerX::Type::Model::ConfigStore;
 
 use_ok 'Baseliner::Model::Jobs';
 
+subtest 'monitor: returns nothing when user does not have permissions' => sub {
+    _setup();
+
+    my $changeset_mid = _create_changeset();
+
+    my $user = TestSetup->create_user(username => 'foo');
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->status('FINISHED');
+    $job->save;
+
+    my $model = _build_model();
+
+    my ( $count, @rows ) = $model->monitor( { username => $user->username, query_id => -1 } );
+
+    is $count, 0;
+    is @rows, 0;
+};
+
 subtest 'monitor: returns progress 100% when job finished' => sub {
     _setup();
 
@@ -93,18 +112,23 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
-        'Baseliner::DataView::Job'
+        'BaselinerX::Type::Action',    'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',  'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Statement', 'BaselinerX::Type::Service',
+        'BaselinerX::Type::Config',    'BaselinerX::Type::Menu',
+        'BaselinerX::CI',              'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',     'Baseliner::Model::Rules',
+        'BaselinerX::Job',             'Baseliner::Model::Jobs',
+        'Baseliner::Controller::Job',
+        'Baseliner::DataView::Job',
     );
 
     TestUtils->cleanup_cis;
 
-    mdb->rule->drop;
+    mdb->category->drop;
     mdb->job_log->drop;
     mdb->role->drop;
+    mdb->rule->drop;
 
     BaselinerX::Type::Model::ConfigStore->set( key => 'config.job.mask', value => '%s.%s-%08d' );
 }
@@ -333,6 +357,54 @@ sub _create_job {
     return $job;
 }
 
+sub _create_changeset {
+    my (%params) = @_;
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type => 'project',
+                        collection => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+        ]
+    );
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = $params{project} || TestUtils->create_ci('project');
+    my $user = $params{user} || do {
+        my $id_role = $params{id_role}
+          || TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [{ bl => '*' }] } ] );
+
+        TestSetup->create_user( id_role => $id_role, project => $project );
+    };
+
+    my $changeset_mid =
+      TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1, username => $user->name );
+
+    return $changeset_mid;
+}
 
 sub _build_model {
     Baseliner::Model::Jobs->new(@_);

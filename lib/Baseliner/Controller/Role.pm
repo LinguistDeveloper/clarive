@@ -6,6 +6,7 @@ use Try::Tiny;
 use Encode;
 use 5.010;
 use experimental 'autoderef';
+use Hash::Diff ();
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
@@ -14,35 +15,110 @@ use BaselinerX::Type::Model::Actions;
 
 with 'Baseliner::Role::ControllerValidator';
 
-register 'action.admin.role' => { name => 'Admin Roles' };
+register 'action.admin.role' => { name => _locl('Admin Roles') };
 register 'menu.admin.role' => {
-    label    => 'Roles',
+    label    => _locl('Roles'),
+    title    => _locl('Roles'),
     url_comp => '/role/grid',
     actions  => ['action.admin.role'],
-    title    => 'Roles',
     index    => 81,
     icon     => Util->icon_path('role')
 };
 register 'menu.admin.user_role_separator' => { separator => 1, index => 85 };
 
 sub role_detail_json : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
+
     my $id = $p->{id};
-    my @actions;
-    if( defined $id ) {
-        my $r = mdb->role->find_one({ id=>"$id" });
-        for my $user_action (@{$r->{actions}}){
-            eval { # it may fail for keys that are not in the registry
-                my $action = $c->model('Registry')->get( $user_action->{action} );
-                push @actions, { action=>$user_action->{action}, description=>$action->name, bl=>$user_action->{bl} };
-            };
-        }
-        if( $r ) {
-            $c->stash->{json} = { data=>[{  id=>$r->{id}, name=>$r->{role}, description=>$r->{description}, mailbox=>$r->{mailbox}, dashboards=>$r->{dashboards}, actions=>[ @actions ] }]  };
-            $c->forward('View::JSON');
+
+    my $data = [];
+
+    if ( defined $id ) {
+        my $role = mdb->role->find_one( { id => "$id" } );
+
+        if ($role) {
+            my @actions;
+            for my $user_action ( @{ $role->{actions} } ) {
+                eval {    # it may fail for keys that are not in the registry
+                    my $action = $c->model('Registry')->get( $user_action->{action} );
+
+                    push @actions,
+                      {
+                        action      => $user_action->{action},
+                        description => $action->name,
+                        bounds      => $user_action->{bounds},
+                        bounds_available => ($action->bounds && @{ $action->bounds}) ? \1 : \0,
+                      };
+                };
+            }
+
+            $data = [
+                {
+                    id          => $role->{id},
+                    name        => $role->{role},
+                    description => $role->{description},
+                    mailbox     => $role->{mailbox},
+                    dashboards  => $role->{dashboards},
+                    actions     => [@actions]
+                }
+            ];
         }
     }
+
+    $c->stash->{json} = { data => $data };
+    $c->forward('View::JSON');
+}
+
+sub action_info : Local {
+    my ($self, $c) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action         = $p->{action};
+    my $current_bounds = _decode_json_safe($p->{current_bounds}, []);
+
+    my $permissions = Baseliner::Model::Permissions->new;
+    my $action_info = $permissions->action_info($action);
+
+    if ($action_info) {
+        my $bounds = [ map { { key => $_->{key}, name => $_->{name}, depends => $_->{depends} } } @{ $action_info->bounds } ];
+
+        $permissions->map_action_bounds($action, $current_bounds);
+
+        my $info = {
+            action => $action,
+            bounds => $bounds,
+            values => $current_bounds
+        };
+
+        $c->stash->{json} = { success => \1, info => $info };
+    }
+    else {
+        $c->stash->{json} = { success => \0 };
+    }
+
+    $c->forward('View::JSON');
+}
+
+sub bounds : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action = $p->{action};
+    my $bound  = $p->{bound};
+    my $filter = _decode_json_safe( $p->{filter} );
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    my $data = $permissions->action_bounds_available($action, $bound, %$filter);
+
+    unshift @$data, { id => '', title => 'Any' };
+
+    $c->stash->{json} = { data => $data, totalCount => scalar(@$data) };
+    $c->forward('View::JSON');
 }
 
 sub json : Local {
@@ -74,11 +150,9 @@ sub json : Local {
         my @invalid_actions;
         for my $act (@$rs_actions){
             my $key = $act->{action};
-            my $bl = $act->{bl};
             try {
                 my $action = Baseliner::Core::Registry->get( $key );
                 my $str = { name=>$action->name,  key=>$key };
-                $str->{bl} = $bl if $bl ne '*';
                 push @actions, $str;
             } catch {
                 #my $err = shift;
@@ -150,24 +224,24 @@ sub action_tree : Local {
         return;
     }
 
-    my $actions = $self->_build_model_actions;
     my $permissions = Baseliner::Model::Permissions->new;
 
-    my @actions = $actions->list;
+    my $model_actions = $self->_build_model_actions;
+    my @actions = $model_actions->list;
 
     if ( length( my $query = $c->req->params->{query} ) ) {
         my @qrs = map { qr/\Q$_\E/i } split /\s+/, $query;
         my @tree_query;
-        foreach my $act ( sort { $a->{key} cmp $b->{key} } @actions ) {
+        foreach my $act ( sort { $a->key cmp $b->key } @actions ) {
 
             #( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-            my $key = $act->{key};
+            my $key = $act->key;
             ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-            my $name = $act->{name};
+            my $name = $act->name;
             my $txt  = "$key,$name";
             if ( List::MoreUtils::all( sub { $txt =~ $_ }, @qrs ) ) {
                 my $icon = '/static/images/icons/action.svg';
-                if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
+                if ( $role && $permissions->role_has_action( $role, $key ) ) {
                     $icon = '/static/images/icons/checkbox.svg';
                 }
 
@@ -175,6 +249,7 @@ sub action_tree : Local {
                   {
                     id   => $key,
                     text => ( $name ne $key ? "$name" : "$key" ),
+                    bounds_available => ($act->bounds && @{ $act->bounds}) ? \1 : \0,
                     icon => $icon,
                     leaf => \1
                   };
@@ -193,8 +268,8 @@ sub action_tree : Local {
     }
     else {
         my %folders;
-        for my $act ( sort { $a->{key} cmp $b->{key} } @actions ) {
-            my $key    = $$act{key};
+        for my $act ( sort { $a->key cmp $b->key } @actions ) {
+            my $key    = $act->key;
             my @kp     = split /\./, $key;
             my $perm   = pop @kp;
             my $folder = pop @kp;
@@ -213,7 +288,7 @@ sub action_tree : Local {
             my $icon = '/static/images/icons/action.svg';
 
             my $text = $act->{name};
-            if ( $role && $permissions->has_role_action( action => $key, role => $role ) ) {
+            if ( $role && $permissions->role_has_action( $role, $key) ) {
                 if (!$folders{$fkey}->{_modified}) {
                     $folders{$fkey}->{_modified}++;
                     $folders{$fkey}->{icon} = '/static/images/icons/file.svg';
@@ -222,8 +297,14 @@ sub action_tree : Local {
                 $icon = '/static/images/icons/checkbox.svg';
             }
 
-            my $node =
-              { text => $text, id => $key, key => $key, icon => $icon, leaf => \1 };
+            my $node = {
+                text             => $text,
+                id               => $key,
+                key              => $key,
+                bounds_available => ( $act->bounds && @{ $act->bounds } ) ? \1 : \0,
+                icon             => $icon,
+                leaf             => \1
+            };
 
             push @{ $folders{$fkey}{children} }, $node;
         }
@@ -286,14 +367,6 @@ sub update : Local {
 
     my $name = $p->{name};
     my $id   = $p->{id};
-    my $row  = {
-        id          => $id,
-        role        => $p->{name},
-        description => $p->{description},
-        mailbox     => $p->{mailbox},
-        dashboards  => $p->{dashboards},
-        actions     => $p->{role_actions}
-    };
 
     if ( mdb->role->find_one( { role => $name, $id ? ( id => { '$ne' => $id } ) : () } ) ) {
         $c->stash->{json} = {
@@ -303,6 +376,57 @@ sub update : Local {
         };
         $c->forward('View::JSON');
         return;
+    }
+
+    my $row = {
+        id          => $id,
+        role        => $p->{name},
+        description => $p->{description},
+        mailbox     => $p->{mailbox},
+        dashboards  => $p->{dashboards},
+        actions     => []
+    };
+
+    foreach my $action ( _array $p->{role_actions} ) {
+        my $key = $action->{action};
+        my @bounds = _array $action->{bounds};
+
+        foreach my $bound (@bounds) {
+            if (delete $bound->{_deny}) {
+                $bound->{_deny} = 1;
+            }
+
+            foreach my $key (keys %$bound) {
+                next if $key eq '_deny';
+
+                delete $bound->{$key} if $bound->{$key} eq '' || $key =~ m/^_/;
+            }
+        }
+
+        my @bounds_uniq;
+        for (my $i = 0; $i < @bounds; $i++) {
+            my $current = $bounds[$i];
+
+            my $uniq = 1;
+            for (my $j = $i + 1; $j < @bounds; $j++) {
+                my $diff = Hash::Diff::diff($current, $bounds[$j]);
+                if (!%$diff) {
+                    $uniq = 0;
+                    last;
+                }
+            }
+
+            next unless $uniq;
+
+            push @bounds_uniq, $current;
+        }
+
+        push @bounds_uniq, {} unless @bounds_uniq;
+
+        push @{ $row->{actions} }, {
+            action => $key,
+            bounds => \@bounds_uniq
+        };
     }
 
     if ( $id && !mdb->role->find_one( { id => "$id" }, { _id => 1 } ) ) {
@@ -390,16 +514,16 @@ sub duplicate : Local {
             }
             $r->{role}  = $new_role_title;
             mdb->role->insert($r);
-            my $dashboards = mdb->dashboard->find()->all;
-            foreach my $dashboard ($dashboards){
+            my @dashboards = mdb->dashboard->find()->all;
+            foreach my $dashboard (@dashboards){
                 my $roles = $dashboard->{role};
                 if (grep { $_==$id_duplicated_role } @$roles ){
                     push $roles, $r->{id};
                     mdb->dashboard->update({ _id=>$dashboard->{_id} }, $dashboard);
                 }
             }
-            my @rs_workflows = mdb->workflow->find();
-            foreach my $workflow (@rs_workflows){
+            my @workflows = mdb->workflow->find()->all;
+            foreach my $workflow (@workflows){
                 delete $workflow->{_id};
                 $workflow->{id_role} = $r->{id};
                 mdb->workflow->insert( $workflow );

@@ -9,7 +9,41 @@ use Baseliner::Model::Permissions;
 use Try::Tiny;
 use experimental 'switch', 'smartmatch', 'autoderef';
 
-register 'action.ci.admin' => { name => 'Admin CIs' };
+register 'action.ci.view' => {
+    name   => _locl('View CIs'),
+    bounds => [
+        {
+            key     => 'role',
+            name    => 'Role',
+            handler => 'Baseliner::Model::CI=bounds_role',
+        },
+        {
+            key     => 'collection',
+            name    => 'Collection',
+            depends => ['role'],
+            handler => 'Baseliner::Model::CI=bounds_collection',
+        }
+    ]
+};
+
+register 'action.ci.admin' => {
+    name   => _locl('Admin CIs'),
+    bounds => [
+        {
+            key     => 'role',
+            name    => 'Role',
+            handler => 'Baseliner::Model::CI=bounds_role',
+        },
+        {
+            key     => 'collection',
+            name    => 'Collection',
+            depends => ['role'],
+            handler => 'Baseliner::Model::CI=bounds_collection',
+        }
+    ],
+    extends => ['action.ci.view']
+};
+
 # register 'menu.tools.ci' => {
 #     label    => 'CI Viewer',
 #     url_comp => '/comp/ci-viewer-tree.js',
@@ -151,7 +185,9 @@ sub tree_roles {
         my $role = $_->{role};
         my $name = _loc ($_->{name});
 
-        next unless $permissions->user_can_view_ci_group( $user, $name );
+        next
+          unless $permissions->user_has_action( $user, 'action.ci.view',
+            bounds => { role => $role, collection => '*' } );
 
         $role = 'Generic' if $name eq '';
         push @tree,
@@ -196,10 +232,12 @@ sub tree_classes {
         my $item       = $package;
         my $collection = $package->collection;
 
+        next
+          unless $permissions->user_has_action( $user, 'action.ci.view',
+            bounds => { role => $role, collection => $collection } );
+
         my $ci_form = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
-
-        next unless $permissions->user_can_view_ci( $user, $item );
 
         push @tree,
           {
@@ -713,15 +751,9 @@ sub store : Local : Does('Ajax') {
         // ( $collection ? 'BaselinerX::CI::' . $collection : '' ) )
     {
 
-        if ( $p->{security} ) {         #Parámetro desde informes
-            my @security;
-            my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username => $c->username );
-            for my $collections (@cols_roles) {
-                if ( exists $collections->{$class} ) {
-                    push @security, keys $collections->{$class};
-                }
-            }
-            $mids = [ _array($mids), _unique @security ];
+        if( $p->{security} ){  #Parámetro desde informes
+            my @security = Baseliner::Model::Permissions->new->user_security_dimension($c->username, $class);
+            $mids = [ _array($mids), _unique @security];
         }
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
@@ -1106,7 +1138,8 @@ sub load : Local {
         my $collection = Util->to_base_class($class);
 
         _fail( _loc( 'User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection ) )
-          unless $permissions->user_can_view_ci($c->username, $collection);
+          unless $permissions->user_has_action( $c->username, 'action.ci.view',
+            bounds => { role => '*', collection => $collection } );
 
         my $rec;
 
@@ -1145,8 +1178,10 @@ sub new_ci : Local {
     my $permissions = $self->_build_permissions;
 
     try {
-        _fail(_loc('User %1 not authorized to admin CI of class %2', $c->username, $collection) )
-            unless $permissions->user_can_admin_ci($c->username, $collection);
+        _fail( _loc( 'User %1 not authorized to admin CI of class %2', $c->username, $collection ) )
+          unless $permissions->user_has_action( $c->username, 'action.ci.admin',
+            bounds => { role => '*', collection => $collection } );
+
         my $obj = ci->$collection;
         my $rec = {};
         my $attrib = $obj->attribute_default_values;
@@ -1179,7 +1214,8 @@ sub delete : Local {
     my $permissions = $self->_build_permissions;
 
     _fail( _loc( 'User %1 not authorized to delete CI %2', $c->username, $ci_collection ) )
-        unless $permissions->user_can_admin_ci( $c->username, $ci_collection );
+      unless $permissions->user_has_action( $c->username, 'action.ci.admin',
+        bounds => { role => '*', collection => $ci_collection } );
 
     my @ci_project_packages = Baseliner::Utils->packages_that_do('Baseliner::Role::CI::Project');
     my $class_package       = 'BaselinerX::CI::' . $ci_collection;
@@ -1238,7 +1274,8 @@ sub export : Local {
 
     my $permissions = $self->_build_permissions;
     _fail( _loc( 'User %1 not authorized to export CI %2', $c->username, $p->{ci_type} ) )
-      unless $permissions->user_can_view_ci( $c->username, $p->{ci_type} );
+      unless $permissions->user_has_action( $c->username, 'action.ci.view',
+        bounds => { collection => $p->{ci_type} } );
 
     try {
         my @cis = map { ci->new( $_ ) } _array $mids;
@@ -1500,7 +1537,8 @@ sub service_run : Local {
     my $permissions = $self->_build_permissions;
 
     _fail( _loc( 'User %1 not authorized to admin CIs of class %2', $c->username, $collection ) )
-        unless $permissions->user_can_admin_ci( $c->username, $collection );
+      unless $permissions->user_has_action( $c->username, 'action.ci.admin',
+        bounds => { role => '*', collection => $collection } );
 
     $c->stash->{json} = try {
         my $service = Baseliner::Core::Registry->get( $p->{key} );
@@ -1547,14 +1585,18 @@ sub edit : Local {
         $collection = $doc->{collection};
 
         _fail( _loc( 'User %1 not authorized to view CI %2 of class %3', $c->username, $mid, $collection ) )
-          unless $permissions->user_can_view_ci( $c->username, $collection );
+          unless $permissions->user_has_action( $c->username, 'action.ci.view',
+            bounds => { role => '*', collection => $collection } );
     }
     else {
         _fail( _loc( 'User %1 not authorized to view CI class %2', $c->username, $collection ) )
-          unless $permissions->user_can_view_ci( $c->username, $collection );
+          unless $permissions->user_has_action( $c->username, 'action.ci.view',
+            bounds => { role => '*', collection => $collection } );
     }
 
-    my $has_permission_to_save = $permissions->user_can_admin_ci( $c->username, $collection );
+    my $has_permission_to_save =
+      $permissions->user_has_action( $c->username, 'action.ci.admin',
+        bounds => { role => '*', collection => $collection } );
 
     $c->stash->{save} = $has_permission_to_save ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-editor.js';
@@ -1566,7 +1608,7 @@ sub import_all : Local {
 
     my $permissions = $self->_build_permissions;
     _fail( _loc( 'User %1 not authorized to import CIs', $c->username ) )
-      unless $permissions->user_can_admin_ci( $c->username );
+      unless $permissions->user_has_action( $c->username, 'action.ci.admin' );
 
     my $text = $p->{text};
     my $format = $p->{format};
@@ -1701,10 +1743,10 @@ sub grid : Local {
 
     my $permissions = $self->_build_permissions;
 
-    my $has_permission_to_save = $permissions->user_can_admin_ci( $c->username, $collection );
+    my $has_permission_to_save = $permissions->user_has_action( $c->username, 'action.ci.admin',
+        bounds => { role => '*', collection => $collection } );
 
     my $class = Util->to_ci_class($collection);
-
     my $template =  $class->can('custom_grid') ?  $class->custom_grid : '/comp/ci-gridtree.js';
 
     $c->stash->{save} = $has_permission_to_save ? 'true' : 'false';
@@ -1875,7 +1917,7 @@ sub user_can_search {
     my $self = shift;
     my ($username) = @_;
 
-    return $self->_build_permissions->user_can_search_ci($username);
+    return $self->_build_permissions->user_has_action($username, 'action.search.ci');
 }
 
 sub _build_permissions {

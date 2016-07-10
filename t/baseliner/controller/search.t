@@ -54,7 +54,13 @@ sub _build_controller {
 }
 
 sub _setup {
-    TestUtils->setup_registry( 'Baseliner::Controller::CI', 'Baseliner::Model::Jobs', 'Baseliner::Model::Topic', );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'Baseliner::Controller::CI',
+        'Baseliner::Model::Jobs',
+        'Baseliner::Model::Topic',
+    );
 }
 
 sub _build_c {

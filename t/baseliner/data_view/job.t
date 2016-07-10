@@ -46,66 +46,6 @@ subtest 'build_where: builds correct where bl' => sub {
     cmp_deeply $where, { bl => { '$in' => [ $bl->mid ] } };
 };
 
-subtest 'build_where: builds correct where bl when user has bl associated' => sub {
-    _setup();
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {   action => 'action.job.viewall',
-                bl     => 'PROD'
-            },
-        ]
-    );
-
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
-
-    my $view = _build_view();
-    my $where = $view->build_where( username => 'user', query_id => -1, filter => { bls => 'PROD' } );
-
-    cmp_deeply $where, { bl => { '$in' => ['PROD'] }, projects => { '$in' => [ $project->mid ] } };
-};
-
-subtest 'build_where: builds correct where bl when user has bl associated' => sub {
-    _setup();
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {   action => 'action.job.viewall',
-                bl     => 'PROD'
-            },
-        ]
-    );
-
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
-
-    my $view = _build_view();
-    my $where = $view->build_where( username => 'user', query_id => -1, filter => { bls => 'PROD' } );
-
-    cmp_deeply $where, { bl => { '$in' => ['PROD'] }, projects => { '$in' => [ $project->mid ] } };
-};
-
-subtest 'build_where: builds correct where bl when user has other bl associated' => sub {
-    _setup();
-
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {   action => 'action.job.viewall',
-                bl     => 'PROD'
-            },
-        ]
-    );
-
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
-
-    my $view = _build_view();
-    my $where = $view->build_where( username => 'user', query_id => -1, filter => { bls => 'TEST' } );
-
-    cmp_deeply $where, { bl => '', projects => { '$in' => [ $project->mid ] } };
-};
-
 subtest 'build_where: builds correct where natures' => sub {
     _setup();
 
@@ -132,25 +72,34 @@ subtest 'build_where: builds correct where when user has project associated' => 
     _setup();
 
     my $project       = TestUtils->create_ci_project;
+    my $project2      = TestUtils->create_ci_project;
     my $other_project = TestUtils->create_ci_project;
     my $id_role       = TestSetup->create_role(
         actions => [
-            {   action => 'action.job.viewall',
-                bl     => 'PROD'
+            {
+                action => 'action.job.viewall',
+                bounds => [ { } ]
             },
         ]
     );
 
-    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    TestSetup->create_user(
+        username         => 'user',
+        project_security => {
+            $id_role => {
+                project => [$project, $project2]
+            }
+        }
+    );
 
     my $view  = _build_view();
     my $where = $view->build_where(
         username => 'user',
         query_id => -1,
-        filter   => { filter_project => [ $project->mid, $other_project->mid ] }
+        filter   => { filter_project => [ $project->mid, $project2->mid, $other_project->mid ] }
     );
 
-    cmp_deeply $where, { projects => { '$in' => [ $project->mid ] }, bl => { '$in' => ['PROD'] } };
+    cmp_deeply $where->{projects}, { '$in' => [ $project->mid, $project2->mid ] };
 };
 
 subtest 'build_where: builds correct where statuses' => sub {
@@ -180,9 +129,9 @@ subtest 'find: returns jobs filtered by where' => sub {
 
     my $id_topic_rule = _create_topic_form();
 
-    my $project           = TestUtils->create_ci_project;
-    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
-    my $user              = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
     my $topic_mid         = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule           = TestSetup->create_rule( rule_when => 'promote' );
@@ -226,9 +175,9 @@ subtest 'find: returns jobs filtered by status' => sub {
 
     my $id_topic_rule = _create_topic_form();
 
-    my $project           = TestUtils->create_ci_project;
-    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
-    my $user              = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
     my $topic_mid         = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule           = TestSetup->create_rule( rule_when => 'promote' );
@@ -259,8 +208,8 @@ subtest 'find: returns jobs filtered by status' => sub {
     };
     my $view = _build_view();
 
-    my $rs
-        = $view->find( username => $user->username, filter => { job_state_filter => '{"CANCELLED":1,"APPROVAL":0}' } );
+    my $rs =
+      $view->find( username => $user->username, filter => { job_state_filter => '{"CANCELLED":1,"APPROVAL":0}' } );
 
     is $rs->next->{mid}, $job_ci3->{mid};
     is $rs->count, '1';
@@ -271,9 +220,9 @@ subtest 'find: returns jobs filtered by bls' => sub {
 
     my $id_topic_rule = _create_topic_form();
 
-    my $project           = TestUtils->create_ci_project;
-    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
-    my $user              = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
     my $topic_mid         = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule           = TestSetup->create_rule( rule_when => 'promote' );
@@ -308,7 +257,6 @@ subtest 'find: returns jobs filtered by bls' => sub {
 
     is $rs->next->{mid}, $job_ci->{mid};
     is $rs->count, '1';
-
 };
 
 subtest 'find: returns empty if user has not permissions to view jobs filtered by bl' => sub {
@@ -317,12 +265,13 @@ subtest 'find: returns empty if user has not permissions to view jobs filtered b
     my $id_topic_rule = _create_topic_form();
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
 
-    my $project   = TestUtils->create_ci_project;
-    my $bl        = TestUtils->create_ci( 'bl', name => 'PROD', bl => 'PROD' );
-    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => 'DEV' } ] );
-    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = TestUtils->create_ci_project;
+    my $bl = TestUtils->create_ci( 'bl', name => 'PROD', bl => 'PROD' );
+    my $id_role =
+      TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ { bl => 'DEV' } ] } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
-    my $id_rule   = TestSetup->create_rule( rule_when => 'promote' );
+    my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
     my $job_ci;
     my $job_ci2;
 
@@ -355,7 +304,7 @@ subtest 'find: returns jobs filtered by period' => sub {
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
 
     my $project   = TestUtils->create_ci_project;
-    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule   = TestSetup->create_rule( rule_when => 'promote' );
@@ -392,7 +341,7 @@ subtest 'find: returns job filtered by type' => sub {
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
 
     my $project   = TestUtils->create_ci_project;
-    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $job_ci;
@@ -428,7 +377,7 @@ subtest 'find: returns job filtered by nature' => sub {
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
 
     my $project      = TestUtils->create_ci_project;
-    my $id_role      = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role      = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
     my $user         = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid    = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $nature       = TestUtils->create_ci( 'nature', name => 'JAR' );
@@ -470,7 +419,7 @@ subtest 'find: returns job filtered by project' => sub {
     my $project       = TestUtils->create_ci_project;
     my $other_project = TestUtils->create_ci_project;
 
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid       = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $other_topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $other_project );
@@ -509,7 +458,7 @@ subtest 'find: returns empty if user is not associated to the project to filter'
     my $project       = TestUtils->create_ci_project;
     my $other_project = TestUtils->create_ci_project;
 
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid       = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $other_topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $other_project );
@@ -543,9 +492,9 @@ subtest 'find: returns jobs filtered by query_id' => sub {
 
     my $id_topic_rule = _create_topic_form();
 
-    my $project           = TestUtils->create_ci_project;
-    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
-    my $user              = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
     my $topic_mid         = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule           = TestSetup->create_rule( rule_when => 'promote' );
@@ -583,7 +532,8 @@ sub _create_topic_form {
 
     return TestSetup->create_rule_form(
         rule_tree => [
-            {   "attributes" => {
+            {
+                "attributes" => {
                     "data" => {
                         id_field       => 'Status',
                         "bd_field"     => "id_category_status",
@@ -594,7 +544,8 @@ sub _create_topic_form {
                     name  => 'Status',
                 }
             },
-            {   "attributes" => {
+            {
+                "attributes" => {
                     "data" => {
                         id_field       => 'from',
                         "fieldletType" => "fieldlet.datetime",
@@ -603,7 +554,8 @@ sub _create_topic_form {
                     name  => 'From',
                 }
             },
-            {   "attributes" => {
+            {
+                "attributes" => {
                     "data" => {
                         id_field       => 'to',
                         "fieldletType" => "fieldlet.datetime",
@@ -612,7 +564,8 @@ sub _create_topic_form {
                     name  => 'To',
                 }
             },
-            {   "attributes" => {
+            {
+                "attributes" => {
                     "data" => {
                         "bd_field"     => "project",
                         "fieldletType" => "fieldlet.system.projects",
@@ -634,16 +587,19 @@ sub _build_view {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
+        'BaselinerX::Type::Action',  'BaselinerX::Type::Config',
+        'BaselinerX::Type::Event',   'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service', 'BaselinerX::Type::Statement',
+        'BaselinerX::CI',            'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',   'Baseliner::Model::Rules',
+        'Baseliner::Model::Jobs',    'Baseliner::Controller::Job',
     );
 
     TestUtils->cleanup_cis;
+
     mdb->category->drop;
-    mdb->topic->drop;
-    mdb->rule->drop;
     mdb->job_log->drop;
     mdb->role->drop;
+    mdb->rule->drop;
+    mdb->topic->drop;
 }

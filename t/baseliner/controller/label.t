@@ -13,7 +13,6 @@ BEGIN { TestEnv->setup }
 use TestUtils qw(:catalyst mock_time);
 use TestSetup;
 
-
 use_ok 'Baseliner::Controller::Label';
 
 subtest 'list: returns labels' => sub {
@@ -506,11 +505,16 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',            'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',                     'BaselinerX::Fieldlets',
-        'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',            'BaselinerX::LcController',
-        'BaselinerX::Type::Model::ConfigStore', 'Baseliner::Model::TopicExporter'
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Label',
     );
     TestUtils->cleanup_cis;
 

@@ -6,7 +6,6 @@ use Try::Tiny;
 use experimental 'smartmatch';
 use Girl;
 use Baseliner::Utils;
-use Baseliner::Model::Topic;
 use BaselinerX::CI::bl;
 use BaselinerX::CI::GitRevision;
 use BaselinerX::GitBranch;
@@ -687,6 +686,7 @@ sub _find_release_versions_by_projects {
     my @id_statuses = map { $_->{id_status} }
       ci->status->find( { type => { '$not' => qr/I|F|FC/ } } )->fields( { id_status => 1 } )->all;
 
+    require Baseliner::Model::Topic;
     my $topics_model = Baseliner::Model::Topic->new;
     foreach my $release_category (@release_categories) {
         my $meta = $topics_model->get_meta( undef, $release_category->{id} );
@@ -733,6 +733,7 @@ sub _find_release_version_by_revisions {
     my $changeset = mdb->topic->find_one({mid => $changeset_rel->{mid}});
     return unless $changeset;
 
+    require Baseliner::Model::Topic;
     my $topics_model = Baseliner::Model::Topic->new;
     return unless my ($release_field) =
       $topics_model->get_meta_fields_by_key( $changeset->{mid}, 'fieldlet.system.release' );

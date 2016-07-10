@@ -7,24 +7,6 @@ use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
 
-register 'registor.action.ci' => {
-    generator => sub {
-        my %actions_admin_cis;
-        for my $role ( Baseliner::Controller::CI->list_roles ) {
-
-            my $name = $role->{role};
-            for my $class ( packages_that_do( $role->{role} ) ) {
-                my ($collection) = $class =~ /::CI::(.*?)$/;
-                my $id_action_admin = "action.ci.admin.".$role->{name}.".".$collection;
-                $actions_admin_cis{$id_action_admin} = { name => $id_action_admin };
-                my $id_action_view = "action.ci.view.".$role->{name}.".".$collection;
-                $actions_admin_cis{$id_action_view} = { name => $id_action_view };
-            }
-        }
-        return \%actions_admin_cis;
-    }
-};
-
 register 'service.ci.update' => {
     handler=>sub{
         my ($self,$c,$config)=@_;
@@ -37,6 +19,38 @@ register 'service.ci.update' => {
     },
      icon => '/static/images/icons/class.svg',
 };
+
+sub bounds_role {
+    my $self = shift;
+
+    my @roles;
+    for my $role ( Baseliner::Controller::CI->list_roles ) {
+        push @roles, $role->{role};
+    }
+
+    return sort { $a->{title} cmp $b->{title} } map { { id => $_, title => $_ } } @roles;
+}
+
+sub bounds_collection {
+    my $self = shift;
+    my (%params) = @_;
+
+    my @roles = $params{role} ? ( { role => $params{role} } ) : ( Baseliner::Controller::CI->list_roles );
+
+    my @collections;
+
+    for my $role ( @roles ) {
+        my $name = $role->{role};
+        for my $class ( packages_that_do( $role->{role} ) ) {
+            my ($collection) = $class =~ /::CI::(.*?)$/;
+
+            push @collections, $collection;
+        }
+    }
+
+    return sort { $a->{title} cmp $b->{title} } map { { id => $_, title => $_ } } @collections;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

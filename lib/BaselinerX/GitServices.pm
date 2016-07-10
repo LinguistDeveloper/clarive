@@ -3,15 +3,16 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use BaselinerX::GitElement;
 use Try::Tiny;
 
 #with 'Baseliner::Role::Namespace::Create';
 with 'Baseliner::Role::Service';
 
-register 'action.git.close_branch' => {name => "User can close branches"};
-register 'action.git.repository_access' => {name => "Access git repository for pull/push"};
-register 'action.git.repository_read' => {name => "Access git repository for pull"};
-register 'action.git.update_tags' => {name => "Can update system tags in repositories"};
+register 'action.git.close_branch' => {name => _locl("User can close branches")};
+register 'action.git.repository_access' => {name => _locl("Access git repository for pull/push")};
+register 'action.git.repository_read' => {name => _locl("Access git repository for pull")};
+register 'action.git.update_tags' => {name => _locl("Can update system tags in repositories")};
 
 register 'config.git' => {
     metadata => [
@@ -320,32 +321,6 @@ sub job_elements {
         $job->job_stash->{elements} = $e;
     }
 }
-
-package BaselinerX::GitElement;
-use Moose;
-use Moose::Util::TypeConstraints;
-use Baseliner::Utils;
-
-with 'BaselinerX::Job::Element';
-
-has mask => qw(is rw isa Str default /application/subapp/nature);
-has sha => qw(is rw isa Str);
-
-around BUILDARGS => sub {
-    my $orig = shift;
-    my $self = shift;
-    my %p = @_;
-
-    if( ! exists $p{path} && ! exists $p{name} ) {
-        if(  $p{ fullpath } =~ /^(.*)\/(.*?)$/ ) {
-            ( $p{path}, $p{name} ) = ( $1, $2 );
-        }
-        else {
-            ( $p{path}, $p{name} ) = ( '', $p{fullpath} );
-        }
-    }
-    $self->$orig( %p );
-};
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

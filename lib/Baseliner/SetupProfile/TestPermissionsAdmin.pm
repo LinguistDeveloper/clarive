@@ -83,7 +83,7 @@ sub setup {
     TestSetup->create_user(
         id_role => {
             role    => 'CanAdminRules',
-            actions => [ { action => 'action.home.show_menu' }, { action => 'action.admin.rules' } ]
+            actions => [ { action => 'action.home.show_menu' }, { action => 'action.admin.rules', bounds => [{}] } ]
         },
         project  => $project,
         username => 'can_admin_rule',

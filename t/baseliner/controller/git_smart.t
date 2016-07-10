@@ -4,13 +4,11 @@ use warnings;
 use Test::More;
 use Test::MonkeyMock;
 use Test::Deep;
-use Test::TempDir::Tiny;
 use Test::Fatal;
 use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
-use TestUtils ':catalyst';
 use TestSetup;
 use TestUtils ':catalyst';
 use TestGit;
@@ -1363,13 +1361,18 @@ sub _create_rule {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'BaselinerX::CI',          'BaselinerX::Events',
-        'Baseliner::Model::Rules',
-        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Events',
         'BaselinerX::Fieldlets',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::GitServices',
+        'Baseliner::Model::Rules',
         'Baseliner::Model::Topic',
-
     );
 
     TestUtils->cleanup_cis;

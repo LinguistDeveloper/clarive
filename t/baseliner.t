@@ -14,6 +14,7 @@ BEGIN {
     $root = Cwd::realpath( dirname(__FILE__) );
     TestEnv->setup( base => "$root/data/app-base", home => "$root/data/app-base/app-home" );
 }
+use TestUtils;
 
 use Class::Load qw(is_class_loaded);
 
@@ -30,6 +31,8 @@ require Baseliner;
 sub Baseliner::config { $config };    # XXX had to monkey patch this one so config works
 
 subtest 'core encrypt-decrypt working' => sub {
+    _setup();
+
     Baseliner->config->{decrypt_key} = '11111';
 
     my $enc = Baseliner->encrypt('123');
@@ -37,6 +40,8 @@ subtest 'core encrypt-decrypt working' => sub {
 };
 
 subtest 'plugins public/ available for static serving' => sub {
+    _setup();
+
     my $app = Baseliner->build_app();   ## FIXME this can only be done once! Baseliner->new doesnt work, etc.
 
     ok grep { $_ =~ m{app-base/plugins/foo-plugin/public} } @{ Baseliner->config->{static}->{include_path} };
@@ -46,3 +51,12 @@ subtest 'plugins public/ available for static serving' => sub {
 };
 
 done_testing;
+
+sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+    );
+}

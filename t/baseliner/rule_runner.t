@@ -234,9 +234,14 @@ sub _build_runner {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
         'Baseliner::Model::Rules'
     );
 

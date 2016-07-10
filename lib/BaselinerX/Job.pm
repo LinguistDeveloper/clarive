@@ -48,9 +48,33 @@ register 'config.job' => {
 };
 
 register 'action.job.create' => { name=>_locl('Create New Jobs') };
-register 'action.job.resume' => { name=>_locl('Resume Jobs') };
-register 'action.job.cancel' => { name=>_locl('Cancel Jobs') };
-register 'action.job.delete' => { name=>_locl('Delete Job') };
+register 'action.job.resume' => { name=>_locl('Resume Jobs'),
+    bounds => [
+        {
+            key     => 'bl',
+            name    => _locl('Environment'),
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
+register 'action.job.cancel' => { name=>_locl('Cancel Jobs'),
+    bounds => [
+        {
+            key     => 'bl',
+            name    => _locl('Environment'),
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
+register 'action.job.delete' => { name=>_locl('Delete Job'),
+    bounds => [
+        {
+            key     => 'bl',
+            name    => _locl('Environment'),
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
 register 'action.job.approve_all' => { name=>_locl('Approve/Reject any Job') };
 register 'action.job.view_monitor' => { name=>_locl('View job monitor') };
 

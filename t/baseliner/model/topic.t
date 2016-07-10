@@ -15,6 +15,7 @@ use List::MoreUtils qw(pairwise);
 use Capture::Tiny qw(capture);
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
+use BaselinerX::Type::Action;
 use BaselinerX::Type::Event;
 use BaselinerX::Type::Statement;
 use BaselinerX::Type::Event;
@@ -22,32 +23,102 @@ use Baseliner::Utils qw(_load _file);
 
 use_ok 'Baseliner::Model::Topic';
 
-subtest 'get next status for user' => sub {
+subtest 'next_status_for_user: returns next status for user' => sub {
     _setup();
-    _setup_user();
 
-    my $base_params = _topic_setup();
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role;
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
-    my $id_status_from = $base_params->{status_new};
-    my $id_status_to = ci->status->new( name => 'Dev', type => 'I' )->save;
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
 
-    # create a workflow
-    my $workflow =
-      [ { id_role => '1', id_status_from => $id_status_from, id_status_to => $id_status_to, job_type => undef } ];
-    mdb->category->update( { id => "$base_params->{category}" },
-        { '$set' => { workflow => $workflow }, '$push' => { statuses => $id_status_to } } );
+    my $workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            job_type       => undef
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_finished->id_status,
+            job_type       => 'promote'
+        }
+    ];
 
-    my @statuses = model->Topic->next_status_for_user(
-        username       => 'root',
-        id_category    => $base_params->{category},
-        id_status_from => $id_status_from,
+    my $id_category = TestSetup->create_category(
+        statuses => [ $status_in_progress->id_status, $status_new->id_status, $status_finished->id_status ],
+        workflow => $workflow
+    );
+
+    my $topic_mid = TestSetup->create_topic();
+
+    my @statuses = _build_model()->next_status_for_user(
+        username       => $user->username,
+        id_category    => $id_category,
+        id_status_from => $status_new->id_status,
         topic_mid      => $topic_mid
     );
 
-    my $transition = shift @statuses;
-    is $transition->{id_status_from}, $id_status_from;
-    is $transition->{id_status_to},   $id_status_to;
+    is @statuses, 1;
+    is $statuses[0]->{id_status_from}, $status_new->id_status;
+    is $statuses[0]->{id_status_to},   $status_in_progress->id_status;
+};
+
+subtest 'next_status_for_user: returns job statuses if user has status change permission' => sub {
+    _setup();
+
+    my $status_new         = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+
+    my $id_category = TestSetup->create_category(
+        statuses => [ $status_in_progress->id_status, $status_new->id_status, $status_finished->id_status ],
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.logical_change_status',
+                bounds => [ { id_category => $id_category } ]
+            }
+        ]
+    );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            job_type       => undef
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_finished->id_status,
+            job_type       => 'promote'
+        }
+    ];
+
+    mdb->category->update( { id => $id_category }, { '$set' => { workflow => $workflow } } );
+
+    my $topic_mid = TestSetup->create_topic();
+
+    my @statuses = _build_model()->next_status_for_user(
+        username       => $user->username,
+        id_category    => $id_category,
+        id_status_from => $status_in_progress->id_status,
+        topic_mid      => $topic_mid
+    );
+
+    is @statuses, 1;
+    is $statuses[0]->{id_status_from}, $status_in_progress->id_status;
+    is $statuses[0]->{id_status_to},   $status_finished->id_status;
 };
 
 subtest 'get_short_name: returns same name when no category exists' => sub {
@@ -771,23 +842,88 @@ subtest 'upload: creates correct event.file.create event' => sub {
     like $event_data->{subject}, qr/Created file $filename to topic \[\d+\]/;
 };
 
-subtest 'topics_for_user: returns topics' => sub {
+subtest 'topics_for_user: returns topics allowed by category action' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
+    TestSetup->create_topic( id_category => $id_category, status => $status, title => "Topic Mine" );
+    TestSetup->create_topic( id_category => $id_category2, status => $status, title => "Topic Not Mine" );
+
+    my $model = _build_model();
+
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, limit => 5 } );
+
+    is scalar @rows, 1;
+    is $rows[0]->{title}, 'Topic Mine';
+};
+
+subtest 'topics_for_user: returns topics allowed by project' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
+
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic Mine" );
+    TestSetup->create_topic( project => $project2, id_category => $id_category, status => $status, title => "Topic Mine" );
+
+    my $model = _build_model();
+
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, limit => 5 } );
+
+    is scalar @rows, 1;
+    is $rows[0]->{title}, 'Topic Mine';
+};
+
+subtest 'topics_for_user: returns topics' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_category } ]
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => 'Topic' );
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => 'Topic2' );
@@ -796,55 +932,28 @@ subtest 'topics_for_user: returns topics' => sub {
 
     my ( $data, @rows ) = $model->topics_for_user( { username => $user->username } );
 
-    cmp_deeply $data,
-      {
-        'last_query' => {
-            'category_status.type' => {
-                '$nin' => [ 'F', 'FC' ]
-            },
-            '$or' => [
-                {
-                    '_project_security.project' => {
-                        '$in' => [ $project->mid ]
-                    },
-                    'category.id' => {
-                        '$in' => [$id_category]
-                    }
-                },
-                {
-                    '_project_security' => undef
-                }
-            ],
-            'category.id' => {
-                '$in' => [$id_category]
-            }
-        },
-        'query' => undef,
-        'sort'  => { 'modified_on' => -1 },
-        'count' => 2,
-        'id_project' => undef
-      };
-
     is scalar @rows, 2;
 };
 
 subtest 'topics_for_user: returns topics limited' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic $_" )
       for 1 .. 10;
@@ -859,20 +968,22 @@ subtest 'topics_for_user: returns topics limited' => sub {
 subtest 'topics_for_user: returns topics sorted' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic $_" )
       for 1 .. 2;
@@ -897,25 +1008,28 @@ subtest 'topics_for_user: returns topics sorted' => sub {
 subtest 'topics_for_user: returns topics filtered by category' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
             {
-                action => 'action.topics.othercategory.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $id_category2 =
-      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
     TestSetup->create_topic(
@@ -936,25 +1050,27 @@ subtest 'topics_for_user: returns topics filtered by category' => sub {
 subtest 'topics_for_user: returns topics filtered by category negative' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
             {
-                action => 'action.topics.othercategory.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $id_category2 =
-      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
     TestSetup->create_topic(
@@ -975,20 +1091,21 @@ subtest 'topics_for_user: returns topics filtered by category negative' => sub {
 subtest 'topics_for_user: returns topics filtered topic mid' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     my $mid =
       TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
@@ -1010,21 +1127,22 @@ subtest 'topics_for_user: returns topics filtered topic mid' => sub {
 subtest 'topics_for_user: returns topics filtered by assigned to me' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
         ]
     );
 
     my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     my $topic_mid =
       TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
@@ -1049,23 +1167,24 @@ subtest 'topics_for_user: returns topics filtered by assigned to me' => sub {
 subtest 'topics_for_user: returns topics filtered by statuses' => sub {
     _setup();
 
-    my $id_rule         = TestSetup->create_rule_form();
+    my $id_rule         = TestSetup->create_common_topic_rule_form();
     my $status_initial  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
     my $project         = TestUtils->create_ci_project;
+    my $id_category =
+      TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
+
     my $id_role         = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
         ]
     );
 
     my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category =
-      TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
 
     TestSetup->create_topic(
         project     => $project,
@@ -1091,24 +1210,25 @@ subtest 'topics_for_user: returns topics filtered by statuses' => sub {
 subtest 'topics_for_user: returns topics clear filtered' => sub {
     _setup();
 
-    my $id_rule            = TestSetup->create_rule_form();
+    my $id_rule            = TestSetup->create_common_topic_rule_form();
     my $status_initial     = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
     my $status_finished    = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
     my $project            = TestUtils->create_ci_project;
+    my $id_category =
+      TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
+
     my $id_role            = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
         ]
     );
 
     my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category =
-      TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status_initial->mid );
 
     TestSetup->create_topic(
         project     => $project,
@@ -1139,21 +1259,22 @@ subtest 'topics_for_user: returns topics clear filtered' => sub {
 subtest 'topics_for_user: returns topics filtered by labels' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
         ]
     );
 
     my $user  = TestSetup->create_user( id_role => $id_role, project => $project );
     my $user2 = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     my $id_label_one = TestSetup->create_label( name => 'one' );
     TestSetup->create_topic(
@@ -1381,66 +1502,7 @@ subtest 'topics_for_user: does not return topic that exist in other project' => 
     is scalar @rows, 0;
 };
 
-subtest 'topics_for_user: returns topics of project' => sub {
-    _setup();
-
-    my $id_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                    name  => 'Status',
-                }
-            },
-            {   "attributes" => {
-                    "data" => {
-                        id_field       => 'project',
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-
-                    },
-                    "key"      => "fieldlet.system.projects",
-                    name_field => 'Project',
-                }
-            }
-        ],
-    );
-
-    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $topic1 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic1'
-    );
-    my $topic2 = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_category,
-        status      => $status,
-        title       => 'Topic2'
-    );
-
-    my $model = _build_model();
-
-    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, id_project => $project->mid } );
-
-    is scalar @rows, 2;
-    is $rows[0]->{topic_mid}, $topic2;
-    is $rows[1]->{topic_mid}, $topic1;
-};
-
-subtest 'topics_for_user: Search a topic with special characters ' => sub {
+subtest 'topics_for_user: searches a topic with special characters ' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_rule_form(
@@ -1484,10 +1546,12 @@ subtest 'topics_for_user: Search a topic with special characters ' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.view', bounds => [{id_category => $id_category}]} ] );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
     my $topic1 = TestSetup->create_topic(
         project     => $project,
         id_category => $id_category,
@@ -1508,20 +1572,21 @@ subtest 'topics_for_user: Search a topic with special characters ' => sub {
 
     is scalar @rows, 1;
     is $rows[0]->{mid}, $topic2;
-
 };
 
 subtest 'topics_for_user: returns can_edit = 1 if user has permissions to edit' => sub {
     _setup();
 
-    my $id_rule = TestSetup->create_rule_form();
+    my $id_rule = TestSetup->create_common_topic_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.edit', } ] );
 
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
+    my $id_role =
+      TestSetup->create_role(
+        actions => [ { action => 'action.topics.edit', bounds => [ { id_category => $id_category } ] } ] );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
 
@@ -1538,11 +1603,13 @@ subtest 'topics_for_user: returns can_edit = 0 if user has not permissions to ed
     my $id_rule = TestSetup->create_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    my $id_role =
+      TestSetup->create_role(
+        actions => [ { action => 'action.topics.view', bounds => [ { id_category => $id_category } ] } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
 
@@ -1740,37 +1807,43 @@ subtest 'get_users_friend: returns empty when no role found' => sub {
     is_deeply \@friends, [];
 };
 
-subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
+subtest 'get_meta_permissions: returns all fields for root' => sub {
     _setup();
 
     my $model = _build_model();
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            },
-            {
-                action => 'action.topicsfield.changeset.release.new.write',
-            },
-        ]
-    );
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user = TestSetup->create_user( username => 'root');
 
     my $id_changeset_rule = TestSetup->create_rule_form(
         rule_tree => [
             {
                 "attributes" => {
                     "data" => {
-                        id_field       => 'Status',
-                        "bd_field"     => "id_category_status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
+                        "id_field" => "title",
+                    },
+                    "key" => "fieldlet.system.title",
+                    name  => 'Title',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "status_new",
+                        "bd_field" => "id_category_status",
                     },
                     "key" => "fieldlet.system.status_new",
                     name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "description",
+                    },
+                    "key" => "fieldlet.system.description",
+                    name  => 'Description',
                 }
             },
             {
@@ -1792,7 +1865,8 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
         project     => $project,
         id_category => $id_changeset_category,
         title       => 'Fix everything',
-        status      => $status
+        status      => $status,
+        username => $user->username
     );
 
     my $topic_meta = Baseliner::Model::Topic->new->get_meta( $changeset_mid, $id_changeset_category, $user->username );
@@ -1813,11 +1887,315 @@ subtest 'get_meta_permissions: returns meta with readonly flags' => sub {
         username => $user->username
     );
 
+    my ($title_field) = grep { $_->{name} && $_->{name} eq 'Title' } @$meta;
+    ok !exists $title_field->{allowBlank};
+    cmp_deeply $title_field->{readonly}, \0;
+
     my ($status_field) = grep { $_->{name} && $_->{name} eq 'Status' } @$meta;
-    cmp_deeply $status_field->{readonly}, \1;
+    cmp_deeply $status_field->{allowBlank}, 'true';
+    cmp_deeply $status_field->{readonly}, \0;
+
+    my ($description_field) = grep { $_->{name} && $_->{name} eq 'Description' } @$meta;
+    cmp_deeply $description_field->{allowBlank}, 'true';
+    cmp_deeply $description_field->{readonly}, \0;
+
+    my ($release_field) = grep { $_->{name} && $_->{name} eq 'Release Combo' } @$meta;
+    cmp_deeply $release_field->{allowBlank}, 'true';
+    cmp_deeply $release_field->{readonly}, \0;
+};
+
+subtest 'get_meta_permissions: returns meta with filtered permissions' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "title",
+                    },
+                    "key" => "fieldlet.system.title",
+                    name  => 'Title',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "status_new",
+                        "bd_field" => "id_category_status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "project",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    name  => 'Project',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "description",
+                    },
+                    "key" => "fieldlet.system.description",
+                    name  => 'Description',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'title'
+                    }
+                ]
+            },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'status_new'
+                    }
+                ]
+            },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'description'
+                    }
+                ]
+            },
+            {
+                action => 'action.topicsfield.write',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'release'
+                    }
+                ]
+            },
+        ]
+    );
+    my $id_role2 = TestSetup->create_role( actions => [ { action => 'action.topicsfield.write', bounds => [ {} ] }, ] );
+
+    my $user =
+      TestSetup->create_user(
+        project_security => { $id_role => { project => $project->mid }, $id_role2 => { project => $project2->mid } } );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $topic_meta = Baseliner::Model::Topic->new->get_meta( $changeset_mid, $id_changeset_category, $user->username );
+
+    my $meta = $model->get_meta_permissions(
+        'data' => {
+            'topic_mid' => $changeset_mid,
+            'category'  => {
+                'id'   => $id_changeset_category,
+                'name' => 'Changeset',
+            },
+            id_category       => $id_changeset_category,
+            'category_status' => {
+                'mid'  => $status->mid,
+                'name' => 'New',
+            },
+            id_category_status => $status->mid,
+            _project_security  => { project => $project->mid }
+        },
+        meta     => $topic_meta,
+        username => $user->username
+    );
+
+    my ($title_field) = grep { $_->{name} && $_->{name} eq 'Title' } @$meta;
+    ok $title_field;
+
+    my ($status_field) = grep { $_->{name} && $_->{name} eq 'Status' } @$meta;
+    ok $status_field;
+
+    my ($description_field) = grep { $_->{name} && $_->{name} eq 'Description' } @$meta;
+    cmp_deeply $description_field->{readonly}, \1;
 
     my ($release_field) = grep { $_->{name} && $_->{name} eq 'Release Combo' } @$meta;
     cmp_deeply $release_field->{readonly}, \0;
+};
+
+subtest 'get_categories_permissions: returns all categories for root' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'root' );
+
+    TestSetup->create_category( name => 'Changeset' );
+    TestSetup->create_category( name => 'KB' );
+    TestSetup->create_category( name => 'Release' );
+
+    my $model = _build_model();
+
+    my @categories = $model->get_categories_permissions( username => 'root', type => 'view' );
+
+    is @categories, 3;
+    ok grep { $_->{name} eq 'Changeset' } @categories;
+    ok grep { $_->{name} eq 'KB' } @categories;
+    ok grep { $_->{name} eq 'Release' } @categories;
+};
+
+subtest 'get_categories_permissions: returns nothing if not allowed' => sub {
+    _setup();
+
+    my $id_category1 = TestSetup->create_category( name => 'Changeset' );
+    my $id_category2 = TestSetup->create_category( name => 'KB' );
+    my $id_category3 = TestSetup->create_category( name => 'Release' );
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my @categories = $model->get_categories_permissions( username => $user->username, type => 'view' );
+
+    is @categories, 0;
+};
+
+subtest 'get_categories_permissions: returns categories for user' => sub {
+    _setup();
+
+    my $id_category1 = TestSetup->create_category( name => 'Changeset' );
+    my $id_category2 = TestSetup->create_category( name => 'KB' );
+    my $id_category3 = TestSetup->create_category( name => 'Release' );
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    {
+                        id_category => $id_category1,
+                    }
+                ]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my @categories = $model->get_categories_permissions( username => $user->username, type => 'view' );
+
+    is @categories, 1;
+    ok grep { $_->{name} eq 'Changeset' } @categories;
+};
+
+subtest 'get_categories_permissions: returns categories for user filtered by specific category' => sub {
+    _setup();
+
+    my $id_category1 = TestSetup->create_category( name => 'Changeset' );
+    my $id_category2 = TestSetup->create_category( name => 'KB' );
+    my $id_category3 = TestSetup->create_category( name => 'Release' );
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    {
+                        id_category => $id_category1
+                    },
+                    {
+                        id_category => $id_category2
+                    }
+                ]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my @categories = $model->get_categories_permissions( username => $user->username, type => 'view', id => $id_category1 );
+
+    is @categories, 1;
+    ok grep { $_->{name} eq 'Changeset' } @categories;
+};
+
+subtest 'get_categories_permissions: returns nothing for user filtered by specific category that is not allowed' => sub {
+    _setup();
+
+    my $id_category1 = TestSetup->create_category( name => 'Changeset' );
+    my $id_category2 = TestSetup->create_category( name => 'KB' );
+    my $id_category3 = TestSetup->create_category( name => 'Release' );
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    {
+                        id_category => $id_category1
+                    },
+                    {
+                        id_category => $id_category2
+                    }
+                ]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my @categories = $model->get_categories_permissions( username => $user->username, type => 'view', id => $id_category3 );
+
+    is @categories, 0;
 };
 
 subtest 'get_users: returns users filtering by role' => sub {
@@ -2188,12 +2566,24 @@ subtest 'status_changes: saves the name of the project assigned to the topic in 
 subtest 'get_categories_permissions: returns all categories' => sub {
     _setup();
 
-    my $project       = TestUtils->create_ci_project;
-    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', }, ] );
-    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_category   = TestSetup->create_category();
     my $id_category_1 = TestSetup->create_category();
     my $id_category_2 = TestSetup->create_category();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    { id_category => $id_category },
+                    { id_category => $id_category_1 },
+                    { id_category => $id_category_2 },
+                ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic = _build_model();
 
@@ -2206,11 +2596,23 @@ subtest 'get_categories_permissions: returns categories that are of type release
     _setup();
 
     my $project       = TestUtils->create_ci_project;
-    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', }, ] );
-    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_category   = TestSetup->create_category();
     my $id_category_1 = TestSetup->create_category( is_release => '1' );
     my $id_category_2 = TestSetup->create_category();
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    { id_category => $id_category },
+                    { id_category => $id_category_1 },
+                    { id_category => $id_category_2 },
+                ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic = _build_model();
 
@@ -2224,11 +2626,23 @@ subtest 'get_categories_permissions: returns all categories when is_release is 0
     _setup();
 
     my $project       = TestUtils->create_ci_project;
-    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', }, ] );
-    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_category   = TestSetup->create_category();
     my $id_category_1 = TestSetup->create_category();
     my $id_category_2 = TestSetup->create_category( is_release => '1' );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    { id_category => $id_category },
+                    { id_category => $id_category_1 },
+                    { id_category => $id_category_2 },
+                ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic = _build_model();
 
@@ -3141,11 +3555,115 @@ subtest 'change_bls: overwrites bl and relationships' => sub {
     ok $rel;
 };
 
+subtest 'bounds_categories: returns categories' => sub {
+    _setup();
+
+    TestSetup->create_category( id => '123', name => 'Category' );
+
+    my @categories = _build_model()->bounds_categories();
+
+    is_deeply \@categories,
+      [
+        {
+            id    => '123',
+            title => 'Category'
+        }
+      ];
+};
+
+subtest 'bounds_statuses: returns statuses' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci('status', name => 'New');
+
+    my @statuses = _build_model()->bounds_statuses();
+
+    is_deeply \@statuses,
+      [
+        {
+            id    => $status->id_status,
+            title => 'New'
+        }
+      ];
+};
+
+subtest 'bounds_statuses: returns statuses filtered by category' => sub {
+    _setup();
+
+    TestUtils->create_ci('status', name => 'Another');
+    my $status = TestUtils->create_ci('status', name => 'New');
+
+    my $id_rule = TestSetup->create_common_topic_rule_form();
+
+    my $id_category =
+      TestSetup->create_category( name => 'Category', id_rule => $id_rule, statuses => [ $status->id_status ] );
+
+    my @statuses = _build_model()->bounds_statuses(id_category => $id_category);
+
+    is_deeply \@statuses,
+      [
+        {
+            id    => $status->id_status,
+            title => 'New'
+        }
+      ];
+};
+
+subtest 'bounds_fields: returns not fields when no category' => sub {
+    _setup();
+
+    my @fields = _build_model()->bounds_fields();
+
+    is_deeply \@fields, [];
+};
+
+subtest 'bounds_fields: returns not fields when category is all' => sub {
+    _setup();
+
+    my @fields = _build_model()->bounds_fields(id_category => '*');
+
+    is_deeply \@fields, [];
+};
+
+subtest 'bounds_fields: returns fields from category' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form();
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
+    my @fields = _build_model()->bounds_fields(id_category => $id_category);
+
+    is_deeply \@fields,
+      [
+        {
+            'title' => 'Description (description)',
+            'id'    => 'description'
+        },
+        {
+            'title' => 'Project Combo (project)',
+            'id'    => 'project'
+        },
+        {
+            'title' => 'Status (status_new)',
+            'id'    => 'status_new'
+        },
+        {
+            'title' => 'Title (title)',
+            'id'    => 'title'
+        }
+      ];
+};
+
 done_testing();
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',          'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic', 'Baseliner::Model::Rules',
         'BaselinerX::Type::Statement'

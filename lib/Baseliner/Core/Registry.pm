@@ -232,7 +232,7 @@ sub _find_class {
         last if( $self->classes->{$class} ) ;
     }
     my $class_module = $self->classes->{$class}
-        || Util->_fail(Util->_loc('Could not find registry class %1 for key %2',$class,$key));
+        || Util->_fail(Util->_loc("Could not find registry class '%1' for key '%2'",$class,$key));
         ## if no class found, bless onto itself
     #$ENV{CATALYST_DEBUG} && print STDERR "\t\t*** CLASS: $class ($class_module) FOR $key\n";
     return $class_module;
@@ -404,7 +404,18 @@ sub search_for_node {
             $has_permission = 1;
         } else {
             for ( _array( $node_instance->action, $node_instance->actions ) ) {
-                $has_permission = 1 if Baseliner->model("Permissions")->user_has_any_action( action => $_, username => $username)
+                my $action = $_;
+                my $bounds;
+
+                if (ref $action eq 'HASH') {
+                    $bounds = $action->{bounds};
+                    $action = $action->{action};
+                }
+
+                require Baseliner::Model::Permissions;
+                $has_permission = 1
+                  if Baseliner::Model::Permissions->new->user_has_any_action( $username, $action,
+                    $bounds ? ( bounds => $bounds ) : () );
             }
         }
         next if !$has_permission;

@@ -8,6 +8,7 @@ html: /dashlets/jobs.html
 -->
 <%perl>
     use Baseliner::Utils;
+    use Baseliner::Model::Permissions;
     my @jobs = $c->stash->{jobs};
 </%perl>
 
@@ -24,7 +25,7 @@ html: /dashlets/jobs.html
                 </tr>
             </thead>
             <tbody>
-% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
+% if( Baseliner::Model::Permissions->user_has_action($c->username, 'action.job.view_monitor') ) {
 %foreach my $job (_array @jobs){          
                 <tr>
                     <td><%$job->{project}%></td>

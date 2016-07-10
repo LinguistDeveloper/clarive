@@ -1,6 +1,7 @@
 package BaselinerX::GitBranch;
 use Moose;
 use Baseliner::Utils;
+use Baseliner::Model::Permissions;
 
 has repo_dir => qw/is rw isa Str required 1/;
 has repo_name => qw/is rw isa Str required 1/;
@@ -38,7 +39,7 @@ sub node_menu {
 
     my @menu;
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
-    if ( model->Permissions->user_has_action( username => $self->username, action => 'action.git.close_branch') ) {
+    if ( Baseliner::Model::Permissions->new->user_has_action( $self->username, 'action.git.close_branch') ) {
         push @menu, {
             text => _loc('Close branch'),
             eval => { url => '/comp/git/close.js', title => 'Close branch' },

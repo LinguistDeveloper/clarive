@@ -4,6 +4,7 @@ use Baseliner::Core::Registry ':dsl';
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
 use Baseliner::Core::Message;
 use Try::Tiny;
 
@@ -270,10 +271,12 @@ sub notify {
         my @actions = _array( $dest->{actions}, $dest->{action} );
         for my $action ( @actions ) {
             _log "Looking for users for action $action";
-            my @users = Baseliner->model('Permissions')->list(
-                action => $action,
-                bl     => ( $dest->{bl} || 'any' ),
-                ns     => ( $dest->{ns} || 'any' )
+            my @users = Baseliner::Model::Permissions->users_with_action(
+                $action,
+
+                # TODO: this is not working, because bounds are not supported within this search
+                # bl     => ( $dest->{bl} || 'any' ),
+                # ns     => ( $dest->{ns} || 'any' )
             );
             _log "Found: " . join',',@users;
             push @{ $users{$param} }, @users;

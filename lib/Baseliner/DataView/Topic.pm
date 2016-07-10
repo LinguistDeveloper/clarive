@@ -117,12 +117,9 @@ sub build_where {
 
         my $perm = Baseliner::Model::Permissions->new;
 
-        my $is_root = $perm->is_root($username);
-        if ( $username && !$is_root ) {
-            $perm->build_project_security( $where, $username, $is_root, @user_categories );
-        }
+        $perm->inject_security_filter( $username, $where );
 
-        $where->{'category.id'} = mdb->in(@user_categories) if @categories;
+        $where->{'category.id'} = mdb->in(@user_categories);
 
         if ($category_type) {
             if ( $category_type eq 'release' ) {

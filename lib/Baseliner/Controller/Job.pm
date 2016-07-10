@@ -7,6 +7,7 @@ use DateTime;
 use JSON::XS;
 use Try::Tiny;
 use List::Util qw(max);
+use Array::Utils qw(intersect);
 use Encode ();
 use experimental 'autoderef';
 use Baseliner::Core::Registry ':dsl';
@@ -22,12 +23,30 @@ BEGIN {
     $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
 }
 
-register 'action.job.viewall' => { name=>'View All Jobs' };
-register 'action.job.restart' => { name=>'Restart Jobs' };
-register 'action.job.chain_change' => { name=>'Change default pipeline in job_new window' };
-register 'action.job.run_in_proc' => { name=>'Run Jobs In-Proc, within the Web Server' };
-register 'action.job.no_cal' => { name=>'Create a job outside of the available time slots' };
-register 'action.job.advanced_menu' => { name=>'Can access the advanced menu in job detailed log' };
+register 'action.job.viewall' => {
+    name   => _locl('View All Jobs'),
+    bounds => [
+        {
+            key     => 'bl',
+            name    => 'Environment',
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
+register 'action.job.restart' => { name=>_locl('Restart Jobs'),
+    bounds => [
+        {
+            key     => 'bl',
+            name    => 'Environment',
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
+
+register 'action.job.chain_change'  => { name => _locl('Change default pipeline in job_new window') };
+register 'action.job.run_in_proc'   => { name => _locl('Run Jobs In-Proc, within the Web Server') };
+register 'action.job.no_cal'        => { name => _locl('Create a job outside of the available time slots') };
+register 'action.job.advanced_menu' => { name => _locl('Can access the advanced menu in job detailed log') };
 
 register 'config.job.states' => {
   metadata => [
@@ -316,7 +335,7 @@ sub job_stash_save : Local {
 
 our %CACHE_ICON;
 
-sub monitor_json : Path('/job/monitor_json') {
+sub monitor_json : Path('/job/monitor_json') Does(ACL) ACL(action.job.view_monitor) {
     my ( $self, $c ) = @_;
 
     my $p = $c->request->parameters;
@@ -487,7 +506,12 @@ sub submit : Local {
             my $rule_version_dynamic = $p->{rule_version_dynamic} && $p->{rule_version_dynamic} eq 'on' ? 1 : 0;
             my $job_stash            = try { _decode_json( $p->{job_stash} ) } catch { undef };
 
-            my $user_can_create_job_no_cal = Baseliner::Model::Permissions->new->user_has_action( username=>$c->username, action=>"action.job.no_cal", bl=>$bl);
+            if ( !Baseliner::Model::Permissions->new->user_has_action( $c->username, 'action.job.create' ) ) {
+                _fail( _loc("User %1 doesn't have permissions to create a job", $c->username));
+            }
+
+            my $user_can_create_job_no_cal =
+              Baseliner::Model::Permissions->new->user_has_action( $c->username, "action.job.no_cal" );
             if($p->{check_no_cal} eq 'on' && !$user_can_create_job_no_cal) {
                 _fail( _loc("User %1 doesn't have permissions to create a job out of calendar", $c->username));
             }
@@ -573,18 +597,27 @@ sub job_states : Path('/job/states') {
   $c->forward('View::JSON');
 }
 
-sub envs_json {
+sub _envs_json {
     my ($self, $username) = @_;
-    my @data;
-    if (!Baseliner->model('Permissions')->is_root( $username )){
-        my $user = ci->user->find_one({ name=>$username });
-        my @roles = keys $user->{project_security};
-        my @bl = map { _unique map { $_->{bl} } _array($_->{actions}) } mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
-        @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis(bl=>mdb->in(@bl));
-    } else {
-        @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
-    }
-  _encode_json \@data;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    return _encode_json( [] ) unless $permissions->user_has_action( $username, 'action.job.viewall', bounds => '*' );
+
+    my @bls =
+      map { { name => $_->{name}, bl => $_->{bl}, seq => $_->{seq} } }
+      grep { $_->{moniker} ne '*' } BaselinerX::CI::bl->search_cis;
+    my %bl_map = map { $_->{bl} => $_ } @bls;
+
+    my @bl_ids = map { $_->{bl} } @bls;
+
+    my $filtered = $permissions->filter_bounds( $username, 'action.job.viewall', { bl => \@bl_ids } );
+
+    my @filtered_bls =
+      map { { name => $_->{name}, bl => $_->{bl} } }
+      sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } map { $bl_map{$_} } _unique _array $filtered->{bl};
+
+    return _encode_json [ @filtered_bls ];
 }
 
 sub types_json {
@@ -594,10 +627,9 @@ sub types_json {
   _encode_json $data;
 }
 
-sub monitor : Path('/job/monitor') {
+sub monitor : Path('/job/monitor') Does(ACL) ACL(action.job.view_monitor) {
     my ( $self, $c, $dashboard ) = @_;
     $c->languages( ['es'] );
-    my $config = $c->registry->get( 'config.job' );
     $c->forward('/permissions/load_user_actions');
     if($dashboard){
         $c->stash->{query_id} = $c->stash->{jobs};
@@ -605,7 +637,7 @@ sub monitor : Path('/job/monitor') {
 
     $c->stash->{natures_json}    = $self->natures_json;
     $c->stash->{job_states_json} = $self->job_states_json;
-    $c->stash->{envs_json}       = $self->envs_json($c->username);
+    $c->stash->{envs_json}       = $self->_envs_json($c->username);
     $c->stash->{types_json}      = $self->types_json; # Tipo de elementos en Monitor. SCM|SQA.
 
     $c->stash->{template} = '/comp/monitor_grid.js';
@@ -788,14 +820,17 @@ sub by_status : Local {
             filter   => { bls => \@filter_bls, period => $period }
         );
 
-        my $statuses = $rs->fields( { status => 1, _id => 0 } );
-        foreach my $status ( $statuses->all ) {
-            $statuses_map{ $status->{status} }++;
+        if ($rs) {
+            my $statuses = $rs->fields( { status => 1, _id => 0 } );
+            foreach my $status ( $statuses->all ) {
+                $statuses_map{ $status->{status} }++;
+            }
+
+            foreach my $status_name ( keys %statuses_map ) {
+                push @data, [ $status_name, $statuses_map{$status_name} ];
+            }
         }
 
-        foreach my $status_name ( keys %statuses_map ) {
-            push @data, [ $status_name, $statuses_map{$status_name} ];
-        }
         $c->stash->{json} = { success => \1, data => \@data };
     }
     catch {
