@@ -8890,3 +8890,6 @@ msgstr "No Proyectos"
 
 msgid "Project: %1"
 msgstr "Proyecto: %1"
+
+msgid "Cannot save: %1"
+msgstr "No se puede guardar: %1"

@@ -6,13 +6,14 @@ use Test::More;
 use Test::Deep;
 use Test::Fatal;
 use Test::MonkeyMock;
+use Test::TempDir::Tiny;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst', 'mock_time';
 
 use JSON ();
-use Baseliner::Utils qw(_dump _load);
+use Baseliner::Utils qw(_dump _load _slurp);
 
 use_ok 'Baseliner::Controller::REPL';
 
@@ -505,6 +506,72 @@ subtest 'delete: deletes repl history' => sub {
     ok !mdb->repl->find_one;
 
     cmp_deeply $c->stash, { json => { success => \1 } };
+};
+
+subtest 'save_to_file: deletes colons in filenames' => sub {
+    _setup();
+
+    mdb->repl->insert( { _id => 'title', id => 'foo:title', code => 'bar', output => 'output' } );
+
+    my $tempdir    = tempdir();
+    my $controller = _build_controller();
+    my $c          = _build_c( path_to => $tempdir );
+
+    $controller->save_to_file($c);
+
+    ok -f "$tempdir/etc/repl/footitle.t";
+};
+
+subtest 'save_to_file: replaces whitespaces by dashes in filenames' => sub {
+    _setup();
+
+    mdb->repl->insert( { _id => 'title', id => 'foo new title', code => 'bar', output => 'output' } );
+
+    my $tempdir    = tempdir();
+    my $controller = _build_controller();
+    my $c          = _build_c( path_to => $tempdir );
+
+    $controller->save_to_file($c);
+
+    ok -f "$tempdir/etc/repl/foo-new-title.t";
+};
+
+subtest 'save_to_file: writes the code and the output in files' => sub {
+    _setup();
+
+    mdb->repl->insert( { _id => 'foo', id => 'foo', code => 'bar', output => 'output' } );
+
+    my $tempdir    = tempdir();
+    my $controller = _build_controller();
+    my $c          = _build_c( path_to => $tempdir );
+
+    $controller->save_to_file($c);
+
+    my @file_array;
+    my $filename = $c->path_to( 'etc', 'repl', "foo.t" );
+    my $file = _slurp($filename);
+
+    is $file, "bar\n__END__\noutput\n";
+};
+
+subtest 'save_to_file: shows an error when try to create the unknown folder' => sub {
+    _setup();
+
+    mdb->repl->insert( { _id => 'foo', id => 'foo', code => 'bar', output => 'bar' } );
+
+    my $tempdir    = tempdir();
+    my $controller = _build_controller();
+    my $c          = _build_c( path_to => '/unknown/folder' );
+
+    $controller->save_to_file($c);
+
+    cmp_deeply $c->stash,
+        {
+        json => {
+            msg     => re(qr/Cannot save: mkdir \/unknown/),
+            success => \0
+        }
+        };
 };
 
 done_testing;
