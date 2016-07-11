@@ -530,8 +530,6 @@
                 if ( topics.length == 0 ) {
                     set_transition = 'none';
                 }
-                store_transitions.reload();
-                store_transitions.reload();
                 jc_store.reload();
             }
         }
