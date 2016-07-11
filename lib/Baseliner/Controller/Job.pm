@@ -470,6 +470,11 @@ sub submit : Local {
             my $rule_version_dynamic = $p->{rule_version_dynamic} && $p->{rule_version_dynamic} eq 'on' ? 1 : 0;
             my $job_stash            = try { _decode_json( $p->{job_stash} ) } catch { undef };
 
+            my $user_can_create_job_no_cal = Baseliner::Model::Permissions->new->user_has_action( username=>$c->username, action=>"action.job.no_cal", bl=>$bl);
+            if($p->{check_no_cal} eq 'on' && !$user_can_create_job_no_cal) {
+                _fail( _loc("User %1 doesn't have permissions to create a job out of calendar", $c->username));
+            }
+
             my $contents = $p->{changesets};
             if( !defined $contents ) {
                 # TODO deprecated, use the changesets parameter only
