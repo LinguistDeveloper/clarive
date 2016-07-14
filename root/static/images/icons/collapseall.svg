@@ -4,10 +4,10 @@
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#404040;}
-	.st1{fill:none;stroke:#404040;stroke-width:1.5;stroke-miterlimit:1.4142;}
+	.st1{fill:none;stroke:#404040;stroke-miterlimit:1.4142;}
 </style>
 <path id="Layer_1_2_" class="st0" d="M12,12H9v-1h2V4H4v3H3V3h9V12z"/>
 <path id="Layer_1_3_" class="st0" d="M13.9,1l0.1,9h-3V9h2V2H6v2H5V1H13.9z"/>
 <path class="st0" d="M10,15.1L1,15V6h9V15.1z M2,7v7h7V7H2z"/>
-<path class="st1" d="M3,10.4h4.9"/>
+<path class="st1" d="M3.1,10.6H8"/>
 </svg>

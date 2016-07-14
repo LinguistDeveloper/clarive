@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!-- Generator: Adobe Illustrator 20.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#404040;}
-	.st1{fill:#4FBC78;}
-	.st2{fill:none;}
+	.st1{fill:none;}
+	.st2{fill:#4FBC78;}
 </style>
 <title>drive</title>
-<path class="st0" d="M1,3l0.1,8.3l0.9,0V10l1.8-0.2l0-0.9h1.4v1.6L7,10v1h8V3H1z M5,4h1v1H5V4z M2,4h1v1H2V4z M13.9,8.3H2.1V6.9
-	h11.8V8.3z"/>
-<path class="st1" d="M4.5,7.8c1.9,0,3.4,1.5,3.4,3.4s-1.5,3.4-3.4,3.4s-3.4-1.5-3.4-3.4C1.1,9.3,2.6,7.8,4.5,7.8z M5.1,10.5V8.9H3.8
-	v1.6H2.2v1.3h1.6v1.6h1.3v-1.6h1.6v-1.3H5.1z"/>
-<rect class="st2" width="16" height="16"/>
+<path class="st0" d="M1,3v7l1-2h1.9H5v2h2v1h8V3H1z M5,4h1v1H5V4z M2,4h1v1H2V4z M14,8H2V7h12V8z"/>
+<rect class="st1" width="16" height="16"/>
+<path class="st2" d="M4,7c-2.3,0-4,1.9-4,4s1.7,4,4,4s4-1.9,4-4S6.3,7,4,7z M7,12H5v2H4H3v-2H1v-2h2V8h2v2h2v1V12z"/>
 </svg>
