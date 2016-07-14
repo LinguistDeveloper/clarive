@@ -28,6 +28,9 @@ params:
     if (list) {
         var value = list.split(",");
     }
+
+    if(typeof(value) === "undefined") value = meta.default_value;
+
     var sm = new Baseliner.CheckboxSelectionModel({
         checkOnly: true,
         singleSelect: false

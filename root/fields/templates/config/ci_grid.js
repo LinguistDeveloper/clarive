@@ -1,6 +1,7 @@
 (function(params){
     var data = params.data || {};
     var ret = Baseliner.generic_fields(data);
+    Cla.help_push({ title:_('CI Grid'), path:'rules/palette/fieldlets/ci-grid' });
     var value_type = Baseliner.generic_list_fields(data,{ list_type: 'grid' });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
@@ -9,7 +10,6 @@
         value: data.ci_role || ''
     });
     ci_role_field.hide();
-    Cla.help_push({ title:_('CI Grid'), path:'rules/palette/fieldlets/ci-grid' });
     var ci_class_field = new Ext.form.Field({
         name: 'ci_class',
         xtype: "textfield",
@@ -41,10 +41,17 @@
         ci_class_box.setValue(data.ci_class_box); 
     });
 
-    
+    var default_store = new Baseliner.store.CI({
+        baseParams: Ext.apply({ params:{'class': ci_class_field.value, no_vars: 1}})
+    });
+
+    default_store.on('load', function(){
+        default_box.setValue(data.default_value);
+        default_store.baseParams.class = ci_class_field.value;
+    });
 
     var class_selected = false;
-    
+
 
     var role_box_multiselect = new Cla.SuperBox({
         deal_combo_change: function(obj){
@@ -89,7 +96,15 @@
                 var temp = obj.usedRecords.items[i].data.classname;
                 selected.push(temp);
             }
+
             ci_class_field.setValue(selected);
+
+            if (obj.usedRecords.items.length){
+                Cla.enableDefaultBox(default_box);
+                default_store.load({params:{'class': ci_class_field.value, process_array: 1}});
+            } else {
+                Cla.disableDefaultBox(default_box);
+            }
             ci_role_field.setValue('');
             //role_box_multiselect.setValue('');
         },
@@ -106,6 +121,7 @@
         value: data.ci_class_box,
         listeners:{
             'removeitem': function(obj){
+
                 return this.deal_combo_change(obj);
             },
             'additem': function(obj){
@@ -113,7 +129,13 @@
             }
         }
     });
-    
+
+    var default_box = new Baseliner.DefaultBox({
+        store: default_store,
+        value: data.default_value
+    });
+
+
     if(!ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value){
         role_box_multiselect.allowBlank = false;
         role_box_multiselect.show();
@@ -163,6 +185,7 @@
         ci_class_box,
         ci_role_field,
         ci_class_field,
+        default_box,
         { xtype:'numberfield', name:'height', fieldLabel:_('Height'), value: data.height }
     ]);
     return ret;

@@ -2958,6 +2958,18 @@ Cla.user_js_date_format = function(){
     return jsd;
 }
 
+Cla.enableDefaultBox = function(defaultBox){
+    defaultBox.enable();
+    defaultBox.setValue('');
+    return defaultBox;
+}
+
+Cla.disableDefaultBox = function(defaultBox){
+    defaultBox.setValue('');
+    defaultBox.disable();
+    return defaultBox;
+}
+
 Cla.user_js_time_format = function(){
     var jsd = Cla.moment_to_js_time_hash[ Cla.user_date_format(undefined,null,undefined) ] || _('js_time_format');
     return jsd;

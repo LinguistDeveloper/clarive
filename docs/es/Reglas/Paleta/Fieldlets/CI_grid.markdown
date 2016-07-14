@@ -82,6 +82,10 @@ icon: grid
 * La selección de este campo solo está disponible si está activado la *selección por clase*
 * Especifica la clase de CI que se va a mostrar en las opciones.
 
+### Valor por defecto
+* Se selecciona el valor que se quiere por defecto en el grid.
+* Este campo estará habilitado cuando se seleccione una clase CI.
+
 
 ### Mostrar clase
 * Indica si se quiere mostrar la clase de elemento en el formulario.

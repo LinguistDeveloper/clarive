@@ -42,6 +42,15 @@
         ci_class_box.setValue(data.ci_class_box); 
     });
 
+    var default_store = new Baseliner.store.CI({
+        baseParams: Ext.apply({ params:{'class': ci_class_field.value, no_vars: 1}})
+    });
+
+    default_store.on('load', function(){
+        default_box.setValue(data.default_value);
+        default_store.baseParams.class = ci_class_field.value;
+    });
+
     var class_selected = false;
     
 
@@ -90,6 +99,12 @@
             }
             ci_class_field.setValue(selected);
             ci_role_field.setValue('');
+            if (obj.usedRecords.items.length){
+                Cla.enableDefaultBox(default_box);
+                default_store.load({params:{'class': ci_class_field.value, process_array: 1}});
+            } else {
+                Cla.disableDefaultBox(default_box);
+            }
             //role_box_multiselect.setValue('');
         },
         name: 'ci_class_box',
@@ -113,7 +128,11 @@
         }
     });
 
-   
+    var default_box = new Baseliner.DefaultBox({
+        store: default_store,
+        value: data.default_value
+    });
+
     if(!ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value){
         role_box_multiselect.allowBlank = false;
         role_box_multiselect.show();
@@ -190,7 +209,9 @@
         ci_class_box,
         ci_role_field,
         ci_class_field,
-        display_mode
+        default_box,
+        display_mode,
+        { xtype:'checkbox', name:'show_class', fieldLabel:_('Show class'), value: data.show_class, checked: data.show_class ? true : false }
     ]);
 
     return ret;

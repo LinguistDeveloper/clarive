@@ -39,6 +39,40 @@ Baseliner.SuperBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     }
 });
 
+Baseliner.DefaultBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+    minChars: 2,
+    pageSize: 20,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    lazyRender: false,
+    triggerAction: 'all',
+    msgTarget: 'under',
+    emptyText: _('Select one'),
+    displayField: 'name',
+    valueField: 'mid',
+    extraItemCls: 'x-tag',
+    queryValuesDelimiter: ' ', // important, so that the query parameter gets all mids in a searcheable manner, otherwise multivalues do not load
+    name: 'default_value',
+    xtype: 'combo',
+    fieldLabel: _('Default Value'),
+    singleMode: true,
+    autoLoad: true,
+    disabled: true,
+    mode: 'local',
+    get_save_data: function(){
+         var arr=[];
+         this.items.each(function(r){ arr.push(r.value) });
+         return arr;
+    },
+    get_labels: function(){
+         var arr=[];
+         this.items.each(function(r){ arr.push(r.display) });
+         return arr;
+    }
+});
+
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
         root: 'data' ,

@@ -86,4 +86,9 @@ Selection of type of description to show in the list.
 
 * Moniker: Show the moniker specified in CI configuration.
 
+### Default Value
+
+* To show a default value in the list.
+
+* This field will be active if CI Class is selected.
 
