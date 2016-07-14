@@ -1276,8 +1276,21 @@
             return;
         }
         var short_name = name.length > 10 ? name.substring(0,20) : name;
-        var node_dbl_click = function(node,event){
-            edit_node( node );
+        var node_dbl_click = function(node, event) {
+            var attributes = node.attributes;
+            if (attributes.id_rule) {
+                var params = {
+                    rule_id: attributes.id_rule,
+                    rule_name: attributes.name,
+                    rule_type: attributes.rule_type,
+                    event_name: attributes.event_name ? attributes.event_name : attributes.rule_name,
+                    rule_event: attributes.rule_event ? attributes.rule_event : attributes.rule_name,
+                    icon: attributes.icon
+                };
+                show_rules(params);
+            } else {
+                edit_node(node);
+            }
         };
         var menu_click = function(node,event){
             if( node.attributes.is_current ) return false;
