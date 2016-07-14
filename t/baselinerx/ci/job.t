@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal;
 use Test::Deep;
 
 use TestEnv;
@@ -267,6 +268,24 @@ subtest 'steps: returns list of steps' => sub {
     my @steps = $job->steps();
 
     is_deeply \@steps, [ 'CHECK', 'INIT', 'PRE', 'RUN', 'POST' ];
+};
+
+subtest 'save: throws an error when the job is already created' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $job;
+
+    capture {
+        $job =  BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA' )->save;
+    };
+
+    like exception {BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA')->save}, qr/is in an active job to bl QA/;
 };
 
 done_testing;

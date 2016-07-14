@@ -818,7 +818,7 @@
                         //   not necessary, handled by standard failure?
                         button_submit.enable();
                         if( action && action.result ) {
-                            Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
+                            Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, buttons: { ok: true } });
                         } else {
                             var msg = _('Unknown Error');
                             if( action.failureType == 'connect' ) msg = _('Connection Error');

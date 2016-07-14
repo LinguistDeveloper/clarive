@@ -289,9 +289,9 @@ sub _create {
         for my $active_job ( @active_jobs ) {
             next if $active_job->mid eq $self->mid;
             if ( $active_job->job_type ne 'static') {
-                my $ci_self_status = ci->new('moniker:'.$self->bl);
+                my $ci_self_status = ci->bl->search_ci(moniker => $self->bl);
                 my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( where => {collection => 'status'}, docs_only => 1));
-                my $ci_other_status = ci->new('moniker:'.$active_job->bl);
+                my $ci_other_status = ci->bl->search_ci(moniker => $active_job->bl);
                 my ($other_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_other_status->parents( where => {collection => 'status'}, docs_only => 1));
                 if ( $self_status_to->{name} ne $other_status_to->{name} ) {
                     _fail _loc( "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)",
