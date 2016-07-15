@@ -17,41 +17,55 @@ params:
     meta_type: 'release'
 ---
 */
-(function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
+(function(params) {
+    var data = params.topic_data;
+    var meta = params.topic_meta;
 
-	var topic_mid = data.topic_mid || undefined;
-	var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
+    var topic_mid = data.topic_mid || undefined;
+    var ps = meta.page_size || 10; // for combos, 10 is a much nicer on a combo
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
-    var rows = data[ meta.id_field ];
+    var rows = data[meta.id_field];
     var row_mids;
-    if(rows){
-        row_mids = Ext.isArray(rows) ? rows.map(function(row){ return row.mid }) : rows.mid;
+    if (rows) {
+        row_mids = Ext.isArray(rows) ? rows.map(function(row) {
+            return row.mid
+        }) : rows.mid;
     }
 
-    var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''}, display_field: display_field, tpl_cfg: tpl_cfg });
+    var release_box_store = new Baseliner.store.Topics({
+        baseParams: {
+            not_in_status: meta.not_in_status,
+            categories: meta.categories,
+            statuses: meta.statuses,
+            limit: ps,
+            mid: topic_mid,
+            show_release: 1,
+            filter: meta.filter ? meta.filter : ''
+        },
+        display_field: display_field,
+        tpl_cfg: tpl_cfg
+    });
 
-	var release_box = new Baseliner.TopicBox({
-		fieldLabel: _(meta.name_field),
-		pageSize: ps,
-		name: meta.id_field,
-		hiddenName: meta.id_field,          
-		emptyText: _( meta.emptyText ),
-		allowBlank: Baseliner.eval_boolean(meta.allowBlank),          
-		store: release_box_store,
-		disabled: Baseliner.eval_boolean(meta.readonly),
-		singleMode: true,
-		hidden: Baseliner.eval_boolean(!meta.active),
+    var release_box = new Baseliner.TopicBox({
+        fieldLabel: _(meta.name_field),
+        pageSize: ps,
+        name: meta.id_field,
+        hiddenName: meta.id_field,
+        emptyText: _(meta.emptyText),
+        allowBlank: Baseliner.eval_boolean(meta.allowBlank),
+        store: release_box_store,
+        disabled: Baseliner.eval_boolean(meta.readonly),
+        singleMode: true,
+        hidden: Baseliner.eval_boolean(!meta.active),
         display_field: display_field,
         tpl_cfg: tpl_cfg,
-        hidden_value: row_mids 
-	});	
- 	release_box.value = data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : '';
+        hidden_value: row_mids
+    });
+    release_box.value = data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid') ? eval('data.' + meta.id_field + '.mid') : '') : '';
 
-	return [
-		release_box
+    return [
+        release_box
     ]
 })

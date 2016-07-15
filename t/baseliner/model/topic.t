@@ -1931,6 +1931,58 @@ subtest 'status_changes: saves the name of the project assigned to the topic in 
     is $event_data->{projects}[0], $projects[0]->{name};
 };
 
+subtest 'get_categories_permissions: returns all categories' => sub {
+    _setup();
+
+    my $project       = TestUtils->create_ci_project;
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_category   = TestSetup->create_category();
+    my $id_category_1 = TestSetup->create_category();
+    my $id_category_2 = TestSetup->create_category();
+
+    my $topic = _build_model();
+
+    my @output = $topic->get_categories_permissions( type => 'view', username => $user->{username} );
+
+    is @output, 3;
+};
+
+subtest 'get_categories_permissions: returns categories that are of type release' => sub {
+    _setup();
+
+    my $project       = TestUtils->create_ci_project;
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_category   = TestSetup->create_category();
+    my $id_category_1 = TestSetup->create_category( is_release => '1' );
+    my $id_category_2 = TestSetup->create_category();
+
+    my $topic = _build_model();
+
+    my @output = $topic->get_categories_permissions( is_release => '1', type => 'view', username => $user->{username} );
+
+    is $output[0]->{id}, $id_category_1;
+    is @output, 1;
+};
+
+subtest 'get_categories_permissions: returns all categories when is_release is 0' => sub {
+    _setup();
+
+    my $project       = TestUtils->create_ci_project;
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_category   = TestSetup->create_category();
+    my $id_category_1 = TestSetup->create_category();
+    my $id_category_2 = TestSetup->create_category( is_release => '1' );
+
+    my $topic = _build_model();
+
+    my @output = $topic->get_categories_permissions( is_release => '0', type => 'view', username => $user->{username} );
+
+    is @output, 3;
+};
+
 done_testing();
 
 sub _setup {

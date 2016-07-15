@@ -28,6 +28,18 @@ Indicates if the field will be hidden from the edit mode.
 
 Check if you want the field as mandatory.
 
+### Select topics in categories
+
+Select one o more categories of type Release to show.
+
+### Select topics in statuses
+
+Select one o more status to configure the table.
+
+### Exclude the statuses selected
+
+Exclude the statuses selected and shows the remainder are **not** selected.
+
 ### Type
 
 Allow to set the type of the field.
