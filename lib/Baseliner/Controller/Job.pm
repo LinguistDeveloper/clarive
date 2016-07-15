@@ -333,6 +333,7 @@ sub monitor_json : Path('/job/monitor_json') {
             filter_bl        => $p->{filter_bl},
             filter_nature    => $p->{filter_nature},
             job_state_filter => $p->{job_state_filter},
+            filter_project   => $p->{filter_project},
             username         => $c->username,
             language         => $c->languages->[0],
         }

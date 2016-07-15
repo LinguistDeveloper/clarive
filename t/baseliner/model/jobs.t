@@ -174,6 +174,68 @@ subtest 'monitor: return the job filtered by natures' => sub {
     is $rows[0]->{natures}[0], 'JAR';
 };
 
+subtest 'monitor: returns the job filtered by project' => sub {
+    _setup();
+
+    my $changeset_mid       = _create_changeset();
+    my $other_changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->save;
+
+    my $other_job = _create_job( changesets => [$other_changeset_mid] );
+    $other_job->save;
+
+    my $project_mid = $job->projects->[0]->{mid};
+    my $model       = _build_model();
+    my ( $count, @rows )
+        = $model->monitor( { username => 'root', query_id => -1, filter_project => $project_mid } );
+
+    is @rows, 1;
+    is $rows[0]->{mid}, $job->mid;
+};
+
+subtest 'monitor: returns the job filtered by projects if the user is associated with the project to filter' => sub {
+    _setup();
+
+    my $changeset_mid       = _create_changeset();
+    my $other_changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->save;
+
+    my $other_job = _create_job( changesets => [$other_changeset_mid] );
+    $other_job->save;
+
+    my $project_mid = $job->projects->[0]->{mid};
+    my $model       = _build_model();
+    my ( $count, @rows )
+        = $model->monitor( { username => 'developer', query_id => -1, filter_project => $project_mid } );
+
+    is @rows, 1;
+    is $rows[0]->{mid}, $job->mid;
+};
+
+subtest 'monitor: returns empty if user is not associated to the project to filter' => sub {
+    _setup();
+
+    my $changeset_mid = _create_changeset();
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->save;
+
+    my $id_role = TestSetup->create_role();
+    my $project = TestUtils->create_ci('project');
+    my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $project_mid = $job->projects->[0]->{mid};
+    my $model       = _build_model();
+    my ( $count, @rows )
+        = $model->monitor( { username => $user->username, query_id => -1, filter_project => $project_mid } );
+
+    is @rows, 0;
+};
+
 done_testing;
 
 sub _setup {
@@ -188,6 +250,7 @@ sub _setup {
 
     mdb->rule->drop;
     mdb->job_log->drop;
+    mdb->role->drop;
 
     BaselinerX::Type::Model::ConfigStore->set( key => 'config.job.mask', value => '%s.%s-%08d' );
 }
@@ -449,7 +512,7 @@ sub _create_changeset {
 
     my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
 
-    my $id_role = TestSetup->create_role();
+    my $id_role = TestSetup->create_role(actions => [ {action =>'action.job.viewall', bl => '*' }]);
     my $project = TestUtils->create_ci('project');
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 

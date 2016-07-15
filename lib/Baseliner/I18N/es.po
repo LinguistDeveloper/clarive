@@ -2669,7 +2669,7 @@ msgid "Check All"
 msgstr "Marcar Todas"
 
 msgid "Check None"
-msgstr "Marcar Ninguno"
+msgstr "Desmarcar Todos"
 
 msgid "Paused"
 msgstr "Retenido"
@@ -8884,3 +8884,9 @@ msgstr "Este pase no se puede crear para ese cambio probablemente porque ha camb
 
 msgid "Rule not found"
 msgstr "Regla no encontrada"
+
+msgid "No Projects"
+msgstr "No Proyectos"
+
+msgid "Project: %1"
+msgstr "Proyecto: %1"
