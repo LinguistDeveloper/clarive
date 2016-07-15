@@ -26,7 +26,7 @@
 % foreach my $label ( _array( $data->{labels} ) ) {
         <!--<div class='alert' style='font-size: 9px;padding:1px 4px 1px 4px;margin-right:4px;color:white;background-color:<% $label->{color} %>'>-->
         <span class='label' style='padding:1px 4px 1px 4px;margin-right:3px;background-color:<% $label->{color} %>'>
-            <% $label->{name} %>
+            <% _loc($label->{name}) %>
 % if($data->{admin_labels}){        
             <span id='<% $label->{id} %>' class='label_click' style="cursor:pointer; cursor:hand">&nbsp;&#x00D7;</span>
 %}
