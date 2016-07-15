@@ -63,7 +63,7 @@
         var attr = node.attributes;
         attr.sort_direction = dir;
         var icon = dir > 0 ? 'up' : 'down';
-        attr.icon = '/static/images/icons/arrow-'+icon+'.gif';
+        attr.icon = '/static/images/icons/arrow-'+icon+'.svg';
         node.setIcon( attr.icon );
     }
     

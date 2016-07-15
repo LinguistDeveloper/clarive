@@ -83,7 +83,7 @@ my $iid = Util->_md5;
                 }
               } else if ( col.type == 'checkbox') {
                 if (!topic[col.name] || topic[col.name] == 0 || topic[col.name] == false ) {
-                  html = html + '<div style="text-align:center;"><img src="/static/images/icons/topic_one.png"></div>';
+                  html = html + '<div style="text-align:center;"><img src="/static/images/icons/topic.svg"></div>';
                 } else {
                   html = html + '<div style="text-align:center;"><img src="/static/images/icons/action_save.svg"></div>'
                 }

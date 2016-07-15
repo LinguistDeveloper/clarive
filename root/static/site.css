@@ -3,7 +3,7 @@
 
 /* Used to hide TreePanel icons - node.setIconCls('no-icon') */
 .bali-icon-active {
-    background: transparent url(/static/images/icons/active.gif) no-repeat center;
+    background: transparent url(/static/images/icons/active.svg) no-repeat center;
 }
 
 .bali-icon-inactive {

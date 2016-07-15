@@ -1998,7 +1998,7 @@ Baseliner.RowDragger = Ext.extend(Ext.util.Observable, {
         //p.cellAttr = 'rowspan="2"';
         //return '<div class="x-grid3-row-expander">&#160;</div>';
         //return '<div class="x-grid3-row-expander"><img src="/static/images/icons/handle.png" />&#160;</div>';
-        return '<img src="/static/images/icons/handle.png" />';
+        return '<img src="/static/images/icons/handle.svg" />';
     }
 });
 
@@ -4758,24 +4758,25 @@ Baseliner.getJobStatusIcon = function(status, rollback) {
         case 'RUNNING':
             return 'gears.gif';
         case 'READY':
-            return 'waiting.png';
+            return 'busy.svg';
         case 'APPROVAL':
             return 'user_delete.svg';
         case 'FINISHED':
-            return (rollback != 1) ? 'log_i.png' : 'log_e.png';
+            return (rollback != 1) ? 'active.svg' : 'error-7-16.svg';
         case 'IN-EDIT':
             return 'log_w_1.svg';
         case 'WAITING':
-            return 'waiting.png';
+            return 'busy.svg';
         case 'PAUSED':
-            return 'paused.png';
+            return 'control_pause.svg';
         case 'TRAPPED':
-            return 'paused.png';
+            return 'control_pause.svg';
         case 'TRAPPED_PAUSED':
-            return 'paused.png';
+            return 'control_pause.svg';
         case 'CANCELLED':
             return 'close.svg';
         default:
-            return 'log_e.png';
+            return 'error-7-16.svg';
     }
 };
+

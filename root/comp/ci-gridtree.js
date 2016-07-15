@@ -386,7 +386,7 @@
     })
 
     var btn_graph = new Ext.Button({
-        icon:'/static/images/icons/ci-grey.png',
+        icon:'/static/images/icons/ci-grey.svg',
         disabled: true,
         cls: 'x-btn-icon',
         tooltip:_('Show Graph'),

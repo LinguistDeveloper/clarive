@@ -558,11 +558,11 @@ a {
 }
 
  .x-tree-node-expanded .default_folders {
-    background-image:url('/static/images/icons/folder-expanded.png');
+    background-image:url('/static/images/icons/folder-expanded.svg');
 }
 
  .x-tree-node-collapsed .default_folders {
-    background-image:url('/static/images/icons/folder-collapsed.png');
+    background-image:url('/static/images/icons/folder-collapsed.svg');
 }
 
 .x-tree-node-leaf .default_folders {

@@ -1567,7 +1567,7 @@ Cla.topic_grid = function(params){
             click: Object
             topic_mid: "67183"
         expandable: true
-        icon: "/static/images/icons/topic.png"
+        icon: "/static/images/icons/topic.svg"
         iconCls: "no-icon"
         id: "xnode-2696"
         leaf: false

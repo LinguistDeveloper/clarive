@@ -41,7 +41,7 @@
             expanded = true;
         }
     });
-    var button_expand = Baseliner.img_button( '/static/images/icons/expandall.gif', function(){
+    var button_expand = Baseliner.img_button( '/static/images/icons/expandall.svg', function(){
             expanded = ! expanded;
             gview.toggleAllGroups( expanded );
             if( expanded ) {

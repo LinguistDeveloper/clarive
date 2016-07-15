@@ -29,7 +29,7 @@ register 'config.git' => {
 
 register 'service.git.newjob' => {
     name    =>_loc('Create a Git Revision Job'),
-    icon    => '/static/images/icons/git-repo.gif',
+    icon    => '/static/images/icons/commite_new.svg',
     handler =>  \&newjob,
 };
 

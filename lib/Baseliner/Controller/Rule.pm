@@ -355,7 +355,7 @@ sub palette : Local {
                 ? '/static/images/icons/help.svg'
                 : do{
                     my $type = $types{ $s->{type} };
-                    "/static/images/icons/$s->{type}.gif";
+                    "/static/images/icons/$s->{type}.svg";
                 });
             $n;
         }

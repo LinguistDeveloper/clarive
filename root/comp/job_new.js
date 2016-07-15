@@ -974,7 +974,7 @@
     Baseliner.show_calendar = function(id_or_rec, ix) {
         var r = (typeof id_or_rec == 'object') ? id_or_rec : Ext.getCmp(id_or_rec).getStore().getAt(ix);
         Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id'), r.get('name'), {
-            tab_icon: '/static/images/icons/calendar_view_month.png'
+            tab_icon: '/static/images/icons/calendar.svg'
         });
     };
 
@@ -982,7 +982,7 @@
         cls: 'x-btn-icon',
         layout: 'form',
         tooltip: _('View Applied Slots'),
-        icon: '/static/images/icons/calendar_view_month.png',
+        icon: '/static/images/icons/calendar.svg',
         handler: function() {
             if (rel_cals.length == 0) {
                 Baseliner.alert(_('No slots selected'));
