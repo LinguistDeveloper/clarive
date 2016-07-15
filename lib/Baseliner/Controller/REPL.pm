@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use experimental 'autoderef';
 use JSON::XS;
 use Try::Tiny;
+use File::Basename qw(dirname);
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -385,13 +386,18 @@ sub save_to_file : Local {
 
         for my $item (@docs) {
             my $name = $item->{id};
-            $name =~ Util->name_to_id($name);
-            my $file   = Baseliner->path_to( 'etc', 'repl', "$name.t" );
+            $name =~ Util->_name_to_id($name);
+            $name =~ s/://g;
+            $name =~ s/ /-/g;
+            my $file = $c->path_to( 'etc', 'repl', "$name.t" );
+            _mkpath dirname $file;
+
             my $code   = $item->{code};
             my $output = $item->{output};
             $code =~ s{\r}{}g;
             $output =~ s{\r}{}g;
-            open my $out, '>', $file;
+
+            open( my $out, '>', $file ) or die $!;
             print $out $code;
             print $out "\n__END__\n";
             print $out $output;
@@ -401,7 +407,8 @@ sub save_to_file : Local {
         $c->stash->{json} = { success => \1 };
     }
     catch {
-        $c->stash->{json} = { success => \0, msg => shift };
+        my $error = shift;
+        $c->stash->{json} = { success => \0, msg => _loc( "Cannot save: %1", $error ) };
     };
     $c->forward('View::JSON');
 }
