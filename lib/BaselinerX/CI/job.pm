@@ -88,7 +88,7 @@ has
   };
 has rule_version_tag     => qw(is ro isa Maybe[Str]);
 has rule_version_dynamic => qw(is ro isa Bool), default => sub { 0 };
-has rule_versions        => qw(is ro isa ArrayRef[HashRef]), default => sub { [ {} ] };
+has rule_versions        => qw(is ro isa ArrayRef), default => sub { [ ] };
 
 has_cis 'releases';
 has_cis 'changesets';
@@ -1143,7 +1143,10 @@ sub run {
           $ret->{rule}->{version_tag}
           ? "$ret->{rule}->{version_id} ($ret->{rule}->{version_tag})"
           : $ret->{rule}->{version_id};
-        $self->rule_versions->[$self->exec - 1]->{$self->step} = $rule_version;
+
+        if ($self->rule_versions && ref $self->rule_versions eq 'ARRAY') {
+            $self->rule_versions->[$self->exec - 1]->{$self->step} = $rule_version;
+        }
 
         $end_status = $self->final_status || 'FINISHED';
     } catch {
