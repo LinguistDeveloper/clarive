@@ -311,7 +311,6 @@
                                     store_category_status.on('load', function(ds, records, o){
                                         if(rec && rec.data){
                                             var ids_category_status = new Array();
-
                                             if(rec.data.data.scopes.category_status && rec.data.data.scopes.category_status['*']){
                                                 chk_category_status.setValue(true);
                                             }else{
@@ -374,6 +373,7 @@
                                             }
                                         ]
                                     };
+                                    form_notification.insert(indice++, columns);
                                     store_category_status.load();
                                     break;
                                 case 'priority':
@@ -452,7 +452,7 @@
                                         root: 'data',
                                         remoteSort: true,
                                         totalProperty: "totalCount",
-                                        //id: 'id', 
+                                        //id: 'id',
                                         url: '/baseline/list',
                                         fields: ['id', 'name', 'description']
                                     });
