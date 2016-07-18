@@ -410,7 +410,7 @@ register 'event.job.cancel' => {
     notify => { scope => ['bl'] }
 };
 register 'event.job.cancel_running' => {
-    description => 'Running job cancelled',
+    description => 'Running job cancelled while running',
     vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
     notify => { scope => ['bl'] }
 };

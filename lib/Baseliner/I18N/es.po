@@ -8896,3 +8896,177 @@ msgstr "Proyecto: %1"
 
 msgid "Cannot save: %1"
 msgstr "No se puede guardar: %1"
+
+msgid "User Logout"
+msgstr "Finalización de sesion del usuario"
+
+msgid "Login by SAML Ok"
+msgstr "Autenticación SAML Válida"
+
+msgid "Login by SAML Failed"
+msgstr "Autenticación SAML Inválida"
+
+msgid "Login by CAS Ok"
+msgstr "Autenticación CAS Válida"
+
+msgid "Login by CAS Failed"
+msgstr "Autenticación CAS Inválida"
+
+msgid "Surrogate Ok"
+msgstr "Impersonado OK"
+
+msgid "Surrogate Failed"
+msgstr "Impersonado Fallido"
+
+msgid "User Login Attempt"
+msgstr "Intento de conexión del Usuario"
+
+msgid "New CI"
+msgstr "CI Creado"
+
+msgid "Update CI"
+msgstr "CI Actualizado"
+
+msgid "Delete CI"
+msgstr "CI Borrado"
+
+msgid "User created a file"
+msgstr "El Usuario creó un fichero"
+
+msgid "User attached a file"
+msgstr "El Usuario adjuntó un fichero"
+
+msgid "User removed a file"
+msgstr "El usuario borró un fichero"
+
+msgid "User modified labels"
+msgstr "El Usuario modificó etiquetas"
+
+msgid "User removed labels"
+msgstr "El Usuario borró etiquetas"
+
+msgid "New job"
+msgstr "Nuevo pase"
+
+msgid "Job deleted"
+msgstr "Pase borrado"
+
+msgid "Job cancelled"
+msgstr "Pase cancelado"
+
+msgid "Running job cancelled while running"
+msgstr "Pase en ejecución cancelado"
+
+msgid "Job Approved"
+msgstr "Pase Aprobado"
+
+msgid "approval requested for job"
+msgstr "Petición de aprobación del pase"
+
+msgid "Job Rejected"
+msgstr "Pase Rechazado"
+
+msgid "Rerun a job"
+msgstr "Repetición del pase"
+
+msgid "Reschedule a job"
+msgstr "Replanificación del pase"
+
+msgid "Job start"
+msgstr "Inicio del pase"
+
+msgid "Job step start"
+msgstr "Inicio de fase del pase"
+
+msgid "Job end, after POST"
+msgstr "Finalización del pase, después de POST"
+
+msgid "Job step end"
+msgstr "Finalización de fase del pase"
+
+msgid "PRE job step event"
+msgstr "Evento del pase en fase PRE"
+
+msgid "RUN job step event"
+msgstr "Evento del pase en fase RUN"
+
+msgid "POST job step event"
+msgstr "Evento del pase en fase POST"
+
+msgid "User posted a comment"
+msgstr "El usuario añadió un comentario"
+
+msgid "User deleted a comment"
+msgstr "El Usuario borró un comentario"
+
+msgid "User edited a comment"
+msgstr "El Usuario editó un comentario"
+
+msgid "User mentioned another user in a comment"
+msgstr "El Usuario nombró a otro usuario en el comentario"
+
+msgid "New repository"
+msgstr "Nuevo Repositorio"
+
+msgid "Update repository"
+msgstr "Repositorio actualizado"
+
+msgid "Rule failed"
+msgstr "Regla Inválida"
+
+msgid "Rule error trapped"
+msgstr "Error de regla capturado"
+
+msgid "Rule created"
+msgstr "Regla creada"
+
+msgid "Rule updated"
+msgstr "Regla actualizada"
+
+msgid "Dummy Event to Test a Rule"
+msgstr "Evento falso para probar la regla"
+
+msgid "Soap Error running Rule"
+msgstr "Error Soap en la ejecución de la regla"
+
+msgid "Error Running Rule from WS"
+msgstr "Error Ejecutando la Regla desde un WS"
+
+msgid "WSDL Error Running Rule from WS"
+msgstr "Error WSDL Ejecutando la Regla desde un WS"
+
+msgid "New System Message"
+msgstr "Nuevo Mensaje de Sistema"
+
+msgid "Canceled System Message"
+msgstr "Mensjae de Sistema cancelado"
+
+msgid "Deleted System Message"
+msgstr "Mensaje de Sistema Borrado"
+
+msgid "Topic status changed"
+msgstr "Estado del tópico cambiado"
+
+msgid "User created a topic"
+msgstr "El usario creó un tópico"
+
+msgid "User deleted a topic"
+msgstr "El Usuario borró un tópico"
+
+msgid "User modified a topic"
+msgstr "El usuario modificó un tópico"
+
+msgid "User modified a topic field"
+msgstr "El Usuario modificó un campo del tópico"
+
+msgid "Topic list exported"
+msgstr "Lista de tópicos exportado"
+
+msgid "Wipe Cache"
+msgstr "Limpieza de caché"
+
+msgid "SOAP WS is ready"
+msgstr "WS SOAP listo"
+
+msgid "New user"
+msgstr "Nuevo usuario"
