@@ -13,3 +13,4 @@ baseliner:
     activity_from_event: 0
 lang: en_US.UTF-8
 port: 3000
+default_lang: en

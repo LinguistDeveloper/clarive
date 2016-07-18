@@ -13,6 +13,10 @@ $SIG{INT} = sub {
     $_->() for @CLEANUP;
 };
 
+$ENV{LC_ALL}   = 'en_US.UTF-8';
+$ENV{LANG}     = 'en_US.UTF-8';
+$ENV{LANGUAGE} = 'en_US.UTF-8';
+
 sub run {
     my $self = shift;
     my (%opts) = @_;

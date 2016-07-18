@@ -7,6 +7,20 @@ use Carp qw(croak);
 use Time::HiRes qw(usleep);
 use HTTP::Tiny;
 use TestExtJsComponent;
+use Selenium::Firefox::Profile;
+
+sub new {
+    my $class = shift;
+    my (%params) = @_;
+
+    my $firefox_profile = Selenium::Firefox::Profile->new;
+
+    $firefox_profile->set_preference( 'intl.accept_languages' => 'en-us, en' );
+
+    $params{firefox_profile} = $firefox_profile;
+
+    return $class->SUPER::new(%params);
+}
 
 sub resolve {
     my ($name) = @_;
