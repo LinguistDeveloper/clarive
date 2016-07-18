@@ -527,6 +527,56 @@ subtest 'pipeline_versions: returns versions data' => sub {
     };
 };
 
+subtest 'submit: returns an error when user does not have permission to create new job out of window' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role => 'Role no window',
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bl => 'PROD'
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'user' );
+    my $id_rule = TestSetup->create_rule;
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+    );
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { id_rule => $id_rule, changesets => $changeset_mid, check_no_cal => 'on' } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->submit($c);
+    };
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            success => \0,
+            msg => re(qr/Error creating job: User user doesn't have permissions to create a job out of calendar/)
+        }
+      };
+};
+
 subtest 'submit: creates a new job' => sub {
     _setup();
 
@@ -708,6 +758,10 @@ sub _setup {
         actions => [
             {
                 action => 'action.job.viewall',
+                bl => 'PROD'
+            },
+            {
+                action => 'action.job.no_cal',
                 bl => 'PROD'
             },
         ]

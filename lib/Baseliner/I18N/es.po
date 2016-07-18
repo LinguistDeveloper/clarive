@@ -6423,6 +6423,9 @@ msgstr "Pase ya cancelado"
 msgid "No job contents"
 msgstr "Pase sin contenido"
 
+msgid "User %1 doesn't have permissions to create a job out of calendar"
+msgstr "El usuario %1 no tiene permisos para crear pases fuera de ventana"
+
 msgid "Job %1 resumed"
 msgstr "Pase %1 reanudado"
 
