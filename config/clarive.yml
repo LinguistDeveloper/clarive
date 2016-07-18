@@ -90,7 +90,7 @@ baseliner:
     app_name: ϲʟᴀʀɪᴠе
     default_theme: clarive-flat
     default_lang: en
-    logo_filename: logo.png
+    logo_filename: logo.svg
     toolbar_height: 40
     #favicon: /static/themes/clarive/favicon.ico
     #login_page: /clarive/login.html
