@@ -147,6 +147,64 @@ subtest 'tree_roles: returns roles when user has all admin permissions' => sub {
     ok scalar @tree;
 };
 
+subtest 'tree_roles: returns All as first item name in tree when sort = name' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+    my @tree = $controller->tree_roles( user => $user->username, sort=> 'name');
+
+    is $tree[0]->{item}, 'All'
+};
+
+subtest 'list_roles: returns All as item name' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my @tree = $controller->list_roles;
+
+    ok grep { $_->{name} eq 'All' } @tree;
+};
+
+subtest 'list_roles: returns All as first item name in tree when sort = name' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my @tree = $controller->list_roles ( sort=> 'name');
+
+    ok grep { $_->{name} eq 'All' } @tree;
+};
+
+subtest 'roles: returns all as first data item name with name_format lc and sort = name' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { name_format => 'lc' } } );
+
+    my $controller = _build_controller();
+    my @tree = $controller->roles($c);
+
+    my $data = $c->stash->{json}->{data}->[0];
+    is $data->{name}, 'all'
+};
+
+subtest 'roles: returns All as first data item name with name_format short' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { name_format => 'short' } } );
+
+    my $controller = _build_controller();
+    my @tree = $controller->roles($c);
+
+    my $data = $c->stash->{json}->{data}->[0];
+    is $data->{name}, 'All'
+};
+
 subtest 'tree_classes: returns no roles when user has no permissions' => sub {
     _setup();
 

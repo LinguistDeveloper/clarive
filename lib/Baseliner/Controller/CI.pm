@@ -139,9 +139,9 @@ sub tree_roles {
 
     my $cnt = 0;
     my @tree;
-    for ( sort { $a->{name} eq 'CI' ? -1 : $b->{name} eq 'CI' ? 1 : $a->{name} cmp $b->{name} } $self->list_roles ) {
+    for ($self->list_roles (sort => 'name')) {
         my $role = $_->{role};
-        my $name = $_->{name};
+        my $name = _loc ($_->{name});
 
         next unless $permissions->user_can_view_ci_group( $user, $name );
 
@@ -548,24 +548,30 @@ sub list_classes {
 
 sub list_roles {
     my ($self, %p) = @_;
-    $p{name_format} //= 'lc';
+    $p{name_format} //= '';
     my $name_transform = sub {
         my $name = shift;
         return $name if $p{name_format} eq 'full';
         ($name) = $name =~ /^.*::CI::(.*)$/;
-        return length($name) ? $name : 'CI' if $p{name_format} eq 'short';
+        return length($name) ? $name : 'All' if $p{name_format} eq 'short';
         $name =~ s{::}{}g if $name;
         $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name;
-        return $name || 'CI';
+        my $all = $p{name_format} eq 'lc' ? 'all': 'All';
+        return $name || $all;
     };
     my %cl=Class::MOP::get_all_metaclasses;
-    return map {
+    my @roles = map {
         my $role = $_;
         +{
             role => $role,
             name => $name_transform->( $role ),
         }
     } grep /^Baseliner::Role::CI/, keys %cl;
+    if ( $p{sort} && $p{sort} eq 'name') {
+        @roles = sort { $a->{name} =~ /[Aa]ll/  ? -1 : $b->{name} =~ /[Aa]ll/ ? 1 : $a->{name} cmp $b->{name} } @roles;
+        map {$_->{name} = $_->{name} =~ /[Aa]ll/ ? _loc ($_->{name}) : $_->{name}; $_  } @roles;
+    }
+    return @roles;
 }
 
 sub class_methods : Local {
@@ -602,7 +608,7 @@ sub classes : Local : Does('Ajax') {
 sub roles : Local : Does('Ajax') {
     my ($self, $c) = @_;
     my $name_format = $c->req->params->{name_format};
-    my @roles = sort { $a->{name} cmp $b->{name} } $self->list_roles( name_format=>$name_format );
+    my @roles = $self->list_roles( name_format=>$name_format, sort => 'name' );
     $c->stash->{json} = { data=>\@roles, totalCount=>scalar(@roles) };
     $c->forward('View::JSON');
 }

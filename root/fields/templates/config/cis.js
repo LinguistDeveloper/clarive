@@ -1,5 +1,6 @@
 (function(params){
     var data = params.data || {};
+    if (data.var_ci_role == 'CI') data.var_ci_role = _('All');
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
     Cla.help_push({ title:_('CI Combo'), path:'rules/palette/fieldlets/ci-combo' });
@@ -19,27 +20,27 @@
 
 
     var roles_store = new Ext.data.JsonStore({
-        root: 'data', 
+        root: 'data',
         allowBlank: false,
         remoteSort: true,
-        totalProperty: 'totalCount', 
-        id: 'id', 
+        totalProperty: 'totalCount',
+        id: 'id',
         baseParams: Ext.apply({  start: 0, limit: 9999 }, this.baseParams ),
         url: '/ci/roles',
         fields: [ 'role', 'name' ]
     });
-    
+
    var ci_store = new Ext.data.JsonStore({
-        root: 'data', 
+        root: 'data',
         remoteSort: true,
-        totalProperty: 'totalCount', 
-        id: 'id', 
+        totalProperty: 'totalCount',
+        id: 'id',
         baseParams: Ext.apply({  start: 0, limit: 9999 }, this.baseParams ),
         url: '/ci/classes',
         fields: [ 'name', 'classname' ],
     });
     ci_store.on('load', function(){
-        ci_class_box.setValue(data.ci_class_box); 
+        ci_class_box.setValue(data.ci_class_box);
     });
 
     var default_store = new Baseliner.store.CI({
@@ -52,7 +53,7 @@
     });
 
     var class_selected = false;
-    
+    if (data.var_ci_role == 'CI') data.var_ci_role = _('All');
 
     var role_box_multiselect = new Cla.SuperBox({
         deal_combo_change: function(obj){
@@ -75,7 +76,7 @@
         valueField: 'name',
         displayField: 'name',
         singleMode: false,
-        value: data.var_ci_role || 'CI',
+        value: data.var_ci_role || _('All'),
         allowBlank: Boolean(ci_class_field.value),
         mode: 'remote',
         listeners:{
@@ -194,7 +195,7 @@
                                 role_box_multiselect.allowBlank = false;
                                ci_class_box.disable();
                             }else{
-                                ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});            
+                                ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});
                                 class_selected=true;
                                 ci_class_box.allowBlank = false;
                                 role_box_multiselect.allowBlank = true;
