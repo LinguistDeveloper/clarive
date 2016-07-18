@@ -1,6 +1,7 @@
 package BaselinerX::Service::Dispatcher;
 use Moose;
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::Model::Daemons;
 use Baseliner::Utils;
 use Proc::Background;
 use Proc::Exists qw(pexists);
@@ -271,7 +272,7 @@ sub check_daemon {
             });
         }
         my $reg = try {
-            Baseliner->model('Registry')->get( $daemon->{service} ) if $daemon->{service}
+            Baseliner::Core::Registry->get( $daemon->{service} ) if $daemon->{service}
         } catch {
             my $err = shift;
             _error( _loc("Could not start service %1. Service ignored: %2", $daemon->{service}, $err ) );
@@ -281,7 +282,8 @@ sub check_daemon {
         return if !$reg;
 
         # bring it back up
-        my $params = {};
+        my $params = $config->{argv};
+
         my @started;
         if ( ref($reg) && exists $reg->{frequency_key} ) {
             _debug("Starting forked with frequency $reg->{frequency_key}");
@@ -293,10 +295,9 @@ sub check_daemon {
             catch {};
             my $freq = 60;    #TODO use the configstore also
             _log "Using frequency ${freq}s";
-
             # launch loop
             @started =
-              Baseliner->model('Daemons')->service_start_forked(
+              $self->_build_daemons->service_start_forked(
                 frequency => $freq,
                 id        => $daemon->{_id}.'',
                 service   => $daemon->{service},
@@ -305,11 +306,10 @@ sub check_daemon {
               );
         }
         elsif ( exists $config->{fork} || exists $config->{forked} ) {
-
             _debug("Starting forked");
             # forked
             @started =
-              Baseliner->model('Daemons')->service_start_forked(
+              $self->_build_daemons->service_start_forked(
                 id      => $daemon->{_id}.'',
                 service => $daemon->{service},
                 disp_id  => $self->disp_id,
@@ -319,12 +319,13 @@ sub check_daemon {
         else {
             # background proc
             _debug("Starting normal (no fork)");
-            @started = Baseliner->model('Daemons')->service_start(
+            @started = $self->_build_daemons->service_start(
                 id      => $daemon->{_id}.'',
                 service => $daemon->{service},
                 disp_id  => $self->disp_id,
                 params  => $params
             );
+
         }
         my $started = shift @started;
         _debug($started);
@@ -344,6 +345,12 @@ sub check_daemon {
         # $c->launch( $daemon->{service} );
     }
 }
+
+sub _build_daemons {
+    my $self = shift;
+    return Baseliner::Model::Daemons->new;
+}
+
 =head1 nohup
 
 use POSIX qw/setsid/;
