@@ -110,6 +110,14 @@ Include a last row showing total if we have a number type in the table.
 
 Set the maximum number of topics.
 
+### Sort by
+
+* Set the parameter by which we will sort the topics (Default sorted by the ID).
+
+### Sort Order
+
+* ASC. Sorts in ascending order.
+* DESC. Sorts in descending order.
 
 ### Select topics in categories
 
