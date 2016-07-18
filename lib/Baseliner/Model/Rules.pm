@@ -441,7 +441,7 @@ register 'statement.if.condition' => {
 
 register 'statement.if.else' => {
     text => 'ELSE',
-     icon => '/static/images/icons/else.svg',
+    icon => '/static/images/icons/else.svg',
     type => 'if',
     nested => 1,   # avoids a "current_task" before
     data => {},
