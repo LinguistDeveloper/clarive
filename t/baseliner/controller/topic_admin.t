@@ -165,6 +165,54 @@ subtest 'update_category: changes the color of category and topics that belong t
     is $check_color->{color_category} , '#FF0202';
 };
 
+subtest 'update_category: updates status when new status is empty' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci( 'project', name => 'Project', );
+    my $id_role    = TestSetup->create_role(
+        actions => [
+            {   action => 'action.topics.issue.edit',
+                bl     => '*'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $status = TestUtils->create_ci( 'status', name => 'Active' );
+
+    my $form = _create_form();
+
+    my $category_id = TestSetup->create_category(
+        name      => 'Category',
+        id_rule   => $form,
+        id_status => $status->mid,
+        color     => '#42FF02',
+        statuses  => $status->{mid}
+    );
+
+    my $c = _build_c(
+        req => {
+            params => {
+                action         => 'update',
+                idsstatus      => '',
+                type           => 'N',
+                id             => $category_id,
+                name           => 'Category',
+                category_color => '#FF0202'
+            }
+        }
+    );
+
+    $controller->update_category($c);
+
+    is $c->stash->{json}->{msg}, 'Category modified';
+
+    my $update_category = mdb->category->find_one( { id => $category_id } );
+
+    cmp_deeply( $update_category->{statuses}, scalar [] );
+};
+
 sub _create_form {
     return TestSetup->create_rule_form(
         rule_tree => [

@@ -35,7 +35,7 @@ sub update_category : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $action = $p->{action};
-    my $idsstatus = $p->{idsstatus};
+    my $idsstatus = $p->{idsstatus} ? $p->{idsstatus} : [];
     my $type = $p->{type};
     cache->remove_like( qr/^topic:/ );
     cache->remove_like( qr/^roles:/ );
