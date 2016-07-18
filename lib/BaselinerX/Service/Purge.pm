@@ -9,7 +9,6 @@ use File::Path;
 use Time::Piece;
 use Time::Seconds;
 use File::Copy;
-#use Baseliner::LogfileRotate;
 use Switch;
 
 with 'Baseliner::Role::Service';
@@ -77,60 +76,64 @@ register 'service.purge.run_once' => {
 sub run_once {
     my ( $self, $c, $opts )=@_;
     $opts //= {};
-    my $now = Util->_ts(); # Class::Date->now object
-    my $job_purge_count = 0;
-    my $config_runner = Baseliner->model('ConfigStore')->get( 'config.job.runner');
-    my $config_purge = Baseliner->model('ConfigStore')->get( 'config.purge');
-    my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
-    $job_home = $job_home."/";
-    my $logs_home = $ENV{BASELINER_LOGHOME};
-    $config_runner->{root} = $job_home;
 
-    if( !$config_purge->{no_job_purge} && (ref $config_runner && $config_runner->{root}) ) {
-        #_log "Config root: ". $config_runner->{root};
+    my %stats = ( grid => 0, job => 0, job_log => 0 );
+
+    my $now = Util->_ts();
+    my $config = BaselinerX::Type::Model::ConfigStore->new;
+    my $config_runner = $config->get( 'config.job.runner');
+    my $config_purge = $config->get( 'config.purge');
+    my $job_home = ( $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir()) . "/";
+    my $logs_home = $ENV{BASELINER_LOGHOME};
+
+    my $purge_job_available = !$config_purge->{no_job_purge} && (ref $config_runner && $job_home);
+    if( $purge_job_available ) {
         my $jobs = ci->job->find({ purged => { '$ne' => '1'}})->sort({ _id=>1 });
         while (my $job= $jobs->next){
-            my $job_name = $job->{name};
-            my $endtime = $job->{endtime};
-            my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
+            my $job_mid = $job->{mid};
             my $ci_job = try {
-                ci->new($job->{mid});
+                ci->new($job_mid);
             } catch {
-                _warn( "INVALID JOB=$job->{mid}" );
+                _warn( "INVALID JOB = $job_mid" );
                 undef;
             };
             next unless $ci_job;
+
+            my $job_name = $job->{name};
+            my $endtime = $job->{endtime};
+            my $config = $config->get('config.purge', bl => $job->{bl});
+
             my $configdays = $ci_job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
             my $limitdate = $now - "${configdays}D";
-            # delete job directories
+
             my $purged_job_path = $job_home."$job->{name}";
             my $purged_job_log_path = $logs_home."$job->{name}.log";
-            my $max_job_time = Time::Piece->strptime($endtime, "%Y-%m-%d %H:%M:%S");
-            $max_job_time = $max_job_time + ONE_DAY * $config->{keep_job_files};
-            my @temp = split( " ", $now );
-            #_log "Condition to delete job_dir and job_log  ".$max_job_time->datetime."<------>$temp[0]T$temp[1]";
+            my $max_job_time = Time::Piece->strptime($endtime, "%Y-%m-%d %H:%M:%S")
+                            + ONE_DAY * $config->{keep_job_files};
+            my $now_standard_date = $now =~ s/" "/T/g;
+
             if ( length $endtime && $endtime < $limitdate && !$job->{purged} ) {
                 next if $ci_job->is_active;
+                _log "Purging job $job_name with mid $job_mid ($endtime < $limitdate)....";
+                $stats{job}++;
                 try {
-                    _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
-                    $job_purge_count++;
                     $ci_job->update( purged=>1 );
                     next if $opts->{dry_run};
-                    # delete job logs
                     _log "\tDeleting log $purged_job_log_path";
                     unlink $purged_job_log_path;
-                    my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
+                    my $deleted_job_logs = mdb->job_log->find({ mid => $job_mid});
                     while( my $actual = $deleted_job_logs->next ) {
-                        my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} });
-                        my $data;
-                        mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} && $actual->{level} eq 'debug';
-                        if(ref $query){
-                            _log "\tDeleting field data of ".$job->{mid}."....";
-                            $data = $query->{data};
-                            mdb->grid->delete($data);
+                        if ($actual->{lev} eq 'debug'){
+                            mdb->job_log->remove({ mid => $actual->{mid}, id => $actual->{id} });
+                            $stats{job_log}++;
+                        }
+                        if( $actual->{data} ){
+                            _log "\tDeleting field data of ". $job_mid ."....";
+                            mdb->grid->delete( $actual->{data} );
+                            $stats{grid}++;
                         } else {
-                            if ( $actual->{more} eq 'jes' ) {
-                                _log "\tRemoving jes data of ".$job->{mid}."....";
+                            if ( $actual->{more} && $actual->{more} eq 'jes' ) {
+                                _log "\tRemoving jes data of ". $job_mid ."....";
                                 mdb->jes_log->remove({ id_log => 0+$actual->{id}});
                             }
                         }
@@ -139,17 +142,18 @@ sub run_once {
                     _log "Error trying to delete job $job_name. Job skipped: ".shift;
                 }
             } elsif( !$job->{purged} ) {
-                _log _loc('Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid});
+                _log _loc('Job not ready to purge yet: %1 (%2)', $job_name, $job_mid);
             }
-            if( $max_job_time->datetime lt "$temp[0]T$temp[1]" && -d $purged_job_path ) {
-                _log "\tDeleting job directory $purged_job_path....";
+
+            if( $max_job_time->datetime lt $now_standard_date && -d $purged_job_path ) {
+                _log "\tDeleting for job directory $purged_job_path....";
                 File::Path::remove_tree( $purged_job_path, {error => \my $err} );
                 unlink $purged_job_path;
             }
         }
         ############## Control of logsize and old .gz ######################
         my $log_dir = Path::Class::dir( $logs_home );
-        unless( $config_purge->{no_file_purge} ) {
+        unless( $config_purge->{no_file_purge} || !$log_dir) {
             require Proc::Exists;
             _log "\n\n\nAnalyzing logs....";
             while (my $file = $log_dir->next) {
@@ -257,6 +261,7 @@ sub run_once {
         }
     }
     _log 'Done purging.';
+    return \%stats;
 }
 
 
