@@ -468,7 +468,8 @@ if( Prefs.routing ) {
 
         var tab;
         title = title ? title : comp.title;
-        var title_length = title ? ($(title).length ? $(title).text().length : title.length) : 0;
+        var isPlainText = !/<span\s+|<div\s+/.test(title);
+        var title_length = title ? (!isPlainText ? $(title).text().length : title.length) : 0;
         // if tab_index not defined -> add current tab for tab_index or add new tab.
         if( params.tab_index != undefined ) {
             comp.tabTip = title_length > 29 ? title : '';
@@ -490,7 +491,7 @@ if( Prefs.routing ) {
                 title = '';
             }
         }
-        if ($(title).length) {
+        if (!isPlainText) {
             title = title.replace($(title).text(), Cla.truncateText($(title).text()));
         }
         else {
