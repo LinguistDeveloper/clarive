@@ -93,9 +93,11 @@ sub language {
 sub localize {
     my $class = shift;
 
+    my @args = map { defined ? $_ : '' } @_;
+
     my $handle = $class->_get_handle();
 
-    return $handle->maketext(map { defined ? $_ : '' } @_);
+    return $handle->maketext(@args);
 }
 
 sub parse_po {
@@ -147,6 +149,7 @@ sub _get_handle {
 
     my @langtags = @{ $class->languages };
     my $handle   = $class->get_handle(@langtags);
+    $handle->fail_with('failure_handler_auto');
 
     croak "Can't get language handle for @langtags" unless $handle;
 

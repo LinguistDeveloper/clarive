@@ -68,6 +68,9 @@ msgstr ""
 
 msgid "Hello %1"
 msgstr ""
+
+msgid "_special"
+msgstr ""
 EOP
 
     _write_file(<<"EOP", "$po_dir/es.po");
@@ -83,17 +86,27 @@ msgstr "Datos de Registro"
 
 msgid "Hello %1"
 msgstr "Hola %1"
+
+msgid "_special"
+msgstr "_especial"
 EOP
 
     Baseliner::I18N->setup( paths => $po_dir );
 
     Baseliner::I18N->languages(['en']);
     is(Baseliner::I18N->language, 'en');
+    is(Baseliner::I18N->localize('unknown'), 'unknown');
+    is(Baseliner::I18N->localize('1_2'), '1_2');
+    is(Baseliner::I18N->localize('_unknown'), '_unknown');
+    is(Baseliner::I18N->localize('_special'), '_special');
     is(Baseliner::I18N->localize('Site Information'), 'Site Information');
     is(Baseliner::I18N->localize('Hello %1', 'Bill'), 'Hello Bill');
 
     Baseliner::I18N->languages(['es']);
     is(Baseliner::I18N->language, 'es');
+    is(Baseliner::I18N->localize('unknown'), 'unknown');
+    is(Baseliner::I18N->localize('_unknown'), '_unknown');
+    is(Baseliner::I18N->localize('_special'), '_especial');
     is(Baseliner::I18N->localize('Site Information'), 'Datos de Registro');
     is(Baseliner::I18N->localize('Hello %1', 'Pedro'), 'Hola Pedro');
 };
