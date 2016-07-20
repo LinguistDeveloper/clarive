@@ -1995,6 +1995,764 @@ subtest 'get_categories_permissions: returns all categories when is_release is 0
     is @output, 3;
 };
 
+subtest 'set_users: set value of old user in modify_field event' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci('project');
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+    my $user_old = TestSetup->create_user( id_role => $id_role, project => $project, username => 'old_user' );
+    my $user_new = TestSetup->create_user( id_role => $id_role, project => $project, username => 'new_user' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Users",
+                        "fieldletType" => "fieldlet.system.users",
+                        "id_field"     => "users",
+                    },
+                    "key" => "fieldlet.system.users",
+                    text  => 'Users',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $user_old->mid, rel_type => 'topic_users', rel_field => 'users' } );
+
+    my $ci = ci->new($topic_mid);
+
+    my $model = _build_model();
+
+    $model->set_users( $ci, $user_new->{mid}, 'developer', 'users' );
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, $user_old->username;
+};
+
+subtest 'set_users: set value of old user in modify_field event when no new users' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci('project');
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+    my $user_old = TestSetup->create_user( id_role => $id_role, project => $project, username => 'old_user' );
+    my $user_new = TestSetup->create_user( id_role => $id_role, project => $project, username => 'new_user' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Users",
+                        "fieldletType" => "fieldlet.system.users",
+                        "id_field"     => "users",
+                    },
+                    "key" => "fieldlet.system.users",
+                    text  => 'Users',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $user_old->mid, rel_type => 'topic_users', rel_field => 'users' } );
+
+    my $ci = ci->new($topic_mid);
+
+    my $model = _build_model();
+
+    $model->set_users( $ci,'', 'developer', 'users' );
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, $user_old->username;
+};
+
+
+subtest 'set_users: set value of old user in modify_field event when old user is empty' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci('project');
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+    my $user_new = TestSetup->create_user( id_role => $id_role, project => $project, username => 'new_user' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Users",
+                        "fieldletType" => "fieldlet.system.users",
+                        "id_field"     => "users",
+                    },
+                    "key" => "fieldlet.system.users",
+                    text  => 'Users',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $ci = ci->new($topic_mid);
+
+    my $model = _build_model();
+
+    $model->set_users( $ci, $user_new->{mid}, 'developer', 'users' );
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, '';
+};
+
+subtest 'set_users: set value of old user in modify_field event when many old users exist' => sub {
+    _setup();
+
+    my $project    = TestUtils->create_ci('project');
+    my $id_role    = TestSetup->create_role();
+    my $user       = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+    my $user_old_1 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'old_user1' );
+    my $user_old_2 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'old_user2' );
+    my $user_old_3 = TestSetup->create_user( id_role => $id_role, project => $project, username => 'old_user3' );
+    my $user_new   = TestSetup->create_user( id_role => $id_role, project => $project, username => 'new_user' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Users",
+                        "fieldletType" => "fieldlet.system.users",
+                        "id_field"     => "users",
+                    },
+                    "key" => "fieldlet.system.users",
+                    text  => 'Users',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $user_old_1->mid, rel_type => 'topic_users', rel_field => 'users' } );
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $user_old_2->mid, rel_type => 'topic_users', rel_field => 'users' } );
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $user_old_3->mid, rel_type => 'topic_users', rel_field => 'users' } );
+
+    my $ci = ci->new($topic_mid);
+
+    my $model = _build_model();
+
+    $model->set_users( $ci, $user_new->{mid}, 'developer', 'users' );
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, 'old_user1,old_user2,old_user3';
+};
+
+subtest 'set_users: set value of old user in modify_field event' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci('project');
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+    my $user_old = TestSetup->create_user( id_role => $id_role, project => $project, username => 'old_user' );
+    my $user_new = TestSetup->create_user( id_role => $id_role, project => $project, username => 'new_user' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Users",
+                        "fieldletType" => "fieldlet.system.users",
+                        "id_field"     => "users",
+                    },
+                    "key" => "fieldlet.system.users",
+                    text  => 'Users',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $user_old->mid, rel_type => 'topic_users', rel_field => 'users' } );
+
+    my $ci = ci->new($topic_mid);
+
+    my $model = _build_model();
+
+    $model->set_users( $ci, $user_new->{mid}, 'developer', 'users' );
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, $user_old->username;
+};
+
+subtest 'set_topics: set value of old topic in modify_field event' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Topic Selector",
+                        "fieldletType" => "fieldlet.system.list_topics",
+                        "id_field"     => "list_topics",
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    text  => 'Topic Selector',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $topic_mid_old = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old'
+    );
+
+    my $topic_mid_new = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_New'
+    );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_topics( $ci_topic, $topic_mid_new, 'developer', 'list_topics', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, $topic_mid_old;
+
+};
+
+subtest 'set_topics: set value of old topic in modify_field event when have more than one old topic ' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Topic Selector",
+                        "fieldletType" => "fieldlet.system.list_topics",
+                        "id_field"     => "list_topics",
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    text  => 'Topic Selector',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $topic_mid_old_1 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old_1'
+    );
+    my $topic_mid_old_2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old_2'
+    );
+    my $topic_mid_old_3 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old_3'
+    );
+
+    my $topic_mid_new = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_New'
+    );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old_1, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old_2, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old_3, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_topics( $ci_topic, $topic_mid_new, 'developer', 'list_topics', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    my $all_old_topics = $topic_mid_old_1 . "," . $topic_mid_old_2 . "," . $topic_mid_old_3;
+
+    is $event_data->{old_value}, $all_old_topics;
+
+};
+
+subtest 'set_topics: set value of old topic in modify_field when no new topic' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Topic Selector",
+                        "fieldletType" => "fieldlet.system.list_topics",
+                        "id_field"     => "list_topics",
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    text  => 'Topic Selector',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $topic_mid_old_1 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old_1'
+    );
+    my $topic_mid_old_2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old_2'
+    );
+    my $topic_mid_old_3 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic_Old_3'
+    );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old_1, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old_2, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+
+    mdb->master_rel->insert(
+        { from_mid => $topic_mid, to_mid => $topic_mid_old_3, rel_type => 'topic_topic', rel_field => 'list_topics' } );
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_topics( $ci_topic, '', 'developer', 'list_topics', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    my $all_old_topics = $topic_mid_old_1 . "," . $topic_mid_old_2 . "," . $topic_mid_old_3;
+
+    is $event_data->{old_value}, $all_old_topics;
+
+};
+
+subtest 'set_projects: set value of old project in modify_field event' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Project Combo",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project_combo",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project Combo',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $project_old = TestUtils->create_ci('project');
+    my $project_new = TestUtils->create_ci('project');
+
+    mdb->master_rel->insert(
+        {   from_mid  => $topic_mid,
+            to_mid    => $project_old->{mid},
+            rel_type  => 'topic_project',
+            rel_field => 'project_combo'
+        }
+    );
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_projects( $ci_topic, $project_new->{mid}, 'developer', 'project_combo', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, 'project:' . $project_old->{mid};
+
+};
+
+subtest 'set_projects: set value of old project in modify_field event when no new project' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Project Combo",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project_combo",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project Combo',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $project_old = TestUtils->create_ci('project');
+
+    mdb->master_rel->insert(
+        {   from_mid  => $topic_mid,
+            to_mid    => $project_old->{mid},
+            rel_type  => 'topic_project',
+            rel_field => 'project_combo'
+        }
+    );
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_projects( $ci_topic, '', 'developer', 'project_combo', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, 'project:' . $project_old->{mid};
+
+};
+
+subtest 'set_projects: set value of several old project in modify_field event when are new project' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Project Combo",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project_combo",
+                    },
+                    "key" => "fieldlet.system.projects",
+                    text  => 'Project Combo',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    my $project_old_1 = TestUtils->create_ci('project');
+    my $project_old_2 = TestUtils->create_ci('project');
+    my $project_old_3 = TestUtils->create_ci('project');
+
+    mdb->master_rel->insert(
+        {   from_mid  => $topic_mid,
+            to_mid    => $project_old_1->{mid},
+            rel_type  => 'topic_project',
+            rel_field => 'project_combo'
+        }
+    );
+    mdb->master_rel->insert(
+        {   from_mid  => $topic_mid,
+            to_mid    => $project_old_2->{mid},
+            rel_type  => 'topic_project',
+            rel_field => 'project_combo'
+        }
+    );
+    mdb->master_rel->insert(
+        {   from_mid  => $topic_mid,
+            to_mid    => $project_old_3->{mid},
+            rel_type  => 'topic_project',
+            rel_field => 'project_combo'
+        }
+    );
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_projects( $ci_topic, '', 'developer', 'project_combo', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+
+    my $event_data = _load $event->{event_data};
+
+    my $all_old_projects
+        = 'project:'
+        . $project_old_1->{mid}
+        . ',project:'
+        . $project_old_2->{mid}
+        . ',project:'
+        . $project_old_3->{mid};
+
+    is $event_data->{old_value}, $all_old_projects;
+
+};
+
+subtest 'set_revisions: set value of old revisions in modify_field event' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Revision Box",
+                        "fieldletType" => "fieldlet.system.revisions",
+                        "id_field"     => "revisions",
+                    },
+                    "key" => "fieldlet.system.revisions",
+                    text  => 'Revision Box',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    mdb->master_rel->insert(
+        {   from_mid => $topic_mid,
+            to_mid   => $project->{mid},
+            rel_type => 'topic_project'
+        }
+    );
+
+    my $ci_revision_old = TestUtils->create_ci('GitRevision');
+
+    mdb->master_rel->insert(
+        {   from_mid => $topic_mid,
+            to_mid   => $ci_revision_old->{mid},
+            rel_type => 'topic_revision'
+        }
+    );
+
+    my $ci_revision_new = TestUtils->create_ci('GitRevision');
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_revisions( $ci_topic, $ci_revision_new->{mid}, 'developer', 'revisions', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{old_value}, 'GitRevision:' . $ci_revision_old->{mid};
+
+};
+
+subtest 'set_revisions: set value of old revisions in modify_field event when no new revisions' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "name_field"   => "Revision Box",
+                        "fieldletType" => "fieldlet.system.revisions",
+                        "id_field"     => "revisions",
+                    },
+                    "key" => "fieldlet.system.revisions",
+                    text  => 'Revision Box',
+                }
+            }
+        ]
+    );
+    my $id_category = TestSetup->create_category( id_rule => $id_rule );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        username    => 'developer',
+        title       => 'Topic'
+    );
+
+    mdb->master_rel->insert(
+        {   from_mid => $topic_mid,
+            to_mid   => $project->{mid},
+            rel_type => 'topic_project'
+        }
+    );
+
+    my $ci_revision_old_1 = TestUtils->create_ci('GitRevision');
+    my $ci_revision_old_2 = TestUtils->create_ci('GitRevision');
+    my $ci_revision_old_3 = TestUtils->create_ci('GitRevision');
+
+    mdb->master_rel->insert(
+        {   from_mid => $topic_mid,
+            to_mid   => $ci_revision_old_1->{mid},
+            rel_type => 'topic_revision'
+        }
+    );
+    mdb->master_rel->insert(
+        {   from_mid => $topic_mid,
+            to_mid   => $ci_revision_old_2->{mid},
+            rel_type => 'topic_revision'
+        }
+    );
+    mdb->master_rel->insert(
+        {   from_mid => $topic_mid,
+            to_mid   => $ci_revision_old_3->{mid},
+            rel_type => 'topic_revision'
+        }
+    );
+
+    my $ci_revision_new = TestUtils->create_ci('GitRevision');
+
+    my $ci_topic = ci->new($topic_mid);
+    my $model    = _build_model();
+    my $meta     = Baseliner::Model::Topic->new->get_meta($topic_mid);
+
+    $model->set_revisions( $ci_topic, '', 'developer', 'revisions', $meta, '0' );
+
+    my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
+    my $event_data = _load $event->{event_data};
+
+    my $all_old_revison
+        = 'GitRevision:'
+        . $ci_revision_old_1->{mid}
+        . ',GitRevision:'
+        . $ci_revision_old_2->{mid}
+        . ',GitRevision:'
+        . $ci_revision_old_3->{mid};
+    is $event_data->{old_value}, $all_old_revison;
+
+};
+
 done_testing();
 
 sub _setup {
@@ -2015,6 +2773,7 @@ sub _setup {
     mdb->role->drop;
     mdb->rule->drop;
     mdb->topic->drop;
+    mdb->master_rel->drop;
     mdb->index_all('topic');
 }
 
