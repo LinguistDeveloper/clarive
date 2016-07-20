@@ -242,7 +242,7 @@ subtest 'statement.parallel.wait: saves result to data_key' => sub {
 #            },
 #            {
 #                attributes => {
-#                    icon     => "/static/images/icons/time.png",
+#                    icon     => "/static/images/icons/slot.svg",
 #                    key      => "statement.parallel.wait",
 #                    active   => 1,
 #                    name     => "WAIT for children",
@@ -304,7 +304,7 @@ subtest 'meta key with attributes sent to service op' => sub {
                 [
                     {
                         "attributes" => {
-                            'icon'                => '/static/images/icons/script-local.png',
+                            'icon'                => '/static/images/icons/cog.svg',
                             'palette'             => 0,
                             'disabled'            => 0,
                             'who'                 => 'root',

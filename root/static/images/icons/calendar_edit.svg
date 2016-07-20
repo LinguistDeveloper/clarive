@@ -5,10 +5,8 @@
 <style type="text/css">
 	.st0{fill:#404040;}
 </style>
-<path class="st0" d="M6,3.9H4.4V2H6V3.9z"/>
-<path class="st0" d="M11.8,3.9h-1.6V2h1.6V3.9z"/>
-<path class="st0" d="M13.5,12.7H2.7V6.3h10.8C13.5,6.2,13.5,12.7,13.5,12.7z M1.2,3.9v10.3H15V3.9H1.2z"/>
-<rect x="5.6" y="8.6" transform="matrix(0.6863 -0.7274 0.7274 0.6863 -4.5879 8.524)" class="st0" width="4" height="2"/>
-<polygon class="st0" points="4.8,12.7 5.2,10.8 6.7,12.1 "/>
-<rect x="9.2" y="6.4" transform="matrix(0.6863 -0.7274 0.7274 0.6863 -2.3455 9.4238)" class="st0" width="1.1" height="2"/>
+<rect x="5.6" y="8.5" transform="matrix(0.7714 -0.6363 0.6363 0.7714 -4.3277 7.008)" class="st0" width="4" height="2"/>
+<polygon class="st0" points="4.5,12.3 5.1,10.4 6.4,11.9 "/>
+<rect x="9.5" y="6.6" transform="matrix(0.7714 -0.6363 0.6363 0.7714 -2.533 8.1077)" class="st0" width="1.1" height="2"/>
+<path class="st0" d="M12,3c0,0,0.1-2,0-2h-2v2H6c0,0,0-1.4,0-2H4v2H1v12h14V3H12z M14,13H2V5h12C14,4.9,14,13,14,13z"/>
 </svg>

@@ -355,13 +355,13 @@ sub palette : Local {
                 ? '/static/images/icons/help.svg'
                 : do{
                     my $type = $types{ $s->{type} };
-                    "/static/images/icons/$s->{type}.gif";
+                    "/static/images/icons/$s->{type}.svg";
                 });
             $n;
         }
         Baseliner::Core::Registry->starts_with( 'statement.' );
         push @tree, {
-            icon     => '/static/images/icons/controller.png',
+            icon     => '/static/images/icons/controller.svg',
             #icon     => '/static/images/icons/control.gif',
             text     => _loc('Control'),
             draggable => \0,
@@ -407,7 +407,7 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Generic Services'),
-        icon => '/static/images/icons/services_new.png',
+        icon => '/static/images/icons/wrench.svg',
         draggable => \0,
         expanded => length $query ? \1 : \0,
         children=> [
@@ -740,7 +740,7 @@ sub stmts_load : Local {
                     ? _loc( 'Current: %1 (%2)', $current->{ts}, $current->{username} ) . $text
                     : _loc('Current'),
                     leaf       => \0,
-                    icon       => '/static/images/icons/history.png',
+                    icon       => '/static/images/icons/slot.svg',
                     is_current => \1,
                     children   => [@tree]
                 }
@@ -756,7 +756,7 @@ sub stmts_load : Local {
                 push @tree,
                   +{
                     text        => $text,
-                    icon        => '/static/images/icons/history.png',
+                    icon        => '/static/images/icons/slot.svg',
                     is_version  => \1,
                     version_id  => '' . $rv->{_id},
                     version_tag => $rv->{version_tag} // '',

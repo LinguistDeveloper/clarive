@@ -727,7 +727,7 @@ if( Prefs.routing ) {
                     autoLoad: {url: purl, scripts:true },
                     tbar: [
                         search,
-                        { icon: '/static/images/icons/html.gif', style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
+                        { icon: '/static/images/icons/html.svg', style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
                             handler: function(){
                                 var win = window.open( purl );
                             }
@@ -807,13 +807,13 @@ if( Prefs.routing ) {
             layout: 'fit',
             autoScroll: false,
             tbar: [
-                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_left_black.png', handler:function(){
+                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_left_black.svg', handler:function(){
                       var dom = panel.body.dom;
                       var iframe = dom.childNodes[0];
                       iframe.contentWindow.history.back();
                   }
                 },
-                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_right_black.png', handler:function(){
+                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow_right_black.svg', handler:function(){
                       var dom = panel.body.dom;
                       var iframe = dom.childNodes[0];
                       iframe.contentWindow.history.forward();

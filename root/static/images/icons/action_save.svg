@@ -6,6 +6,6 @@
 	.st0{fill:#404040;}
 	.st1{fill:none;stroke:#3C3C3B;stroke-width:2;stroke-miterlimit:10;}
 </style>
-<path class="st0" d="M11.6,5.7L8,10.9L4.4,5.8h1.6V1.2h4.1v4.6C10.1,5.7,11.6,5.7,11.6,5.7z"/>
-<polyline class="st1" points="14,11 12.8,13.9 3.1,13.9 2,11 "/>
+<path class="st0" d="M11.5,6L8,10.9L4.5,6H7V2H9L9,6C9.1,6.1,11.5,6,11.5,6z"/>
+<polyline class="st1" points="14,11 12.9,14 3.1,14 2,11 "/>
 </svg>

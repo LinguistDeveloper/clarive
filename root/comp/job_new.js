@@ -547,7 +547,7 @@
     var button_cis = new Ext.Button({
         text: _('Dependencies'),
         disabled: true,
-        icon:'/static/images/ci/ci.png',
+        icon:'/static/images/ci/ci.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = jc_grid.getSelectionModel();
@@ -717,7 +717,7 @@
         } else {
             //add_node(n,bl_hash);
             if( jc_store.find('mid', data.topic_mid ) > -1 ) {
-                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
+                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error_red.svg' });
             } else {
                 var project = data.id_project;
                 if ( data.is_release  == 1 ) {
@@ -974,7 +974,7 @@
     Baseliner.show_calendar = function(id_or_rec, ix) {
         var r = (typeof id_or_rec == 'object') ? id_or_rec : Ext.getCmp(id_or_rec).getStore().getAt(ix);
         Baseliner.addNewTabComp('/job/calendar?id_cal=' + r.get('id'), r.get('name'), {
-            tab_icon: '/static/images/icons/calendar_view_month.png'
+            tab_icon: '/static/images/icons/calendar.svg'
         });
     };
 
@@ -982,7 +982,7 @@
         cls: 'x-btn-icon',
         layout: 'form',
         tooltip: _('View Applied Slots'),
-        icon: '/static/images/icons/calendar_view_month.png',
+        icon: '/static/images/icons/calendar.svg',
         handler: function() {
             if (rel_cals.length == 0) {
                 Baseliner.alert(_('No slots selected'));

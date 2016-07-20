@@ -233,7 +233,7 @@
     };
 
     var btn_reports = new Ext.Button({
-        icon: '/static/images/icons/exports.png',
+        icon: '/static/images/icons/exports.svg',
         tooltip: _('Export'),
         iconCls: 'x-btn-icon',
         menu: [ btn_csv ]
@@ -695,7 +695,7 @@
                         handler:function(){trap_do(mid,'abort')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
                 { flex:1, layout:'hbox', padding: 20,
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Pause')+'</b>', icon:'/static/images/icons/paused.png',
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Pause')+'</b>', icon:'/static/images/icons/control_pause.svg',
                         handler:function(){trap_do(mid,'pause')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The trap timeout countdown will be paused') }]}
             ]
@@ -703,7 +703,7 @@
         trap_win.show();
     }
 
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.svg',
         tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -765,7 +765,7 @@
 % }
             {
                 text: _('Job Export'),
-                icon:'/static/images/download.gif',
+                icon:'/static/images/icons/downloads_favicon.svg',
                 handler: function() {
                     var sm = grid.getSelectionModel();
                     if (sm.hasSelection())
@@ -800,7 +800,7 @@
                                       <div class="container_24">
                                         <div class="grid_24">
                                         <h4>
-                                            <img src="/static/images/warnmsg.png" style="vertical-align:middle">
+                                            <img src="/static/images/icons/error.svg" style="vertical-align:middle">
                                             [%= msg %]
                                         </h4>
                                         </div>
@@ -1121,7 +1121,7 @@
                 nat.icon = 'nature';
             }
             ret.push(
-                String.format('<div style="height:20px;"><img style="float:left" src="/static/images/nature/{0}.png" />&nbsp;{1}</div>', nat.icon, nat.name )
+                String.format('<div style="height:20px;"><img style="float:left" src="/static/images/icons/{0}.svg" />&nbsp;{1}</div>', nat.icon, nat.name )
             );
         });
         return ret.join('');
@@ -1148,7 +1148,7 @@
 
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
-            icon = 'log_i.png';
+            icon = 'active.svg';
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';
@@ -1207,17 +1207,14 @@
                 p.body='';
                 var desc = record.data.comments;
                 if( (desc != undefined) && (desc != '') ) {
-                    //desc = desc.replace(/\n|\r|/,'');
                     p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px;">';
-                    p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';
+                    p.body += '<img style="float:left" src="/static/images/icons/post.svg" />';
                     p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded ';
                 }
-                // console.dir(record.data);
                 var return_value = new Array();
                 if ( record.data.changeset_cis && record.data.changeset_cis.length > 0 ) {
                   Ext.each(record.data.changeset_cis, function(cs) {
-                    // console.log(cs);
                     var link = '<span style="text-align: center;vertical-align: middle;"><a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
                     var comments = '';
                     if ( record.data.cs_comments[cs.mid] ) {

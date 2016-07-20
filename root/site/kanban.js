@@ -42,7 +42,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         self.column_by_status = {};
         self.status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
         self.tab_btn = new Ext.Button({ 
-            icon:'/static/images/icons/tab.png', iconCls:'x-btn-icon',
+            icon:'/static/images/icons/tab.svg', iconCls:'x-btn-icon',
             handler: function(){
                 if( self.is_tab ) 
                     self.fullscreen();

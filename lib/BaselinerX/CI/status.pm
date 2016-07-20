@@ -29,7 +29,7 @@ has max_inactivity_time => => qw(is rw isa Str), default=>'0';
 has max_time_in_status => => qw(is rw isa Str), default=>'0';
 has view_in_tree  => qw(is rw isa BoolCheckbox);
 
-sub icon { '/static/images/icons/status.png' }
+sub icon { '/static/images/icons/state.svg' }
 sub collection { 'status' }
 sub rel_type {
     {

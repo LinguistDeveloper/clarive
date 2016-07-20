@@ -41,7 +41,7 @@
             expanded = true;
         }
     });
-    var button_expand = Baseliner.img_button( '/static/images/icons/expandall.gif', function(){
+    var button_expand = Baseliner.img_button( '/static/images/icons/expandall.svg', function(){
             expanded = ! expanded;
             gview.toggleAllGroups( expanded );
             if( expanded ) {
@@ -141,7 +141,7 @@
     } ); 
 
     // YAML editor
-    var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml.gif', function(){
+    var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml_1.svg', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         var sel_save_url = sel.data.url_save;

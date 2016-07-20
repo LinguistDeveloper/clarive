@@ -111,7 +111,7 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
         
         var btn_save_config = new Ext.Toolbar.Button({
             text: _('Save'),
-            icon: '/static/images/icons/save.png',
+            icon: '/static/images/icons/action_save.svg',
             cls: 'x-btn-text-icon',
             handler: function() {
                 var fields = new Array();
@@ -146,7 +146,7 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                 { header: _('Name'), width: 240, dataIndex: 'name'},
                 { width: 40, dataIndex: 'id',
                         renderer: function(v,meta,rec,rowIndex){
-                            return '<a href="javascript:Baseliner.delete_field_row(\''+category_fields_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
+                            return '<a href="javascript:Baseliner.delete_field_row(\''+category_fields_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/close.svg" /></a>'
                         }             
                 }
             ],

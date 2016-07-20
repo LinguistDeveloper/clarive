@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
-<g>
-	<rect x="2.6" y="2.6" fill="#FFFFFF" stroke="#414141" stroke-miterlimit="10" width="11" height="11"/>
-	<rect x="6.5" y="1.1" fill="#50BA78" width="3.4" height="3.3"/>
-	<rect x="0.7" y="6.2" fill="#50BA78" width="3.4" height="3.3"/>
-	<rect x="11.7" y="6.1" fill="#50BA78" width="3.4" height="3.3"/>
-	<line fill="none" stroke="#414141" stroke-miterlimit="10" x1="0.7" y1="4.9" x2="4.2" y2="4.9"/>
-	<line fill="none" stroke="#414141" stroke-miterlimit="10" x1="11.4" y1="0.9" x2="11.4" y2="4.4"/>
-	<line fill="none" stroke="#414141" stroke-miterlimit="10" x1="15.3" y1="10.6" x2="11.8" y2="10.6"/>
-	<rect x="6.8" y="11.9" fill="#50BA78" width="3.4" height="3.3"/>
-	<line fill="none" stroke="#414141" stroke-miterlimit="10" x1="5.6" y1="15.4" x2="5.6" y2="11.9"/>
-</g>
-<rect fill="none" width="16" height="16"/>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;stroke:#414141;stroke-miterlimit:10;}
+	.st1{fill:#50BA78;}
+	.st2{fill:none;stroke:#414141;stroke-width:1.0564;stroke-miterlimit:10;}
+	.st3{fill:none;stroke:#414141;stroke-width:1.0607;stroke-miterlimit:10;}
+	.st4{fill:none;stroke:#414141;stroke-width:1.0522;stroke-miterlimit:10;}
+	.st5{fill:none;stroke:#414141;stroke-width:1.1132;stroke-miterlimit:10;}
+	.st6{fill:none;}
+</style>
+<rect x="2.6" y="2.6" class="st0" width="11" height="11"/>
+<rect x="1.1" y="7.1" class="st1" width="2.9" height="2.9"/>
+<rect x="12" y="6" class="st1" width="2.9" height="2.9"/>
+<line class="st2" x1="1" y1="4.5" x2="4.9" y2="4.5"/>
+<line class="st3" x1="11.5" y1="1" x2="11.5" y2="4.9"/>
+<line class="st4" x1="14.9" y1="10.6" x2="11.1" y2="10.6"/>
+<polygon class="st1" points="7,12 10,12 10,15 7,15 "/>
+<line class="st5" x1="5.5" y1="15" x2="5.5" y2="11"/>
+<rect class="st6" width="16" height="16"/>
+<rect x="6" y="1.1" class="st1" width="2.9" height="2.9"/>
 </svg>

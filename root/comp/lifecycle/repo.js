@@ -118,7 +118,7 @@
         collapsed: true,
         height: 350,
         tbar: [
-            Baseliner.button('Close All', '/static/images/icons/clear.gif', function(b) { 
+            Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) { 
                 properties.items.each(function(comp) {
                     if( comp.closable ) {
                         properties.remove( comp );

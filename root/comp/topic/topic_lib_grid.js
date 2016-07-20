@@ -595,7 +595,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_html = {
-        icon: '/static/images/icons/html.png',
+        icon: '/static/images/icons/html.svg',
         text: _('HTML'),
         handler: function() {
             form_report_submit({ url: '/topic/report_html' });
@@ -603,7 +603,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_yaml = {
-        icon: '/static/images/icons/yaml.png',
+        icon: '/static/images/icons/yaml.svg',
         text: _('YAML'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_yaml' });
@@ -619,7 +619,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_reports = new Ext.Button({
-        icon: '/static/images/icons/exports.png',
+        icon: '/static/images/icons/exports.svg',
         tooltip: _('Export'),
         iconCls: 'x-btn-icon',
         menu: [ btn_html, btn_csv, btn_yaml ]
@@ -1567,7 +1567,7 @@ Cla.topic_grid = function(params){
             click: Object
             topic_mid: "67183"
         expandable: true
-        icon: "/static/images/icons/topic.png"
+        icon: "/static/images/icons/topic.svg"
         iconCls: "no-icon"
         id: "xnode-2696"
         leaf: false

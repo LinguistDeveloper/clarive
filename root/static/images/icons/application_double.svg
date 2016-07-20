@@ -3,15 +3,14 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;}
-	.st1{fill:#404040;}
-	.st2{fill:#FFFFFF;}
+	.st0{fill:#3E3E3E;}
+	.st1{fill:none;}
 </style>
 <title>application_new</title>
-<rect class="st0" width="16" height="16"/>
-<path class="st1" d="M5.6,1.2v9.5h9.5V1.2H5.6z M8,2.3H7.7V1.9H8V2.3z M7,1.9h0.3v0.3l0,0H7V1.9z M6.6,1.9v0.3H6.3V1.9H6.6z M6.3,10
-	V2.9h8.1V10H6.3z"/>
-<path class="st1" d="M0.9,5.3v9.5h9.5V5.3H0.9z M3.3,6.3H2.9V6h0.3L3.3,6.3L3.3,6.3z M2.3,6h0.3v0.3l0,0H2.3V6z M1.9,6v0.3H1.6V6
-	H1.9z M1.6,14.1V7h8.1v7.1H1.6z"/>
-<rect x="1.6" y="7" class="st2" width="8.1" height="7.1"/>
+<g>
+	<path class="st0" d="M14,7v7H7V7H14z M15,6H6v9h9V6z"/>
+</g>
+<path class="st0" d="M6,6v3h9V6H6z"/>
+<rect class="st1" width="16" height="16"/>
+<path class="st0" d="M9.9,1H1.1H1v9h6V7h3V1H9.9z M9,6H6v3H2V4h7V6z"/>
 </svg>

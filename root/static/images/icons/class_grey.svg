@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#404040;}
-	.st1{fill:none;}
 </style>
 <title>class_grey</title>
-<rect x="5" y="8.6" class="st0" width="5.9" height="5.9"/>
-<path class="st0" d="M13.6,2.4v3.9H9.7V2.4H13.6 M14.6,1.4H8.7v5.9h5.9V1.4C14.6,1.4,14.6,1.4,14.6,1.4z"/>
-<rect x="1.4" y="1.4" class="st0" width="5.9" height="5.9"/>
-<rect class="st1" width="16" height="16"/>
+<polygon class="st0" points="5,9 11,9 11,15 5,15 "/>
+<path class="st0" d="M14,6h-4V2h4V6z M15,1H9v6h6V1z"/>
+<polygon class="st0" points="1,1 7,1 7,7 1,7 "/>
 </svg>

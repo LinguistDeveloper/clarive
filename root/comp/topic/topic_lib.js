@@ -176,6 +176,7 @@ Baseliner.topic_name = function(args) {
         var cls = 'label';
         var icon = args.category_icon;
         var size = args.size ? args.size : '10';
+        var iconSize;
 
         var top,bot,img;
         top=2, bot=4, img=2;
@@ -183,25 +184,28 @@ Baseliner.topic_name = function(args) {
         if( ! color )
             color = '#999';
 
+       if( ! iconSize )
+            iconSize = '16px 16px';
+
         // set default icons
         if( icon==undefined ) {
             if( args.is_changeset > 0  ) {
-                icon = '/static/images/icons/package-white.png';
+                icon = '/static/images/icons/package-white.svg';
             }
             else if( args.is_release > 0  ) {
-                icon = '/static/images/icons/release-white.png';
+                icon = '/static/images/icons/release-white.svg';
             }
         }
 
         // prepare icon background
         var style_str;
         if( icon && ! args.mini ) {
-            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
+            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; background-size: {6}; font-size: {5}px";
         }
         else {
             style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
         }
-        var style = String.format( style_str, color, icon, top, bot, img, size );
+        var style = String.format( style_str, color, icon, top, bot, img, size, iconSize );
         //if( color == undefined ) color = '#777';
         var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored("{0}","{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';
         var cursor = args.link ? 'cursor:pointer' : '';
@@ -793,7 +797,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         self.btn_save_form = new Ext.Button({
             text: _('Save'),
-            icon:'/static/images/icons/save.png',
+            icon:'/static/images/icons/action_save.svg',
             cls: 'x-btn-icon-text',
             // type: 'submit',
             hidden: true,

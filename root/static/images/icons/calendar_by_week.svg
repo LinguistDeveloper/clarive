@@ -5,13 +5,8 @@
 <style type="text/css">
 	.st0{fill:#404040;}
 </style>
-<path class="st0" d="M6,4.3H4.5V2.6H6C6,3,6,4.3,6,4.3z"/>
-<path class="st0" d="M11.7,4.4h-1.6V2.6h1.6C11.8,2.7,11.7,4.4,11.7,4.4z"/>
-<path class="st0" d="M13.6,12.7H2.8V6.3l10.8,0.1C13.6,6.3,13.6,12.7,13.6,12.7z M1.3,4.3v9.9h13.8V4.3H1.3z"/>
-<g>
-	<rect x="3.7" y="7" class="st0" width="1.5" height="4.9"/>
-	<rect x="6.2" y="7" class="st0" width="1.5" height="4.9"/>
-	<rect x="8.7" y="7" class="st0" width="1.5" height="4.9"/>
-	<rect x="11.2" y="7" class="st0" width="1.5" height="4.9"/>
-</g>
+<rect x="4" y="7" class="st0" width="2" height="4"/>
+<rect x="7" y="7" class="st0" width="1.9" height="3.9"/>
+<rect x="10.1" y="7" class="st0" width="1.9" height="4"/>
+<path class="st0" d="M12,3c0,0,0.1-2,0-2h-2v2H6c0,0,0-1.4,0-2H4v2H1v12h14V3H12z M14,13H2V5h12C14,4.9,14,13,14,13z"/>
 </svg>

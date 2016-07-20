@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#FFFFFF;stroke:#414042;stroke-width:1.5;stroke-miterlimit:10;}
-	.st1{fill:none;stroke:#414042;stroke-width:1.5;stroke-miterlimit:10;}
-	.st2{fill:none;}
+	.st0{fill:none;stroke:#414042;stroke-width:2;stroke-miterlimit:10;}
+	.st1{fill:#404040;}
 </style>
-<rect x="1.7" y="1.7" class="st0" width="12.4" height="12.5"/>
-<line class="st1" x1="1.7" y1="7.9" x2="14.1" y2="7.9"/>
-<line class="st1" x1="7.9" y1="2.4" x2="7.9" y2="14.2"/>
-<rect x="-0.1" class="st2" width="16" height="16"/>
+<line class="st0" x1="1.7" y1="8" x2="14.1" y2="8"/>
+<line class="st0" x1="8" y1="2.2" x2="8" y2="14"/>
+<g>
+	<path class="st1" d="M13,3v10H3V3H13 M15,1H1v14h14V1L15,1z"/>
+</g>
 </svg>

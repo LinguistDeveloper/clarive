@@ -139,7 +139,7 @@ for(my $hh=0; $hh<=24; $hh++) {
 %   if( $activa ) {
             ,{ icon:'/static/images/icons/stop.svg', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
 %   } else {
-            ,{ icon:'/static/images/icons/start.png', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
+            ,{ icon:'/static/images/icons/start.svg', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
 % 	}
 % }
             ,{ icon:'/static/images/icons/close.svg',  text: _('Close'), handler: function(){ win.close(); } }

@@ -6,16 +6,17 @@
 	.st0{display:none;}
 	.st1{display:inline;fill:#3C3C3B;}
 	.st2{display:inline;fill:#F7A808;}
-	.st3{fill:none;stroke:#404040;stroke-width:1.5;stroke-miterlimit:10;}
+	.st3{fill:#404040;}
 	.st4{fill:#4FBC78;}
 </style>
 <g id="Layer_1_1_" class="st0">
 	<path class="st1" d="M2.4,3.8v9.7h11.2V3.8h-2.8V2.3h4.3v12.8H0.9V2.3h4.9v1.6C5.7,3.8,2.4,3.8,2.4,3.8z"/>
 	<path class="st2" d="M11.4,6.9l-3.2,4.5L5,6.9h1.4v-6H10v6H11.4z"/>
 </g>
-<rect x="1.8" y="2.4" class="st3" width="12.5" height="11.3"/>
 <g>
-	<path class="st4" d="M5.5,12c-0.1-0.3-2-3-2-3L4,8.4c0,0,1,1.4,1.5,1.8c2.3-2.1,5.9-6.1,5.9-6.1c0.1,0.1,1.2,1.5,1.2,1.5
-		S5.4,11.7,5.5,12z"/>
+	<path class="st3" d="M14,2v12H2V2H14L14,2z M15,1H1v14h14V1z"/>
+</g>
+<g>
+	<path class="st4" d="M5.9,12L3,10V8c0,0,2.4,1.6,2.9,2C8.2,7.9,13,3,13,3c-0.1,0,0,2,0,2L5.9,12z"/>
 </g>
 </svg>

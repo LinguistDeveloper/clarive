@@ -1,1 +1,15 @@
-<svg id="194b806a-3dab-49c5-a35c-2edd4aa05969" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><defs><style>.\37 883739a-b8b9-4b97-91b7-bb26051a8268,.\38 2a8fc1b-6f69-4fb5-a9c5-a9a5d01b96c5{fill:none;}.\38 2a8fc1b-6f69-4fb5-a9c5-a9a5d01b96c5{stroke:#404040;stroke-miterlimit:10;}.\35 72105bd-da5e-4686-b5a9-b0d3f30727c2{fill:#404040;}</style></defs><title>destination</title><rect class="7883739a-b8b9-4b97-91b7-bb26051a8268" width="16" height="16"/><rect class="82a8fc1b-6f69-4fb5-a9c5-a9a5d01b96c5" x="1.45" y="2.91" width="13.11" height="9.81"/><line class="82a8fc1b-6f69-4fb5-a9c5-a9a5d01b96c5" x1="3.28" y1="4.38" x2="3.28" y2="11.24"/><line class="82a8fc1b-6f69-4fb5-a9c5-a9a5d01b96c5" x1="5.34" y1="4.38" x2="5.34" y2="11.24"/><line class="82a8fc1b-6f69-4fb5-a9c5-a9a5d01b96c5" x1="7.25" y1="4.38" x2="7.25" y2="11.24"/><rect class="572105bd-da5e-4686-b5a9-b0d3f30727c2" x="8.72" y="7.06" width="1.88" height="1.88"/><rect class="572105bd-da5e-4686-b5a9-b0d3f30727c2" x="11.47" y="7.06" width="1.88" height="1.88"/></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="_x31_94b806a-3dab-49c5-a35c-2edd4aa05969"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 16 16"
+	 style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+	.st1{fill:none;stroke:#FFFFFF;stroke-miterlimit:10;}
+</style>
+<path class="st0" d="M1,2.9v9.8h13.1V2.9H1z M10.6,8.9H8.7V7.1h1.9V8.9z M13.3,8.9h-1.9V7.1h1.9V8.9z"/>
+<title>destination</title>
+<line class="st1" x1="3.3" y1="4.4" x2="3.3" y2="11.2"/>
+<line class="st1" x1="5.3" y1="4.4" x2="5.3" y2="11.2"/>
+<line class="st1" x1="7.2" y1="4.4" x2="7.2" y2="11.2"/>
+</svg>

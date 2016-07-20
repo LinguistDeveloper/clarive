@@ -11,9 +11,9 @@
 <g id="Layer_1_1_" class="st0">
 </g>
 <circle class="st1" cx="8" cy="8" r="6.6"/>
-<rect y="0" class="st2" width="16" height="16"/>
+<rect class="st2" width="16" height="16"/>
 <g>
 	<title>arrow_down</title>
-	<polygon class="st3" points="11.3,7.2 7.9,11.6 4.7,7.2 6.5,7.2 6.5,4.6 9.4,4.6 9.5,7.2 	"/>
+	<polygon class="st3" points="12,7 8,12.1 4,7 6,7 6,4 10,4 10,7 	"/>
 </g>
 </svg>

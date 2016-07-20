@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:none;stroke:#3E3E3E;stroke-miterlimit:10;}
-	.st1{fill:#3E3E3E;}
-	.st2{fill:#4FBC78;}
-	.st3{fill:none;}
+	.st1{fill:none;}
+	.st2{fill:#3E3E3E;}
+	.st3{fill:#4FBC78;}
 </style>
 <title>application_new</title>
 <rect x="1.5" y="1.5" class="st0" width="13" height="13"/>
-<path class="st1" d="M14.5,3.5h-13v-2h13V3.5z M2.5,2.5V2H2v0.5H2.5z M3.5,2.5V2H3v0.5H3.5L3.5,2.5z M4.5,2.5V2H4v0.5H4.5L4.5,2.5z"
-	/>
-<path class="st2" d="M5.4,7.3c1.9,0,3.4,1.5,3.4,3.3S7.2,14,5.4,14S2,12.5,2,10.6l0,0C2,8.8,3.5,7.3,5.4,7.3z M6,10V8.4H4.7V10H3
-	v1.3h1.7v1.6H6v-1.6h1.7V10H6z"/>
-<rect class="st3" width="16" height="16"/>
+<rect class="st1" width="16" height="16"/>
+<path class="st2" d="M1,1v3h14V1H1z M4,3H3V2h1V3z M6,3H5V2h1V3z M8,3H7V2h1V3z"/>
+<path class="st3" d="M5,6c-2.3,0-4,1.9-4,4s1.7,4,4,4s4-1.9,4-4S7.3,6,5,6z M8,11H6v2H4v-2H2V9h2V7h2v2h2v1V11z"/>
 </svg>

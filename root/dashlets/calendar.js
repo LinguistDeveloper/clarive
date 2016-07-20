@@ -13,7 +13,7 @@
     var graph_type = params.data.type || 'area';
 
     var cal = new Baseliner.Calendar({
-        tbar_end : [ '->', { xtype:'button', icon: IC('tab.png'), handler:function(){ Baseliner.tabCalendar() } } ],
+        tbar_end : [ '->', { xtype:'button', icon: IC('tab.svg'), handler:function(){ Baseliner.tabCalendar() } } ],
         bar_where: 'bottom',
         query_type: params.data.query_type,
         id_fieldlet: params.data.id_fieldlet,

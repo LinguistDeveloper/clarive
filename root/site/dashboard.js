@@ -132,7 +132,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     '<table><tr>',
                     '<td class="dashboard-buttons-menu"><span id="{id_export_menu}"></span></td>',
                     '<td><img class="dashboard-buttons"',
-                       'src="/static/images/icons/config.gif"',
+                       'src="/static/images/icons/wrench.svg"',
                        'onClick="javascript:var obj=Ext.getCmp(\'{id_cmp}\'); if(obj) obj.show_config(\'{id_dashlet}\')"',
                     '/>',
                     '<img class="dashboard-buttons"',
@@ -183,7 +183,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         id_export_menu : id_export_menu
                     });
                     var btn_html = {
-                        icon: '/static/images/icons/html.png',
+                        icon: '/static/images/icons/html.svg',
                         current_dashlet: dashlet.id,
                         text: _('HTML'),
                         handler: function() {
@@ -192,7 +192,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         }
                     };
                     var btn_yaml = {
-                        icon: '/static/images/icons/yaml.png',
+                        icon: '/static/images/icons/yaml.svg',
                         current_dashlet: dashlet.id,
                         text: _('YAML'),
                         handler: function() {
@@ -211,7 +211,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     };
                     if( exp_dashlet ){
                         var btn_reports = new Ext.Button({
-                            icon: '/static/images/icons/exports.png',
+                            icon: '/static/images/icons/exports.svg',
                             renderTo: id_export_menu,
                             menu: [ btn_html, btn_csv, btn_yaml ]
                         });

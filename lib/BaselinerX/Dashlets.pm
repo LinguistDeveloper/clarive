@@ -30,14 +30,14 @@ register 'dashlet.job.list_baseline' => {
 register 'dashlet.job.chart' => {
     form=> '/dashlets/job_chart_config.js',
     name=> 'Job chart',
-    icon=> '/static/images/icons/chart_pie.png',
+    icon=> '/static/images/icons/chart_pie.svg',
     js_file => '/dashlets/job_chart.js'
 };
 
 register 'dashlet.job.day_distribution' => {
     form=> '/dashlets/job_distribution_day_config.js',
     name=> 'Job daily distribution',
-    icon=> '/static/images/icons/chart_line.png',
+    icon=> '/static/images/icons/chart_line.svg',
     js_file => '/dashlets/job_distribution_day.js'
 };
 
@@ -52,7 +52,7 @@ register 'dashlet.ci.graph' => {
 register 'dashlet.topic.number_of_topics' => {
     form=> '/dashlets/number_of_topics_chart_config.js',
     name=> 'Topics chart',
-    icon=> '/static/images/icons/chart_pie.png',
+    icon=> '/static/images/icons/chart_pie.svg',
     js_file => '/dashlets/number_of_topics_chart.js'
 };
 
@@ -73,21 +73,21 @@ register 'dashlet.topic.topics_by_date_line' => {
 register 'dashlet.topic.topics_burndown' => {
     form=> '/dashlets/topics_burndown_config.js',
     name=> 'Topics burndown',
-    icon=> '/static/images/icons/chart_line.png',
+    icon=> '/static/images/icons/chart_line.svg',
     js_file => '/dashlets/topics_burndown.js'
 };
 
 register 'dashlet.topic.topics_period_burndown' => {
     form=> '/dashlets/topics_period_burndown_config.js',
     name=> 'Topics period burndown',
-    icon=> '/static/images/icons/chart_line.png',
+    icon=> '/static/images/icons/chart_line.svg',
     js_file => '/dashlets/topics_period_burndown.js'
 };
 
 register 'dashlet.topic.topics_burndown_ng' => {
     form=> '/dashlets/topics_burndown_config_ng.js',
     name=> 'Topics burndown NG',
-    icon=> '/static/images/icons/chart_line.png',
+    icon=> '/static/images/icons/chart_line.svg',
     js_file => '/dashlets/topics_burndown_ng.js'
 };
 
@@ -132,7 +132,7 @@ register 'dashlet.email' => {
 register 'dashlet.html' => {
     form=> '/dashlets/html_config.js',
     name=> 'HTML',
-    icon=> '/static/images/icons/html.png',
+    icon=> '/static/images/icons/html.svg',
     js_file => '/dashlets/html.js',
     no_boot => 1,
 };

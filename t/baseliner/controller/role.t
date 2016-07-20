@@ -64,7 +64,7 @@ subtest 'action_tree: returns action tree' => sub {
                 'text'     => 'topics',
                 'children' => [
                     {
-                        'icon'      => '/static/images/icons/folder.gif',
+                        'icon'      => '/static/images/icons/file.svg',
                         '_modified' => 1,
                         'children'  => [
                             {

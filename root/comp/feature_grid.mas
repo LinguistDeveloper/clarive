@@ -21,7 +21,7 @@
     };
 
     var render_plugin = function(value,metadata,rec,rowIndex,colIndex,store) {
-        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/chromium/plugin.png' />" ;
+        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/chromium/plugin.svg' />" ;
     };
 
     var ps = 15; //page_size
@@ -80,7 +80,7 @@
                 },
                 new Ext.Toolbar.Button({
                     text: '<% _loc('Details') %>',
-                    icon:'/static/images/chromium/databaseTable.png',
+                    icon:'/static/images/chromium/databaseTable.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

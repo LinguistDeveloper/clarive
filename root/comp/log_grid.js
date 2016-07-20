@@ -233,8 +233,7 @@
             tbar: [
                 { 
                     text: _('Save'),
-                    //icon:'/static/images/download.gif',
-                    icon:'/static/images/icons/save.png',
+                    icon:'/static/images/icons/action_save.svg',
                     cls: 'x-btn-text-icon',
                     handler: function(){
                         if( field_annotate.getValue().length > 2000 ) {
@@ -283,9 +282,9 @@
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
         if( value=='debug' ) icon='debug_view.svg';
-        else if( value=='info' ) icon='log_i.png';
+        else if( value=='info' ) icon='active.svg';
         else if( value=='warning' || value=='warn' ) icon='log_w_1.svg';
-        else if( value=='error' ) icon='log_e.png';
+        else if( value=='error' ) icon='error_red.svg';
         else if( value=='comment' ) icon='sms.svg';
         if( icon!=undefined ) {
             return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
@@ -327,7 +326,7 @@
            } else if( value.more!='' && value.more!=undefined && value.data ) {
                var img;
                if( value.more=='zip' ) {
-                  img = '/static/images/icons/mime/file_extension_zip.png';
+                  img = '/static/images/icons/mime/file_extension_zip.svg';
                } else {
                   img = '/static/images/download.gif';
            } 
@@ -341,7 +340,7 @@
                    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/moredata.svg'/></a> " + datalen ;
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
-                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
+                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.svg'></a> "
                    ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
                } 
            }
@@ -387,7 +386,7 @@
             menu_exec.setText( _('Execution', job_exec ) );
     }
 
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.svg',
         tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -434,7 +433,7 @@
                  }
     };
 
-    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/start.png', cls: 'x-btn-text-icon', hidden: false,
+    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/start.svg', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
             Baseliner.ci_call( current_job().mid, 'resume', { confirm: _('Do you wish to resume job %1',current_job().job) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );

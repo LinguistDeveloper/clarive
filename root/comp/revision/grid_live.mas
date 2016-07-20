@@ -115,7 +115,7 @@
             { text: _("Views"), menu: filter_menu },
 <%doc>
             { text: '<% _loc('Auto Refresh') %>',
-                icon: '/static/images/icons/time.gif', 
+                icon: '/static/images/icons/slot.svg', 
                 enableToggle: true,
                 pressed: false,
                 cls: 'x-btn-text-icon',
@@ -133,7 +133,7 @@
             },
             {
                 text: '<% _loc('Annotations') %>',
-                icon: '/static/images/icons/post.gif', 
+                icon: '/static/images/icons/post.svg',
                 cls: 'x-btn-text-icon',
                 handler: annotation
             },
@@ -218,7 +218,7 @@
             { text: _("Views"), menu: filter_menu },
 <%doc>
             { text: '<% _loc('Auto Refresh') %>',
-                icon: '/static/images/icons/time.gif', 
+                icon: '/static/images/icons/slot.svg', 
                 enableToggle: true,
                 pressed: false,
                 cls: 'x-btn-text-icon',
@@ -236,7 +236,7 @@
             },
             {
                 text: '<% _loc('Annotations') %>',
-                icon: '/static/images/icons/post.gif', 
+                icon: '/static/images/icons/post.svg',
                 cls: 'x-btn-text-icon',
                 handler: annotation
             },

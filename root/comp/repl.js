@@ -86,7 +86,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 		    }
 
             tree.root.collapseChildNodes();
-            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:'/static/images/icons/folder_magnify.png' });
+            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:'/static/images/icons/folder_explore.svg' });
             results.expand();
             tree.root.eachChild( function(n) {
                 var url = n.attributes.url;
@@ -444,7 +444,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             aceditor.setMode(x.syntax);
             aceditor.setValue(txt);
             btn_lang.setText(_('Lang: %1', '<b>' + x.text + '</b>'));
-            btn_lang.setIcon('/static/images/icons/' + x.lang + '.png');
+            btn_lang.setIcon('/static/images/icons/' + x.lang + '.svg');
             btn_lang.lang = x.lang;
             aceditor.focus();
         }
@@ -452,7 +452,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var change_out = function(x) {
         if( x.checked && aceditor.editor ) { 
             btn_out.setText( _('Output: %1', '<b>'+x.text+'</b>') );
-            btn_out.setIcon( '/static/images/icons/' + x.out + '.png' );
+            btn_out.setIcon( '/static/images/icons/' + x.out + '.svg' );
             btn_out.out = x.out;
             aceditor.focus();
         }
@@ -483,7 +483,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     });
     var btn_lang = new Ext.Button({  
                 text: _('Lang'),
-                icon:'/static/images/scm/debug/genericregister_obj.gif',
+                icon:'/static/images/scm/debug/register_view.svg',
                 cls: 'x-btn-text-icon',
                 menu: menu_lang 
             });
@@ -502,7 +502,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     });
     var btn_out = new Ext.Button({  
                 text: _('Output'),
-                icon:'/static/images/scm/debug/genericregister_obj.gif',
+                icon:'/static/images/scm/debug/register_view.svg',
                 cls: 'x-btn-text-icon',
                 menu: menu_out
             });
@@ -518,7 +518,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             btn_out,
             {   xtype: 'button',
                 text: _('Save'),
-                icon:'/static/images/icons/save.png',
+                icon:'/static/images/icons/action_save.svg',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){

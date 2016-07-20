@@ -8,7 +8,7 @@
 	.st2{fill:#3E3E3E;}
 </style>
 <rect x="1.5" y="1.6" class="st0" width="13" height="13"/>
-<path class="st1" d="M7,9.4L3.5,11V9.9l2.4-0.9C5.5,8.8,5,8.6,4.7,8.5C4.3,8.3,4.1,8.2,3.5,8V6.9L7,8.5V9.4z"/>
-<rect x="8.5" y="10" class="st1" width="4" height="0.8"/>
-<path class="st2" d="M14.5,3.6h-13v-2h13V3.6z M2.5,2.6V2.1H2v0.5H2.5z M3.5,2.6V2.1H3v0.5H3.5z M4.5,2.6V2.1H4v0.5H4.5z"/>
+<path class="st1" d="M7,9.4l-4,1.9l0-1.2l2.8-1C5.5,8.8,5,8.6,4.7,8.5c-0.4-0.2-1-0.4-1.6-0.6L3,6.8l4,1.8V9.4z"/>
+<polygon class="st1" points="8,10.1 12.9,10 12.9,11 8,11 "/>
+<path class="st2" d="M1,1v3h13.9l0-2.9L1,1z M3,3H2V2h1V3z M5,3H4V2h1V3z M7,3H6V2h1V3z"/>
 </svg>

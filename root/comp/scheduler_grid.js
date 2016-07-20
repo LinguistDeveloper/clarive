@@ -222,7 +222,7 @@
     var button_run_schedule = new Ext.Toolbar.Button({
         text: _('Run now'),
         hidden: true,
-        icon: '/static/images/icons/start.png',
+        icon: '/static/images/icons/start.svg',
         cls: 'x-btn-text-icon',
         handler: run_schedule_handler
     });
@@ -362,7 +362,7 @@
             button_run_schedule.hide();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Activate'));
-            button_toggle_activation.setIcon('/static/images/icons/start.png');
+            button_toggle_activation.setIcon('/static/images/icons/start.svg');
             button_toggle_activation.show();
         } else if (r.data.status == 'RUNNING') {
             button_delete_schedule.hide();
@@ -497,7 +497,7 @@
 
         var btn_submit = new Ext.Button({
             text: _('Save'),
-            icon: '/static/images/icons/save.png',
+            icon: '/static/images/icons/action_save.svg',
             handler: function() {
                 var ff = schedule_form.getForm();
                 ff.submit({

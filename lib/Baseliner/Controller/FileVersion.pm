@@ -63,7 +63,7 @@ sub gen_tree : Private {
         my %categories  = map { $_->{id}=>1 } Baseliner::Model::Topic->get_categories_permissions( username => $p->{username}, type => 'view' );
         my $remove_item = {
             text => _loc('Remove from folder'),
-            icon => '/static/images/icons/folder_delete.png',
+            icon => '/static/images/icons/folder_delete.svg',
             eval => {
                 handler => 'Baseliner.remove_folder_item'
             }

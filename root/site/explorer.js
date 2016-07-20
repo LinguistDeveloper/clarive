@@ -163,7 +163,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         var self = this;
         return {
             text: _('Add to Favorites...'),
-            icon: '/static/images/icons/favorite_grey.png',
+            icon: '/static/images/icons/favorite_grey.svg',
             handler: function(n) {
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
@@ -214,7 +214,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         var self = this;
         return {
             text: _('Rename'),
-            icon: '/static/images/icons/rename_.png',
+            icon: '/static/images/icons/item_rename.svg',
             handler: function(n) {
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
@@ -539,7 +539,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_favorites = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/favorite_grey.png',
+            icon: '/static/images/icons/favorite_grey.svg',
             tooltip: _('Favorites'),
             handler: function(){
                 var that = this;
@@ -557,7 +557,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_workspaces = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/workspaces.png',
+            icon: '/static/images/icons/connect.svg',
             handler: function(){
                 this.disable();
                 var that = this;
@@ -689,14 +689,14 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                             text: folder,
                             id_folder: folder,
                             data: Ext.util.JSON.encode({ on_drop: on_drop }),
-                            icon: '/static/images/icons/favorite.svg'
+                            icon: '/static/images/icons/favorite_new.svg'
                         },
                         function(res) {
                             Baseliner.message( _('Favorite'), res.msg );
                             if( res.success ) {
                                 var new_node = self.$tree_favorites.getLoader().createNode({
                                     text: folder + ' ('+res.id_folder+')',
-                                    icon: '/static/images/icons/favorite.svg',
+                                    icon: '/static/images/icons/favorite_new.svg',
                                     data: { on_drop: on_drop },
                                     url: '/lifecycle/tree_favorite_folder?id_folder=' + res.id_folder
                                 });
@@ -715,7 +715,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         var button_menu = new Ext.Button({
             tooltip: _('Config'),
             menu: [
-                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.svg', handler: add_to_fav_folder }
+                { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite_new.svg', handler: add_to_fav_folder }
             ]
         });
 
@@ -735,7 +735,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         var button_refresh = new Ext.Button({
             cls: 'x-btn-icon',
             tooltip: _('Refresh All Nodes'),
-            icon: '/static/images/icons/refresh-grey.gif',
+            icon: '/static/images/icons/refresh.svg',
             id: 'button_refresh',
             handler: function(){
                 var that = this;

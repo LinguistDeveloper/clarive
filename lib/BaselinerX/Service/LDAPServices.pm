@@ -11,7 +11,7 @@ with 'Baseliner::Role::Service';
 register 'service.ldap.search' => {
     name => 'Search in LDAP server',
     form => '/forms/ldap_search.js',
-    icon => '/static/images/icons/page_lens.png',
+    icon => '/static/images/icons/detail.svg',
     handler => \&run_search_ldap,
 };
 

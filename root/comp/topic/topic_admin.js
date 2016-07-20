@@ -57,7 +57,7 @@
             buttons: [
                     {
                         text: _('Save'),
-                        icon:'/static/images/icons/save.png',
+                        icon:'/static/images/icons/action_save.svg',
                         type: 'submit',
                         handler: function() {
                             var form = form_status.getForm();
@@ -237,7 +237,7 @@
         return ret;
     };
     var render_status_arrow = function(value,meta,rec,rowIndex,colIndex,store){
-        return '<img src="/static/images/icons/right-arrow.png" />';
+        return '<img src="/static/images/icons/arrow_right_black.svg" />';
     };
 
     var grid_status = new Ext.grid.GridPanel({
@@ -1090,9 +1090,8 @@
                         }
                     },
                     {
-                        //text: _('Delete'),
                         cls: 'btn-text-icon',
-                        icon: '/static/images/icons/remove.png',
+                        icon: '/static/images/icons/clear-all.svg',
                         handler: function() {
                             var form = form_category_admin.getForm();
                             var action = '';
@@ -1186,9 +1185,9 @@
                     category_import();
                  }
             },
-            { text: _('Export'),
-                icon: '/static/images/icons/export.svg',
-                handler: function(){
+            { text: _('Export'), 
+                icon: '/static/images/icons/downloads_favicon.svg',
+                handler: function(){ 
                     var sm = grid_categories.getSelectionModel();
                     if (sm.hasSelection()) {
                         var sel = sm.getSelected();

@@ -7,8 +7,8 @@
 	.st1{fill:none;stroke:#756493;stroke-miterlimit:10;}
 	.st2{fill:none;stroke:#F7A808;stroke-miterlimit:10;}
 </style>
-<path class="st0" d="M6.5,13.2c0,0,0.3-8.8,3.4-10.3c0.4-0.2,1,0,1,0c2.8,0.9,3,10.3,3,10.3"/>
-<polyline class="st0" points="1.8,1.2 1.8,14.2 14.9,14.2 "/>
+<path class="st0" d="M6.3,13.1c0,0,0.5-8.7,3.6-10.2c0.4-0.2,1,0,1,0c2.8,0.9,3,10.3,3,10.3"/>
+<polyline class="st0" points="1.5,1.1 1.5,14.6 14.9,14.5 "/>
 <path class="st1" d="M11.6,16.4"/>
 <path class="st2" d="M4,13.2c0,0,0-6.1,2.2-6.8c0.2-0.1,0.6,0,0.6,0c1.8,0.6,2,6.8,2,6.8"/>
 </svg>

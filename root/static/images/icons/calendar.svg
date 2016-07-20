@@ -1,1 +1,15 @@
-<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><g id="Layer 2"><rect x="3.702" y="7.811" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><rect x="3.702" y="10.261" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><rect x="6.152" y="7.811" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><rect x="6.152" y="10.261" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><rect x="8.602" y="7.811" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><rect x="8.602" y="10.261" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><path d="M5.952,3.891l-1.63,-0.02l0.014,-1.906l1.601,-0.028l0.015,1.954Z" style="fill:#404040;fill-rule:nonzero;"/><path d="M11.841,3.742l-1.634,0.032l0.022,-1.838l1.633,0.017l-0.021,1.789Z" style="fill:#404040;fill-rule:nonzero;"/><path d="M13.503,12.711l-10.781,0l0,-6.432l10.801,0.062l-0.02,6.37ZM5.925,3.735l-0.001,0.007l-1.591,-0.008l-0.016,0.051l-0.012,-0.012l-3.071,-0.005l0.018,10.413l13.721,0l0,-10.455l-3.128,0.006l-1.649,0.006l-4.271,-0.003Z" style="fill:#404040;fill-rule:nonzero;"/><rect x="11.053" y="7.811" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/><rect x="11.053" y="10.261" width="1.47" height="1.47" style="fill:#404040;fill-rule:nonzero;"/></g></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+</style>
+<rect x="4" y="7" class="st0" width="2" height="2"/>
+<rect x="7" y="7" class="st0" width="2" height="2"/>
+<rect x="10" y="7" class="st0" width="2" height="2"/>
+<rect x="4" y="10" class="st0" width="2" height="2"/>
+<rect x="7" y="10" class="st0" width="2" height="2"/>
+<rect x="10" y="10" class="st0" width="2" height="2"/>
+<path class="st0" d="M12,3c0,0,0.1-2,0-2h-2v2H6c0,0,0-1.4,0-2H4v2H1v12h14V3H12z M14,13H2V5h12C14,4.9,14,13,14,13z"/>
+</svg>

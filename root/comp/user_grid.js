@@ -288,7 +288,7 @@
         
         var btn_grabar_user =   new Ext.Toolbar.Button({
             text: _('Save'),
-            icon:'/static/images/icons/save.png',
+            icon:'/static/images/icons/action_save.svg',
             width: 70,
             handler: function(){
                 var form = form_user.getForm();

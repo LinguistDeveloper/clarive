@@ -76,7 +76,7 @@
 %    my $val = $row->{ $$h{key} };
 <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html"><% 
                             $$h{type} =~ /checkbox|cbox/ 
-                                ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/cancel.png">' : '<img src="/static/images/icons/checkbox.svg">')
+                                ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.svg">' : '<img src="/static/images/icons/checkbox.svg">')
                             : $$h{type} eq 'index' 
                                 ? ++$ix
                             : $$h{type} eq 'datefield' 

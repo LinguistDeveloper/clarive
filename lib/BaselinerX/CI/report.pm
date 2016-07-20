@@ -82,7 +82,7 @@ sub report_list {
                 data => [],
                 menu => [
                     {   text=> _loc('New search') . '...',
-                        icon=> '/static/images/icons/search_grey.png',
+                        icon=> '/static/images/icons/magnifier.svg',
                         eval=> { handler=> 'Baseliner.new_search'},
                     }
                 ],
@@ -483,7 +483,7 @@ sub all_fields {
                                          keys $user_categories_fields_meta->{$name_id} ;
 
                             $_->{text}     = $_->{name};
-                            $_->{icon}    ='/static/images/icons/topic_one.png';
+                            $_->{icon}    ='/static/images/icons/topic.svg';
                             $_->{data}    = {
                                 'id_category'     => $_->{id},
                                 'name_category' => $_->{name},
@@ -500,7 +500,7 @@ sub all_fields {
                 leaf        => \0,
                 draggable     => \0,
                 expanded     => \1,
-                icon         => '/static/images/icons/topic_one.png',
+                icon         => '/static/images/icons/topic.svg',
                 children     => \@children
             }
         );

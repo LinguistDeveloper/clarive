@@ -72,7 +72,7 @@ Ext.onReady(function(){
         }
         var tabfav = info.favorite_this(); 
         var opp = function(){
-            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite.svg');
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite_new.svg');
             var fav_data = {
                 title: title_field.getValue(),
                 click: {
@@ -163,7 +163,7 @@ Ext.onReady(function(){
     tbar_items.push( Cla.help_button );
 
     Cla.share_button = new Ext.Button({
-       icon: '/static/images/icons/favorite_grey.png',
+       icon: '/static/images/icons/favorite_grey.svg',
        cls: 'x-btn-icon',
        tooltip: _('Add to Favorites...'),
        handler: function(){
@@ -241,9 +241,9 @@ Ext.onReady(function(){
         var user_menu = [
              { text: _('Inbox'),
                  handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.svg" } ); },
-                 icon : '/static/images/icons/envelope.png' 
+                 icon : '/static/images/icons/envelope.svg' 
              },
-             { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/lock_small.png' },
+             { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/action.svg' },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         
@@ -290,7 +290,7 @@ Ext.onReady(function(){
             //collapsed: true,
             hidden: true,
             height: 300,
-            tbar_end : [ '->', { xtype:'button', icon: IC('tab.png'), handler:function(){ Cla.tabCalendar() } } ],
+            tbar_end : [ '->', { xtype:'button', icon: IC('tab.svg'), handler:function(){ Cla.tabCalendar() } } ],
             fullCalendarConfig: {
                 events: Cla.calendar_events,
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
@@ -472,7 +472,7 @@ Ext.onReady(function(){
                             window.location.href = window.location.href; 
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     },function(){
-                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/warnmsg.png' } );
+                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/icons/error.svg' } );
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     });
                 } else {

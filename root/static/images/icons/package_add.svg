@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!-- Generator: Adobe Illustrator 20.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;stroke:#414141;stroke-width:1.5;stroke-miterlimit:10;}
-	.st1{fill:none;stroke:#414141;stroke-miterlimit:10;}
-	.st2{fill:none;stroke:#414141;stroke-width:0.5;stroke-miterlimit:10;}
-	.st3{fill:#50BA78;}
+	.st0{fill:none;stroke:#404040;stroke-miterlimit:10;}
+	.st1{fill:#404040;}
+	.st2{fill:#4FBC78;}
 </style>
-<polyline class="st0" points="3.4,11.6 2.9,11.1 2.9,4.8 8.4,1.6 14,4.8 14,11.1 8.4,14.3 6.3,13.3 "/>
-<polyline class="st1" points="3.4,5 8.6,7.7 13.5,4.9 "/>
-<line class="st1" x1="8.5" y1="14.5" x2="8.6" y2="7.7"/>
-<line class="st2" x1="5.6" y1="6.2" x2="5.6" y2="11"/>
-<path class="st3" d="M4.5,10.2c-1.4,0-2.5,1.1-2.5,2.5s1.1,2.5,2.5,2.5S7,14,7,12.7S5.9,10.2,4.5,10.2z M6.2,13.1H5.1v1.2H3.9v-1.2
-	H2.8v-0.8v-0.2H4V11h1.2v1.2h1.2v0.9H6.2z"/>
-<line class="st2" x1="5.6" y1="6.3" x2="11.1" y2="3.1"/>
-<line class="st2" x1="5.6" y1="2.7" x2="11.2" y2="6.2"/>
-<line class="st2" x1="11.2" y1="6.2" x2="11.3" y2="12.7"/>
+<line class="st0" x1="2.2" y1="7.5" x2="15" y2="7.5"/>
+<line class="st0" x1="8.5" y1="1.1" x2="8.5" y2="13.8"/>
+<g>
+	<path class="st1" d="M3,2h11v11l-8,0L5.9,14l9.1,0V1l0,0H2"/>
+</g>
+<rect x="2" y="1.1" class="st1" width="1" height="7.8"/>
+<path class="st2" d="M4.7,7.6c-2.3,0-4,1.9-4,4s1.7,4,4,4s4-1.9,4-4S7,7.6,4.7,7.6z M7.7,12.6h-2v2h-2v-2h-2v-2h2v-2h2v2h2v1V12.6z"
+	/>
 </svg>
