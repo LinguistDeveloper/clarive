@@ -6,7 +6,11 @@ our $ccache;
 
 sub setup {
     my ($self,$cache_type) = @_;
+
+    local $@;
+
     $cache_type //= Clarive->config->{cache};
+
     # CHI cache setup
     require Baseliner::Utils;
     my $setup_fake_cache = sub {
@@ -37,7 +41,7 @@ sub setup {
             }
         };
         if( $@ ) {
-            Util->_error( Util->_loc( "Error configuring cache: %1", $@ ) );
+            Util->_error( Util->_loc( 'Error configuring cache: %1', "$@" ) );
             $setup_fake_cache->();
         } else {
             Util->_debug( "CACHE Setup ok: " . join' ', %{ +{ @$cache_config, %user_config } } );

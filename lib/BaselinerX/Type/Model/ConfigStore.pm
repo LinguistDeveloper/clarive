@@ -432,25 +432,29 @@ sub delete {
 }
 
 sub set {
-    my ($self,%p) = @_;
+    my ( $self, %p ) = @_;
     my $ns = $p{ns} || '/';
     my $bl = $p{bl} || '*';
-    _throw 'Missing parameter key' unless $p{key};
+    _throw 'Missing parameter key'   unless $p{key};
     _throw 'Missing parameter value' unless defined $p{value};
 
-    my $registry_data = $self->search_registry( query=> $p{key} );
-    my ($original) = _array($registry_data->{data} // []) if $registry_data && $registry_data->{data} && $registry_data->{data}[0] && $registry_data->{data}[0]->{key} eq $p{key};
-    _warn $original;
+    my $registry_data = $self->search_registry( query => $p{key} );
+    my ($original) = _array( $registry_data->{data} // [] )
+      if $registry_data
+      && $registry_data->{data}
+      && $registry_data->{data}[0]->{key}
+      && $registry_data->{data}[0]->{key} eq $p{key};
 
-    $self->delete( %p );
+    $self->delete(%p);
 
     my $row = mdb->config->insert(
-        {   key     => $p{key},
-            value   => $p{value},
-            ns      => $ns,
-            bl      => $bl,
-            ts      => mdb->ts,
-            label   => $original->{config_label}
+        {
+            key   => $p{key},
+            value => $p{value},
+            ns    => $ns,
+            bl    => $bl,
+            ts    => mdb->ts,
+            label => $original->{config_label}
         }
     );
     return $row;

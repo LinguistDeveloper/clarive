@@ -47,7 +47,7 @@ sub BUILD {
     #
 
     if( defined $self->opts->{r} ) {
-        $self->opts->{R} = join ' ', ('lib', glob( '*.conf' ), grep( !/^features\/#/, glob 'features/*/lib' ) );
+        $self->opts->{R} = join ' ', ('lib', grep( !/^features\/#/, glob 'features/*/lib' ) );
     }
     if( defined $self->opts->{R} ) {
         $self->restarter(1);
