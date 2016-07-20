@@ -683,7 +683,7 @@
             layoutConfig: { align:'stretch' },
             items: [
                 { flex:1, layout:'hbox', padding: 20,
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.png',
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.svg',
                         handler:function(){trap_do(mid,'retry')} },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
                 { flex:1, layout:'hbox', padding: 20,
@@ -1345,7 +1345,7 @@
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
                     icon:'/static/images/icons/moredata.svg',
-                    text: _('Full log'),
+                    text: _('Log'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -1412,7 +1412,7 @@
                                 tbar: [
                                     '->',
                                     {  text: _('Cancel'), icon: IC('close.svg'), handler: function(){ winupdate.close(); } },
-                                    {  text: _('Update'), icon: IC('edit.svg'), handler: function(){ 
+                                    {  text: _('Update'), icon: IC('edit.svg'), handler: function(){
                                             var d = fupdatepanel.getValues();
                                             Baseliner.ci_call( sel.data.mid, 'reschedule', d, function(res){
                                                 Baseliner.message( _('Reschedule'), res.msg );
