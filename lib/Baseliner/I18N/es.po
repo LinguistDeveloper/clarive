@@ -1777,6 +1777,9 @@ msgstr "(todas)"
 msgid "All"
 msgstr "Todos"
 
+msgid "all"
+msgstr "todos"
+
 msgid "Type"
 msgstr "Tipo"
 
