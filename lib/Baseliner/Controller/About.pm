@@ -5,21 +5,21 @@ use Baseliner::Utils;
 use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 
-register 'action.help.server_info' => { name => 'View server info in about window'};
-register 'menu.help' => { label => 'Help', index => 999 };
+register 'action.help.server_info' => { name => _locl('View server info in about window')};
+register 'menu.help' => { label => _locl('Help'), index => 999 };
 
 register 'menu.help.help_main' => {
-    label => 'Clarive Help',
-    title => 'Clarive Help',
+    label => _locl('Clarive Help'),
+    title => _locl('Clarive Help'),
     icon  => '/static/images/icons/help.svg',
     url_eval => '/site/help-show.js',
     index => 10
 };
 register 'menu.help.about' => {
-    label => 'About...',
+    label => _locl('About...'),
     icon  => '/static/images/icons/about.svg',
     url   => '/about/show',
-    title => 'About ' . ( Clarive->config->{app_name} // 'Baseliner' ),
+    title => _locl('About ') . ( Clarive->config->{app_name} // 'Baseliner' ),
     index => 999
 };
 
@@ -46,20 +46,20 @@ sub show : Local {
     my ( $self, $c ) = @_;
     require Sys::Hostname;
     my @about = map { { name=>$_, value=>$c->config->{About}->{$_} } } keys %{ $c->config->{About} || {} };
-    push @about, { name=>'Server Version', value=>$Baseliner::VERSION };
+    push @about, { name=>_locl('Server Version'), value=>$Baseliner::VERSION };
 
     if ( Baseliner::Model::Permissions->user_has_action( action => 'action.help.server_info', username => $c->username ) ) {
-        push @about, { name=>'Perl Version', value=>$] };
-        push @about, { name=>'Hostname', value=>Sys::Hostname::hostname() };
-        push @about, { name=>'Process ID', value=>$$ };
-        push @about, { name=>'Server Time', value=>_now };
-        push @about, { name=>'Server Exec', value=>$0 };
-        push @about, { name=>'Server Bin', value=>$FindBin::Bin };
-        push @about, { name=>'Server Parent ID', value=>$ENV{BASELINER_PARENT_PID} };
-        #push @about, { name=>'Path', value=>join '<li>',split /;|:/,$ENV{PATH} };
-        push @about, { name=>'OS', value=>$^O };
+        push @about, { name=>_loc('Perl Version'), value=>$] };
+        push @about, { name=>_loc('Hostname'), value=>Sys::Hostname::hostname() };
+        push @about, { name=>_loc('Process ID'), value=>$$ };
+        push @about, { name=>_loc('Server Time'), value=>_now };
+        push @about, { name=>_loc('Server Exec'), value=>$0 };
+        push @about, { name=>_loc('Server Bin'), value=>$FindBin::Bin };
+        push @about, { name=>_loc('Server Parent ID'), value=>$ENV{BASELINER_PARENT_PID} };
+        #push @about, { name=>_locl('Path'), value=>join '<li>',split /;|:/,$ENV{PATH} };
+        push @about, { name=>_loc('OS'), value=>$^O };
         push @about, { name => _loc('Active users count'), value => ci->user->find({ active => '1', name => { '$ne' => 'root' }})->count };
-        #push @about, { name=>'Library Path', value=>join '<li>',split /;|:/,$ENV{LIBPATH} || '-' };
+        #push @about, { name=>_loc('Library Path'), value=>join '<li>',split /;|:/,$ENV{LIBPATH} || '-' };
         #$body = dehash( $c->config );
         $c->stash->{environment_vars} = [
             map {

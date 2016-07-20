@@ -8,7 +8,7 @@ use GD::Image;
 use Capture::Tiny qw(capture);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(_log _debug _error _loc _fail _throw _file _dir _array _unique);
+use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique);
 use Locale::Country qw(all_country_names country2code);
 use XML::Simple;
 use DateTime::TimeZone qw(all_names);
@@ -17,10 +17,10 @@ use experimental 'switch', 'autoderef';
 
 register 'config.user.global' => {
     preference => 1,
-    desc       => 'Global Preferences',
+    desc       => _locl('Global Preferences'),
     metadata   => [
         {   id      => 'language',
-            label   => 'Language',
+            label   => _locl('Language'),
             type    => 'combo',
             default => Clarive->config->{default_lang},
             store   => [ 'es', 'en' ]
@@ -29,30 +29,30 @@ register 'config.user.global' => {
 };
 register 'config.user.view' => {
     preference => 1,
-    desc       => 'View Preferences',
+    desc       => _locl('View Preferences'),
     metadata   => [
         {   id      => 'theme',
-            label   => 'Theme',
+            label   => _locl('Theme'),
             type    => 'combo',
             default => Clarive->config->{default_theme},
             store   => [ 'gray', 'blue', 'slate' ]
         },
     ]
 };
-register 'action.admin.users' => { name => 'User Admin', };
+register 'action.admin.users' => { name => _locl('User Admin'), };
 
 register 'menu.admin.users' => {
-    label    => 'Users',
+    label    => _locl('Users'),
     url_comp => '/user/grid',
     actions  => ['action.admin.users'],
-    title    => 'Users',
+    title    => _locl('Users'),
     index    => 80,
     icon     => '/static/images/icons/user.svg'
 };
 
 register 'event.user.create' => {
     text        => 'New user created: %2',
-    description => 'New user',
+    description => _locl('New user'),
     vars        => [ 'username', 'realname', 'email' ]
 };
 
@@ -426,9 +426,7 @@ sub update : Local {
                 }
                 else {
                     $c->stash->{json} = {
-                        msg => _loc(
-                            'User name already exists, introduce another user name'
-                        ),
+                        msg => _loc('User name already exists, introduce another user name'),
                         failure => \1
                     };
                 }
@@ -460,14 +458,10 @@ sub update : Local {
                             { username => $p->{username} } );
                         if ($user_ci) {
                             $c->stash->{json} = {
-                                msg => _loc(
-                                    'User name already exists, introduce another user name'
-                                ),
+                                msg => _loc('User name already exists, introduce another user name'),
                                 failure => \1
                             };
-                            _fail _loc(
-                                "User name already exists, introduce another user name"
-                            );
+                            _fail _loc( "User name already exists, introduce another user name");
                         }
                         else {
                             $user_ci = ci->user->find_one(
@@ -1063,9 +1057,7 @@ sub avatar_refresh : Local {
     $username ||= $c->username;
 
     if ( $username ne $c->username && !$self->_user_has_action( $c->username, 'action.admin.users' ) ) {
-        _fail _loc
-          'Cannot change avatar for user %1: user %2 not administrator',
-          $username, $c->username;
+        _fail _loc( 'Cannot change avatar for user %1: user %2 not administrator', $username, $c->username );
     }
 
     try {
@@ -1094,9 +1086,7 @@ sub avatar_upload : Local {
     _log "Uploading avatar";
 
     if ( $username ne $c->username && !$self->_user_has_action( $c->username, 'action.admin.users' ) ) {
-        _fail _loc
-          'Cannot change avatar for user %1: user %2 not administrator',
-          $username, $c->username;
+        _fail _loc( 'Cannot change avatar for user %1: user %2 not administrator', $username, $c->username );
     }
 
     try {

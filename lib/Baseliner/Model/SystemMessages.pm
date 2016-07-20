@@ -8,9 +8,9 @@ extends qw/Catalyst::Model/;
 
 with 'Baseliner::Role::Service';
 
-register 'event.sms.new' => { name => 'New System Message', description => 'New System Message', vars=>['username'] } ;
-register 'event.sms.cancel' => { name => 'Canceled System Message', description => 'Canceled System Message', vars=>['username'] } ;
-register 'event.sms.remove' => { name => 'Deleted System Message', description => 'Deleted System Message', vars=>['username'] } ;
+register 'event.sms.new' => { name => 'New System Message', description => _locl('New System Message'), vars=>['username'] } ;
+register 'event.sms.cancel' => { name => 'Canceled System Message', description => _locl('Canceled System Message'), vars=>['username'] } ;
+register 'event.sms.remove' => { name => 'Deleted System Message', description => _locl('Deleted System Message'), vars=>['username'] } ;
 
 sub update {
     my ( $self, $p ) = @_;

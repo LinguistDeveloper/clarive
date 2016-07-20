@@ -39,7 +39,7 @@ register 'menu.admin.rule' => {
 
 register 'event.ws.soap_ready' => {
     text => 'SOAP WS ready to return',
-    description => 'SOAP WS is ready',
+    description => _locl('SOAP WS is ready'),
     vars => [],
 };
 

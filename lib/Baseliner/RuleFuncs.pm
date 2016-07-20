@@ -130,8 +130,7 @@ sub wait_for_children {
             }
         }
         if( @failed ) {
-            my $error_msg = _loc(
-                'Error detected in children, pids failed: %1. Ok: %2',
+            my $error_msg = _loc( 'Error detected in children, pids failed: %1. Ok: %2',
                 join( ',', map { $_->{pid} } @failed ),
                 join( ',', @oks )
             );

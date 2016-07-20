@@ -4,16 +4,16 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller' };
 
-register 'event.auth.logout' => { name => 'User Logout', description =>'User Logout', vars=>['username','login','mode'] } ;
-register 'event.auth.ok' => { name => 'Login Ok', description =>'Login Ok', vars=>['username','login','mode'] } ;
-register 'event.auth.failed' => { name => 'Login Failed', description =>'Login Failed', vars=>['username','login','status','mode'] } ;
-register 'event.auth.saml_ok' => { name => 'Login by SAML Ok', description =>'Login by SAML Ok', vars=>['username','mode'] } ;
-register 'event.auth.saml_failed' => { name => 'Login by SAML Failed', description =>'Login by SAML Failed', vars=>['username','mode'] } ;
-register 'event.auth.cas_ok' => { name => 'Login by CAS Ok', description =>'Login by CAS Ok', vars=>['username','mode'] } ;
-register 'event.auth.cas_failed' => { name => 'Login by CAS Failed', description =>'Login by CAS Failed', vars=>['username','mode'] } ;
-register 'event.auth.surrogate_ok' => { name => 'Surrogate Ok', description =>'Surrogate Ok', vars=>['username','mode'] } ;
-register 'event.auth.surrogate_failed' => { name => 'Surrogate Failed', description => 'Surrogate Failed', vars=>['username','to_user'] } ;
-register 'event.auth.attempt' => { name => 'User Login Attempt', description => 'User Login Attempt', vars=>['username'] } ;
+register 'event.auth.logout' => { name => 'User Logout', description =>_locl('User Logout'), vars=>['username','login','mode'] } ;
+register 'event.auth.ok' => { name => 'Login Ok', description =>_locl('Login Ok'), vars=>['username','login','mode'] } ;
+register 'event.auth.failed' => { name => 'Login Failed', description =>_locl('Login Failed'), vars=>['username','login','status','mode'] } ;
+register 'event.auth.saml_ok' => { name => 'Login by SAML Ok', description =>_locl('Login by SAML Ok'), vars=>['username','mode'] } ;
+register 'event.auth.saml_failed' => { name => 'Login by SAML Failed', description =>_locl('Login by SAML Failed'), vars=>['username','mode'] } ;
+register 'event.auth.cas_ok' => { name => 'Login by CAS Ok', description =>_locl('Login by CAS Ok'), vars=>['username','mode'] } ;
+register 'event.auth.cas_failed' => { name => 'Login by CAS Failed', description =>_locl('Login by CAS Failed'), vars=>['username','mode'] } ;
+register 'event.auth.surrogate_ok' => { name => 'Surrogate Ok', description =>_locl('Surrogate Ok'), vars=>['username','mode'] } ;
+register 'event.auth.surrogate_failed' => { name => 'Surrogate Failed', description => _locl('Surrogate Failed'), vars=>['username','to_user'] } ;
+register 'event.auth.attempt' => { name => 'User Login Attempt', description => _locl('User Login Attempt'), vars=>['username'] } ;
 
 register 'service.auth.ok' => {
     name => 'Authorize User Login',

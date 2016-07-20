@@ -16,14 +16,14 @@ use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 
-register 'action.search.job' => { name => 'Search jobs' };
+register 'action.search.job' => { name => _locl('Search jobs') };
 
-register 'event.job.rerun' => { name=>'Rerun a job', description => 'Rerun a job', notify=>{ scope=>['project','bl'] }  };
-register 'event.job.reschedule' => { name=>'Reschedule a job', description =>'Reschedule a job', notify=>{ scope=>['project','bl'] }  };
-register 'event.job.start' => { name=>'Job start', description =>'Job start', notify=>{ scope=>['project','bl'] } };
-register 'event.job.start_step' => { name=>'Job step start', description =>'Job step start', notify=>{ scope=>['project','bl','step'] } };
-register 'event.job.end' => { name=>'Job end, after POST', description =>'Job end, after POST', notify=>{ scope=>['project','bl','status'] } };
-register 'event.job.end_step' => { name=>'Job step end', description =>'Job step end', notify=>{ scope=>['project','bl','status','step'] } };
+register 'event.job.rerun' => { name=>'Rerun a job', description => _locl('Rerun a job'), notify=>{ scope=>['project','bl'] }  };
+register 'event.job.reschedule' => { name=>'Reschedule a job', description =>_locl('Reschedule a job'), notify=>{ scope=>['project','bl'] }  };
+register 'event.job.start' => { name=>'Job start', description =>_locl('Job start'), notify=>{ scope=>['project','bl'] } };
+register 'event.job.start_step' => { name=>'Job step start', description =>_locl('Job step start'), notify=>{ scope=>['project','bl','step'] } };
+register 'event.job.end' => { name=>'Job end, after POST', description =>_locl('Job end, after POST'), notify=>{ scope=>['project','bl','status'] } };
+register 'event.job.end_step' => { name=>'Job step end', description =>_locl('Job step end'), notify=>{ scope=>['project','bl','status','step'] } };
 
 our $group_keys = {
     id           => 'jobid',

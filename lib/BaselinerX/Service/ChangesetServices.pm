@@ -10,49 +10,49 @@ use experimental 'smartmatch';
 with 'Baseliner::Role::Service';
 
 register 'service.changeset.items' => {
-    name    => 'Load Job Items into Stash',
+    name    => _locl('Load Job Items into Stash'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&job_items,
 };
 
 register 'service.changeset.update_baselines' => {
-    name    => 'Update Baselines',
+    name    => _locl('Update Baselines'),
     job_service  => 1,
     icon    => '/static/images/icons/changesets.svg',
     handler => \&update_baselines,
 };
 
 register 'service.changeset.verify_revisions' => {
-    name    => 'Verify Revision Integrity Rules',
+    name    => _locl('Verify Revision Integrity Rules'),
     job_service  => 1,
     icon    => '/static/images/icons/changesets.svg',
     handler => \&verify_revisions,
 };
 
 register 'service.changeset.checkout' => {
-    name    => 'Checkout Job Items',
+    name    => _locl('Checkout Job Items'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
-    name    => 'Checkout Job Baseline',
+    name    => _locl('Checkout Job Baseline'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout_bl,
 };
 
 register 'service.changeset.checkout.bl_all_repos' => {
-    name    => 'Checkout Job Baseline ... all repos',
+    name    => _locl('Checkout Job Baseline ... all repos'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout_bl_all_repos,
 };
 
 register 'service.changeset.natures' => {
-    name    => 'Load Nature Items',
+    name    => _locl('Load Nature Items'),
     icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/nature_items.js',
     job_service  => 1,
@@ -60,7 +60,7 @@ register 'service.changeset.natures' => {
 };
 
 register 'service.changeset.update' => {
-    name    => 'Update Changesets',
+    name    => _locl('Update Changesets'),
     icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/changeset_update.js',
     job_service  => 1,
@@ -68,7 +68,7 @@ register 'service.changeset.update' => {
 };
 
 register 'service.topic.status' => {
-    name    => '(DEPRECATED) Change Topic Status',
+    name    => _locl('(DEPRECATED) Change Topic Status'),
     icon    => '/static/images/icons/topic.svg',
     form    => '/forms/topic_status_deprecated.js',
     job_service  => 1,
@@ -76,7 +76,7 @@ register 'service.topic.status' => {
 };
 
 register 'service.changeset.update_bls' => {
-    name    => 'Update Changesets BLs',
+    name    => _locl('Update Changesets BLs'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&update_changesets_bls,
@@ -479,10 +479,8 @@ sub _checkout_repo {
 
     my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
     $log->info(
-        _loc(
-            'Checking out baseline %1 for project %2, repository %3: %4',
-            $bl, $project->name, $repo->name, $dir_prefixed
-        )
+        _loc( 'Checking out baseline %1 for project %2, repository %3: %4',
+            $bl, $project->name, $repo->name, $dir_prefixed )
     );
 
     my $co_info = $repo->checkout( bl => $bl, dir => $dir_prefixed, project => $project, revisions => $revisions );
@@ -590,7 +588,7 @@ sub nature_items {
 }
 
 register 'service.approval.request' => {
-    name    => 'Request Approval',
+    name    => _locl('Request Approval'),
     icon => '/static/images/icons/user_green.svg',
     form => '/forms/approval_request.js',
     job_service  => 1,
@@ -599,7 +597,7 @@ register 'service.approval.request' => {
 
 register 'event.job.approval_request' => {
     text        => 'Approval requested for job %3 (user %1)',
-    description => 'approval requested for job',
+    description => _locl('approval requested for job'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step' ],
     notify      => {
         scope => [ 'project', 'bl' ],
@@ -607,13 +605,13 @@ register 'event.job.approval_request' => {
 };
 register 'event.job.approved' => {
     text        => 'Job %3 Approved',
-    description => 'Job Approved',
+    description => _locl('Job Approved'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
     notify => { scope => [ 'project', 'bl' ] },
 };
 register 'event.job.rejected' => {
     text        => 'Job %3 Rejected',
-    description => 'Job Rejected',
+    description => _locl('Job Rejected'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
     notify => { scope => [ 'project', 'bl' ] },
 };

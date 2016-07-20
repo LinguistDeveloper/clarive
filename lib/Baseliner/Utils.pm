@@ -15,6 +15,7 @@ Some utilities shared by different Baseliner modules and plugins.
 use Exporter::Tidy default => [
     qw(
     _loc
+    _locl
     _array_or_commas
     _log
     _info
@@ -246,6 +247,8 @@ sub _loc {
     return '' unless $_[0];
     return Baseliner::I18N->localize(@_);
 }
+
+sub _locl { $_[0] }
 
 sub _loc_decoded { return _utf8( _loc(@_) ) }
 sub _loc_ansi { return _utf8_to_ansi( _loc(@_) ) }

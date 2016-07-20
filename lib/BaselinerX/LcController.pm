@@ -13,10 +13,10 @@ use Baseliner::Sugar;
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
-register 'action.project.see_lc' => { name => 'User can access the project lifecycle' };
+register 'action.project.see_lc' => { name => _locl('User can access the project lifecycle') };
 
 register 'config.releases' => {
-    name => _loc('Config lifecycle releases'),
+    name => _locl('Config lifecycle releases'),
     metadata => [
         { id=>'by_project', label=>'Group by project', default=>0 },
     ],
@@ -943,7 +943,7 @@ sub promotes_and_demotes {
                     eval => {
                         id   => 'p'.$bl.$status->{id_status},
                         url            => '/comp/lifecycle/deploy.js',
-                        title          => 'To Promote',
+                        title          => _loc('To Promote'),
                         job_type       => 'promote',
                         id_project     => $id_project,
                         is_release     => $topic->{category}->{is_release},

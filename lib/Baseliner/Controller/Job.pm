@@ -395,22 +395,22 @@ sub refresh_now : Local {
 }
 
 register 'event.job.new' => {
-    description => 'New job',
+    description => _locl('New job'),
     vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
     notify => { scope => ['bl'] }
 };
 register 'event.job.delete' => {
-    description => 'Job deleted',
+    description => _locl('Job deleted'),
     vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
     notify => { scope => ['bl'] }
 };
 register 'event.job.cancel' => {
-    description => 'Job cancelled',
+    description => _locl('Job cancelled'),
     vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
     notify => { scope => ['bl'] }
 };
 register 'event.job.cancel_running' => {
-    description => 'Running job cancelled while running',
+    description => _locl('Running job cancelled while running'),
     vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
     notify => { scope => ['bl'] }
 };

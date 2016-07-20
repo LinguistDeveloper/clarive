@@ -25,7 +25,7 @@ sub rel_type { { server=>[ from_mid => 'database_server' ] } }
 sub error {}
 sub rc {}
 service ping => {
-    name    => 'Ping',
+    name    => _locl('Ping'),
     handler => sub {
         my ( $self ) = @_;
         $self->ping;

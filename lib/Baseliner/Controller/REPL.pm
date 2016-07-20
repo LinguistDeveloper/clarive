@@ -20,56 +20,56 @@ register 'action.development.gui_designer', => { name => 'GUI Designer' };
 register 'action.development.sequences',    => { name => 'Sequences' };
 
 register 'menu.development' => {
-    label  => 'Development',
+    label  => _locl('Development'),
     action => 'action.development.%',
     index  => 30
 };
 register 'menu.development.repl' => {
-    label    => 'REPL',
+    label    => _locl('REPL'),
     url_comp => '/repl/main',
-    title    => 'REPL',
+    title    => _locl('REPL'),
     action   => 'action.development.repl',
     icon     => '/static/images/icons/console.svg',
     index    => 10,
 };
 register 'menu.development.js_reload' => {
-    label    => 'JS Reload',
+    label    => _locl('JS Reload'),
     url_eval => '/site/js-reload.js',
-    title    => 'JS Reload',
+    title    => _locl('JS Reload'),
     icon     => '/static/images/icons/js-reload.svg',
     action   => 'action.development.js_reload',
     index    => 20,
 };
 
 register 'menu.development.cache_clear' => {
-    label    => 'Wipe Cache',
+    label    => _locl('Wipe Cache'),
     url_run  => '/cache_clear',
-    title    => 'Wipe Cache',
+    title    => _locl('Wipe Cache'),
     action   => 'action.development.cache_clear',
     icon     => '/static/images/icons/wipe_cache.svg',
     index      => 30,
 };
 
 register 'menu.development.ext_api' => {
-    label      => 'ExtJS API',
+    label      => _locl('ExtJS API'),
     url_iframe => '/static/ext/docs/index.html',
-    title      => 'ExtJS API',
+    title      => _locl('ExtJS API'),
     action     => 'action.development.ext_api',
     icon     => '/static/images/icons/extjs.svg',
     index      => 1000,
 };
 register 'menu.development.ext_examples' => {
-    label      => 'ExtJS Examples',
+    label      => _locl('ExtJS Examples'),
     url_iframe => '/static/ext/examples/index.html',
-    title      => 'ExtJS Examples',
+    title      => _locl('ExtJS Examples'),
     action     => 'action.development.ext_examples',
     icon     => '/static/images/icons/extjs_example.svg',
     index      => 1000,
 };
 register 'menu.development.sequences' => {
-    label    => 'Sequences',
+    label    => _locl('Sequences'),
     url_comp => '/repl/sequences',
-    title    => 'Sequences',
+    title    => _locl('Sequences'),
     action   => 'action.development.sequences',
     icon     => '/static/images/icons/sequence.svg',
 };

@@ -25,11 +25,11 @@ my $post_filter = sub {
         ($text,@vars);
     };
 
-register 'action.search.topic' => { name => 'Search topics' };
+register 'action.search.topic' => { name => _locl('Search topics') };
 
 register 'event.post.create' => {
-    text => '%1 posted a comment: %3',
-    description => 'User posted a comment',
+    text => _locl('%1 posted a comment: %3'),
+    description => _locl('User posted a comment'),
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
     notify => {
@@ -40,8 +40,8 @@ register 'event.post.create' => {
 };
 
 register 'event.post.edit' => {
-    text => '%1 edited a comment: %3',
-    description => 'User edited a comment',
+    text => _locl('%1 edited a comment: %3'),
+    description => _locl('User edited a comment'),
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
     notify => {
@@ -52,8 +52,8 @@ register 'event.post.edit' => {
 };
 
 register 'event.post.delete' => {
-    text => '%1 deleted a comment: %3',
-    description => 'User deleted a comment',
+    text => _locl('%1 deleted a comment: %3'),
+    description => _locl('User deleted a comment'),
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
     notify => {
@@ -62,8 +62,8 @@ register 'event.post.delete' => {
 };
 
 register 'event.post.mention' => {
-    text => '%1 mentioned you in a comment #%2: %3',
-    description => 'User mentioned another user in a comment',
+    text => _locl('%1 mentioned you in a comment #%2: %3'),
+    description => _locl('User mentioned another user in a comment'),
     vars => ['username', 'mid', 'post', 'mentioned','ts'],
     filter => $post_filter,
     notify => {
@@ -73,44 +73,44 @@ register 'event.post.mention' => {
 };
 
 register 'event.file.create' => {
-    text => '%1 posted a file: %3',
-    description => 'User created a file',
+    text => _locl('%1 posted a file: %3'),
+    description => _locl('User created a file'),
     vars => ['username', 'ts', 'filename'],
 };
 
 register 'event.file.attach' => {
-    text => '%1 attached %2',
-    description => 'User attached a file',
+    text => _locl('%1 attached %2'),
+    description => _locl('User attached a file'),
     vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.file.remove' => {
-    text => '%1 removed %2',
-    description => 'User removed a file',
+    text => _locl('%1 removed %2'),
+    description => _locl('User removed a file'),
     vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.file.labels' => {
-    text => '%1 modify labels',
-    description => 'User modified labels',
+    text => _locl('%1 modify labels'),
+    description => _locl('User modified labels'),
     vars => ['username', 'ts'],
 };
 
 register 'event.file.labels_remove' => {
-    text => '%1 remove labels',
-    description => 'User removed labels',
+    text => _locl('%1 remove labels'),
+    description => _locl('User removed labels'),
     vars => ['username', 'ts'],
 };
 
 register 'event.topic.file_remove' => {
-    text => '%1 removed %2',
-    description => 'User removed a file',
+    text => _locl('%1 removed %2'),
+    description => _locl('User removed a file'),
     vars => ['username', 'filename', 'ts'],
 };
 
 register 'event.topic.create' => {
-    text => '%1 created a topic of %2',
-    description => 'User created a topic',
+    text => _locl('%1 created a topic of %2'),
+    description => _locl('User created a topic'),
     use_semaphore => 0,
     vars => ['username', 'category', 'ts', 'scope'],
     notify => {
@@ -119,8 +119,8 @@ register 'event.topic.create' => {
 };
 
 register 'event.topic.delete' => {
-    text => '%1 deleted a topic of %2',
-    description => 'User deleted a topic',
+    text => _locl('%1 deleted a topic of %2'),
+    description => _locl('User deleted a topic'),
     use_semaphore => 0,
     vars => ['username', 'category', 'ts', 'scope'],
     notify => {
@@ -129,8 +129,8 @@ register 'event.topic.delete' => {
 };
 
 register 'event.topic.modify' => {
-    text => '%1 modified topic',
-    description => 'User modified a topic',
+    text => _locl('%1 modified topic'),
+    description => _locl('User modified a topic'),
     vars => ['username', 'topic_name', 'ts'],
     level => 1,
     notify => {
@@ -141,8 +141,8 @@ register 'event.topic.modify' => {
 
 
 register 'event.topic.modify_field' => {
-    text => '%1 modified the field %2 from %3 to %4',
-    description => 'User modified a topic field',
+    text => _locl('%1 modified the field %2 from %3 to %4'),
+    description => _locl('User modified a topic field'),
     vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
     filter=>sub{
         my ($txt, @vars)=@_;
@@ -187,7 +187,7 @@ register 'event.topic.modify_field' => {
                 $vars[2] = @bef ? '<code>' . $bef . '</code>' : '<code>-</code>';
                 $vars[3] = @aft ? '<code>' . $aft . '</code>' : '<code>-</code>';
             } else {
-                $txt = '%1 modified the field %2';
+                $txt = _loc('%1 modified the field %2');
             }
         }
         return ($txt, @vars);
@@ -199,8 +199,8 @@ register 'event.topic.modify_field' => {
 };
 
 register 'event.topic.change_status' => {
-    text => '%1 changed topic status from %2 to %3',
-    description => 'Topic status changed',
+    text => _locl('%1 changed topic status from %2 to %3'),
+    description => _locl('Topic status changed'),
     vars => ['username', 'old_status', 'status', 'ts'],
     notify => {
         #scope => ['project', 'category', 'category_status', 'baseline'],
@@ -209,13 +209,13 @@ register 'event.topic.change_status' => {
 };
 
 register 'event.topic_list.export' => {
-    text => '%1 exported topic list',
-    description => 'Topic list exported',
+    text => _locl('%1 exported topic list'),
+    description => _locl('Topic list exported'),
     vars => [ 'username', 'format' ],
 };
 
 register 'action.topics.logical_change_status' => {
-    name => 'Change topic status logically (no deployment)'
+    name => _locl('Change topic status logically (no deployment)')
 };
 
 register 'registor.action.topic_category' => {
@@ -748,7 +748,7 @@ sub update {
                     my ($topic) = $self->save_data($meta, undef, $p);
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
-                    $return = 'Topic added';
+                    $return = _loc('Topic added');
                     $category = $topic->get_category;
                     $modified_on = $topic->ts;
                     my $id_category = $topic->id_category;
@@ -820,7 +820,7 @@ sub update {
 
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
 
-                $return = 'Topic modified';
+                $return = _loc('Topic modified');
                 my $subject = _loc("Topic updated: %1 #%2 %3", $category->{name}, $topic->mid, ($topic->title // ''));
                 $rollback = 0;
                 if ( %change_status || $stash->{return_options}{reload}) {
@@ -856,7 +856,7 @@ sub update {
 
                         my @users = $self->get_users_friend(mid => $mid, id_category => $topic->{id_category}, id_status => $topic->{id_category_status});
 
-                        $return = 'Topic deleted';
+                        $return = _loc('Topic deleted');
                         my $subject = _loc("Topic deleted: %1 #%2 %3", $topic->{category_name}, $topic->{mid}, ($topic->{title} // ''));
 
                         my $notify = {
@@ -878,7 +878,7 @@ sub update {
                 my $topic_mid = $p->{topic_mid};
                 $modified_on = mdb->ts;
                 mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ status=>'C', modified_on=>$modified_on } });
-                $return = 'Topic closed'
+                $return = _loc('Topic closed')
             } catch {
                 _throw _loc( 'Error closing Topic: %1', shift() );
             };

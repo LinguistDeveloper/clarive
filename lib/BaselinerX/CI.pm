@@ -5,17 +5,17 @@ use Baseliner::Sugar;
 use Baseliner::Core::Registry ':dsl';
 
 register 'event.ci.create' => {
-    description => 'New CI',
+    description => _locl('New CI'),
     vars => ['username', 'mid', 'ci']
 };
 
 register 'event.ci.update' => {
-    description => 'Update CI',
+    description => _locl('Update CI'),
     vars => ['username', 'old_ci', 'new_ci', 'mid']
 };
 
 register 'event.ci.delete' => {
-    description => 'Delete CI',
+    description => _locl('Delete CI'),
     vars => ['username', 'mid', 'ci']
 };
 
