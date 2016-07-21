@@ -1,16 +1,18 @@
 use strict;
 use warnings;
 use utf8;
-use lib 't/lib';
 
 use Test::More;
 use Test::Fatal;
+use Test::TempDir::Tiny;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
 
-use Test::TempDir::Tiny;
+use Text::Diff qw(diff);
+use File::Copy qw(copy);
 use File::Temp qw(tempfile);
-use Capture::Tiny qw(capture_merged);
+use Capture::Tiny qw(capture capture_merged);
 use Baseliner::I18N;
 
 subtest 'installed_languages' => sub {
@@ -184,6 +186,29 @@ subtest 'validates po files' => sub {
         my $output = capture_merged { `msgfmt -c $root/$file` };
 
         unlike $output, qr/fatal errors?/;
+    }
+};
+
+subtest 'makes sure translations are up to date' => sub {
+    my $root = "lib/Baseliner/I18N";
+
+    opendir my $dir, $root or die $!;
+    my @files = map { "$root/$_" } grep { /\.po$/ } readdir $dir;
+    closedir $dir;
+
+    foreach my $file (@files) {
+        copy($file, "$file.orig") or die $!;
+    }
+
+    capture { `cla i18n --env t/data/acmetest.yml` };
+
+    foreach my $file (@files) {
+        my $diff = diff($file, "$file.orig");
+
+        ok !$diff, "'$file' is not the same: $diff";
+
+        copy("$file.orig", $file);
+        unlink "$file.orig";
     }
 };
 
