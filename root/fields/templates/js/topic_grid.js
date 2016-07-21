@@ -34,6 +34,7 @@ params:
         name: meta.id_field, 
         value: data[ meta.id_field ],
         readOnly:  readonly,
+        height: meta.height || 250,
         hidden: Baseliner.eval_boolean(!meta.active),
         allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
     };
