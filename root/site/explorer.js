@@ -428,6 +428,7 @@ Baseliner.gen_btn_listener = function() {
  */
 
 Baseliner.Explorer = Ext.extend( Ext.Panel, {
+    id: 'explorer',
     layout: 'card',
     region: 'west',
     activeItem: 0,
@@ -604,6 +605,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 var that = this;
                 show_releases(function(){that.enable();});
             },
+            id: 'explorer-releases',
             tooltip: _('Releases'),
             toggleGroup: 'explorer-card',
             pressed: false,
@@ -617,7 +619,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });        
 
         var button_search_folders = new Ext.Button({
-            cls: 'x-btn-icon',
+            cls: 'x-btn-icon ui-explorer-reports',
             icon: '/static/images/icons/report.svg',
             handler: function(){
                 this.disable();
@@ -637,7 +639,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });        
 
         var button_dashboards = new Ext.Button({
-            cls: 'x-btn-icon',
+            cls: 'x-btn-icon ui-explorer-dashboards',
             icon: '/static/images/icons/dashboard_grey.svg',
             handler: function(){
                 this.disable();

@@ -755,11 +755,12 @@
         }
     }
     var menu_tools = new Ext.Button({
+      cls: 'ui-menu-tools',
       tooltip: _('Tools'),
       icon: '/static/images/icons/wrench.svg',
       menu: [
 % if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
-            { text: _('Run In-process'), handler:function(){ run_inproc() },
+            { cls: 'ui-run-in-process', text: _('Run In-process'), handler:function(){ run_inproc() },
               icon: '/static/images/icons/job.svg'
             },
 % }
@@ -885,7 +886,7 @@
         text: msg_cancel_delete[0],
         disabled: true,
         icon:'/static/images/icons/delete.svg',
-        cls: 'x-btn-text-icon',
+        cls: 'ui-btn-cancel x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
@@ -935,7 +936,7 @@
         text: _('Rerun'),
         disabled: true,
         icon:'/static/images/icons/restart.svg',
-        cls: 'x-btn-text-icon',
+        cls: 'ui-btn-restart x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
             if ( ! sm.hasSelection()) {
@@ -1268,6 +1269,7 @@
 
     // create the grid
     var grid = new Ext.grid.EditorGridPanel({
+        id: 'job-monitor-grid',
         title: _('Monitor'),
         plugins: [ filters ],
         header: false,
@@ -1342,6 +1344,7 @@
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
                     icon:'/static/images/icons/moredata.svg',
+                    id: 'full-log',
                     text: _('Log'),
                     cls: 'x-btn-text-icon',
                     handler: function() {

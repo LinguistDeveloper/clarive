@@ -781,6 +781,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_i
 };
 
 Baseliner.TopicMain = Ext.extend( Ext.Panel, {
+    cls: 'ui-topic-panel',
     layout: 'card',
     activeItem: 0,
     autoScroll: true,
@@ -807,7 +808,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_delete_form = new Ext.Button({
             text: _('Delete'),
             icon:'/static/images/icons/delete.svg',
-            cls: 'x-btn-icon-text',
+            cls: 'x-btn-icon-text ui-btn-delete',
             // type: 'submit',
             hidden: self.permDelete,
             handler: function(a){
@@ -848,7 +849,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_comment = new Ext.Toolbar.Button({
             text: _('Add Comment'),
             icon:'/static/images/icons/comment_new.svg',
-            cls: 'x-btn-icon-text',
+            cls: 'x-btn-icon-text ui-btn-comment-add',
             hidden: !self.permComment,
             handler: function() {
                 Baseliner.Topic.comment_edit( params.topic_mid, self.title, null, function(id_com){ self.detail_reload() });
@@ -871,7 +872,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             name: 'edit',
             text:_('Edit'),
             icon:'/static/images/icons/edit.svg',
-            cls: 'x-btn-text-icon',
+            cls: 'x-btn-text-icon ui-btn-edit',
             enableToggle: true,
             pressed: self.topic_mid==undefined,
             handler: function(){
@@ -2152,6 +2153,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     form_columns: 12,
     is_loaded: true,
     id_title: null,
+    cls: 'ui-topic-form',
     //layout:'table',
     //layoutConfig: { columns: form_columns },
     //cls: 'bali-form-table',
@@ -2165,8 +2167,8 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         self.on_submit_events = [];
         self.field_map = {};
 
-        var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
-        this.id = unique_id_form;
+        //var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
+        //this.id = unique_id_form;
         this.bodyStyle = { 'padding': '5px 50px 5px 10px' };
         this.items = [ { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 } ];
 

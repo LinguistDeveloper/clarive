@@ -301,6 +301,7 @@
         boxLabel: _("Create a job outside of the available time slots."),
         hidden: !show_no_cal,
         disabled: !has_no_cal,
+        cls: 'ui-chk-no-cal',
         handler: function (chk,val){
             if(val){
                 store_time.removeAll();
@@ -781,7 +782,7 @@
     var button_submit = new Ext.Button({
         xtype:'button', text: _('Create'),
         icon:'/static/images/icons/save.png',
-        cls: 'x-btn-text-icon',
+        cls: 'ui-btn-create x-btn-text-icon',
         handler: function(){
             if( check_no_cal.checked && comments.getValue().length == 0 ) {
                 Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar el motivo del pase en el campo observaciones'), width: 500, buttons: { ok: true } });
@@ -1070,6 +1071,7 @@
     var job_statistics = new Ext.Container({ html: stats_tmpl({ eta:'-', p_success:'-' }) });
 
     var main_form = new Ext.FormPanel({
+        id: 'new-job',
         url: '/job/submit',
         tab_icon: '/static/images/icons/job.svg',
         height: '50%',

@@ -342,18 +342,30 @@ sub decrypt {
 
 # user shortcut
 sub username {
-    require Baseliner::Utils;
     my $c = shift;
-    my $user;
-    $user = try { return $c->session->{username} } and return $user;
+
+    require Baseliner::Utils;
+
+    my $user = try { $c->session->{username} };
+    return $user if $user;
+
     Baseliner::Utils::_debug "No session user";
-    $user = try { return $c->user->username } and return $c->session->{username} = $user;
+
+    $user = try { $c->user->username };
+    if ($user) {
+        $c->session->{username} = $user;
+        return $user;
+    }
+
     Baseliner::Utils::_debug "No user user";
-    $user = try { return $c->user->id
-    } catch {
+    $user = try { $c->user->id }
+    catch {
         Baseliner::Utils::_debug "No user id.";
         return undef;
-    } and return $user;
+    };
+    return $user if $user;
+
+    return;
 }
 
 sub user_ci {
@@ -393,15 +405,13 @@ sub installed_languages { Baseliner::I18N->installed_languages }
 
 sub has_action {
     my ($c,$action) = @_;
-    # memoization for the same request
-    my $v = $c->stash->{ $c->username }->{ $action };
-    return $v if defined $v;
+    my $v;
     if( $action =~ /%/ ) {
         $v = $c->model('Permissions')->user_has_any_action( action=>$action, username=>$c->username );
     } else {
         $v = $c->model('Permissions')->user_has_action( action=>$action, username=>$c->username );
     }
-    return $c->stash->{ $c->username }->{ $action } = $v;
+    return $v;
 }
 
 sub is_root {

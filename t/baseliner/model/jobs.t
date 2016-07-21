@@ -480,6 +480,8 @@ sub _create_job {
 }
 
 sub _create_changeset {
+    my (%params) = @_;
+
     my $id_changeset_rule = TestSetup->create_rule_form(
         rule_tree => [
             {
@@ -512,9 +514,12 @@ sub _create_changeset {
 
     my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
 
-    my $id_role = TestSetup->create_role(actions => [ {action =>'action.job.viewall', bl => '*' }]);
-    my $project = TestUtils->create_ci('project');
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = $params{project} || TestUtils->create_ci('project');
+    my $user = $params{user} || do {
+        my $id_role = $params{id_role} || TestSetup->create_role(actions => [ {action =>'action.job.viewall', bl => '*' }]);
+
+        TestSetup->create_user( id_role => $id_role, project => $project );
+    };
 
     my $changeset_mid =
       TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1, username => $user->name );

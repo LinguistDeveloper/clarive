@@ -208,13 +208,13 @@ if (imagen.width()>600) { captura.show(); }
     <br><br>
     <ul class="nav nav-tabs" id="nav-tabs-<% $ii %>">
         <li <% $tabactive eq 'discussion' and 'class="active"' %> <%  $permissionComment? '' : ' style="display: none" ' %>>
-            <a href="#discussion<% $ii %>" id="tab-discussion<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
+            <a href="#discussion<% $ii %>" class="ui-topic-tab-discussion" id="tab-discussion<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
         </li>
         <li <% $tabactive eq 'activity' and 'class="active"' %> <%  $permissionActivity? '' : ' style="display: none" ' %>>
-            <a href="#activity<% $ii %>" id="tab-activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
+            <a href="#activity<% $ii %>" class="ui-topic-tab-activity" id="tab-activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
         </li>
         <li <% $tabactive eq 'jobs' and 'class="active"' %> <%  $permissionJobs? '' : ' style="display: none" ' %>>
-            <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
+            <a href="#jobs<% $ii %>" class="ui-topic-tab-jobs" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
 % if( length $dashboard ) {
         <li <% $tabactive eq 'dashboard' and 'class="active"' %> <%  $permissionDashboard? '' : ' style="display: none" ' %>>

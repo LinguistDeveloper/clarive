@@ -27,6 +27,13 @@ sub elem {
     return $self->{elem}->{dom} || $self->{elem};
 }
 
+sub eval {
+    my $self = shift;
+    my ($code) = @_;
+
+    return $self->_eval(qq/function(cmp) { $code }/)
+}
+
 sub get_xtype { shift->_eval('function(cmp) { return cmp.getXType() }') }
 
 sub get_form {

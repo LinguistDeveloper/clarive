@@ -13,6 +13,10 @@ $SIG{INT} = sub {
     $_->() for @CLEANUP;
 };
 
+$ENV{LC_ALL}   = 'en_US.UTF-8';
+$ENV{LANG}     = 'en_US.UTF-8';
+$ENV{LANGUAGE} = 'en_US.UTF-8';
+
 sub run {
     my $self = shift;
     my (%opts) = @_;
@@ -21,7 +25,6 @@ sub run {
     my $smoke_db              = 'test_smoke';
     my $smoke_port            = 50000 + ( int( rand() * 1500 ) + abs($$) ) % 1500;
     my $smoke_conf            = "config/$smoke_env.yml";
-    my $smoke_nightwatch_conf = 'ui-tests/smoke.json';
 
     my $is_headless = !!delete $opts{args}->{headless};
 
@@ -52,22 +55,26 @@ sub run {
         print "# UI TESTS ", "\n";
         print "#" x 80, "\n\n";
 
-        my $xvfb_pid = $is_headless ? _run_in_background( 'Xvfb', $ENV{DISPLAY}, '-ac' ) : undef;
-        my $selenium_pid = _run_in_background( 'java', '-jar', "$ENV{CLARIVE_BASE}/local/bin/selenium-server-standalone.jar", '-log', 'selenium.log' );
+        my $xvfb_pid = $is_headless ? _run_in_background( 'X Framebuffer', 'Xvfb', $ENV{DISPLAY}, '-ac' ) : undef;
+        my $selenium_pid =
+          _run_in_background( 'Selenium', 'java', '-jar', "$ENV{CLARIVE_BASE}/local/bin/selenium-server-standalone.jar",
+            '-log', 'selenium.log' );
 
-        print STDERR "Waiting for selenium to start...";
+        print STDERR "Waiting for selenium to start...\n\n";
+        unlink 'selenium.log';
         _timeout(
             10 => sub {
                 while ( !-f 'selenium.log' ) { sleep 1 }
 
                 open my $fh, '<', 'selenium.log';
                 while (<$fh>) {
+                    print;
                     next unless /Selenium Server is up and running/;
                 }
                 close $fh;
             }
         );
-        print STDERR "OK\n";
+        print STDERR "\nOK\n";
 
         copy 't/data/acmetest.yml', $smoke_conf;
         replace_inplace( $smoke_conf, qr{dbname: acmetest}, qq{dbname: $smoke_db} );
@@ -78,18 +85,23 @@ sub run {
         print "# STARTING WEB SERVER", "\n";
         print "#" x 80, "\n\n";
 
-        capture { _system("cla web-stop --env $smoke_env --port $smoke_port") };
+         _system("cla web-stop --env $smoke_env --port $smoke_port");
 
         local $ENV{CLARIVE_TEST} = 1;
         local $ENV{CLARIVE_ENV}  = $smoke_env;
 
-        capture { _system("cla web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes") };
+        _system("cla web-start --env $smoke_env --port $smoke_port --daemon --init --migrate-yes");
 
         sleep 5;
 
+        my $prove_ui_args = $opts{args}->{ui};
+        if ($prove_ui_args eq '1') {
+            $prove_ui_args = '';
+        }
+
         my ($stdout) = tee_merged {
             $ENV{TEST_SELENIUM_HOSTNAME} = "localhost:$smoke_port";
-            $ui_exit = _system("cla proveui");
+            $ui_exit = _system("cla proveui $prove_ui_args");
         };
 
         $ui_exit = 255 if $stdout =~ m/TEST FAILURE/;
@@ -99,7 +111,7 @@ sub run {
         print "# STOPPING WEB SERVER", "\n";
         print "#" x 80, "\n\n";
 
-        capture { _system("cla web-stop --env $smoke_env --port $smoke_port") };
+        _system("cla web-stop --env $smoke_env --port $smoke_port");
 
         _stop_background( 'Xvfb',                           $xvfb_pid ) if $xvfb_pid;
         _stop_background( 'selenium-server-standalone.jar', $selenium_pid );
@@ -135,9 +147,9 @@ sub slurp {
 }
 
 sub _run_in_background {
-    my ( $cmd, @args ) = @_;
+    my ( $name, $cmd, @args ) = @_;
 
-    print STDERR "Forking '$cmd'...";
+    print STDERR "Forking '$name'...";
 
     my $pid = fork;
 

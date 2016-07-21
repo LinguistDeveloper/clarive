@@ -175,7 +175,7 @@
         var btn_edit = new Ext.Button({
             text: text_button,
             icon: text_img,
-            cls: 'x-btn-icon-text',
+            cls: 'ui-ci-form-btn-edit x-btn-icon-text',
             pressed: true, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: function(){ cardpanel.getLayout().setActiveItem(form) }
         });
@@ -365,6 +365,7 @@
     };
 
     var cardpanel = new Ext.Panel({
+        cls: 'ui-ci-panel',
        layout: 'card',
        tbar: [],
        bodyStyle: { 'background-color' : 'white' }

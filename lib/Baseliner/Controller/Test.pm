@@ -2,10 +2,8 @@ package Baseliner::Controller::Test;
 use Moose;
 BEGIN { extends 'Catalyst::Controller'; }
 
+use Class::Load qw(load_class);
 use Clarive::mdb;
-use Clarive::App;
-use Clarive::Cmd::init;
-use Clarive::Cmd::migra;
 
 sub setup : Local {
     my ( $self, $c ) = @_;
@@ -15,14 +13,24 @@ sub setup : Local {
 
         die "Database '$dbname' doesn't look like a test database to me" unless $dbname && $dbname =~ m/^test/;
 
-        my $app = Clarive::App->new( env => $ENV{CLARIVE_ENV} );
-
-        Clarive::Cmd::init->new( app => $app, opts => {} )->run( args => { yes => 1, reset => 1 } );
-        Clarive::Cmd::migra->new( app => $app, opts => {} )->run( args => { yes => 1, force => 1 } );
+        if (my $profile = $c->req->params->{profile}) {
+            $self->_create_profile($profile)->setup;
+        }
 
         $c->stash( json => { msg => 'ok' } );
         $c->forward('View::JSON');
     }
+}
+
+sub _create_profile {
+    my $self = shift;
+    my ($profile) = @_;
+
+    my $class_profile = 'Baseliner::SetupProfile::' . ucfirst($profile);
+
+    load_class $class_profile;
+
+    return $class_profile->new;
 }
 
 no Moose;
