@@ -190,7 +190,7 @@ sub dispatcher {
             @daemons = Baseliner->model('Daemons')->list( all => 1, disp_id => $self->disp_id );
         }
         catch {
-            _log _loc "Error trying to read daemon list from DB: %1", shift();
+            _log _loc("Error trying to read daemon list from DB: %1", shift());
         };
         for my $daemon (@daemons) {
             my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};
@@ -206,7 +206,7 @@ sub dispatcher {
             @daemons = Baseliner->model('Daemons')->list( no_id => $self->disp_id );
         }
         catch {
-            _log _loc "Error trying to read daemon list from DB: %1", shift();
+            _log _loc("Error trying to read daemon list from DB: %1", shift());
         };
         for my $daemon (@daemons) {
             my ($instance) = grep { $_->{disp_id} eq $self->{disp_id} } _array $daemon->{active_instances};

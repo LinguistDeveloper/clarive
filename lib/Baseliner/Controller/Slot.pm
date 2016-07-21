@@ -13,21 +13,21 @@ use experimental 'autoderef';
 our $DEFAULT_SEQ = 100;
 
 register 'menu.job.calendar' => {
-    label    => _loc('Job Slots'),
+    label    => _locl('Job Slots'),
     url_comp => '/job/calendar_grid',
-    title    => _loc('Job Slots'),
+    title    => _locl('Job Slots'),
     actions  => ['action.calendar.%'],
     icon     => '/static/images/icons/slot.svg'
 };
-register 'action.calendar.view' => { name => 'View Job Calendar' };
-register 'action.calendar.edit' => { name => 'Edit Job Calendar' };
-register 'action.calendar.admin' => { name => 'Admin Job Calendar'};
+register 'action.calendar.view' => { name => _locl('View Job Calendar') };
+register 'action.calendar.edit' => { name => _locl('Edit Job Calendar') };
+register 'action.calendar.admin' => { name => _locl('Admin Job Calendar')};
 
 register 'config.job.calendar' => {
     metadata=> [
-        { id=>'name', label => 'Calendar', type=>'text', width=>200 },
-        { id=>'ns', label => 'Namespace', type=>'text', width=>300 },
-        { id=>'ns_desc', label => 'Namespace Description', type=>'text', width=>300 },
+        { id=>'name', label => _locl('Calendar'), type=>'text', width=>200 },
+        { id=>'ns', label => _locl('Namespace'), type=>'text', width=>300 },
+        { id=>'ns_desc', label => _locl('Namespace Description'), type=>'text', width=>300 },
     ],
 };
 

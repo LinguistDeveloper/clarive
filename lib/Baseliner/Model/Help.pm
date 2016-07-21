@@ -183,8 +183,7 @@ sub parse_body {
     }
     else {
         open $ff, '<:encoding(utf-8)', "$path"
-          or _fail _loc "error opening content: %1 (path=%2): %3",
-          $path->basename, $path, $!;
+          or _fail _loc( "error opening content: %1 (path=%2): %3", $path->basename, $path, $! );
     }
     my $contents = join '', <$ff>;
     close $ff;
@@ -212,7 +211,7 @@ sub parse_body {
     catch {
         my $err = shift;
 
-        _throw _loc 'Help file `%1` header content YAML is invalid: %2', $path, $err;
+        _throw _loc('Help file `%1` header content YAML is invalid: %2', $path, $err);
     };
 
     $data //= {};

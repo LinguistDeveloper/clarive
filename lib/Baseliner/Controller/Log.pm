@@ -518,10 +518,10 @@ sub _load_log_by_job_id {
     my ($id) = @_;
 
     my $log = mdb->job_log->find_one( { id => 0 + $id } );
-    _fail _loc 'Log row not found: %1', $id unless $log;
+    _fail _loc('Log row not found: %1', $id) unless $log;
 
     my $logd = mdb->grid->find_one( { _id => $log->{data} } );
-    _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
+    _fail _loc('Log data not found: %1', $log->{data}) unless $logd;
 
     my $data = $logd->slurp;
     $data = uncompress($data) || $data;

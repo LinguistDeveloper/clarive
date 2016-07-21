@@ -136,7 +136,7 @@ sub job_daemon {
                             my $pid = $self->runner_spawn( mid=>$job->mid, runner=>$job->runner, step=>$step, jobid=>$job->mid, logfile=>$logfile );
                         } elsif( $mode =~ /fork|detach/i ) {
                             _log "Forking job " . $job->mid . " (mode=$mode), logfile=$logfile";
-                            _log _loc 'Precompile check for job %1 rule %2', $job->name, $job->id_rule;
+                            _log _loc('Precompile check for job %1 rule %2', $job->name, $job->id_rule);
                             $self->precompile_rule( $job->id_rule );
                             $self->runner_fork( mid=>$job->mid, runner=>'Core', step=>$step, jobid=>$job->jobid, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
                         } else {
@@ -250,11 +250,11 @@ sub precompile_rule {
     try {
         my $rule_runner = Baseliner::RuleRunner->new;
         my $compiler = $rule_runner->compile_rule( rule => $rule );
-        _log _loc "Rule %1 precompile status=%2", $rule->{rule_name} | $id_rule, $compiler->compile_status;
+        _log _loc("Rule %1 precompile status=%2", $rule->{rule_name} || $id_rule, $compiler->compile_status);
     }
     catch {
         my $err = shift;
-        _log _loc "Error trapped while precompiling rule %1. No action taken.", $id_rule;
+        _log _loc("Error trapped while precompiling rule %1. No action taken.", $id_rule);
     };
 }
 
@@ -267,7 +267,7 @@ sub check_job_expired {
             status => mdb->in('READY','APPROVAL'),
     });
     while( my $doc = $rs->next ) {
-        my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
+        my $ci = ci->new( $doc->{mid} ) or do { _error _loc('Job ci not found for id_job=%1', $doc->{id}); next };
         $ci->logger->error( _loc("Job %1 expired (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
         $ci->status('EXPIRED');
         $ci->endtime( _now );
@@ -280,7 +280,7 @@ sub check_job_expired {
             status => mdb->in('APPROVAL'),
     });
     while( my $doc = $rs->next ) {
-        my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
+        my $ci = ci->new( $doc->{mid} ) or do { _error _loc('Job ci not found for id_job=%1', $doc->{id}); next };
         $ci->logger->error( _loc("Job %1 approval time expired (mid=%3, maxapprovaltime=%2)" , $doc->{name}, $doc->{maxapprovaltime}, $doc->{mid} ) );
         $ci->status('EXPIRED');
         $ci->endtime( _now );

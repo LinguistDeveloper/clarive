@@ -86,7 +86,7 @@ register 'registor.menu.topics' => {
             'menu.topic.topics' => {
                     index => 1,
                     label => _loc('All'),
-                    title    => _loc ('Topics'),
+                    title    => _loc('Topics'),
                     actions  => ['action.topics.%.view'],
                     url_comp => '/topic/grid',
                     comp_data => { tabTopic_force => 1 },
@@ -207,7 +207,7 @@ sub get_items {
         $rule_runner->find_and_run_rule( id_rule => $p->{id_report_rule}, stash => $stash );
 
         my $report_data = ref $$stash{report_data} eq 'CODE' ? $$stash{report_data}->(%$p) : $$stash{report_data};
-        _fail _loc 'Invalid report data for report %1',$id unless ref $report_data->{data} eq 'ARRAY';
+        _fail _loc('Invalid report data for report %1',$id) unless ref $report_data->{data} eq 'ARRAY';
         $data = {
             data=>$report_data->{data},
             totalCount=>$report_data->{cnt} || []
@@ -1118,7 +1118,7 @@ sub update_topic_labels : Local {
                 subject         => $subject
             };
         } else {
-            _fail _loc 'Topic not found: %1', $topic_mid;
+            _fail _loc('Topic not found: %1', $topic_mid);
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ )
@@ -1175,23 +1175,23 @@ sub update_project : Local {
         my $project = ci->new( $id_project );
         if( ref $project ) {
             my $meta = $c->model('Topic')->get_meta( $topic_mid );
-            _fail _loc 'No metadata found for this topic (%1)', $topic_mid unless ref $meta eq 'ARRAY';
+            _fail _loc('No metadata found for this topic (%1)', $topic_mid) unless ref $meta eq 'ARRAY';
             $field = [
                 sort { ($a->{field_order}//0) cmp ($b->{field_order}//0) }
                 grep { !defined $_->{main_field} || $_->{main_field} }  # main_field tells me this is the one to drop on
                 grep { ( !defined $_->{collection} || $_->{collection} eq 'project') && $_->{meta_type} eq 'project' }
                 @$meta
             ]->[0];
-            _fail _loc 'No project field found for this topic (%1)', $topic_mid unless $field;
+            _fail _loc('No project field found for this topic (%1)', $topic_mid) unless $field;
             # get current data
             my $id_field = $field->{id_field};
             my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ $id_field => 1 });
-            _fail _loc 'Topic not found: %1', $topic_mid unless ref $doc;
+            _fail _loc('Topic not found: %1', $topic_mid) unless ref $doc;
             my $fdata = [ _array( $doc->{$id_field} ) ];
             push $fdata, $id_project;
             $c->model('Topic')->update({ action=>'update', topic_mid=>$topic_mid, username=>$c->username, $id_field=>$fdata });
         } else {
-            _fail _loc 'Project not found: %1', $id_project;
+            _fail _loc('Project not found: %1', $id_project);
         }
         $c->stash->{json} = { msg=>_loc("Project added to field '%1'", $field->{name_field}), success=>\1 };
     }
@@ -1718,7 +1718,7 @@ sub file : Local {
                     => sub {
                         _log _loc("Deleting file %1 from topic %2",$ass->name,$topic_mid);
                         my $rel = mdb->master_rel->remove({ from_mid=>"$topic_mid", to_mid=>$ass->mid });
-                        _fail _loc "File not attached to topic" if $rel ne '1';
+                        _fail _loc("File not attached to topic") if $rel ne '1';
                         $msg = _loc( "Relationship deleted ok" );
                     };
                 }
@@ -1742,8 +1742,8 @@ sub download_file : Local {
             if( $ass->does('Baseliner::Role::CI::Topic') ) {
                 # it's a topic! find an asset that matches the filename
                 my @res = $ass->related( isa=>'asset', where=>{ name=>$fn } );
-                $ass = @res > 1 ? _fail( _loc 'More than one asset found for topic %1 matching name `%2`',$mid,$fn)
-                    : @res == 0 ? _fail( _loc 'No asset found for topic %1 matching name `%2`',$mid,$fn)
+                $ass = @res > 1 ? _fail( _loc('More than one asset found for topic %1 matching name `%2`',$mid,$fn))
+                    : @res == 0 ? _fail( _loc('No asset found for topic %1 matching name `%2`',$mid,$fn))
                     : $res[0];
             }
             my $filename = $ass->name;
@@ -2203,14 +2203,14 @@ sub change_status : Local {
                         id_status => $p->{new_status}, id_old_status => $old_status,
                         mid => $mid,
                     );
-                    push @results, { success=>\1, mid=>$mid, msg => _loc ('Changed status'), change_status_before=>$change_status_before };
+                    push @results, { success=>\1, mid=>$mid, msg => _loc('Changed status'), change_status_before=>$change_status_before };
                 }else{
-                    push @results, { success=>\0, mid=>$mid, msg => _loc ('Required field %1 is empty', $field_name) };
+                    push @results, { success=>\0, mid=>$mid, msg => _loc('Required field %1 is empty', $field_name) };
                 }
             }
             else{
                 $change_status_before = \1;
-                push @results, { success=>\1, mid=>$mid, msg=>_loc ('Changed status'), change_status_before=>$change_status_before };
+                push @results, { success=>\1, mid=>$mid, msg=>_loc('Changed status'), change_status_before=>$change_status_before };
             }
         }
         @results==1 ? $results[0] : { success=>\1, results=>\@results };

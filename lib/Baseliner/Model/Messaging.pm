@@ -147,7 +147,7 @@ sub create {
                 _log "Error in Mason Email engine: $err";
                 _log _whereami;
                 $body = _loc('Email error. Email contents: <pre>%1</pre>', _dump($p{vars}) );
-                _fail _loc 'Error in message mason template %1: %2', $template, $err
+                _fail _loc('Error in message mason template %1: %2', $template, $err)
                     if $p{_fail_on_error};
             };
         } else {

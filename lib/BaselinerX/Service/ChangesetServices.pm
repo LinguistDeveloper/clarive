@@ -10,49 +10,49 @@ use experimental 'smartmatch';
 with 'Baseliner::Role::Service';
 
 register 'service.changeset.items' => {
-    name    => 'Load Job Items into Stash',
+    name    => _locl('Load Job Items into Stash'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&job_items,
 };
 
 register 'service.changeset.update_baselines' => {
-    name    => 'Update Baselines',
+    name    => _locl('Update Baselines'),
     job_service  => 1,
     icon    => '/static/images/icons/changesets.svg',
     handler => \&update_baselines,
 };
 
 register 'service.changeset.verify_revisions' => {
-    name    => 'Verify Revision Integrity Rules',
+    name    => _locl('Verify Revision Integrity Rules'),
     job_service  => 1,
     icon    => '/static/images/icons/changesets.svg',
     handler => \&verify_revisions,
 };
 
 register 'service.changeset.checkout' => {
-    name    => 'Checkout Job Items',
+    name    => _locl('Checkout Job Items'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
-    name    => 'Checkout Job Baseline',
+    name    => _locl('Checkout Job Baseline'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout_bl,
 };
 
 register 'service.changeset.checkout.bl_all_repos' => {
-    name    => 'Checkout Job Baseline ... all repos',
+    name    => _locl('Checkout Job Baseline ... all repos'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&checkout_bl_all_repos,
 };
 
 register 'service.changeset.natures' => {
-    name    => 'Load Nature Items',
+    name    => _locl('Load Nature Items'),
     icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/nature_items.js',
     job_service  => 1,
@@ -60,7 +60,7 @@ register 'service.changeset.natures' => {
 };
 
 register 'service.changeset.update' => {
-    name    => 'Update Changesets',
+    name    => _locl('Update Changesets'),
     icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/changeset_update.js',
     job_service  => 1,
@@ -68,7 +68,7 @@ register 'service.changeset.update' => {
 };
 
 register 'service.topic.status' => {
-    name    => '(DEPRECATED) Change Topic Status',
+    name    => _locl('(DEPRECATED) Change Topic Status'),
     icon    => '/static/images/icons/topic.svg',
     form    => '/forms/topic_status_deprecated.js',
     job_service  => 1,
@@ -76,7 +76,7 @@ register 'service.topic.status' => {
 };
 
 register 'service.changeset.update_bls' => {
-    name    => 'Update Changesets BLs',
+    name    => _locl('Update Changesets BLs'),
     icon    => '/static/images/icons/changesets.svg',
     job_service  => 1,
     handler => \&update_changesets_bls,
@@ -103,12 +103,12 @@ sub topic_status {
     my ( $self, $c, $config ) = @_;
 
     my $stash    = $c->stash;
-    my $topics = $config->{topics} // _fail _loc 'Missing or invalid parameter topics';
-    my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status';
+    my $topics = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
+    my $new_status = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
 
     for my $mid ( Util->_array_or_commas( $topics) ) {
         my $topic = ci->new( $mid );
-        _log _loc 'Changing status for topic %1 to status %2', $topic->topic_name, $new_status;
+        _log _loc('Changing status for topic %1 to status %2', $topic->topic_name, $new_status);
         Baseliner->model('Topic')->change_status(
             change     => 1,
             id_status  => $new_status,
@@ -133,7 +133,7 @@ sub changeset_update {
     my $status_on_rollback = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
 
     if ( $job_type eq 'static' ) {
-        $self->log->info( _loc "Changesets status not updated. Static job." );
+        $self->log->info( _loc("Changesets status not updated. Static job." ) );
         return;
     }
 
@@ -155,7 +155,7 @@ sub changeset_update {
             # rollback to previous status
             $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
             if( !length $status ) {
-                _debug _loc 'No last status data for changeset %1. Skipped.', $cs->title;
+                _debug _loc('No last status data for changeset %1. Skipped.', $cs->title);
                 next;
             }
         } elsif ($job_type eq 'demote') {
@@ -166,7 +166,7 @@ sub changeset_update {
             $stash->{update_baselines_changesets}{ $cs->mid } = $cs->id_category_status;
         }
         my $status_name = ci->status->find_one({ id_status=>''.$status })->{name};
-        _fail _loc 'Status row not found for status `%1`', $status_name unless $status_name;
+        _fail _loc('Status row not found for status `%1`', $status_name) unless $status_name;
         $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
         Baseliner->model('Topic')->change_status(
            change          => 1,
@@ -236,7 +236,7 @@ sub update_baselines {
                         type      => $type
                     );
                 } else {
-                    _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
+                    _warn _loc('Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid);
                 }
             } else {
                 $out = $repo->update_baselines( job => $job, revisions => $revisions, bl=>$bl, type=>$type );
@@ -416,7 +416,7 @@ sub checkout_bl {
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
-    _fail _loc 'Missing job_dir' unless length $job_dir;
+    _fail _loc('Missing job_dir') unless length $job_dir;
 
     my @project_changes = @{ $stash->{project_changes} || [] };
 
@@ -445,7 +445,7 @@ sub checkout_bl_all_repos {
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
-    _fail _loc 'Missing job_dir' unless length $job_dir;
+    _fail _loc('Missing job_dir') unless length $job_dir;
 
     my @project_changes = @{ $stash->{project_changes} || [] };
 
@@ -479,10 +479,8 @@ sub _checkout_repo {
 
     my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
     $log->info(
-        _loc(
-            'Checking out baseline %1 for project %2, repository %3: %4',
-            $bl, $project->name, $repo->name, $dir_prefixed
-        )
+        _loc( 'Checking out baseline %1 for project %2, repository %3: %4',
+            $bl, $project->name, $repo->name, $dir_prefixed )
     );
 
     my $co_info = $repo->checkout( bl => $bl, dir => $dir_prefixed, project => $project, revisions => $revisions );
@@ -499,7 +497,7 @@ sub checkout {
     my $log   = $job->logger;
     my $stash = $c->stash;
     my $job_dir = $job->job_dir;
-    _fail _loc 'Missing job_dir' unless length $job_dir;
+    _fail _loc('Missing job_dir') unless length $job_dir;
 
     my $cnt = 0;
     # TODO group all items by repo provider and ask repo for a multi-item checkout
@@ -590,7 +588,7 @@ sub nature_items {
 }
 
 register 'service.approval.request' => {
-    name    => 'Request Approval',
+    name    => _locl('Request Approval'),
     icon => '/static/images/icons/user_green.svg',
     form => '/forms/approval_request.js',
     job_service  => 1,
@@ -599,7 +597,7 @@ register 'service.approval.request' => {
 
 register 'event.job.approval_request' => {
     text        => 'Approval requested for job %3 (user %1)',
-    description => 'approval requested for job',
+    description => _locl('approval requested for job'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step' ],
     notify      => {
         scope => [ 'project', 'bl' ],
@@ -607,13 +605,13 @@ register 'event.job.approval_request' => {
 };
 register 'event.job.approved' => {
     text        => 'Job %3 Approved',
-    description => 'Job Approved',
+    description => _locl('Job Approved'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
     notify => { scope => [ 'project', 'bl' ] },
 };
 register 'event.job.rejected' => {
     text        => 'Job %3 Rejected',
-    description => 'Job Rejected',
+    description => _locl('Job Rejected'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
     notify => { scope => [ 'project', 'bl' ] },
 };

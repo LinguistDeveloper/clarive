@@ -92,7 +92,7 @@ sub menu : Local {
             $topics{$id_field}{text} ||= $field->{name_field};
             $topics{$id_field}{text} ||= $field->{name_field};
             # children
-            my $topic = ci->topic->find_one($mid) // _fail _loc 'Topic mid not found: %1', $mid;
+            my $topic = ci->topic->find_one($mid) // _fail _loc('Topic mid not found: %1', $mid);
             my $tt = { text=>$$topic{title},
                 path => '', #join( '/', map{ s{/}{&frasl;}r } @$item_path, $text),
                 id_folder  => -1,

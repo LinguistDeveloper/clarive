@@ -7,7 +7,7 @@ use Path::Class;
 use Try::Tiny;
 
 register 'fieldlet.include_into' => {
-    name        => _loc('Included Into'),
+    name        => _locl('Included Into'),
     html        => '/fields/system/html/field_include_into.html',
     form        => '/fields/system/config/include_into.js',
     origin      => 'default',
@@ -17,7 +17,7 @@ register 'fieldlet.include_into' => {
 };
 
 register 'fieldlet.attach_file' => {
-    name        => _loc('Attach Files'),
+    name        => _locl('Attach Files'),
     html        => '/fields/templates/html/upload_files.html',
     js          => '/fields/templates/js/upload_files.js',
     form        => '/fields/templates/config/upload_files.js',
@@ -30,7 +30,7 @@ register 'fieldlet.attach_file' => {
 };
 
 register 'fieldlet.progressbar' => {
-    name        => _loc('Progress Bar'),
+    name        => _locl('Progress Bar'),
     html        => '/fields/templates/html/progress_bar.html',
     js          => '/fields/templates/js/progress_bar.js',
     form        => '/fields/templates/config/progress_bar.js',
@@ -41,7 +41,7 @@ register 'fieldlet.progressbar' => {
 };
 
 register 'fieldlet.calculated_number' => {
-    name        => _loc('Calculated Numberfield'),
+    name        => _locl('Calculated Numberfield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/calculated_numberfield.js',
     form        => '/fields/templates/config/calculated_numberfield.js',
@@ -52,7 +52,7 @@ register 'fieldlet.calculated_number' => {
 };
 
 register 'fieldlet.datetime' => {
-    name        => _loc('Datefield'),
+    name        => _locl('Datefield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/datetimefield.js',
     form        => '/fields/templates/config/datetimefield.js',
@@ -64,7 +64,7 @@ register 'fieldlet.datetime' => {
 };
 
 register 'fieldlet.time' => {
-    name        => _loc('Timefield'),
+    name        => _locl('Timefield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/timefield.js',
     form        => '/fields/templates/config/timefield.js',
@@ -75,7 +75,7 @@ register 'fieldlet.time' => {
 };
 
 register 'fieldlet.ci_list' => {
-    name        => _loc('CI List'),
+    name        => _locl('CI List'),
     html        => '/fields/templates/html/ci_grid.html',
     js          => '/fields/system/js/list_ci.js',
     form        => '/fields/templates/config/ci_list.js',
@@ -85,7 +85,7 @@ register 'fieldlet.ci_list' => {
 };
 
 register 'fieldlet.ci_grid' => {
-    name        => _loc('CI Grid'),
+    name        => _locl('CI Grid'),
     html        => '/fields/templates/html/ci_grid.html',
     js          => '/fields/templates/js/ci_grid.js',
     form        => '/fields/templates/config/ci_grid.js',
@@ -95,7 +95,7 @@ register 'fieldlet.ci_grid' => {
 };
 
 register 'fieldlet.combo' => {
-    name        => _loc('Combo'),
+    name        => _locl('Combo'),
     html        => '/fields/templates/html/combo_box.html',
     js          => '/fields/templates/js/combo.js',
     form        => '/fields/templates/config/combo.js',
@@ -105,7 +105,7 @@ register 'fieldlet.combo' => {
 };
 
 register 'fieldlet.dbi_query' => {
-    name        => _loc('DB Query'),
+    name        => _locl('DB Query'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/dbi.js',
     form        => '/fields/templates/config/dbi.js',
@@ -117,7 +117,7 @@ register 'fieldlet.dbi_query' => {
 };
 
 register 'fieldlet.download_all_files' => {
-    name        => _loc('Download All Files'),
+    name        => _locl('Download All Files'),
     html        => '/fields/templates/html/download_all.html',
     form        => '/fields/templates/config/download_all.js',
     icon        => '/static/images/icons/download.svg',
@@ -130,7 +130,7 @@ register 'fieldlet.download_all_files' => {
 };
 
 register 'fieldlet.grid_editor' => {
-    name        => _loc('Grid Editor'),
+    name        => _locl('Grid Editor'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/grid_editor.js',
     form        => '/fields/templates/config/grid_editor.js',
@@ -141,7 +141,7 @@ register 'fieldlet.grid_editor' => {
 };
 
 register 'fieldlet.milestones' => {
-    name        => _loc('Milestones'),
+    name        => _locl('Milestones'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/milestones.js',
     form        => '/fields/templates/config/milestones.js',
@@ -156,7 +156,7 @@ register 'fieldlet.milestones' => {
 };
 
 register 'fieldlet.env_planner' => {
-    name        => _loc('Environment Planner'),
+    name        => _locl('Environment Planner'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/env_planner.js',
     form        => '/fields/templates/config/env_planner.js',
@@ -178,7 +178,7 @@ register 'fieldlet.env_planner' => {
 };
 
 register 'fieldlet.scheduler' => {
-    name        => _loc('Scheduler'),
+    name        => _locl('Scheduler'),
     html        => '/fields/templates/html/grid_editor.html',
     js          => '/fields/templates/js/milestones.js',
     form        => '/fields/templates/config/scheduler.js',
@@ -193,7 +193,7 @@ register 'fieldlet.scheduler' => {
 };
 
 register 'fieldlet.html_editor' => {
-    name        => _loc('HTML Editor'),
+    name        => _locl('HTML Editor'),
     html        => '/fields/templates/html/dbl_row_body.html',
     js          => '/fields/templates/js/html_editor.js',
     form        => '/fields/templates/config/html_editor.js',
@@ -205,7 +205,7 @@ register 'fieldlet.html_editor' => {
 };
 
 register 'fieldlet.pagedown' => {
-    name        => _loc('Pagedown Editor'),
+    name        => _locl('Pagedown Editor'),
     html        => '/fields/templates/html/markdown.html',
     js          => '/fields/templates/js/pagedown.js',
     form        => '/fields/templates/config/pagedown.js',
@@ -217,7 +217,7 @@ register 'fieldlet.pagedown' => {
 };
 
 register 'fieldlet.pills' => {
-    name        => _loc('Pills'),
+    name        => _locl('Pills'),
     html        => '/fields/templates/html/pills.html',
     js          => '/fields/templates/js/pills.js',
     form        => '/fields/templates/config/pills.js',
@@ -227,7 +227,7 @@ register 'fieldlet.pills' => {
 };
 
 register 'fieldlet.status_chart_pie' => {
-    name        => _loc('Status Pie Chart'),
+    name        => _locl('Status Pie Chart'),
     html        => '/fields/templates/html/status_chart_pie.html',
     form        => '/fields/templates/config/status_chart_pie.js',
     icon        => '/static/images/icons/chart_pie.svg',
@@ -237,7 +237,7 @@ register 'fieldlet.status_chart_pie' => {
 };
 
 register 'fieldlet.status_changes' => {
-    name        => _loc('Status Changes'),
+    name        => _locl('Status Changes'),
     html        => '/fields/templates/html/status_changes.html',
     js          => '/fields/templates/js/status_changes.js',
     form        => '/fields/templates/config/status_changes.js',
@@ -250,7 +250,7 @@ register 'fieldlet.status_changes' => {
 };
 
 register 'fieldlet.topic_grid' => {
-    name        => _loc('Topic Grid'),
+    name        => _locl('Topic Grid'),
     html        => '/fields/templates/html/topic_grid.html',
     js          => '/fields/templates/js/topic_grid.js',
     form        => '/fields/templates/config/topic_grid.js',
@@ -265,7 +265,7 @@ register 'fieldlet.topic_grid' => {
 };
 
 register 'fieldlet.checkbox' => {
-    name        => _loc('Checkbox'),
+    name        => _locl('Checkbox'),
     html        => '/fields/system/html/field_checkbox.html',
     js          => '/fields/templates/js/checkbox.js',
     form        => '/fields/templates/config/checkbox.js',
@@ -276,7 +276,7 @@ register 'fieldlet.checkbox' => {
 };
 
 register 'fieldlet.separator' => {
-    name        => _loc('Separator'),
+    name        => _locl('Separator'),
     html        => '',
     js          => '/fields/templates/js/separator.js',
     form        => '/fields/templates/config/separator.js',
@@ -286,7 +286,7 @@ register 'fieldlet.separator' => {
 };
 
 register 'fieldlet.text' => {
-    name        => _loc('Textfield'),
+    name        => _locl('Textfield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/textfield.js',
@@ -297,7 +297,7 @@ register 'fieldlet.text' => {
 };
 
 register 'fieldlet.text_plain' => {
-    name        => _loc('Preformatted Text'),
+    name        => _locl('Preformatted Text'),
     html        => '/fields/templates/html/preformattedtext.html',
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/preformattedtext.js',
@@ -308,7 +308,7 @@ register 'fieldlet.text_plain' => {
 };
 
 register 'fieldlet.number' => {
-    name        => _loc('Numberfield'),
+    name        => _locl('Numberfield'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/numberfield.js',
     form        => '/fields/templates/config/numberfield.js',
@@ -325,7 +325,7 @@ register 'fieldlet.number' => {
 ########################
 
 register 'fieldlet.system.status_new' => {
-    name        => _loc('Status'),
+    name        => _locl('Status'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/system/js/field_status.js',
     form        => '/fields/templates/config/status_new.js',
@@ -343,8 +343,8 @@ register 'fieldlet.system.status_new' => {
 };
 
 register 'fieldlet.system.moniker' => {
-    name        => _loc('Moniker'),
-    name_field  => _loc('Moniker'),
+    name        => _locl('Moniker'),
+    name_field  => _locl('Moniker'),
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/moniker.js',
     icon        => '/static/images/icons/action.svg',
@@ -357,7 +357,7 @@ register 'fieldlet.system.moniker' => {
 };
 
 register 'fieldlet.system.title' => {
-    name        => _loc('Title'),
+    name        => _locl('Title'),
     id_field    => 'title',
     bd_field    => 'title',
     html        => '/fields/system/html/field_title.html',
@@ -370,7 +370,7 @@ register 'fieldlet.system.title' => {
 };
 
 register 'fieldlet.system.labels' => {
-    name_field  => _loc('Labels'),
+    name_field  => _locl('Labels'),
     origin      => 'default',
     bd_field    => 'labels',
     id_field    => 'labels',
@@ -380,7 +380,7 @@ register 'fieldlet.system.labels' => {
 };
 
 register 'fieldlet.system.description' => {
-    name        => _loc('Description'),
+    name        => _locl('Description'),
     html        => '/fields/templates/html/dbl_row_body.html',
     js          => '/fields/templates/js/html_editor.js',
     form        => '/fields/templates/config/description.js', ############# MODIFICAR
@@ -397,7 +397,7 @@ register 'fieldlet.system.description' => {
 ########################################################################################
 
 register 'fieldlet.system.revisions' => {
-    name        => _loc('Revision Box'),
+    name        => _locl('Revision Box'),
     icon        => '/static/images/icons/combo_box.svg',
     get_method  => 'get_revisions',
     set_method  => 'set_revisions',
@@ -412,7 +412,7 @@ register 'fieldlet.system.revisions' => {
 };
 
 register 'fieldlet.system.release' => {
-    name        => _loc('Release Combo'),
+    name        => _locl('Release Combo'),
     icon        => '/static/images/icons/combo_box.svg',
     get_method  => 'get_release',
     set_method  => 'set_release',
@@ -428,7 +428,7 @@ register 'fieldlet.system.release' => {
 };
 
 register 'fieldlet.system.release_version' => {
-    name        => _loc('Release Version'),
+    name        => _locl('Release Version'),
     html        => '/fields/templates/html/row_body.html',
     js          => '/fields/templates/js/textfield.js',
     form        => '/fields/templates/config/textfield.js',
@@ -439,7 +439,7 @@ register 'fieldlet.system.release_version' => {
 };
 
 register 'fieldlet.system.projects' => {
-    name        => _loc('Project Combo'),
+    name        => _locl('Project Combo'),
     icon        => '/static/images/icons/combo_box.svg',
     get_method  => 'get_projects',
     set_method  => 'set_projects',
@@ -456,7 +456,7 @@ register 'fieldlet.system.projects' => {
 
 
 register 'fieldlet.system.users' => {
-    name        => _loc('User Combo'),
+    name        => _locl('User Combo'),
      icon        => '/static/images/icons/combo_box.svg',
     get_method  => 'get_users',
     set_method  => 'set_users',
@@ -472,7 +472,7 @@ register 'fieldlet.system.users' => {
 
 
 register 'fieldlet.system.topics' => {
-    name        => _loc('Topics'),
+    name        => _locl('Topics'),
     icon        => '/static/images/icons/listbox.svg',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
@@ -489,7 +489,7 @@ register 'fieldlet.system.topics' => {
 };
 
 register 'fieldlet.system.list_topics' => {
-    name        => _loc('Topic Selector'),
+    name        => _locl('Topic Selector'),
     icon        => '/static/images/icons/combo_box.svg',
     get_method  => 'get_topics',
     set_method  => 'set_topics',
@@ -507,7 +507,7 @@ register 'fieldlet.system.list_topics' => {
 
 
 register 'fieldlet.system.cis' => {
-    name        => _loc('CI Combo'),
+    name        => _locl('CI Combo'),
     icon        => '/static/images/icons/combo_box.svg',
     get_method  => 'get_cis',
     set_method  => 'set_cis',
@@ -524,7 +524,7 @@ register 'fieldlet.system.cis' => {
 
 
 register 'fieldlet.system.tasks' => {
-    name        => _loc('Task Grid'),
+    name        => _locl('Task Grid'),
     icon        => '/static/images/icons/grid.svg',
     get_method  => '',
     set_method  => '',
@@ -544,7 +544,7 @@ register 'fieldlet.system.tasks' => {
 ###########################
 
 register 'fieldlet.required.category' => {
-    name        => _loc('Topic Category'),
+    name        => _locl('Topic Category'),
     name_field  => 'Category',
     id_field    => 'category',
     bd_field    => 'id_category',
@@ -558,7 +558,7 @@ register 'fieldlet.required.category' => {
 };
 
 register 'fieldlet.required.created_by' => {
-    name_field  => _loc('Created By'),
+    name_field  => _locl('Created By'),
     origin      => 'default',
     id_field    => 'created_by',
     bd_field    => 'created_by',
@@ -569,7 +569,7 @@ register 'fieldlet.required.created_by' => {
 };
 
 register 'fieldlet.required.created_on' => {
-    name_field  => _loc('Created On'),
+    name_field  => _locl('Created On'),
     origin      => 'default',
     id_field    => 'created_on',
     bd_field    => 'created_on',
@@ -579,7 +579,7 @@ register 'fieldlet.required.created_on' => {
 };
 
 register 'fieldlet.required.modified_by' => {
-    name_field  => _loc('Modified By'),
+    name_field  => _locl('Modified By'),
     origin      => 'default',
     editable    => 0,
     field_order => 1,
@@ -589,7 +589,7 @@ register 'fieldlet.required.modified_by' => {
 };
 
 register 'fieldlet.required.modified_on' => {
-    name_field  => _loc('Modified On'),
+    name_field  => _locl('Modified On'),
     origin      => 'default',
     id_field    => 'modified_on',
     bd_field    => 'modified_on',
@@ -599,8 +599,8 @@ register 'fieldlet.required.modified_on' => {
 };
 
 # register 'fieldlet.required.progress' => {
-#     name        => _loc('Progress'),
-#     name_field  => _loc('Progress'),
+#     name        => _locl('Progress'),
+#     name_field  => _locl('Progress'),
 #     html        => '/fields/templates/html/progress_bar.html',
 #     js          => '/fields/templates/js/progress_bar.js',
 #     editable    => '0',

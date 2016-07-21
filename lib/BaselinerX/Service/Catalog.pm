@@ -13,11 +13,11 @@ with 'Baseliner::Role::Service';
 
 register 'config.catalog.settings' => {
     metadata => [
-           { id =>'service', label =>'Name of category created', default => _utf8 'Petición' },
-           { id =>'task', label =>'Name of category created', default => 'Tarea' },
-           { id =>'service_task_relation', label =>'Name of field for service-task relation', default => 'tareas' },
-           { id =>'project_filter', label =>'Limit Catalog to these project names', default => '' },
-           { id =>'status_draft', label =>'Draft status for wizard', default => 'Borrador' },
+           { id =>'service', label =>_locl('Name of category created'), default => _utf8 'Petición' },
+           { id =>'task', label =>_locl('Name of category created'), default => 'Tarea' },
+           { id =>'service_task_relation', label =>_locl('Name of field for service-task relation'), default => 'tareas' },
+           { id =>'project_filter', label =>_locl('Limit Catalog to these project names'), default => '' },
+           { id =>'status_draft', label =>_locl('Draft status for wizard'), default => 'Borrador' },
         ]
 };
 

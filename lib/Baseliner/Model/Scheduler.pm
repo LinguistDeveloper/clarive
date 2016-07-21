@@ -151,7 +151,7 @@ sub run_task {
     $self->_set_last_execution( taskid => $taskid, when => $self->_build_calendar->now );
     $self->_set_task_data( taskid => $taskid, status => 'RUNNING', pid => $pid );
 
-    _fail _loc 'Could not find rule or service for scheduler task run `%1` (%2)', ( $task->{name} || 'noname' ), $taskid
+    _fail _loc('Could not find rule or service for scheduler task run `%1` (%2)', ( $task->{name} || 'noname' ), $taskid)
       unless $task->{id_rule};
 
     _log "============================ SCHED RUN START ============================";

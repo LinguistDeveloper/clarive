@@ -91,7 +91,7 @@ method chown ( $perms, $path ) {
 method execute( @cmd ) {
     my $tmout = $self->timeout;
     alarm $tmout if $tmout;
-    local $SIG{ALRM} = sub { _fail _loc 'balix agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
+    local $SIG{ALRM} = sub { _fail _loc('balix agent error: timeout during execute (tmout=%1 sec)', $tmout) } if $tmout;
     my $opts = shift @cmd if ref $cmd[0] eq 'HASH';
     if( $opts->{chdir} ) {
        @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );
@@ -273,7 +273,7 @@ sub _send_file {
     $self->socket->print( $self->encodeCMD("D") . $self->EOL );
 
     my $chunk;
-    _fail _loc 'Chunk size is zero for agent %1', $self->name unless $self->chunk_size;
+    _fail _loc('Chunk size is zero for agent %1', $self->name) unless $self->chunk_size;
     while( sysread $fin, $chunk, $self->chunk_size ) {
         $self->socket->print( $self->encodeDATA($chunk) );
     }

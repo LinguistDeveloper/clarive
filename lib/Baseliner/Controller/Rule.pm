@@ -30,7 +30,7 @@ register 'config.rules' => {
 
 register 'menu.admin.rule' => {
     label    => 'Rules',
-    title    => _loc ('Rules'),
+    title    => _loc('Rules'),
     action   => 'action.admin.rules',
     url_comp => '/comp/rules.js',
     icon     => '/static/images/icons/rule.svg',
@@ -39,7 +39,7 @@ register 'menu.admin.rule' => {
 
 register 'event.ws.soap_ready' => {
     text => 'SOAP WS ready to return',
-    description => 'SOAP WS is ready',
+    description => _locl('SOAP WS is ready'),
     vars => [],
 };
 
@@ -571,13 +571,13 @@ sub local_stmts_save {
     my $returned_ts;
     my $error_checking_dsl = 0;
     my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-    my $doc = mdb->rule->find_one({ id=>''.$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
+    my $doc = mdb->rule->find_one({ id=>''.$id_rule }) // _fail _loc('Rule id %1 missing. Deleted?', $id_rule);
     my $ignore_dsl_errors = $p->{ignore_dsl_errors} || $$doc{ignore_dsl_errors};
     # check json valid
     my $stmts = try {
         _decode_json( $p->{stmts} );
     } catch {
-        _fail _loc "Corrupt or incorrect json rule tree: %1", shift();
+        _fail _loc("Corrupt or incorrect json rule tree: %1", shift());
     };
 
     my $ts = mdb->ts;
@@ -595,7 +595,7 @@ sub local_stmts_save {
         _warn( $err );
         $error_checking_dsl = 1;
         return $err if $ignore_dsl_errors;
-        _fail _loc "Error testing DSL build: %1", $err;
+        _fail _loc("Error testing DSL build: %1", $err);
     };
     $returned_ts = Baseliner::Model::Rules->new->write_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts},
         detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
@@ -648,7 +648,7 @@ sub rollback_version : Local {
     my $version_id = $p->{version_id};
 
     my $ver = mdb->rule_version->find_one( { _id => mdb->oid($version_id) } );
-    _fail _loc 'Version not found: %1', $version_id unless $ver;
+    _fail _loc('Version not found: %1', $version_id) unless $ver;
 
     try {
         Baseliner::Model::Rules->new->write_rule(
@@ -796,7 +796,7 @@ sub edit_key : Local {
     try {
         my $key = $p->{key} or _fail 'Missing key parameter';
         my $r = Baseliner::Core::Registry->get( $key );
-        _fail _loc "Key %1 not found in registry", $key unless $r;
+        _fail _loc("Key %1 not found in registry", $key) unless $r;
         my $form = $r->form;
         my $config = $r->config;
         my $params = Baseliner::Core::Registry->get_params($key);
@@ -804,7 +804,7 @@ sub edit_key : Local {
         my $config_data;
         if( $r->isa( 'BaselinerX::Type::Service' ) ) {
             # service
-            #_fail _loc "Service '%1' does not have either a form or a config", $key unless $form || $config;
+            #_fail _loc("Service '%1' does not have either a form or a config", $key) unless $form || $config;
             if( $form || $config ) {
                 $config_data = $self->config_to_data( $config );
             } elsif( $r->data ) {
@@ -930,7 +930,7 @@ Soap webservices.
 sub rule_from_url {
     my ($self,$id_rule)=@_;
     my $where = { rule_active => mdb->true,'$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
-    my $rule = mdb->rule->find_one($where,{ rule_tree=>0 }) or _fail _loc 'Rule %1 not found', $id_rule;
+    my $rule = mdb->rule->find_one($where,{ rule_tree=>0 }) or _fail _loc('Rule %1 not found', $id_rule);
     return $rule;
 }
 
@@ -960,7 +960,7 @@ sub default : Path {
     my $run_rule = sub{
         try {
             my $rule = $self->rule_from_url( $id_rule );
-            _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
+            _fail _loc('Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type}) if $rule->{rule_type} !~ /independent|webservice/ ;
 
             my $rule_runner = Baseliner::RuleRunner->new;
             my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash);

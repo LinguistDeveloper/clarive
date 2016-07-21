@@ -9,7 +9,7 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
         my $self = shift;
         require Net::FTP;
         my $ftp = Net::FTP->new( $self->resource->host )
-            or _fail _loc "FTP: Could not connect to host %1", $self->resource->host;
+            or _fail _loc("FTP: Could not connect to host %1", $self->resource->host);
         my ( $user, $password );
         if( defined $self->resource->user && defined $self->resource->password ) {
             ( $user, $password )  = ( $self->resource->user, $self->resource->password );
@@ -26,7 +26,7 @@ has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
         $ftp->login( $user, $password ) or _fail $ftp->message;
         if(  length $self->resource->home ) {
             my $rc = $ftp->cwd( $self->resource->home );
-            _fail _loc "FTP: Could not change home directory to %1: %2", $self->resource->home, $ftp->message
+            _fail _loc("FTP: Could not change home directory to %1: %2", $self->resource->home, $ftp->message)
                unless $rc;
         }
         $ftp->binary;
@@ -48,7 +48,7 @@ sub put_file {
     my $rc;
     if( ! -e "$p{local}" ) {
        $self->rc( 19 );
-       _fail $self->ret( _loc "FTP: could not find local file %1", $p{local} );
+       _fail $self->ret( _loc("FTP: could not find local file %1", $p{local} ) );
     }
     $rc = $self->ftp->cwd( "$p{remote}" ) if defined $p{remote};
     $self->rc( $rc );
@@ -135,7 +135,7 @@ sub _build_uri {
     my $uri = $self->uri;
     my ($conn) = $uri =~ m{//(.*?)(/.*)?$};
     return $conn if $conn;
-    _throw _loc "Could not create connection from uri %1", $self->uri;
+    _throw _loc("Could not create connection from uri %1", $self->uri);
 }
 
 1;

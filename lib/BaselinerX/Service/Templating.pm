@@ -23,13 +23,13 @@ sub template_transform {
     my $job   = $stash->{job};
     my $log   = $job->logger;
 
-    my $input_file    = $config->{input_file} // _fail _loc 'Missing input files';
+    my $input_file    = $config->{input_file} // _fail _loc('Missing input files');
     my $output_file   = $config->{output_file};
     my $encoding      = $config->{encoding};
     my $engine        = $config->{engine} // 'tt';
     my $template_var  = $config->{template_var} // '';
 
-    _fail _loc 'Could not find file: %1', $input_file unless -e $input_file;
+    _fail _loc('Could not find file: %1', $input_file) unless -e $input_file;
 
     my $output;
 
@@ -47,20 +47,20 @@ sub template_transform {
             $root_dir = '/';
             $comp_dir = _file( $input_file )->dir;
         }
-        _debug _loc 'Mason convert from `%1`, dir `%2`', $input_file, $root_dir;
+        _debug _loc('Mason convert from `%1`, dir `%2`', $input_file, $root_dir);
         $output = Util->_mason( $input_file, comp_root=>$root_dir, %{ $template_var ? $stash->{template_var} : $stash });
     }
     else {
-        _fail _loc 'Invalid templating engine type: %1', $engine;
+        _fail _loc('Invalid templating engine type: %1', $engine);
     }
 
     if( $output_file ) {
         my $format = $encoding ? sprintf(':encoding(%s)', $encoding) : ':raw';
         open my $fout, '>'.$format, $output_file
-            or _fail _loc 'Could not write to templating output file %1', $output_file;
+            or _fail _loc('Could not write to templating output file %1', $output_file);
         print $fout $output;
         close $fout;
-        _debug _loc 'Wrote template file %1', $output_file;
+        _debug _loc('Wrote template file %1', $output_file);
     }
 
     return $output;
@@ -73,7 +73,7 @@ sub process_tt {
     my $vars = $template_var ? $stash->{ $template_var } : $stash;
     my $output = '';
     if( ! $tt->process( \$body, $vars, \$output ) ) {
-        _fail _loc "Error processing file body with templating %1: %2", 'tt', $tt->error;
+        _fail _loc("Error processing file body with templating %1: %2", 'tt', $tt->error);
     }
     return $output;
 }

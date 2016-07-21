@@ -13,7 +13,7 @@ register 'action.admin.event' => { name=>'Admin Events' };
 
 register 'menu.admin.events' => {
     label    => 'Events',
-    title    => _loc ('Events'),
+    title    => _loc('Events'),
     action   => 'action.admin.event',
     url_comp => '/comp/events.js',
     icon     => '/static/images/icons/event.svg',

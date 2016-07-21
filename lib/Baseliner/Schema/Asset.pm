@@ -18,7 +18,7 @@ around BUILDARGS => sub {
     if( !ref $in ) {
         # open the string like a file
         my $basic_fh;
-        open($basic_fh, '<', \$in) or _fail _loc 'Error trying to open string asset: %1', $!;
+        open($basic_fh, '<', \$in) or _fail _loc('Error trying to open string asset: %1', $!);
         # turn the file handle into a FileHandle
         $fh = FileHandle->new;
         $fh->fdopen($basic_fh, 'r');
@@ -38,7 +38,7 @@ around BUILDARGS => sub {
         $fh->fdopen($basic_fh, 'r');
     }
 
-    _fail _loc 'Could not get filehandle for asset' unless $fh;
+    _fail _loc('Could not get filehandle for asset') unless $fh;
 
     $self->$orig( fh=>$fh, %opts );
 };

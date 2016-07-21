@@ -15,6 +15,7 @@ Some utilities shared by different Baseliner modules and plugins.
 use Exporter::Tidy default => [
     qw(
     _loc
+    _locl
     _array_or_commas
     _log
     _info
@@ -246,6 +247,8 @@ sub _loc {
     return '' unless $_[0];
     return Baseliner::I18N->localize(@_);
 }
+
+sub _locl { $_[0] }
 
 sub _loc_decoded { return _utf8( _loc(@_) ) }
 sub _loc_ansi { return _utf8_to_ansi( _loc(@_) ) }
@@ -1241,17 +1244,17 @@ sub zip_files {
 }
 sub zip_tree {
 my (%p) =@_;
-    my $source = $p{source} // _throw _loc 'Missing parameter source';
-    my $zipfile = $p{to} // _throw _loc 'Missing parameter zipfile';
+    my $source = $p{source} // _throw _loc('Missing parameter source');
+    my $zipfile = $p{to} // _throw _loc('Missing parameter zipfile');
 my $base = $p{base} // $source;
     my $verbose = $p{verbose};
 
     # open and close to reset file and attempt write
          open my $ff, '>', $zipfile
-         or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
+         or _fail _loc('Could not create zip file `%1`: %2', $zipfile, $!);
         close $ff;
 require Archive::Zip;
-    _fail _loc 'Could not find dir `%1` to zip', $source
+    _fail _loc('Could not find dir `%1` to zip', $source)
         unless -e $source;
  # build local zip
 my $zip = Archive::Zip->new() or _throw $!;
@@ -1918,8 +1921,8 @@ Tar a directory
 =cut
 sub tar_dir {
     my (%p) =@_;
-    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir';
-    my $tarfile = $p{tarfile} // _fail _loc 'Missing parameter tarfile';
+    my $source_dir = $p{source_dir} // _fail _loc('Missing parameter source_dir');
+    my $tarfile = $p{tarfile} // _fail _loc('Missing parameter tarfile');
     my $verbose = $p{verbose};
     my %files = map { $_ => 1 } _array $p{files};
     my @include = _array $p{include};
@@ -1927,12 +1930,12 @@ sub tar_dir {
     my %attributes = map { $_->{regex} => $_ } _array( $p{attributes} );
     # open and close to reset file and attempt write
     open my $ff, '>', $tarfile
-       or _fail _loc 'Could not create tar file `%1`: %2', $tarfile, $!;
+       or _fail _loc('Could not create tar file `%1`: %2', $tarfile, $!);
     close $ff;
 
     require Archive::Tar;
 
-    _fail _loc 'Could not find dir `%1` to tar', $source_dir
+    _fail _loc('Could not find dir `%1` to tar', $source_dir)
         unless -e $source_dir;
 
     # build local tar
@@ -2000,8 +2003,8 @@ Zip a directory
 =cut
 sub zip_dir {
     my ($self, %p) =@_;
-    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir';
-    my $zipfile = $p{zipfile} // _fail _loc 'Missing parameter tarfile';
+    my $source_dir = $p{source_dir} // _fail _loc('Missing parameter source_dir');
+    my $zipfile = $p{zipfile} // _fail _loc('Missing parameter tarfile');
     my $verbose = $p{verbose};
     my %files = map { $_ => 1 } _array $p{files};
     my @include = _array $p{include};
@@ -2009,11 +2012,11 @@ sub zip_dir {
 
     # open and close to reset file and attempt write
     open my $ff, '>', $zipfile
-       or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
+       or _fail _loc('Could not create zip file `%1`: %2', $zipfile, $!);
     close $ff;
 
 
-    _fail _loc 'Could not find dir `%1` to zip', $source_dir
+    _fail _loc('Could not find dir `%1` to zip', $source_dir)
         unless -e $source_dir;
 
     use Archive::Zip qw( :ERROR_CODES :CONSTANTS );

@@ -172,8 +172,8 @@ sub _parse_var {
 
     # Control recursion and create a path for a clearer error message
     if ( grep { $_ eq $k } @{ $stack->{path} || [] } ) {
-        _throw _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k,
-          '${' . join( '}/${', _array( $stack->{path} ) ) . '}';
+        _throw _loc('Deep recursion in parse_vars for variable `%1`, path %2', $k,
+          '${' . join( '}/${', _array( $stack->{path} ) ) . '}');
     }
 
     $stack->{path} or local $stack->{path} = [];

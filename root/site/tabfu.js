@@ -1855,7 +1855,7 @@ Baseliner.print = function(opts, share) {
     dw.close();
     dw.title = title;
     //add_script( dw, '/site/graph.js' );
-    add_css( dw, '/site/960-Grid-System/code/css/960_24_col.css' );
+    add_css( dw, '/static/960-Grid-System/code/css/960_24_col.css' );
     add_css( dw, '/site/boot.css' );
     add_css( dw, '/static/ext/resources/css/ext-all.css');
     add_css( dw, '/static/ext/examples/ux/css/ux-all.css');

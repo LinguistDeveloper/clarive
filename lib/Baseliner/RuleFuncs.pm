@@ -58,7 +58,7 @@ sub parallel_run {
 
     # Parent
     elsif ($chi_pid) {
-        _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid;
+        _log _loc('Forked child task %1 with pid %2', $name, $chi_pid);
 
         if ( $mode eq 'fork' ) {
 
@@ -130,8 +130,7 @@ sub wait_for_children {
             }
         }
         if( @failed ) {
-            my $error_msg = _loc(
-                'Error detected in children, pids failed: %1. Ok: %2',
+            my $error_msg = _loc( 'Error detected in children, pids failed: %1. Ok: %2',
                 join( ',', map { $_->{pid} } @failed ),
                 join( ',', @oks )
             );
@@ -172,16 +171,16 @@ sub error_trap {
         }
 
         if ( $job->rollback && !$trap_rollback ) {
-            $job->logger->info( _loc "Ignoring trap errors in rollback.  Aborting task", $err );
+            $job->logger->info( _loc("Ignoring trap errors in rollback.  Aborting task", $err ) );
             _fail($err);
         }
 
         if( $mode eq 'ignore' ) {
-            $job->logger->info( _loc "Ignored error trapped in rule: %1", $err );
+            $job->logger->info( _loc("Ignored error trapped in rule: %1", $err ) );
             return;
         };
 
-        $job->logger->error( _loc "Error trapped in rule: %1", $err );
+        $job->logger->error( _loc("Error trapped in rule: %1", $err ) );
         $job->update( status=>'TRAPPED' );
 
         ## Avoid error if . in stash keys
@@ -235,13 +234,13 @@ sub error_trap {
         }
 
         if( $last_status eq 'RETRYING' ) {
-            $job->logger->info( _loc "Retrying task", $err );
+            $job->logger->info( _loc("Retrying task", $err ) );
             goto RETRY_TRAP;
         } elsif( $last_status eq 'SKIPPING' ) {
-            $job->logger->info( _loc "Skipping task", $err );
+            $job->logger->info( _loc("Skipping task", $err ) );
             return;
         } elsif( $last_status eq 'ERROR' ) { # ERROR
-            $job->logger->info( _loc "Aborting task", $err );
+            $job->logger->info( _loc("Aborting task", $err ) );
             _fail( $err );
         } else {
            goto LOOP;
@@ -254,7 +253,7 @@ sub semaphore {
     require Baseliner::Sem;
     parse_vars( $data, $stash );
     my $sem = Baseliner::Sem->new( $data );
-    _info( _loc 'Semaphore queued for %1', $data->{key} );
+    _info( _loc('Semaphore queued for %1', $data->{key} ) );
     return $sem;
 }
 
@@ -342,7 +341,7 @@ sub cut_nature_items {
     my @items_del   = grep { $_->status eq 'D' } @items;
     my @paths_del   = grep { length } map { $_->path_tail( $tail ) } @items_del;
 
-    _fail _loc 'Could not find any paths in nature items that match cut path `%1`', $tail
+    _fail _loc('Could not find any paths in nature items that match cut path `%1`', $tail)
         unless ( @paths_write + @paths_del );
     return ( \@paths_write, \@paths_del );
 }
@@ -354,7 +353,7 @@ sub launch {
     $task = parse_vars( $task, $stash );
 
     my $reg = Baseliner::Core::Registry->get_instance( $key );
-    _fail _loc "Cound not find '$key' in registry" unless $reg;
+    _fail _loc("Cound not find '$key' in registry") unless $reg;
 
     #_log "running container for $key";
     my $return_data = try {

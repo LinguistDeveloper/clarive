@@ -82,17 +82,17 @@ sub rename_files {
             if( $file ne $new_name ) {
                 if( -e $new_name ) {
                     unlink $new_name
-                        or _throw _loc 'Could not delete file %1: %2',$new_name, $!;
+                        or _throw _loc('Could not delete file %1: %2',$new_name, $!);
                 }
                 rename $file, $new_name
-                     or _throw _loc 'Could not rename element %1 to %2: %3', $file, $new_name, $!;
+                     or _throw _loc('Could not rename element %1 to %2: %3', $file, $new_name, $!);
                 $list .= "'$file' ==> '$new_name'\n";
                 push @files_renamed, { old=>"$file", new=>"$new_name" };
                 $cnt++;
             }
             elsif( $file =~ /{($all_bls)}/ ) {
                 # delete files from other baselines
-                unlink $file or _throw _loc 'Could not delete file that belongs to another baseline %1: %2', $file, $!;
+                unlink $file or _throw _loc('Could not delete file that belongs to another baseline %1: %2', $file, $!);
                 $list_del .= "File '$file' deleted.\n";
             }
     });

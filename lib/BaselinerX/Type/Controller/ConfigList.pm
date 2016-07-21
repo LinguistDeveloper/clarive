@@ -5,8 +5,8 @@ use Baseliner::Utils;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 
-register 'action.admin.config_list' => { name => 'Administer configuration variables'};
-register 'menu.admin.config_list' => { label=>'Config List', url_comp=>'/configlist/grid', title=>'Config List', icon=>'/static/images/icons/wrench.svg', action => 'action.admin.config_list' };
+register 'action.admin.config_list' => { name => _locl('Administer configuration variables')};
+register 'menu.admin.config_list' => { label=>_locl('Config List'), url_comp=>'/configlist/grid', title=>_locl('Config List'), icon=>'/static/images/icons/wrench.svg', action => 'action.admin.config_list' };
 
 sub grid : Local {
     my ($self,$c)=@_;

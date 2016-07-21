@@ -103,7 +103,7 @@ sub grid_insert {
     if( !ref $in ) {
         # open the string like a file
         my $basic_fh;
-        open($basic_fh, '<', \$in) or _fail _loc 'Error trying to open string asset: %1', $!;
+        open($basic_fh, '<', \$in) or _fail _loc('Error trying to open string asset: %1', $!);
         # turn the file handle into a FileHandle
         $fh = FileHandle->new;
         $fh->fdopen($basic_fh, 'r');
@@ -122,9 +122,9 @@ sub grid_insert {
         $fh = FileHandle->new;
         $fh->fdopen($basic_fh, 'r');
     }
-    _fail _loc 'Could not get filehandle for asset' unless $fh;
+    _fail _loc('Could not get filehandle for asset') unless $fh;
     my $md5 = Util->_md5( $self->fh );
-    my $origin = _loc '%1:%3', caller;
+    my $origin = _loc('%1:%3', caller);
     my $id = $self->grid->insert($fh, +{ md5=>$md5, origin=>$origin, %opts } );
     return $id;
 }
@@ -144,7 +144,7 @@ sub grid_add {
     if( !ref $in ) {
         # open the string like a file
         my $basic_fh;
-        open($basic_fh, '<', \$in) or _fail _loc 'Error trying to open string asset: %1', $!;
+        open($basic_fh, '<', \$in) or _fail _loc('Error trying to open string asset: %1', $!);
         # turn the file handle into a FileHandle
         $fh = FileHandle->new;
         $fh->fdopen($basic_fh, 'r');
@@ -156,10 +156,10 @@ sub grid_add {
         $fh = $in;
     }
     else {
-        _fail _loc 'Invalid asset data type: %1', ref($in);
+        _fail _loc('Invalid asset data type: %1', ref($in));
     }
 
-    _fail _loc 'Could not get filehandle for asset' unless $fh;
+    _fail _loc('Could not get filehandle for asset') unless $fh;
 
     # $grid->insert($fh, {"filename" => "mydbfile"});
     # TODO match md5, add mid to asset in case it exists
@@ -484,7 +484,7 @@ sub index_all {
                         _log "ENSURING $cn INDEX: $json";
                         $coll->ensure_index( @$ix )
                     } else {
-                        _log _loc 'Eval collection %1 index %2', $cn, $ix;
+                        _log _loc('Eval collection %1 index %2', $cn, $ix);
                         mdb->db->eval($ix);
                     }
                 } catch {

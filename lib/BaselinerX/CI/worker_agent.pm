@@ -210,7 +210,7 @@ sub execute {
     my $self = shift;
     my $tmout = $self->timeout;
     alarm $tmout if $tmout;
-    local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
+    local $SIG{ALRM} = sub { _fail _loc('worker agent error: timeout during execute (tmout=%1 sec)', $tmout) } if $tmout;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
     # windows: use open, which merges STDOUT AND STDERR; Unix: use Capture::Tiny to merge both
@@ -250,7 +250,7 @@ sub check_os {
     my $self = shift;
     my $tmout = $self->timeout;
     alarm $tmout if $tmout;
-    local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
+    local $SIG{ALRM} = sub { _fail _loc('worker agent error: timeout during execute (tmout=%1 sec)', $tmout) } if $tmout;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
     my $res = $self->remote_eval( q{$^O}, { });

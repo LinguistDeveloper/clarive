@@ -20,7 +20,7 @@ sub daemon {
     my ( $self, $c, $config ) = @_;
 
     my $frequency = $config->{frequency};
-    _log _loc "Email daemon started with frequency %1, timeout %2, max_message_size %3", @{ $config }{ qw/frequency timeout max_message_size/ };
+    _log _loc("Email daemon started with frequency %1, timeout %2, max_message_size %3", @{ $config }{ qw/frequency timeout max_message_size/ });
     require Baseliner::Sem;
     for( 1..1000 ) {
         my $sem = Baseliner::Sem->new( key=>'email_daemon', who=>"email_daemon", internal=>1 );
@@ -59,7 +59,7 @@ sub group_queue {
             my $msgsiz = length( $message->{body} ) // 0;
             my $body;
             if( $msgsiz > $config->{max_message_size} ) {
-                _log _loc "Trimming email message body, size exceeded ( %1 > %2 )", $msgsiz, $config->{max_message_size};
+                _log _loc("Trimming email message body, size exceeded ( %1 > %2 )", $msgsiz, $config->{max_message_size});
                 $body = substr( $message->{body}, 0, $config->{max_message_size} );
             } else {
                 $body = $message->{body};
@@ -86,7 +86,7 @@ sub group_queue {
         catch {
             my $err = shift;
             alarm 0;
-            _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->{id}, $err;
+            _error _loc("MessageQueue item id %1 could not be prepared: %2", $queue_item->{id}, $err);
             mdb->message->update(
                 {'queue.id' => 0 + $queue_item->{id}},
                 {'$set' => {'queue.$.active' => '0'}}
@@ -105,14 +105,14 @@ sub process_queue {
     # no to or cc, just these:
     my $email_override = $c->config->{email_override};
     my @email_override = _unique grep $_,_array( $email_override );
-    _debug _loc "ALL EMAILS redirected to '%1' (email_override)",
-        join(',',@email_override) if @email_override;
+    _debug _loc("ALL EMAILS redirected to '%1' (email_override)",
+        join(',',@email_override)) if @email_override;
 
     # add these to the cc array
     my $email_cc = $c->config->{email_cc};
     my @email_cc = _unique grep $_, _array( $email_cc );
-    _debug _loc "CC EMAILS added: '%1' (email_cc)",
-        join(',',@email_cc) if @email_cc;
+    _debug _loc("CC EMAILS added: '%1' (email_cc)",
+        join(',',@email_cc)) if @email_cc;
 
     # first group by message
     for my $msg_id ( keys %email ) {

@@ -49,7 +49,7 @@ sub user_has_action ($self, %p) {
         $ret = scalar grep {$action eq $_ } $self->_get_actions_from_user($username, @bl);
     }
     if( $p{fail} && !$ret ) {
-        _fail _loc 'User %1 does not have permissions to action %2', $username, $action;
+        _fail _loc('User %1 does not have permissions to action %2', $username, $action);
     }
     return $ret;
 }

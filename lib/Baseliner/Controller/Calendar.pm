@@ -77,7 +77,7 @@ sub events : Local {
     my @topics;
     my %master_cal;
     if( $query_type eq 'cal_field' ) {
-        _fail _loc 'Missing calendar field(s)' unless $id_fieldlet;
+        _fail _loc('Missing calendar field(s)') unless $id_fieldlet;
         @topics = mdb->topic->find($where)->fields({ _txt=>0 })->all;
         map { push @{ $master_cal{$$_{mid}} } => $_ }
             mdb->master_cal->find({ mid=>mdb->in(map{$$_{mid}}@topics), rel_field=>mdb->in( ref $id_fieldlet ? $id_fieldlet : split /,/,$id_fieldlet) })->all;

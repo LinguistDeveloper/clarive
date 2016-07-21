@@ -53,7 +53,7 @@ sub create_initial_dashboards {
             $user->dashboard('');
             $user->save;
         }
-        my $default_dashboards = Util->_load(get_initial_dashboards());# || _fail _loc 'Could not find default dashboard data!';
+        my $default_dashboards = Util->_load(get_initial_dashboards());# || _fail _loc('Could not find default dashboard data!');
         for my $dashboard ( _array($default_dashboards) ) {
             my $id = mdb->seq('rule');
             mdb->rule->insert({ %$dashboard, ts=>mdb->ts, rule_seq=>0+$id, id=>"$id", username => "clarive" });

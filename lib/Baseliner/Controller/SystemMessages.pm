@@ -13,7 +13,7 @@ sub sms_create : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        model->Permissions->user_has_action( username=>$c->username, action=>'action.admin.sms' ) || _fail _loc 'Unauthorized';
+        model->Permissions->user_has_action( username=>$c->username, action=>'action.admin.sms' ) || _fail _loc('Unauthorized');
         $p->{ua} = $c->req->user_agent;
         $p->{username} = $c->username;
         $p->{_id} = mdb->oid;
@@ -32,7 +32,7 @@ sub sms_del : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        my $_id = $p->{_id} || _fail _loc 'Missing message id';
+        my $_id = $p->{_id} || _fail _loc('Missing message id');
         $p->{username} = $c->username;
         $p->{ts} = _now;
         $p->{ua} = $c->req->user_agent;

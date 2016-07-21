@@ -62,10 +62,10 @@ has id_rule      => qw(is rw isa Any ), default=>sub {
     } elsif( $type eq 'demote' ) {
         # cant' find demote, use a promote
         my $doc = mdb->rule->find({ rule_when=>'promote' })->sort({ _id=>-1 })->next;
-        _fail _loc 'Could not find a default %1 job chain rule', 'promote/demote' unless $doc;
+        _fail _loc('Could not find a default %1 job chain rule', 'promote/demote') unless $doc;
         return $doc->{id};
     } else {
-        _fail _loc 'Could not find a default %1 job chain rule', $type;
+        _fail _loc('Could not find a default %1 job chain rule', $type);
     }
 };
 
@@ -191,10 +191,10 @@ sub job_stash {
         my $stash_file = mdb->grid->get( mdb->oid( $self->id_stash ) ) if $self->id_stash;  # MongoDB::GridFS::File
         $stash_file = mdb->grid->find_one({ what=>'job_stash', parent_mid=>''.$self->mid }) if !$stash_file;  # second attempt, in case id_stash not saved to job CI
         if( !$stash_file ) {
-            Util->_debug(_loc 'No previous job stash for this job. Job stash initialized');
+            Util->_debug(_loc('No previous job stash for this job. Job stash initialized'));
             return {};
         } else {
-            Util->_debug(_loc 'Found job stash for this job');
+            Util->_debug(_loc('Found job stash for this job'));
         }
         my $job_stash_str = $stash_file->slurp;
         my $job_stash = try {
@@ -386,7 +386,7 @@ sub _check_and_init {
     # check not exists pause on CHECK status, return ERROR!
     if( $self->status eq 'ERROR' ) {
         # errors during CHECK fail back to the user
-        _fail _loc "Error during Job Check: %1", $self->last_error;
+        _fail _loc("Error during Job Check: %1", $self->last_error);
     } else {
         # INIT
         $self->step('INIT');
@@ -395,7 +395,7 @@ sub _check_and_init {
         if( $self->status eq 'ERROR' ) {
             # errors during CHECK fail back to the user
             $self->step('END');
-            _error _loc "Error during Job Init: %1", $self->last_error;
+            _error _loc("Error during Job Init: %1", $self->last_error);
         }
         # if not exists pause on INIT or CHECK... PERFECT!
         else {
@@ -524,7 +524,7 @@ sub contract {
     my ($self, $p)=@_;
     my @prjs = Util->_array( $self->projects );
     my ($prj) = @prjs;
-    _fail _loc 'Missing project for job %1', $self->name unless $prj;
+    _fail _loc('Missing project for job %1', $self->name) unless $prj;
     my $vars = $prj->variables // {};
     my $bl = $self->bl;
     return {
@@ -647,11 +647,11 @@ sub approve {
     my ($self, $p)=@_;
     my $comments = $p->{comments};
     if( ! $self->can_approve( username=>$p->{username} ) ) {
-        _fail _loc 'User %1 is not authorized to approve job %2', $p->{username}, $self->name;
+        _fail _loc('User %1 is not authorized to approve job %2', $p->{username}, $self->name);
     }
 
     if( $self->status ne 'APPROVAL' ) {
-        _fail _loc 'Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('approved');
+        _fail _loc('Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('approved'));
     }
     event_new 'event.job.approved' =>
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
@@ -670,10 +670,10 @@ sub reject {
     my ($self, $p)=@_;
     my $comments = $p->{comments};
     if( ! $self->can_approve( username=>$p->{username} ) ) {
-        _fail _loc 'User %1 is not authorized to approve job %2', $p->{username}, $self->name;
+        _fail _loc('User %1 is not authorized to approve job %2', $p->{username}, $self->name);
     }
     if( $self->status ne 'APPROVAL' ) {
-        _fail _loc 'Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('rejected');
+        _fail _loc('Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('rejected'));
     }
 
     event_new 'event.job.rejected' =>

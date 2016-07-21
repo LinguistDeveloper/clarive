@@ -34,11 +34,11 @@ sub init : Local {
     if( !$id_rule ) {
         $id_rule = @all_rules?$all_rules[0]->{id}:'';
         if( !$id_rule ) {
-            _warn _loc 'No default rule found for user %1', $c->username;
+            _warn _loc('No default rule found for user %1', $c->username);
         }
     }
 
-    $id_rule or _fail _loc 'No dashboard defined';
+    $id_rule or _fail _loc('No dashboard defined');
 
     # now run the dashboard rule
     my $stash = {

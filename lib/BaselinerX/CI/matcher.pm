@@ -29,7 +29,7 @@ sub parse {
     $regex = eval 'qr{' . $regex . '}'. $self->regex_options;
     Util->_fail( 'Missing or invalid regex: %1', $@ ) unless $regex;
 
-    _debug ( _loc "Matcher scanning file %1...", $file );
+    _debug ( _loc("Matcher scanning file %1...", $file ) );
 
     # TODO allow for more options, to run just %+ (run once) and %- (keep last)
 
@@ -52,7 +52,7 @@ sub parse {
         $has_match = $source =~ /$regex/;
     }
 
-    _debug _loc "%1 has match? %2", $file, $has_match;
+    _debug _loc("%1 has match? %2", $file, $has_match);
 
     if( $has_match ) {
         $item->save;

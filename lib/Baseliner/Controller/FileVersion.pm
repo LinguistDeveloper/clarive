@@ -74,7 +74,7 @@ sub gen_tree : Private {
         my %topics = map { $$_{mid} =>$_ } mdb->topic->find({ mid=>mdb->in(map{ $$_{mid} }grep{ defined }@cis) })->fields({ _txt=>0 })->all;
         foreach my $ci ( @cis ){
             if( $ci->{collection} eq 'topic' && $categories{$ci->{id_category}} ) {
-                my $topic = $topics{$ci->{mid}} // _fail _loc 'Topic mid not found: %1', $ci->{mid};
+                my $topic = $topics{$ci->{mid}} // _fail _loc('Topic mid not found: %1', $ci->{mid});
                 my @topic_tree = BaselinerX::LcController->build_topic_tree( mid=>$ci->{mid}, topic=>$topic, icon=>'' );
                 push @tree, map {
                     my $i = $_;
@@ -102,7 +102,7 @@ sub tree_file_project : Local {
 }
 
 sub folder_length {
-    length $_[1] > 255 and _fail _loc 'Folder name cannot be longer than %1 characters', 255;
+    length $_[1] > 255 and _fail _loc('Folder name cannot be longer than %1 characters', 255);
 }
 
 sub new_folder : Local {
@@ -119,7 +119,7 @@ sub new_folder : Local {
             my $folder;
             try{
                 $self->folder_length( $folder_name );
-                my $prj = ci->find( $project_id ) // _fail _loc 'Project not found';
+                my $prj = ci->find( $project_id ) // _fail _loc('Project not found');
                 $folder = ci->folder->new( name=>$folder_name );
                 $folder->parent_folder( $parent_id ) if $parent_id;
                 $folder->save;
@@ -360,7 +360,7 @@ sub move_file : Local {
 sub move_topic : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $topic_mid = $p->{from_topic_mid} || _fail _loc 'Missing %1', 'from_topic_mid';
+    my $topic_mid = $p->{from_topic_mid} || _fail _loc('Missing %1', 'from_topic_mid');
 
     try {
         if($p->{from_directory}){
@@ -386,7 +386,7 @@ sub move_topic : Local {
 sub remove_topic : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $topic_mid = $p->{topic_mid} || _fail _loc 'Missing %1', 'topic_mid';
+    my $topic_mid = $p->{topic_mid} || _fail _loc('Missing %1', 'topic_mid');
 
     if($p->{id_folder}){
         mdb->master_rel->remove({ from_mid=>"$p->{id_folder}", to_mid=>"$topic_mid", rel_type=>'folder_ci' });
