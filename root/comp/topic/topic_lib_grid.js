@@ -2115,7 +2115,6 @@ Cla.topic_grid = function(params){
     } // if !id_report
 
     var panel = new Ext.Panel({
-        id: 'topics-panel',
         layout : "border",
         defaults: {layout:'fit'},
         title: _('Topics'),

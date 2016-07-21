@@ -468,6 +468,7 @@ if( Prefs.routing ) {
 
         var tab;
         title = title ? title : comp.title;
+        if( comp && comp.title_force && comp.title_force.length ) title = comp.title_force;
         var isPlainText = !/<span\s+|<div\s+/.test(title);
         var title_length = title ? (!isPlainText ? $(title).text().length : title.length) : 0;
         // if tab_index not defined -> add current tab for tab_index or add new tab.
@@ -479,7 +480,6 @@ if( Prefs.routing ) {
             tab = tabpanel.add(comp);
         }
         // force change title style if: tabTopic_force value is: 1 on Topic.pm and defined new icon and new title on topic_lib.js
-        if( comp && comp.title_force && comp.title_force.length ) title = comp.title_force;
         if( params.tab_icon!=undefined && comp && comp.tab_icon===undefined ) tabpanel.changeTabIcon( tab, params.tab_icon );
         else if( comp && comp.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, comp.tab_icon );
         if( params.active==undefined ) params.active=true;
