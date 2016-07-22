@@ -7,32 +7,16 @@
 
 <%perl>
 my $iid = Util->_md5;
-my @topics;
-if( ! $meta->{hidden} ) { 
-    my $names = { name=>'ID', name=>'ID', title=>'Title', name_status=>'Status', created_by=>'Created By', created_on=>'Created On', modified_by=>'Modified By', modified_on=>'Modified On' };
-    
-    my $ix = 0;
-    @topics = Util->_array( $data->{$meta->{id_field}} );
-    my $cols = ref $meta->{columns} ? $meta->{columns} : do {
-        [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
-    };
-    
-    my @head =  map { 
-    my $nid= $_->[0];
-        +{ key=>$nid, name=>( $names->{$nid} // $_->[1] || $_->[0] ), width=>$_->[3], type=>$_->[2] }
-    } @$cols; 
-    if( ! @head ) {
-        @head = map { +{ key=>$_, name=>( $names->{$_} // $_ )  } } qw/name title name_status created_by created_on modified_by modified_on/
-    }
-    my @hide_list_statuses;
-    @hide_list_statuses = map { [ split /,/ ] } $meta->{hide_list_statuses} if $meta->{hide_list_statuses};
+my $ix = 0;
+my $table = $c->build_helper('Topics')->list_topics($c, $meta, $data, $user_security);
 </%perl>
-    
+
+%  if ( !$meta->{hidden} ) {
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0">
             <h5 style="border-bottom: 1px solid #bbb">
                   <% _loc($meta->{name_field}) %>
-% if( @topics && $$meta{datatable} ne 'never' ) {
+% if( $table->{topics} && $$meta{datatable} ne 'never' ) {
                    <div style="float:right; cursor:pointer">
                        <img src="/static/images/icons/cog.svg" alt="<% _loc('Show/Hide Search Options') %>" 
                                 onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
@@ -44,23 +28,21 @@ if( ! $meta->{hidden} ) {
         </th>
     </tr>
     <tr>
-% if (@hide_list_statuses && scalar @hide_list_statuses > 0){ for my $status (_array @hide_list_statuses){ @topics = grep { $_->{"category_status"}{type} ne "$status" } @topics } };
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
 
-% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username => $c->username, topic_security=>$_->{_project_security}, user_security=>$user_security) } @topics;
-% if( @topics && scalar @topics > 0 ) {
+% if( $table->{topics} && scalar @{$table->{topics}} > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
               <thead>
                 <tr>
-% foreach my $h ( @head ) {
+% foreach my $h ( @{$table->{head}}) {
                     <th style="white-space:nowrap;" width="<% $$h{width} %>"><% _loc( $$h{name} ) %></th>
 % }
                 </tr>
               </thead>
               <tbody>
-% foreach my $topic ( @topics ) {
+% foreach my $topic ( @{$table->{topics}} ) {
                 <tr class="topic-row" mid="<% $topic->{mid} %>">
-% foreach my $h ( @head  ) {
+% foreach my $h ( @{$table->{head}} ) {
 %    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
 %    if( $$h{key} eq 'name' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px; width: 1%" class="fieldlet-html">
@@ -70,18 +52,25 @@ if( ! $meta->{hidden} ) {
                 <& /partial/topic_name_multi.html, topics => $val, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
 %    } elsif( $$h{key} eq 'title' ) {
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
+%    } elsif( $$h{type} eq 'ci' ) {
+%        $val = ref $val
+%          ? Util->_markdown( join( "<br>", map { $table->{related_cis}{$_} } _array($val) ), { tab_width => 2 } )
+%          : Util->_markdown( $table->{related_cis}{$val}, { tab_width => 2 } );
+            <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $val %></td>
 %    } elsif( $$h{key} eq 'name_status' ) {
             <& /partial/topic_status.html, topic=>$topic &>
 %    } else {
             <td style="font-size: <% $meta->{td_font_size} // 10 %>px" class="fieldlet-html">
 <%
-                            ( defined $$h{type} && $$h{type} eq 'checkbox' )
-                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.svg">' : '<img src="/static/images/icons/checkbox.svg">')
-                            : ( defined $$h{type} && $$h{type}  eq 'index')
-                            ? ++$ix
-                            : ref $val ? Util->_markdown(join("<br>", _array($val)), { tab_width=>2 }) : Util->_markdown($val, { tab_width=>2 })
+        ( defined $$h{type} && $$h{type} eq 'checkbox' )
+          ? ( !$val || $val eq 'false'
+            ? '<img src="/static/images/icons/close.svg">'
+            : '<img src="/static/images/icons/checkbox.svg">' )
+          : ( defined $$h{type} && $$h{type} eq 'index' ) ? ++$ix
+          : ref $val ? Util->_markdown( join( "<br>", _array($val) ), { tab_width => 2 } )
+          : Util->_markdown( $val, { tab_width => 2 } )
+%>
 
-                        %>
 %    }
              </td>
 % }
@@ -97,15 +86,15 @@ if( ! $meta->{hidden} ) {
         <td colspan="2"><% _loc( 'None' ) %></td>
     </tr>
 % }# data
+% }
 
-% } # hidden
 
 <script>
     (function(){
         try {  // to support legacy
 % if( $$meta{datatable} eq 'always' ) {
     Baseliner.datatable('#<% $iid %>',{ pageLength: <% $$meta{paging_datatable} || 10 %> });
-% } elsif( $$meta{datatable} eq 'paging' && @topics > ($$meta{paging_datatable}||10) ) { 
+% } elsif( $$meta{datatable} eq 'paging' && @{$table->{topics}} > ($$meta{paging_datatable}||10) ) { 
     Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true, pageLength: <% $$meta{paging_datatable} || 10 %> });
 % } elsif( $$meta{datatable} ne 'never' ) {
     Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true, pageLength: <% $$meta{paging_datatable} || 10 %> }, function(){
