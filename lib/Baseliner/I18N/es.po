@@ -562,25 +562,28 @@ msgid "Missing title for topic with mid %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Doc.pm:32 lib/Baseliner/Helper/Topic.pm:21
-#: lib/BaselinerX/Fieldlets.pm:592 root/comp/topic/topic_lib_grid.js:1326
-#: root/comp/user_grid.js:947
+#: lib/Baseliner/Helper/Topics.pm:23 lib/BaselinerX/Fieldlets.pm:592
+#: root/comp/topic/topic_lib_grid.js:1326 root/comp/user_grid.js:947
 msgid "Modified On"
 msgstr "Modificado"
 
 #: lib/Baseliner/Controller/Doc.pm:33 lib/Baseliner/Helper/Topic.pm:20
-#: lib/BaselinerX/Fieldlets.pm:582 root/comp/ci-gridtree.js:454
-#: root/comp/job_new.js:616 root/comp/topic/topic_lib_grid.js:1325
+#: lib/Baseliner/Helper/Topics.pm:22 lib/BaselinerX/Fieldlets.pm:582
+#: root/comp/ci-gridtree.js:454 root/comp/job_new.js:616
+#: root/comp/topic/topic_lib_grid.js:1325
 msgid "Modified By"
 msgstr "Modificado Por"
 
 #: lib/Baseliner/Controller/Doc.pm:34 lib/Baseliner/Helper/Topic.pm:19
-#: lib/BaselinerX/Fieldlets.pm:572 root/comp/topic/topic_lib_grid.js:1327
+#: lib/Baseliner/Helper/Topics.pm:21 lib/BaselinerX/Fieldlets.pm:572
+#: root/comp/topic/topic_lib_grid.js:1327
 msgid "Created On"
 msgstr "Creado"
 
 #: lib/Baseliner/Controller/Doc.pm:35 lib/Baseliner/Helper/Topic.pm:18
-#: lib/BaselinerX/Fieldlets.pm:561 root/comp/ci-gridtree.js:455
-#: root/comp/job_new.js:610 root/comp/topic/topic_lib_grid.js:1328
+#: lib/Baseliner/Helper/Topics.pm:20 lib/BaselinerX/Fieldlets.pm:561
+#: root/comp/ci-gridtree.js:455 root/comp/job_new.js:610
+#: root/comp/topic/topic_lib_grid.js:1328
 msgid "Created By"
 msgstr "Creado Por"
 
@@ -1731,13 +1734,14 @@ msgid "Missing message id"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm:102 lib/Baseliner/Helper/Topic.pm:17
-#: lib/BaselinerX/Fieldlets.pm:328 lib/BaselinerX/Job.pm:28
-#: lib/BaselinerX/Reports/listado_jobs.pm:51 root/comp/dashboard_job.html:31
-#: root/comp/dashboard_job.html:170 root/comp/events.js:165
-#: root/comp/lifecycle/report_edit.js:115 root/comp/monitor_grid.js:1332
-#: root/comp/notifications.js:329 root/comp/notifications.js:558
-#: root/comp/scheduler_grid.js:284 root/comp/topic/topic_admin.js:267
-#: root/comp/topic/topic_lib.js:1769 root/comp/topic/topic_lib_grid.js:1311
+#: lib/Baseliner/Helper/Topics.pm:19 lib/BaselinerX/Fieldlets.pm:328
+#: lib/BaselinerX/Job.pm:28 lib/BaselinerX/Reports/listado_jobs.pm:51
+#: root/comp/dashboard_job.html:31 root/comp/dashboard_job.html:170
+#: root/comp/events.js:165 root/comp/lifecycle/report_edit.js:115
+#: root/comp/monitor_grid.js:1332 root/comp/notifications.js:329
+#: root/comp/notifications.js:558 root/comp/scheduler_grid.js:284
+#: root/comp/topic/topic_admin.js:267 root/comp/topic/topic_lib.js:1769
+#: root/comp/topic/topic_lib_grid.js:1311
 #: root/dashlets/filtered_topics.html:22 root/dashlets/lastjobs.html:59
 #: root/dashlets/list_jobs.js:55 root/dashlets/my_topics.html:21
 #: root/dashlets/number_of_topics_chart_config.js:106
@@ -2410,9 +2414,9 @@ msgstr ""
 msgid "Could not find key '%1' in the registry"
 msgstr ""
 
-#: lib/Baseliner/Helper/Topic.pm:16 lib/BaselinerX/Fieldlets.pm:360
-#: root/ci/topic.js:10 root/comp/sms.js:6 root/comp/topic/topic_lib.js:1768
-#: root/comp/topic/topic_lib_grid.js:1312
+#: lib/Baseliner/Helper/Topic.pm:16 lib/Baseliner/Helper/Topics.pm:18
+#: lib/BaselinerX/Fieldlets.pm:360 root/ci/topic.js:10 root/comp/sms.js:6
+#: root/comp/topic/topic_lib.js:1768 root/comp/topic/topic_lib_grid.js:1312
 #: root/dashlets/filtered_topics.html:20 root/dashlets/my_topics.html:20
 #: root/email/generic_post.html:49 root/email/generic_topic.html:49
 #: root/fields/templates/config/grid_editor.js:6 root/forms/link_revision.js:4
@@ -7584,7 +7588,7 @@ msgstr "Cargando..."
 msgid "Resolve"
 msgstr "Resolver"
 
-#: root/comp/daemon_grid.js:43 root/fields/system/html/list_topics.html:97
+#: root/comp/daemon_grid.js:43 root/fields/system/html/list_topics.html:86
 #: root/fields/templates/html/ci_grid.html:26
 #: root/fields/templates/html/grid_editor.html:112
 msgid "None"
@@ -12258,12 +12262,12 @@ msgstr "No hay revisiones"
 msgid "Scheduling"
 msgstr "Planificación"
 
-#: root/fields/system/html/list_topics.html:37
+#: root/fields/system/html/list_topics.html:21
 #: root/fields/templates/html/topic_grid.html:20
 msgid "Show/Hide Search Options"
 msgstr ""
 
-#: root/fields/system/html/list_topics.html:39
+#: root/fields/system/html/list_topics.html:23
 #: root/fields/templates/html/topic_grid.html:22
 msgid "Open in topic grid"
 msgstr ""
