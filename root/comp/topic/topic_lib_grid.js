@@ -179,18 +179,22 @@ Cla.topic_grid = function(params){
     };
 
     var init_buttons = function(action) {
-            
-        btn_edit[ action ]();
-        btn_delete[ action ]();         
+
+        btn_edit[action]();
+        btn_delete[action]();
 
         // change status button:
         var sm = grid_topics.getSelectionModel();
-        if( action == 'enable' && sm.hasSelection() ) {
+        if (action == 'enable' && sm.hasSelection()) {
             status_menu.removeAll();
-            var sels = sm.getSelections().map(function(row){ return row.data.topic_mid });
-            Cla.ajax_json('/topic/next_status_for_topics',{ topics:sels },function(res){
+            var sels = sm.getSelections().map(function(row) {
+                return row.data.topic_mid
+            });
+            Cla.ajax_json('/topic/next_status_for_topics', {
+                topics: sels
+            }, function(res) {
                 var items = [];
-                Ext.each( res.data,function(st){
+                Ext.each(res.data, function(st) {
                     items.push({
                         text: _(st.status_name),
                         new_status: st.id_status_to,
@@ -199,22 +203,28 @@ Cla.topic_grid = function(params){
                         handler: change_status_multi
                     });
                 });
-                Ext.each(items,function(it){
+                Ext.each(items, function(it) {
                     status_menu.addItem(it);
                 });
-                if( items.length > 0 ) {
-                    btn_change_status.setText( _('Change Status') );
+                if (items.length > 0) {
+                    btn_change_status.setText(_('Change Status'));
                     btn_change_status.enable();
                 } else {
-                    btn_change_status.setText( _('No Common Statuses') );
+                    btn_change_status.setText(_('No Common Statuses'));
                     btn_change_status.disable();
                 }
             });
+            var editPermissions = sm.getSelections().map(function(row) {
+                return row.json.can_edit;
+            });
+            if (editPermissions.indexOf(0) > -1) {
+                btn_edit.disable();
+            }
+
         } else {
-            btn_change_status.setText( _('Change Status') );
+            btn_change_status.setText(_('Change Status'));
             btn_change_status.disable();
         }
-
     }
 
     var button_no_filter = new Ext.Button({
@@ -619,8 +629,8 @@ Cla.topic_grid = function(params){
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
-                    Ext.each( sm.getSelections(), function(r) {
-                        Baseliner.show_topic_from_row( r, grid_topics );
+                    Ext.each( sm.getSelections(), function(row) {
+                        Baseliner.edit_topic_from_row( row, grid_topics );
                     });
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));

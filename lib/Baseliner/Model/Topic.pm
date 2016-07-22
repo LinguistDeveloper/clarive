@@ -620,6 +620,10 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status}{name});
         $data->{category_name} = _loc($data->{category_name});
+        $data->{can_edit} = $perm->user_has_action(
+            action   => 'action.topics.' . _name_to_id( $data->{category_name} ) . '.edit',
+            username => $username
+        );
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,

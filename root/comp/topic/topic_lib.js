@@ -15,6 +15,14 @@ Baseliner.show_topic = function(topic_mid, title, params) {
     }
 };
 
+Baseliner.edit_topic = function(topic_mid, title, params) {
+    Baseliner.add_tabcomp('/topic/view', title, Ext.apply({
+        topic_mid: topic_mid,
+        title: title,
+        swEdit: 1
+    }, params));
+};
+
 Baseliner.tree_topic_style = [
     '<span unselectable="on" style="font-size:0px;',
     'padding: 8px 8px 0px 0px;',
@@ -116,6 +124,16 @@ Baseliner.show_topic_from_row = function(r, grid) {
     var title = Baseliner.topic_title( r.get('topic_mid'), _(r.get( 'category_name' )), r.get('category_color') );
     Baseliner.show_topic( r.data.topic_mid, title, { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid.id } );
     //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
+}
+
+Baseliner.edit_topic_from_row = function(row, grid) {
+    var title = Baseliner.topic_title(row.get('topic_mid'), _(row.get('category_name')), row.get('category_color'));
+    Baseliner.edit_topic(row.data.topic_mid, title, {
+        topic_mid: row.get('topic_mid'),
+        title: title,
+        swEdit: 1,
+        _parent_grid: grid.id
+    });
 }
 
 Baseliner.user_seen_row = function(grid,mid){
@@ -1019,7 +1037,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             }
 
-            if (self.topic_mid > 0 && !self.activarEdit) {
+            if (self.topic_mid > 0) {
                 self.detail_reload();
             }
 
@@ -1030,7 +1048,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_edit.toggle(true);
                     self.btn_detail.toggle(false);
                     self.show_form();
-                    if (self.activarEdit) self.view_is_dirty = true;
                 }
             }
             if( !self.permDelete ) {
@@ -1386,7 +1403,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     detail_reload : function(){
         var self = this;
         // using jquery cos the self.detail.load() method callback is not consistent in IE8
-        if (self.topic_mid && self.swEdit==1){ self.swEdit = 0};
         if( !self.detail.body.dom ) return;  // is the topic there still?
         $( self.detail.body.dom ).load( '/topic/view',
             { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
