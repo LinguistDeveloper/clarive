@@ -1139,7 +1139,7 @@ msgstr "REPL"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "JS Reload"
-msgstr ""
+msgstr "Recargar JS"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "Wipe Cache"
@@ -1147,15 +1147,15 @@ msgstr "Limpieza de caché"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "ExtJS API"
-msgstr ""
+msgstr "ExtJS API"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "ExtJS Examples"
-msgstr ""
+msgstr "ExtJS Ejemplos"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "Sequences"
-msgstr ""
+msgstr "Secuencias"
 
 #: lib/Baseliner/Controller/REPL.pm
 msgid "Error getting sequences: %1"
