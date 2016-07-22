@@ -1,13 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: clarive\n"
-"PO-Revision-Date: 2016-01-26\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2016-07-27 14:53+0200\n"
 "Last-Translator: clarive\n"
 "Language-Team: clarive\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.8\n"
 
 #: lib/Baseliner/CI.pm
 msgid "Unexpected reference when loading CI: "
@@ -979,6 +981,10 @@ msgstr "Pase en ejecución cancelado"
 msgid "Job already cancelled"
 msgstr "Pase ya cancelado"
 
+#: lib/Baseliner/Controller/Job.pm
+msgid "Error deleting job_log"
+msgstr "Error al borrar el job_log"
+
 #: lib/Baseliner/Controller/Job.pm lib/Baseliner/RuleFuncs.pm
 msgid "Job cancelled by user %1"
 msgstr "Pase cancelado por el usuario %1"
@@ -1006,6 +1012,10 @@ msgstr "Error reanudando el pase: %1"
 #: lib/Baseliner/Controller/Job.pm
 msgid "Error grouping jobs: %1"
 msgstr ""
+
+#: lib/Baseliner/Controller/Log.pm
+msgid "The log does not exist"
+msgstr "El log no existe"
 
 #: lib/Baseliner/Controller/Log.pm
 msgid "Executed JOBS for <b>%1</b>"
