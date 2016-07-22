@@ -1735,15 +1735,36 @@ textarea.x-form-field.job_logfile_textarea, x:-moz-any-link, x:default {
     padding: 0 1px !important;
 }
 
+.img-main-logo-file{
+    border:0px;
+    max-width:220px;
+    max-height:35px;
+}
+
+.img-custom-logo-file{
+    border:0px;
+    max-width:220px;
+    max-height:28px;
+}
+
 img[src$='.svg'][src^='/static/images'] {
    height: 16px;
    width: 16px;
 }
 
+img.img-main-logo-file[src$='.svg']{
+   height: 26px;
+   width: 106px;
+}
+
+img.img-custom-logo-file[src$='.svg']{
+   height: 31px;
+   width: 208px;
+}
+
 span.x-tab-strip-text.x-panel-inline-icon {
     padding-left: 20px;
 }
-
 
 .category-tab-ghost {
     font-size:0px;
