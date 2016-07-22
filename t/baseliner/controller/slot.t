@@ -420,7 +420,66 @@ subtest 'calendar_grid: check permissions in the stash to view calendar' => sub 
 
     is $c->stash->{can_edit},  0;
     is $c->stash->{can_admin}, 0;
+};
 
+subtest 'calendar_grid_json: returns calendar list' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.view', bl => '*' } ] );
+    my $user   = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+    TestSetup->create_calendar(bl => '*', name => 'Calendar');
+    TestSetup->create_calendar(bl => '*', name => 'Calendar2');
+
+    my $c = _build_c( username => $user->username );
+
+    my $controller = _build_controller();
+    $controller->calendar_grid_json($c);
+
+    is @{$c->stash->{json}{data}}, 2;
+    is $c->stash->{json}{totalCount}, 2;
+};
+
+subtest 'calendar_grid_json: returns calendar list with limit -1' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.view', bl => '*' } ] );
+    my $user   = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+    TestSetup->create_calendar(bl => '*', name => 'Calendar');
+    TestSetup->create_calendar(bl => '*', name => 'Calendar2');
+
+    my $c = _build_c(
+        username => $user->username,
+        req => { params => { limit => -1 } }
+    );
+
+    my $controller = _build_controller();
+    $controller->calendar_grid_json($c);
+
+    is @{$c->stash->{json}{data}}, 2;
+    is $c->stash->{json}{totalCount}, 2;
+};
+
+subtest 'calendar_grid_json: returns calendar list with limit 1' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.calendar.view', bl => '*' } ] );
+    my $user   = TestSetup->create_user( name => 'user', username => 'user', id_role => $id_role, project => $project );
+    TestSetup->create_calendar(bl => '*', name => 'Calendar');
+    TestSetup->create_calendar(bl => '*', name => 'Calendar2');
+
+    my $c = _build_c(
+        username => $user->username,
+        req => { params => { limit => 1 } }
+    );
+
+    my $controller = _build_controller();
+    $controller->calendar_grid_json($c);
+
+    is @{$c->stash->{json}{data}}, 1;
+    is $c->stash->{json}{totalCount}, 2;
 };
 
 subtest 'calendar: check permissions in the stash to admin calendar' => sub {

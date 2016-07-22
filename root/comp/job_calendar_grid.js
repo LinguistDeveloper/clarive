@@ -1,38 +1,25 @@
 (function() {
+    var ps = 30;
     var store = new Baseliner.JsonStore({
         root: 'data',
         remoteSort: true,
         totalProperty: "totalCount",
-        id: 'id',
+        baseParams:{start:0 , limit: ps },
         url: '/job/calendar_grid_json',
-        fields: [{
-            name: 'id'
-        }, {
-            name: 'name'
-        }, {
-            name: 'description'
-        }, {
-            name: 'seq'
-        }, {
-            name: 'bl'
-        }, {
-            name: 'bl_desc'
-        }, {
-            name: 'ns'
-        }, {
-            name: 'ns_desc'
-        }]
+        fields: [
+            { name: 'id' },
+            { name: 'name' },
+            { name: 'description' },
+            { name: 'seq' },
+            { name: 'bl' },
+            { name: 'bl_desc' },
+            { name: 'ns' },
+            { name: 'ns_desc' }
+        ]
     });
 
-    var ps = 30; //page_size
-    store.load({
-        params: {
-            start: 0,
-            limit: ps
-        }
-    });
+    store.load({params:{start:0 , limit: ps }});
 
-    //Seleccion multiple con checkboxes     
     var checkSelectionModel = new Ext.grid.CheckboxSelectionModel();
 
     var render_bl = function(v, metadata, rec, rowIndex, colIndex, store) {
@@ -260,6 +247,7 @@
                                     },
                                     success: function(resp, opt) {
                                         grid.getStore().remove(sel);
+                                        grid.getStore().reload();
                                     },
                                     failure: function(resp, opt) {
                                         Ext.Msg.alert(_('Error'), _('Could not delete the calendar.'));
@@ -298,7 +286,24 @@
             }
         }
     });
-    // create the grid
+
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+                store.baseParams.limit = pageSize;
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
+
     var grid = new Ext.grid.GridPanel({
         title: _('Job Calendars'),
         header: false,
@@ -365,21 +370,10 @@
         ],
         autoSizeColumns: true,
         deferredRender: true,
-        bbar: new Ext.PagingToolbar({
-            store: store,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: 'Rows {0} - {1} de {2}',
-            emptyMsg: "No hay registros disponibles"
-        }),
+
+        bbar: ptool,
         tbar: [_('Search') + ': ', ' ',
-            new Baseliner.SearchField({
-                store: store,
-                params: {
-                    start: 0,
-                    limit: ps
-                }
-            }),
+            searchField,
             btn_view,
             btn_add,
             btn_edit,

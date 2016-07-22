@@ -85,14 +85,23 @@ sub calendar_slots : Path( '/job/calendar_slots' ) {
 sub calendar_grid_json : Path('/job/calendar_grid_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{ $p }{ qw/start limit query dir sort/ };
+    my ( $start, $limit, $query, $dir, $sort ) = @{ $p }{ qw/start limit query dir sort/ };
     $dir = $dir ? ( lc($dir) eq 'desc' ? -1 : 1 ) : 1;
-    my $rs = mdb->calendar->find;
-    $rs->sort({ $sort => $dir }) if $sort;
-    my @rows;
+    $start //= 0;
 
+    my $where = {};
+    if ($query){
+       $where = mdb->query_build(query=>$query, fields=>[qw(bl description name)]);
+    }
+    my $rs = mdb->calendar->find($where);
+    if ($limit && $limit != -1) {
+        $rs->limit($limit)->skip($start);
+    }
+
+    $rs->sort({ $sort => $dir }) if $sort;
+
+    my @rows;
     while ( my $r = $rs->next ) {
-        next if $query && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r ] );
         push @rows,
             {
             id          => $r->{id},
@@ -104,17 +113,21 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
             ns          => $r->{ns},
             ns_desc     => $r->{ns},
             }
-            if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     my @prjs = map { $_->{ns} } grep { is_number( $_->{ns} ) } grep { length } @rows;
     my %mids;
-    my @projects = mdb->master_doc->find({ mid=> mdb->in(@prjs)})->fields({_id=>0})->all;
+    my @projects = ci->project->find({ mid=> mdb->in(@prjs)})->fields({_id=>0})->all;
     foreach my $project (@projects){
         $mids{$project->{mid}} = $project;
     }
-    _debug( \%mids );
-    @rows = map { $_->{ns} = $mids{ $_->{ns} } ? $mids{ $_->{ns} }->{name} : $_->{ns}; $_ } @rows;
-    $c->stash->{ json } = { data => \@rows };
+
+    foreach my $row (@rows) {
+        if ( $row->{ns} && $mids{ $row->{ns} } ) {
+            $row->{ns} = $mids{ $row->{ns} }->{name};
+        }
+    }
+
+    $c->stash->{ json } = { data => \@rows, totalCount => $rs->count };
     $c->forward( 'View::JSON' );
 }
 
