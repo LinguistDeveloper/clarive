@@ -88,7 +88,6 @@ sub _process {
     my ( $out_fh, $file ) = @_;
 
     open my $fh, '<', $file or die "Can't open '$file': $!";
-    my $lineno = 1;
     while (<$fh>) {
         my $id;
 
@@ -99,14 +98,12 @@ sub _process {
                 $id =~ s{\\}{\\\\}g;
                 $id =~ s{"}{\\"}g;
 
-                print $out_fh "#: $file:$lineno\n";
+                print $out_fh "#: $file\n";
                 print $out_fh qq{msgid "$id"\n};
                 print $out_fh qq{msgstr ""\n};
                 print $out_fh "\n";
             }
         }
-
-        $lineno++;
     }
     close $fh;
 }
