@@ -1335,7 +1335,7 @@ sub get_meta {
         _warn _loc('Topic category has no form rule associated with it. Please contact your administrator.')
             unless length $default_form;
         return [] unless length $default_form;
-        my $stash = { name_category=>$$cat{name},id_category=>$id_category, rule_context=>'form' };
+        my $stash = { name_category=>$$cat{name},id_category=>$id_category, rule_context=>'form', topic_mid=>$topic_mid };
 
         my $rule_runner = Baseliner::RuleRunner->new;
         $rule_runner->find_and_run_rule(id_rule => $default_form, stash => $stash);
@@ -1352,7 +1352,7 @@ sub get_meta {
                 _warn _loc('Category %1 does not have an associated form', $cat->{name});
                 next;
             }
-            my $stash = { id_category=>$category, rule_context=>'form' };
+            my $stash = { id_category=>$category, rule_context=>'form', topic_mid=>$topic_mid };
 
             my $rule_runner = Baseliner::RuleRunner->new;
             $rule_runner->find_and_run_rule(id_rule => $default_form, stash => $stash);
