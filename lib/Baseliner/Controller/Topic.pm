@@ -79,14 +79,14 @@ register 'registor.menu.topics' => {
 
        my $menus = {
             'menu.topic' => {
-                    label => _loc('Topics'),
-                    title    => _loc('Topics'),
+                    label => _locl('Topics'),
+                    title    => _locl('Topics'),
                     actions  => ['action.topics.%'],
             },
             'menu.topic.topics' => {
                     index => 1,
-                    label => _loc('All'),
-                    title    => _loc('Topics'),
+                    label => _locl('All'),
+                    title    => _locl('Topics'),
                     actions  => ['action.topics.%.view'],
                     url_comp => '/topic/grid',
                     comp_data => { tabTopic_force => 1 },
@@ -99,13 +99,13 @@ register 'registor.menu.topics' => {
             %menu_view,
        };
        $menus->{'menu.topic.status'} = {
-                    label    => _loc('Status'),
+                    label    => _locl('Status'),
                     icon     => '/static/images/icons/state.svg',
                     index => 2,
                     #actions  => ['action.topics.%.create'],
              } if %menu_statuses;
        $menus->{'menu.topic.create'} = {
-                    label    => _loc('Create'),
+                    label    => _locl('Create'),
                     icon     => '/static/images/icons/add.svg',
                     index => 2,
                     actions  => ['action.topics.%.create'],
