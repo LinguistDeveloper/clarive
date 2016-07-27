@@ -4291,6 +4291,7 @@ Baseliner.generic_fields = function(params){
     var active = new Ext.form.Hidden({  xtype:'hidden', name:'active', value: data.active });   
 
     var all_sections = { 
+        'title': _('Title'),
         'head': _('Header'),
         'body': _('Body'),
         'details': _('Details'),

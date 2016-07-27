@@ -366,7 +366,8 @@ register 'fieldlet.system.title' => {
     icon        => '/static/images/icons/action.svg',
     type        => 'textfield',
     origin      => 'system',
-    section     => 'head'
+    section     => 'title',
+    section_allowed => ['title']
 };
 
 register 'fieldlet.system.labels' => {
