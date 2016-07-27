@@ -12,6 +12,7 @@ use TestSetup;
 
 use JSON ();
 use Capture::Tiny qw(capture);
+use Baseliner::Utils qw(_load);
 
 use_ok 'Baseliner::Controller::Rule';
 
@@ -825,22 +826,125 @@ subtest 'get_rule_ts: adds ts to json if the rule exists' => sub {
         };
 };
 
-subtest 'get_rule_ts: returns error if rule not found' => sub {
+subtest 'get_rule_ts: returns error if id_rule is not passed' => sub {
     _setup();
 
     my $c = mock_catalyst_c( req => { params => { id_rule => '' } } );
 
     my $controller = _build_controller();
 
-    $controller->get_rule_ts($c);
+    like exception { $controller->get_rule_ts($c)}, qr/id_rule is not passed/;
+};
 
-    is_deeply $c->stash,
-        {
-        json => {
-            msg     => 'Rule not found',
-            success => \0,
-        }
-        };
+subtest 'default: croaks on rule_type not webservice or independent' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(rule_type => 'form');
+
+    my $c = mock_catalyst_c( req => { params => {} } );
+
+    my $controller = _build_controller();
+
+    like exception { $controller->default( $c, 'json', $id_rule )}, qr/Rule $id_rule not independent or webservice: form/;
+};
+
+subtest 'default: creates correct event.rule.ws with defined ws_response' => sub {
+    _setup();
+
+    my $code = q{ $stash->{ws_response} = { status => 'success'} };
+    my $id_rule = TestSetup->create_rule_with_code(
+        rule_name => 'ws1',
+        rule_type => 'webservice',
+        code => $code
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'root',
+        req => { params => {id => 'AAA'} }
+    );
+
+    my $controller = _build_controller();
+    $controller->default( $c, 'json', $id_rule );
+
+    my $event = mdb->event->find_one( { event_key => 'event.rule.ws' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{username}, 'root';
+    is $event_data->{rule_name}, 'ws1';
+    is $event_data->{rule_type}, 'webservice';
+    is_deeply $event_data->{ws_params}, {
+        'id' => 'AAA',
+        'username' => 'root'
+    };
+    is_deeply $event_data->{ws_response}, { "status" => 'success' }
+};
+
+subtest 'default: creates correct event.rule.ws with not define ws_response' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'ws1',
+        rule_type => 'webservice'
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'root',
+        req => { params => {id => 'AAA'} }
+    );
+
+    my $controller = _build_controller();
+    $controller->default( $c, 'json', $id_rule );
+
+    my $event = mdb->event->find_one( { event_key => 'event.rule.ws' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{username}, 'root';
+    is $event_data->{rule_name}, 'ws1';
+    is $event_data->{rule_type}, 'webservice';
+    is_deeply $event_data->{ws_params}, {
+        'id' => 'AAA',
+        'username' => 'root'
+    };
+    cmp_deeply $event_data->{ws_response}->{stash} => ignore();
+};
+
+subtest 'default: creates correct event.rule.ws with rule error' => sub {
+    _setup();
+
+    my $code = q{ ci->user->find({mid => ''wef-122''})->mid" };
+    my $id_rule = TestSetup->create_rule_with_code(
+        rule_name => 'ws1',
+        rule_type => 'webservice',
+        code => $code
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'root',
+        req => { params => {id => 'AAA'} }
+    );
+
+    my $controller = _build_controller();
+    $controller->default( $c, 'json', $id_rule );
+
+    my $event = mdb->event->find_one( { event_key => 'event.rule.ws' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{username}, 'root';
+    is $event_data->{rule_name}, 'ws1';
+    is $event_data->{rule_type}, 'webservice';
+    is_deeply $event_data->{ws_params}, {
+        'id' => 'AAA',
+        'username' => 'root'
+    };
+    cmp_deeply $event_data->{ws_response}, {
+        Fault => {
+            faultactor => 'http://localhost',
+            faultcode => '999',
+            faultstring => ignore()
+        },
+        _RETURN_CODE => 404,
+        _RETURN_TEXT => 'sorry, not found',
+    }
 };
 
 done_testing;
@@ -870,6 +974,7 @@ sub _setup {
 
     mdb->rule->drop;
     mdb->rule_version->drop;
+    mdb->event->drop;
 }
 
 sub _create_rule {

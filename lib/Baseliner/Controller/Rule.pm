@@ -607,6 +607,7 @@ sub local_stmts_save {
 sub get_rule_ts : Local{
     my ($self,$c)=@_;
     my $p = $c->req->params;
+    my $id_rule = $p->{id_rule} or _fail _loc('id_rule is not passed');
     try {
         _debug $p;
         my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
@@ -614,7 +615,7 @@ sub get_rule_ts : Local{
     } catch {
         my $err = shift;
         _error $err;
-        $c->stash->{json} = { success=>\0, msg => _loc('Rule not found') };
+        $c->stash->{json} = { success=>\0, msg => $err };
     };
     $c->forward("View::JSON");
 }
@@ -958,31 +959,49 @@ sub default : Path {
     };
     my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $run_rule = sub{
-        try {
-            my $rule = $self->rule_from_url( $id_rule );
-            _fail _loc('Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type}) if $rule->{rule_type} !~ /independent|webservice/ ;
+        my $rule = $self->rule_from_url( $id_rule );
+        _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
 
-            my $rule_runner = Baseliner::RuleRunner->new;
-            my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash);
-            _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
-            $ret = defined $stash->{ws_response}
-                ? $stash->{ws_response}
-                : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
-        } catch {
-            my $err = shift;
-            my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
-            my $msg = "Error in Rule WS call '$id_rule/$meth': $json\n$err";
-            _error $msg;
-            event_new 'event.ws.rule_error', { msg=>$msg };
-            # $ret = { msg=>"$err", success=>\0 };
-            $ret = +{
-                Fault => { faultcode => '999', faultstring => "$err", faultactor => "$wsurl", },
-                _RETURN_CODE => 404,
-                _RETURN_TEXT => 'sorry, not found'
-          };
-        };
+        my $rule_runner = Baseliner::RuleRunner->new;
+        event_new 'event.rule.ws', {
+            username  => $username,
+            rule_id   => $rule->{id},
+            rule_name => $rule->{rule_name},
+            rule_type => $rule->{rule_type},
+            ws_params => $stash->{ws_params},
+            ws_body => $stash->{ws_body},
+            _steps      => ['PRE','RUN']
+            } => sub {
+                my $ret_rule = $rule_runner->find_and_run_rule( id_rule=>$id_rule, stash=>$stash);
+                _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
+                $ret = defined $stash->{ws_response}
+                    ? $stash->{ws_response}
+                    : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
+            }, sub {
+                my ($err) = @_;
+                my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
+                my $msg = "Error in Rule WS call '$id_rule/$meth': $json\n$err";
+                _error $msg;
+                event_new 'event.ws.rule_error', { msg=>$msg };
+                $ret = +{
+                    Fault => { faultcode => '999', faultstring => "$err", faultactor => "$wsurl" },
+                    _RETURN_CODE => 404,
+                    _RETURN_TEXT => 'sorry, not found'
+                };
+            };
+        event_new 'event.rule.ws', {
+            username  => $username,
+            rule_id   => $rule->{id},
+            rule_name => $rule->{rule_name},
+            rule_type => $rule->{rule_type},
+            ws_params => $stash->{ws_params},
+            ws_body => $stash->{ws_body},
+            ws_response => $ret,
+            _steps      => ['POST']
+            };
         return $ret;
-    };
+        };
+
     if( $meth eq 'soap' ) {
         my $doc = $self->rule_from_url( $id_rule );
         my $wsdl_body = Util->parse_vars( $doc->{wsdl}, $stash );

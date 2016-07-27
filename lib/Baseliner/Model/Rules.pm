@@ -50,7 +50,12 @@ register 'event.ws.rule_error' => {
 };
 
 register 'event.ws.wsdl_error' => {
-    description=>_locl('WSDL Error Running Rule from WS'),
+     description=>_locl('WSDL Error Running Rule from WS'),
+};
+
+register 'event.rule.ws' => {
+    description => _locl('Webservice rule call'),
+    vars => ['username', 'rule_id', 'rule_name', 'ws_params', 'ws_response']
 };
 
 sub init_job_tasks {
@@ -171,7 +176,7 @@ sub build_tree {
             was        => $p{ts} || ''._ts
         );
 
-        # _warn _loc('Rule tree is empty for rule %1', $id_rule);
+        # _warn _loc 'Rule tree is empty for rule %1', $id_rule;
         return @tf;
     }
 }
