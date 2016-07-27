@@ -428,7 +428,7 @@ Baseliner.gen_btn_listener = function() {
  */
 
 Baseliner.Explorer = Ext.extend( Ext.Panel, {
-    id: 'explorer',
+    cls: 'ui-explorer',
     layout: 'card',
     region: 'west',
     activeItem: 0,
@@ -598,14 +598,13 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });
         
         var button_releases = new Ext.Button({
-            cls: 'x-btn-icon',
+            cls: 'x-btn-icon ui-explorer-releases',
             icon: '/static/images/icons/release_explorer.svg',
             handler: function(){
                 this.disable();
                 var that = this;
                 show_releases(function(){that.enable();});
             },
-            id: 'explorer-releases',
             tooltip: _('Releases'),
             toggleGroup: 'explorer-card',
             pressed: false,

@@ -12,25 +12,25 @@ $driver->setup('TestPermissionsExplorer');
 subtest 'cannot see lifecycle panel without permission' => sub {
     $driver->login('nobody', 'password');
 
-    ok $driver->element_not_visible('#explorer');
+    ok $driver->element_not_visible('.ui-explorer');
 };
 
 subtest 'can see lifecycle panel with permission' => sub {
     $driver->login('can_see_lifecycle', 'password');
 
-    ok $driver->element_visible('#explorer');
+    ok $driver->element_visible('.ui-explorer');
 };
 
 subtest 'cannot see releases in lifecycle panel without permission' => sub {
     $driver->login('can_see_lifecycle', 'password');
 
-    ok $driver->element_not_visible('#explorer-releases');
+    ok $driver->element_not_visible('.ui-explorer-releases');
 };
 
 subtest 'can see releases in lifecycle panel with permission' => sub {
     $driver->login('can_see_lifecycle_releases', 'password');
 
-    ok $driver->element_visible('#explorer-releases');
+    ok $driver->element_visible('.ui-explorer-releases');
 };
 
 subtest 'cannot see dashboards in lifecycle panel without permission' => sub {

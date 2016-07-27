@@ -17,7 +17,7 @@ subtest 'cannot edit topic fields without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -55,7 +55,7 @@ subtest 'can edit topic fields with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -93,7 +93,7 @@ subtest 'cannot see topic fields without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
