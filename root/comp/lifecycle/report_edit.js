@@ -67,27 +67,52 @@
         node.setIcon( attr.icon );
     }
     
-    var edit_value = function(node){
+    var edit_value = function(node) {
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
-        
-        var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
-        var oper_in = [ ['$in','IN'], ['$nin','NOT IN'], ['EMPTY', 'EMPTY'], ['NOT EMPTY', 'NOT EMPTY'] ];
-        var oper_string = [ ['','='], ['$ne','<>'],['like','LIKE'], ['not_like','NOT LIKE'], ['$in', 'IN'], ['$nin', 'NOT IN'] ];
+
+        var oper_all = [
+            ['', '='],
+            ['$ne', '<>'],
+            ['$lt', '<'],
+            ['$lte', '<='],
+            ['$gt', '>'],
+            ['$gte', '>=']
+        ];
+        var oper_in = [
+            ['$in', 'IN'],
+            ['$nin', 'NOT IN'],
+            ['EMPTY', 'EMPTY'],
+            ['NOT EMPTY', 'NOT EMPTY']
+        ];
+        var oper_string = [
+            ['', '='],
+            ['$ne', '<>'],
+            ['like', 'LIKE'],
+            ['not_like', 'NOT LIKE'],
+            ['$in', 'IN'],
+            ['$nin', 'NOT IN']
+        ];
         var oper_by_type = oper_all;
-        var field = { xtype:'textarea', name:'value', fieldLabel: pn.text, height:60, value:attr.value==undefined?'':attr.value };
+        var field = {
+            xtype: 'textarea',
+            name: 'value',
+            fieldLabel: pn.text,
+            height: 60,
+            value: attr.value == undefined ? '' : attr.value
+        };
         var ftype = attr.field || attr.where;
-        switch( ftype ) {
+        switch (ftype) {
             case 'string':
                 var opt_arr = [];
-                if( pn.attributes.options != undefined  ) {
+                if (pn.attributes.options != undefined) {
                     var vv = pn.attributes.options.split(',');
-                    Ext.each(vv, function(v){
+                    Ext.each(vv, function(v) {
                         opt_arr.push([v]);
                     });
                     var stor = new Ext.data.ArrayStore({
-                        fields: [ "value" ],
-                        data : opt_arr
+                        fields: ["value"],
+                        data: opt_arr
                     });
                     field = new Baseliner.SuperBox({
                         name: 'value',
@@ -101,40 +126,66 @@
                         mode: 'local',
                         value: attr.value
                     });
-                }          
-                oper_by_type = oper_string;               
+                }
+                oper_by_type = oper_string;
                 break;
-            case 'number': 
-                field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 :  parseFloat(attr.value) };
+            case 'number':
+                field = {
+                    xtype: 'textfield',
+                    name: 'value',
+                    maskRe: /[0-9]/,
+                    fieldLabel: pn.text,
+                    value: attr.value == undefined ? 0 : parseFloat(attr.value)
+                };
                 break;
-            case 'date': 
-                field={ xtype:'xdatefield', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
+            case 'date':
+                field = {
+                    xtype: 'xdatefield',
+                    name: 'value',
+                    fieldLabel: pn.text,
+                    value: attr.value == undefined ? '' : attr.value
+                };
                 break;
-            case 'status': 
-                field=new Baseliner.SuperBox({ 
-                    fieldLabel:_('Status'), 
-                    name:'value',
+            case 'status':
+                field = new Baseliner.SuperBox({
+                    fieldLabel: _('Status'),
+                    name: 'value',
                     pageSize: 10,
-                    valueField:'id', 
+                    valueField: 'id',
                     hiddenName: 'value',
-                    value: attr.value, 
-                    singleMode: false, 
-                    store: new Baseliner.Topic.StoreStatus({ baseParams: { sort : 'name', category: pn.attributes.category } })
-                });
-                //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
+                    value: attr.value,
+                    singleMode: false,
+                    store: new Baseliner.Topic.StoreStatus({
+                        baseParams: {
+                            sort: 'name',
+                            category: pn.attributes.category
+                        }
+                    })
+                });                
                 oper_by_type = oper_in;
                 break;
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
                 var meta_type = pn.attributes.meta_type;
                 if (ci_class != undefined && ci_class != '') {
-                    field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:false, 'class': ci_class, security: true });
-                }else{
+                    field = new Baseliner.ci_box({
+                        value: attr.value,
+                        name: 'value',
+                        singleMode: false,
+                        force_set_value: false,
+                        'class': ci_class,
+                        security: true
+                    });
+                } else {
                     var filter = pn.attributes.filter || 'none';
-                    if(meta_type == 'user'){
+                    if (meta_type == 'user') {
                         var user_box_store = new Baseliner.Topic.StoreUsers({
                             autoLoad: true,
-                            baseParams: { roles: filter, start: 0, limit: 9999 }
+                            baseParams: {
+                                roles: filter,
+                                start: 0,
+                                limit: 9999
+                            }
                         });
                         field = new Baseliner.model.Users({
                             fieldLabel: pn.text,
@@ -145,19 +196,19 @@
                             mode: 'local',
                             pageSize: 0
                         });
-                        user_box_store.on('load',function(){
-                            field.setValue( attr.value ) ;            
+                        user_box_store.on('load', function() {
+                            field.setValue(attr.value);
                         });
                     } else {
                         var topic_box_store = new Baseliner.store.Topics({
-                            baseParams: { 
-                                topic_child_data: true, 
-                                show_release: 0, 
+                            baseParams: {
+                                topic_child_data: true,
+                                show_release: 0,
                                 filter: filter
-                            } 
+                            }
                         });
                         field = new Baseliner.TopicBox({
-                            fieldLabel: pn.text,                         
+                            fieldLabel: pn.text,
                             name: 'value',
                             store: topic_box_store,
                             value: attr.value,
@@ -165,85 +216,94 @@
                         });
                     }
                 }
-                oper_by_type = oper_in;                
-                
+                oper_by_type = oper_in;
+
                 var store;
                 store = field.getStore();
-                store.on('load',function(){
+                store.on('load', function() {
                     var arr_options = [];
                     var arr_values = [];
-                    this.each( function(r) {
-                        arr_options.push( r.data.name );
-                        arr_values.push( r.data.mid );
+                    this.each(function(r) {
+                        arr_options.push(r.data.name);
+                        arr_values.push(r.data.mid);
                     });
                     attr.options = arr_options;
-                });                 
+                });
                 break;
         }
         form_value.save_and_remove();
         var oper = new Baseliner.ComboDouble({
-            value: attr.oper || '', 
-            fieldLabel: _('Operator'), data: oper_by_type });
+            value: attr.oper || '',
+            fieldLabel: _('Operator'),
+            data: oper_by_type
+        });
         form_value.add(oper);
         var fcomp = form_value.add(field);
-        var set_value = function(){ 
-            if( ! Ext.getCmp( fcomp.id ) ) return;
+        var set_value = function() {
+            if (!Ext.getCmp(fcomp.id)) return;
             attr.oper = oper.get_save_data();
 
             if (!fcomp.isVisible()) {
                 attr.value = undefined;
                 attr.options = undefined;
-                node.setText( oper.getRawValue() );
+                node.setText(oper.getRawValue());
                 return;
             }
 
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
-            
+
             var label;
-            switch( ftype ) {
-                case 'string': val = val.toString(); break;
-                case 'number': val = parseFloat(val); break;
-                case 'date': val = val.format('Y-m-d').trim(); break;
+            switch (ftype) {
+                case 'string':
+                    val = val.toString();
+                    break;
+                case 'number':
+                    val = parseFloat(val);
+                    break;
+                case 'date':
+                    val = val.format('Y-m-d').trim();
+                    break;
                 case 'ci':
                     var arr_options = [];
-                    fcomp.items.each(function(r){ arr_options.push(r.display) });
+                    fcomp.items.each(function(r) {
+                        arr_options.push(r.display)
+                    });
                     attr.options = arr_options;
                     label = arr_options.join(',');
-                    var tmp_val = val?val.toString().split(','):'';
+                    var tmp_val = val ? val.toString().split(',') : '';
                     val = tmp_val;
                     break;
                 case 'status':
                     label = fcomp.get_labels().join(',');
                     attr.options = fcomp.get_labels();
-                    if(attr.options.length == 0){
+                    if (attr.options.length == 0) {
                         var arr_options = [];
                         var arr_values = [];
                         var store;
-                        store = field.getStore();                        
-                        store.each( function(r) {
-                            arr_options.push( r.data.name );
-                            arr_values.push( r.data.mid );
+                        store = field.getStore();
+                        store.each(function(r) {
+                            arr_options.push(r.data.name);
+                            arr_values.push(r.data.mid);
                         });
                         arr_options.push(_('Undefined'));
-                        arr_values.push( '' );
+                        arr_values.push('');
                         label = arr_options.join(',');
                         attr.options = arr_options;
                         val = arr_values;
                     }
             }
             attr.value = val;
-            node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
-            //console.dir(node);
-        };
-        //oper.on('blur', function(f){ set_value() });
-        //fcomp.on('blur', function(f){ set_value() });
-        fcomp.on('change', function(f){ set_value() });
+            node.setText(String.format('{0} {1}', oper.getRawValue(), label || attr.value));            
+        };        
+        fcomp.on('change', function(f) {
+            set_value()
+        });
 
         if (!operNeedsValue(node.text)) {
             fcomp.hide();
         }
 
-        oper.on('select', function(f, record, index){
+        oper.on('select', function(f, record, index) {
             if (!operNeedsValue(record.data.item)) {
                 fcomp.hide();
             } else {
@@ -252,10 +312,12 @@
 
             set_value();
         });
-        form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
-        if( form_value.collapsed ) form_value.toggleCollapse(true);
+        form_value.setTitle(String.format('{0} - {1}', node.text, pn.text));
+        if (form_value.collapsed) form_value.toggleCollapse(true);
         form_value.doLayout();
-        form_value.set_value = function(){ set_value() };
+        form_value.set_value = function() {
+            set_value()
+        };
     };
 
     function operNeedsValue(oper) {
@@ -264,8 +326,7 @@
         }
 
         return true;
-    }
-    
+    }    
 
     // selected fields editor
     var edit_select = function(node){
