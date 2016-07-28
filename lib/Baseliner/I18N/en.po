@@ -6836,19 +6836,17 @@ msgid "Error opening CI %1: %2"
 msgstr ""
 
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/configlist/grid.mas
-#: root/comp/daemon_grid.js root/comp/events.js root/comp/lifecycle/tasks.js
-#: root/comp/log_grid.js root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/report.js root/comp/revision/grid.mas
-#: root/comp/revision/grid_live.mas root/comp/scheduler_grid.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: root/comp/daemon_grid.js root/comp/lifecycle/tasks.js root/comp/log_grid.js
+#: root/comp/monitor_grid.js root/comp/notifications.js root/comp/report.js
+#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
+#: root/comp/scheduler_grid.js root/site/common.js
 msgid "Rows {0} - {1} of {2}"
 msgstr ""
 
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js
 #: root/comp/config/config_grid.mas root/comp/daemon_grid.js
-#: root/comp/events.js root/comp/message_grid.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/report.js root/site/common.js
 msgid "There are no rows available"
 msgstr ""
 
@@ -6920,20 +6918,18 @@ msgstr ""
 msgid "Select rows first"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/events.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js
+#: root/comp/ci-gridtree.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/report.js root/site/common.js
 msgid "all rows"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/events.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js
-#: root/comp/topic/topic_lib_grid.js
+#: root/comp/ci-gridtree.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/report.js root/site/common.js
 msgid "Show"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/events.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js
-#: root/comp/topic/topic_lib_grid.js
+#: root/comp/ci-gridtree.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/report.js root/site/common.js
 msgid "rows/page"
 msgstr ""
 
@@ -7036,7 +7032,6 @@ msgid "Received"
 msgstr ""
 
 #: root/comp/config/config_grid.mas root/comp/message_grid.js
-#: root/comp/role_grid.js
 msgid "Rows {0} - {1} de {2}"
 msgstr ""
 
