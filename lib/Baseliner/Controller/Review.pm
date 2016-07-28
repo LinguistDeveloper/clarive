@@ -4,9 +4,21 @@ BEGIN { extends 'Catalyst::Controller' }
 
 with 'Baseliner::Role::ControllerValidator';
 
+use Baseliner::Core::Registry ':dsl';
 use BaselinerX::CI::review;
 use Baseliner::Utils qw(_loc _array _ci);
 use Baseliner::Sugar;
+
+register 'event.review.create' => {
+    text => '%1 posted a review: %3',
+    description => 'User posted a review',
+    vars => ['username', 'ts', 'review'],
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        template => '/email/generic_post.html',
+        scope => ['project', 'category', 'category_status'],
+    },
+};
 
 sub add : Local {
     my ( $self, $c ) = @_;

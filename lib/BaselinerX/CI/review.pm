@@ -16,17 +16,6 @@ has action     => qw(is rw isa Any);
 has_ci 'rev';
 has_ci 'repo';
 
-register 'event.review.create' => {
-    text => '%1 posted a review: %3',
-    description => 'User posted a review',
-    vars => ['username', 'ts', 'review'],
-    notify => {
-        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
-        template => '/email/generic_post.html',
-        scope => ['project', 'category', 'category_status'],
-    },
-};
-
 sub rel_type {
     {
         rev  => [ to_mid => 'rev_review' ],

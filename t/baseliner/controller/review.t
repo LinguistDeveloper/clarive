@@ -178,7 +178,7 @@ subtest 'list: returns reviews grouped by files' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::CI::review' );
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'BaselinerX::CI::review', 'Baseliner::Controller::Review' );
 
     TestUtils->cleanup_cis;
 
