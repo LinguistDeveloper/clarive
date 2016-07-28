@@ -3,20 +3,6 @@
  * Topic Grid
  *********************************************************************************
  */
-Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
-    onLoad: function(store,r,o) {
-        var p = this.getParams();
-        if( o.params && o.params[p.start] ) {
-            var st = o.params[p.start];
-            var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
-            if( ap > this.getPageData().pages ) {
-                delete o.params[p.start];
-            }
-        }
-        Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
-    }
-});
-
 var shorten_title = function(t){
     if( !t || t.length==0 ) {
         t = '';
@@ -1232,52 +1218,26 @@ Cla.topic_grid = function(params){
         }
     };
 
-    var search_field = new Baseliner.SearchField({
-        store: store_topics,
-        params: {start: 0 },
-        emptyText: _('<Enter your search string>')
-    });
-    if( current_state.baseParams && current_state.baseParams.query ) {
-        search_field.setValue( current_state.baseParams.query );
-    }
-
-    //var pager_tool = new Ext.ux.ProgressBarPager();
-
-    var ps_plugin = new Ext.ux.PageSizePlugin({
-        editable: false,
-        width: 90,
-        data: [
-            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-            ['100', 100], ['200',200], ['500', 500]
-        ],
-        beforeText: _('Show'),
-        afterText: _('rows/page'),
-        value: ps,
-        listeners: {
-            'select':function(c,rec) {
-                ps = rec.data.value;
-                if( rec.data.value < 0 ) {
-                    ptool.afterTextItem.hide();
-                } else {
-                    ptool.afterTextItem.show();
-                }
-            }
-        },
-        forceSelection: true
-    });
-
     var ptool = new Baseliner.PagingToolbar({
         store: store_topics,
         pageSize: ps,
-        plugins:[
-            ps_plugin,
-            //pager_tool
-            new Ext.ux.ProgressBarPager()
-        ],
-        displayInfo: true,
-        displayMsg: _('Rows {0} - {1} of {2}'),
-        emptyMsg: _('There are no rows available')
+        plugins: [new Ext.ux.ProgressBarPager()],
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                search_field.setParam('limit', pageSize);
+             }
+        }
     });
+
+    var search_field = new Baseliner.SearchField({
+        store: store_topics,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
+
+    if( current_state.baseParams && current_state.baseParams.query ) {
+        search_field.setValue( current_state.baseParams.query );
+    }
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         listeners: {

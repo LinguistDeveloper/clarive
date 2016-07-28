@@ -922,8 +922,10 @@ sub list : Local : Does('Ajax') {
         }
     );
     $rs->sort( $sort ? { $sort => $dir } : { username => 1 } );
+    if ($limit && $limit != -1) {
+        $rs->limit($limit);
+    }
     $rs->skip($start);
-    $rs->limit($limit);
 
     $cnt = ci->user->find($where)->count();
 

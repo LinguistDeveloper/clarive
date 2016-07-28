@@ -117,6 +117,65 @@ subtest 'infodetail: root user is allowed to query any user details' => sub {
     cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
+subtest 'list: returns complete user list' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+    TestSetup->create_user( name => 'user2', username => 'user2', id_role => $id_role, project => $project );
+
+    my $c = _build_c( username => 'root' );
+    $controller->list($c);
+
+    is $c->stash->{json}{data}[1]->{username}, 'user1';
+    is $c->stash->{json}{data}[2]->{username}, 'user2';
+    is @{$c->stash->{json}{data}}, 3;
+    is $c->stash->{json}{totalCount}, 3;
+};
+
+subtest 'list: returns user list with limit -1' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+    TestSetup->create_user( name => 'user2', username => 'user2', id_role => $id_role, project => $project );
+
+    my $c = _build_c(
+        req      => { params => { limit => -1 } },
+        username => 'root'
+    );
+    $controller->list($c);
+
+    is @{$c->stash->{json}{data}}, 3;
+    is $c->stash->{json}{totalCount}, 3;
+};
+
+subtest 'list: returns user list with limit 1' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+    TestSetup->create_user( name => 'user2', username => 'user2', id_role => $id_role, project => $project );
+
+    my $c = _build_c(
+        req => { params => { limit => 1 } },
+        username => 'root'
+    );
+    $controller->list($c);
+
+    is @{$c->stash->{json}{data}}, 1;
+    is $c->stash->{json}{totalCount}, 3;
+};
+
 subtest 'avatar: generates user avatar if it doesnt exit' => sub {
     _setup();
 
