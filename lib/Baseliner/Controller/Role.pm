@@ -43,7 +43,6 @@ sub json : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-
     $sort ||= 'role';
     $dir ||= 'asc';
     if($dir =~ /asc/i){
@@ -56,9 +55,11 @@ sub json : Local {
     $limit ||= 60;
     my $where = $query ? mdb->query_build(query => $query, fields=>[qw(role description mailbox)]) : {};
     my $rs = mdb->role->find($where);
-    $cnt = $rs->count($where);
+    $cnt = $rs->count();
     $rs->skip($start);
-    $rs->limit($limit);
+    if ($limit && $limit != -1) {
+        $rs->limit($limit);
+    }
     $rs->sort($sort ? { $sort => $dir } : { role => 1 });
 
     my @rows;

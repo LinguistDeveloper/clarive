@@ -878,13 +878,27 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     emptyText: _("<search>"),
     paramName : 'query',
 
+    setParam: function(key, value) {
+        this.params[key] = value;
+    },
+
+    $reloadStore : function(value){
+        var o = (!this.params || Object.keys(this.params) == 0) ? {start: 0} : this.params;
+        this.store.baseParams = this.store.baseParams || {};
+        if (value){
+            this.store.baseParams[this.paramName] = value;
+            this.params[this.paramName] = value;
+        } else {
+            delete this.store.baseParams[this.paramName];
+            delete this.params[this.paramName];
+        }
+        this.store.reload({params:o});
+    },
+
     onTrigger1Click : function(){
         if(this.hasSearch){
             this.el.dom.value = '';
-            var o = {start: 0};
-            this.store.baseParams = this.store.baseParams || {};
-            this.store.baseParams[this.paramName] = '';
-            this.store.reload({params:o});
+            this.$reloadStore('');
             this.triggers[0].hide();
             this.hasSearch = false;
         }
@@ -896,10 +910,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
             this.onTrigger1Click();
             return;
         }
-        var o = {start: 0};
-        this.store.baseParams = this.store.baseParams || {};
-        this.store.baseParams[this.paramName] = v;
-        this.store.reload({params:o});
+        this.$reloadStore(v);
         this.hasSearch = true;
         this.triggers[0].show();
     },
@@ -1015,6 +1026,59 @@ Baseliner.openDashboardTab = function(id_job,title) {
         Baseliner.addNewTabComp("/job/log/dashboard?mid="+id_job, title);
     }
 };
+
+Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
+    displayInfo: true,
+    displayMsg: _('Rows {0} - {1} of {2}'),
+    emptyMsg: _('There are no rows available'),
+    initComponent : function(){
+        var self = this;
+
+        self.plugins = [
+            new Ext.ux.PageSizePlugin({
+                editable: false,
+                width: 90,
+                data: [
+                    ['5', 5],
+                    ['10', 10],
+                    ['15', 15],
+                    ['20', 20],
+                    ['25', 25],
+                    ['50', 50],
+                    ['100', 100],
+                    ['200', 200],
+                    ['500', 500],
+                    ['1000', 1000],
+                    [_('all rows'), -1]
+                ],
+                beforeText: _('Show'),
+                afterText: _('rows/page'),
+                value: self.pageSize,
+                listeners: {
+                    'select': function(c, rec) {
+                        var ps = parseInt(rec.data.value, 10);
+                        if (rec.data.value < 0) {
+                            self.afterTextItem.hide();
+                        } else {
+                            self.afterTextItem.show();
+                        }
+
+                        var listeners = self.initialConfig.listeners;
+                        if( listeners && listeners.pagesizechanged){
+                            listeners.pagesizechanged(ps);
+                        }
+                    }
+                },
+                forceSelection: true
+            })
+        ];
+        if (self.initialConfig.plugins) {
+            self.plugins = self.plugins.concat(self.initialConfig.plugins);
+        }
+
+        Baseliner.PagingToolbar.superclass.initComponent.call(this);
+    }
+});
 
 /**
  * Page Size Plugin for Paging Toolbar

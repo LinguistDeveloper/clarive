@@ -5,8 +5,8 @@
             'data', 'type', 'id_rule', 'id_rule_log', 'id_event', 
             'mid', 'id', '_id', '_is_leaf', '_parent' ]
     );
-     var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({  
-       autoLoad : true,  
+     var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({
+       autoLoad : true,
        url: '/event/log',
 	   //baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, Record )
@@ -60,13 +60,6 @@
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );
     };
     
-    var search_field =   new Baseliner.SearchField({
-        store: store_events,
-        width: 280,
-        params: {start: 0, limit: ps },
-        emptyText: _('<Enter your search string>')
-    });
-
     var del_event = function(){
         var sm = grid.getSelectionModel();
         if( sm.hasSelection() ) {
@@ -96,53 +89,25 @@
             });
         }
     };
-    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
-        onLoad: function(store,r,o) {
-            var p = this.getParams();
-            if( o.params && o.params[p.start] ) {
-                var st = o.params[p.start];
-                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
-                if( ap > this.getPageData().pages ) { 
-                    delete o.params[p.start];
-                }
-            }
-            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
-        }
-    });
-    var ps_plugin = new Ext.ux.PageSizePlugin({
-        editable: false,
-        width: 90,
-        data: [
-            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
-        ],
-        beforeText: _('Show'),
-        afterText: _('rows/page'),
-        value: ps,
-        listeners: {
-            'select':function(c,rec) {
-                ps = rec.data.value;
-                if( rec.data.value < 0 ) {
-                    ptool.afterTextItem.hide();
-                } else {
-                    ptool.afterTextItem.show();
-                }
-            }
-        },
-        forceSelection: true
-    });
 
     var ptool = new Baseliner.PagingToolbar({
         store: store_events,
         pageSize: ps,
-        plugins:[
-            ps_plugin,
-            new Ext.ux.ProgressBarPager()
-        ],
-        displayInfo: true,
-        displayMsg: _('Rows {0} - {1} of {2}'),
-        emptyMsg: _('There are no rows available')
+        plugins: [new Ext.ux.ProgressBarPager()],
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                search_field.setParam('limit', pageSize);
+             }
+        }
     });
+
+    var search_field =   new Baseliner.SearchField({
+        store: store_events,
+        width: 280,
+        params: {start: 0, limit: ptool.pageSize },
+        emptyText: _('<Enter your search string>')
+    });
+
 
     var grid = new Ext.ux.maximgb.tg.GridPanel({
         renderTo: 'main-panel',

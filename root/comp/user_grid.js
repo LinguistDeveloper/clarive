@@ -1,12 +1,13 @@
 (function(params){
     if( ! params ) params={};
     if( ! params.tbar ) params.tbar={};
+    var ps = 30;
 
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/user/list',
         fields: [
             {  name: 'id' },
@@ -27,16 +28,16 @@
                 else
                     init_buttons('disable');
             }
-        }       
+        }
     });
-    
+
     var store_roles = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/role/json',
-        fields: [ 
+        fields: [
             {  name: 'id' },
             {  name: 'role' },
             {  name: 'actions' },
@@ -44,10 +45,8 @@
             {  name: 'mailbox' }
         ]
     });
-    
-    var ps = 1000; //page_size
     store.load({params:{start:0 , limit: ps}});
-    
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +64,7 @@
         }
         return str;
     }
-    
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -306,7 +305,7 @@
                                        icon: Ext.Msg.INFO
                                        });
                             swDo = false;
-                        };                  
+                        };
                     }
                     if (swDo){
                         form.submit({
@@ -315,7 +314,7 @@
                             },
                             success: function(f,a){
                             Baseliner.message(_('Success'), a.result.msg );
-                            store.load();
+                            store.load({params:{start:0 , limit: ps}});
                             grid.getSelectionModel().clearSelections();
                             store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
                             form.findField("id").setValue(a.result.user_id);
@@ -324,11 +323,11 @@
                             win.setTitle(_('Edit user'));
                             },
                             failure: function(f,a){
-                                
-                            Ext.Msg.show({  
-                                title: _('Information'), 
-                                msg: a.result.msg , 
-                                buttons: Ext.Msg.OK, 
+
+                            Ext.Msg.show({
+                                title: _('Information'),
+                                msg: a.result.msg ,
+                                buttons: Ext.Msg.OK,
                                 icon: Ext.Msg.INFO
                             });                         
                             }
@@ -796,7 +795,7 @@
             ]
         });
         win.show();
-        store_user_roles_projects.load({ params: {username: username} });       
+        store_user_roles_projects.load({ params: {username: username} });
         store_roles.load({params:{start:0 , limit: ps}});
     };
     
@@ -907,24 +906,37 @@
                                 Baseliner.message( _('ERROR'), response.msg );
                             }
                         }
-                    
                     );
                 }
             } );
         }
     });
-    
+
     var btn_change_password = new Ext.Toolbar.Button({
         text: _('Change password'),
         icon:'/static/images/icons/delete.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {
-            
         }
     });
-    
-    // create the grid
+
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
+
     var grid = new Ext.grid.GridPanel({
             title: _('Users'),
             header: false,
@@ -950,22 +962,10 @@
             ],
             autoSizeColumns: true,
             deferredRender:true,
-            bbar: new Ext.PagingToolbar({
-                    store: store,
-                    pageSize: ps,
-                    displayInfo: true,
-                    displayMsg: _('Rows {0} - {1} of {2}'),
-                    emptyMsg: _('There are no rows available')
-            }),        
+            bbar: ptool,
             tbar: [ _('Search') + ': ', ' ',
-                new Baseliner.SearchField({
-                    store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: _('<Enter your search string>')
-                }),' ',' ',
+                searchField,' ',' ',
 
-
-                
 % if ($c->stash->{can_maintenance}) {
                 btn_add,
                 btn_edit,
@@ -996,6 +996,5 @@
         init_buttons('disable');
     });
             
-    store.load({params:{start:0 , limit: ps}});
     return grid;
 })

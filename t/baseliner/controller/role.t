@@ -389,12 +389,9 @@ subtest 'duplicate: returns correct name' => sub {
 subtest 'json: returns correct successful response with filter' => sub {
     _setup();
 
-    my $id_role = TestSetup->create_role(
-            role    => 'Role',
-    );
-    my $id_role2 = TestSetup->create_role(
-            role    => 'Role5',
-    );
+    my $id_role  = TestSetup->create_role( role => 'Role', );
+    my $id_role2 = TestSetup->create_role( role => 'Role5', );
+
     my $controller = _build_controller();
 
     my $c = _build_c( req => { params => { query => 'Role5' } });
@@ -405,15 +402,42 @@ subtest 'json: returns correct successful response with filter' => sub {
 
 };
 
+subtest 'json: returns correct successful response with limit all' => sub {
+    _setup();
+
+    my $id_role  = TestSetup->create_role( role => 'Role', );
+    my $id_role2 = TestSetup->create_role( role => 'Role5', );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { limit => -1 } });
+    $controller->json($c);
+
+    is @{$c->stash->{json}{data}}, 2;
+    is $c->stash->{json}{totalCount}, 2;
+};
+
+subtest 'json: returns correct successful response with limit defined' => sub {
+    _setup();
+
+    my $id_role  = TestSetup->create_role( role => 'Role', );
+    my $id_role2 = TestSetup->create_role( role => 'Role5', );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { limit => 1 } });
+    $controller->json($c);
+
+    is @{$c->stash->{json}{data}}, 1;
+    is $c->stash->{json}{totalCount}, 2;
+};
+
 subtest 'json: returns correct successful response without filter' => sub {
     _setup();
 
-    my $id_role = TestSetup->create_role(
-            role    => 'Role',
-    );
-    my $id_role2 = TestSetup->create_role(
-            role    => 'Role5',
-    );
+    my $id_role  = TestSetup->create_role( role => 'Role', );
+    my $id_role2 = TestSetup->create_role( role => 'Role5', );
+
     my $controller = _build_controller();
 
     my $c = _build_c();
