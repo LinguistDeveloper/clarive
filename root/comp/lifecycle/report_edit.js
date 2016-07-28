@@ -161,19 +161,25 @@
                             category: pn.attributes.category
                         }
                     })
-                });                
+                });
                 oper_by_type = oper_in;
                 break;
             case 'ci':
-                var ci_class = pn.attributes.collection || pn.attributes.ci_class;
+                var ciClass;
                 var meta_type = pn.attributes.meta_type;
-                if (ci_class != undefined && ci_class != '') {
+                if (pn.attributes.collection) {
+                    ciClass = "BaselinerX::CI::" + pn.attributes.collection;
+                } else {
+                    ciClass = pn.attributes.ci_class;
+                }
+
+                if (ciClass != undefined && ciClass != '') {
                     field = new Baseliner.ci_box({
                         value: attr.value,
                         name: 'value',
                         singleMode: false,
-                        force_set_value: false,
-                        'class': ci_class,
+                        force_set_value: true,
+                        'class': ciClass,
                         security: true
                     });
                 } else {
@@ -293,8 +299,8 @@
                     }
             }
             attr.value = val;
-            node.setText(String.format('{0} {1}', oper.getRawValue(), label || attr.value));            
-        };        
+            node.setText(String.format('{0} {1}', oper.getRawValue(), label || attr.value));
+        };
         fcomp.on('change', function(f) {
             set_value()
         });
