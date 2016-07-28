@@ -29,7 +29,7 @@ subtest 'can view only allowed topics with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#topics-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     my $elems = $elem->eval('var data = []; cmp.store.data.each(function(item) { data.push(item.data) }); return data');
 
@@ -46,9 +46,9 @@ subtest 'cannot create topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    $driver->wait_for_extjs_component('#topics-grid');
+    $driver->wait_for_extjs_component('.ui-topics-grid');
 
-    ok !$driver->element_present('#topics-grid .ui-btn-create');
+    ok !$driver->element_present('.ui-topics-grid .ui-btn-create');
 };
 
 subtest 'can create topic with permissions' => sub {
@@ -58,9 +58,9 @@ subtest 'can create topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    $driver->wait_for_extjs_component('#topics-grid');
+    $driver->wait_for_extjs_component('.ui-topics-grid');
 
-    ok $driver->element_present('#topics-grid .ui-btn-create');
+    ok $driver->element_present('.ui-topics-grid .ui-btn-create');
 };
 
 subtest 'cannot edit topic without permissions' => sub {
@@ -70,7 +70,7 @@ subtest 'cannot edit topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -92,7 +92,7 @@ subtest 'can edit topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -114,7 +114,7 @@ subtest 'cannot delete topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -136,7 +136,7 @@ subtest 'can delete topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -158,7 +158,7 @@ subtest 'cannot comment on topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -180,7 +180,7 @@ subtest 'can comment on topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -202,7 +202,7 @@ subtest 'cannot view comments on topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -224,7 +224,7 @@ subtest 'can view comments on topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -246,7 +246,7 @@ subtest 'cannot view acivity on topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -268,7 +268,7 @@ subtest 'can view activity on topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -290,7 +290,7 @@ subtest 'cannot view jobs on topic without permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 
@@ -312,7 +312,7 @@ subtest 'can view jobs on topic with permissions' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-topics')->elem->click;
 
-    my $grid = $driver->wait_for_extjs_component('#topics-grid');
+    my $grid = $driver->wait_for_extjs_component('.ui-topics-grid');
 
     $grid->eval('cmp.getSelectionModel().selectFirstRow()');
 

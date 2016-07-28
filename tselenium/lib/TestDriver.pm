@@ -62,9 +62,9 @@ sub setup {
 sub toggle_user_menu {
     my $self = shift;
 
-    $self->wait_for_extjs_component('#user-menu')->elem->click;
+    $self->wait_for_extjs_component('.ui-user-menu')->elem->click;
 
-    $self->wait_for_extjs_component('#user-menu-logout');
+    $self->wait_for_extjs_component('.ui-user-menu-logout');
 }
 
 sub find_extjs_component {

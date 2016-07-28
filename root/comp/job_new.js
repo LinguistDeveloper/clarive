@@ -1071,7 +1071,7 @@
     var job_statistics = new Ext.Container({ html: stats_tmpl({ eta:'-', p_success:'-' }) });
 
     var main_form = new Ext.FormPanel({
-        id: 'new-job',
+        cls: 'ui-new-job',
         url: '/job/submit',
         tab_icon: '/static/images/icons/job.svg',
         height: '50%',

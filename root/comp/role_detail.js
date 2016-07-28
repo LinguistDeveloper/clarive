@@ -332,7 +332,6 @@
 
     var roleGridPanel = new Ext.grid.EditorGridPanel({
         title: _('Role Actions'),
-        id: 'role_grid',
         region: 'center',
         autoScroll: true,
         store: action_store,

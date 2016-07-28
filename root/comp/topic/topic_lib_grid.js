@@ -1430,7 +1430,7 @@ Cla.topic_grid = function(params){
 
  
     var grid_topics = new Ext.grid.GridPanel({
-        id: 'topics-grid',
+        cls: 'ui-topics-grid',
         region: 'center',
         plugins: [filters],
         stripeRows: true,

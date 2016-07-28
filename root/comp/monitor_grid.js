@@ -1269,7 +1269,7 @@
 
     // create the grid
     var grid = new Ext.grid.EditorGridPanel({
-        id: 'job-monitor-grid',
+        cls: 'ui-job-monitor-grid',
         title: _('Monitor'),
         plugins: [ filters ],
         header: false,
@@ -1344,9 +1344,8 @@
                 new Ext.Toolbar.Button({
                     //text: _('View Log'),
                     icon:'/static/images/icons/moredata.svg',
-                    id: 'full-log',
                     text: _('Log'),
-                    cls: 'x-btn-text-icon',
+                    cls: 'x-btn-text-icon ui-job-log',
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         if (sm.hasSelection())

@@ -35,7 +35,7 @@ subtest 'cannot change default pipeline without permission' => sub {
     $driver->wait_for_extjs_component('.ui-menu-job')->elem->click;
     $driver->wait_for_extjs_component('.ui-menu-create')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#new-job');
+    my $elem = $driver->wait_for_extjs_component('.ui-new-job');
 
     ok $elem->eval('return cmp.getForm().findField("id_rule").hidden');
 };
@@ -46,7 +46,7 @@ subtest 'can change default pipeline with permission' => sub {
     $driver->wait_for_extjs_component('.ui-menu-job')->elem->click;
     $driver->wait_for_extjs_component('.ui-menu-create')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#new-job');
+    my $elem = $driver->wait_for_extjs_component('.ui-new-job');
 
     ok !$elem->eval('return cmp.getForm().findField("id_rule").hidden');
 };
@@ -66,7 +66,7 @@ subtest 'cannot see jobs without permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     is $elem->eval('return cmp.store.getCount()'), 0;
 };
@@ -78,7 +78,7 @@ subtest 'can see jobs filtered by project with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     is $elem->eval('return cmp.store.getCount()'), 2;
 };
@@ -90,7 +90,7 @@ subtest 'can see jobs filtered by project and bl with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     is $elem->eval('return cmp.store.getCount()'), 1;
 };
@@ -102,15 +102,15 @@ subtest 'cannot see advanced job menu without permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
-    $driver->wait_for_extjs_component_enabled('#full-log')->elem->click;
+    $driver->wait_for_extjs_component_enabled('.ui-job-log')->elem->click;
 
-    $driver->wait_for_extjs_component_enabled('#job-log');
+    $driver->wait_for_extjs_component_enabled('.ui-job-log');
 
-    ok $driver->element_not_visible('#advanced');
+    ok $driver->element_not_visible('.ui-job-advanced-menu');
 };
 
 subtest 'can see advanced job menu with permission' => sub {
@@ -120,15 +120,15 @@ subtest 'can see advanced job menu with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
-    $driver->wait_for_extjs_component_enabled('#full-log')->elem->click;
+    $driver->wait_for_extjs_component_enabled('.ui-job-log')->elem->click;
 
-    $driver->wait_for_extjs_component_enabled('#job-log');
+    $driver->wait_for_extjs_component_enabled('.ui-job-log');
 
-    ok $driver->element_visible('#advanced');
+    ok $driver->element_visible('.ui-job-advanced-menu');
 };
 
 subtest 'cannot run job in process without permission' => sub {
@@ -138,7 +138,7 @@ subtest 'cannot run job in process without permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
@@ -154,7 +154,7 @@ subtest 'can run job in process with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
@@ -170,7 +170,7 @@ subtest 'cannot restart job without permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
@@ -184,7 +184,7 @@ subtest 'can restart job with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
@@ -198,7 +198,7 @@ subtest 'cannot delete job without permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
@@ -212,7 +212,7 @@ subtest 'can delete job with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-list')->elem->click;
 
-    my $elem = $driver->wait_for_extjs_component('#job-monitor-grid');
+    my $elem = $driver->wait_for_extjs_component('.ui-job-monitor-grid');
 
     $elem->eval('cmp.getSelectionModel().selectFirstRow();');
 
@@ -226,7 +226,7 @@ subtest 'cannot create job outside of time slots without permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-create')->elem->click;
 
-    $driver->wait_for_extjs_component('#new-job');
+    $driver->wait_for_extjs_component('.ui-new-job');
 
     ok !$driver->find_extjs_component('.ui-chk-no-cal')->is_enabled;
     ok !$driver->find_extjs_component('.ui-btn-create')->is_enabled;
@@ -239,7 +239,7 @@ subtest 'can create job outside of time slots with permission' => sub {
 
     $driver->wait_for_extjs_component('.ui-menu-create')->elem->click;
 
-    $driver->wait_for_extjs_component('#new-job');
+    $driver->wait_for_extjs_component('.ui-new-job');
 
     my $elem = $driver->wait_for_extjs_component_enabled('.ui-chk-no-cal');
 

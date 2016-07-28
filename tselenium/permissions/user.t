@@ -14,7 +14,7 @@ subtest 'cannot change user password without permission' => sub {
 
     $driver->toggle_user_menu;
 
-    ok $driver->element_not_visible('#user-menu-change-password');
+    ok $driver->element_not_visible('.ui-user-menu-change-password');
 };
 
 subtest 'can change user password with permission' => sub {
@@ -22,7 +22,7 @@ subtest 'can change user password with permission' => sub {
 
     $driver->toggle_user_menu;
 
-    ok $driver->element_visible('#user-menu-change-password');
+    ok $driver->element_visible('.ui-user-menu-change-password');
 };
 
 subtest 'cannot surrogate without permission' => sub {
@@ -30,7 +30,7 @@ subtest 'cannot surrogate without permission' => sub {
 
     $driver->toggle_user_menu;
 
-    ok $driver->element_not_visible('#user-menu-surrogate');
+    ok $driver->element_not_visible('.ui-user-menu-surrogate');
 };
 
 subtest 'can surrogate with permission' => sub {
@@ -38,7 +38,7 @@ subtest 'can surrogate with permission' => sub {
 
     $driver->toggle_user_menu;
 
-    ok $driver->element_visible('#user-menu-surrogate');
+    ok $driver->element_visible('.ui-user-menu-surrogate');
 };
 
 subtest 'cannot see menu without permission' => sub {
