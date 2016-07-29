@@ -52,7 +52,6 @@ sub json : Local {
     }
 
     $start ||= 0;
-    $limit ||= 60;
     my $where = $query ? mdb->query_build(query => $query, fields=>[qw(role description mailbox)]) : {};
     my $rs = mdb->role->find($where);
     $cnt = $rs->count();
