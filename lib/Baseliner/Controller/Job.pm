@@ -422,7 +422,6 @@ sub submit : Local {
     my $runner = $config->{runner};
     my $job_name;
     my $username = $c->username;
-
     #TODO move this whole thing to the Model Jobs
     try {
         use Baseliner::Sugar;
@@ -435,7 +434,24 @@ sub submit : Local {
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled');
                     try { $job_ci->delete } catch { ci->delete( $p->{mid} ) };  # delete should work always
                 };
-                $msg = "Job %1 deleted";
+
+                try {
+                    my $job_logs = mdb->job_log->find( { mid => $p->{mid} } );
+
+                    while ( my $current = $job_logs->next ) {
+                        mdb->job_log->remove( { mid => $current->{mid} } );
+                        if ( $current->{data} ) {
+                            my $data = $current->{data};
+                            mdb->grid->delete($data);
+                        }
+                        if ( $current->{more} && $current->{more} eq 'jes' ) {
+                            mdb->jes_log->remove( { id_log => 0 + $current->{id} } );
+                        }
+                    }
+                }
+                catch {
+                    $msg = _loc("Error deleting job_log");
+                };
             }
             elsif( $job_ci->status =~ /RUNNING/ ) {
                 event_new 'event.job.cancel_running' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  } => sub {

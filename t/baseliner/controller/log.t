@@ -141,6 +141,51 @@ subtest 'log_data: returns job log data html escaped' => sub {
     is $c->res->body, '<pre>&lt;script&gt;alert("HELLO!")&lt;/scrtip&gt;</pre>';
 };
 
+
+subtest 'log_data: returns job log data html escaped' => sub {
+    _setup();
+
+    my $id_job = 0 + mdb->seq('job_log_id');
+    my $_id = mdb->job_log->insert( { id => $id_job } );
+
+    my $id_asset = mdb->grid_add(
+        '<script>alert("HELLO!")</scrtip>',
+        filename          => 'logdata',
+        parent_collection => 'log',
+        id_log            => $_id,
+        parent            => $id_job,
+        parent_mid        => 123,
+    );
+
+    mdb->job_log->update( { id => $id_job }, { '$set' => { data => $id_asset } } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    $controller->log_data( $c, $id_job );
+
+    is $c->res->body, '<pre>&lt;script&gt;alert("HELLO!")&lt;/scrtip&gt;</pre>';
+};
+
+subtest 'logs_list: returns message error then log does not exist' => sub {
+    _setup();
+
+    my $fake_mid = '1111111';
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { mid => $fake_mid } } );
+
+    $controller->logs_list($c);
+
+    cmp_deeply $c->stash->{json},
+        {
+        success => \0,
+        msg     => 'The log does not exist'
+        };
+};
+
 subtest 'log_highlight: returns job log hightlighted' => sub {
     _setup();
 

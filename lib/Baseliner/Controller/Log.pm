@@ -12,14 +12,21 @@ use Baseliner::Utils;
 sub logs_list : Path('/job/log/list') {
     my ( $self, $c, $mid ) = @_;
     my $p = $c->req->params;
-    $c->stash->{mid} = $mid // $p->{mid};
+    $c->stash->{mid}          = $mid // $p->{mid};
     $c->stash->{service_name} = $p->{service_name};
     $c->stash->{annotate_now} = $p->{annotate_now};
     $c->stash->{auto_refresh} = $p->{auto_refresh};
-    my $job = ci->new( $p->{mid} );
-    $c->stash->{job_exec} = ref $job ? $job->exec : 1;
-    $c->forward('/permissions/load_user_actions');
-    $c->stash->{template} = '/comp/log_grid.js';
+    try {
+        my $job = ci->new( $p->{mid} );
+
+        $c->stash->{job_exec} = ref $job ? $job->exec : 1;
+        $c->forward('/permissions/load_user_actions');
+        $c->stash->{template} = '/comp/log_grid.js';
+    }
+    catch {
+        $c->stash->{json} = { success => \0, msg => _loc('The log does not exist') };
+        $c->forward('View::JSON');
+    };
 }
 
 sub dashboard_log : Path('/job/log/dashboard') {

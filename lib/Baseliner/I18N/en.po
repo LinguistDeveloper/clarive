@@ -968,6 +968,10 @@ msgstr ""
 msgid "Job already cancelled"
 msgstr ""
 
+#: lib/Baseliner/Controller/Job.pm
+msgid "Error deleting job_log"
+msgstr ""
+
 #: lib/Baseliner/Controller/Job.pm lib/Baseliner/RuleFuncs.pm
 msgid "Job cancelled by user %1"
 msgstr ""
@@ -994,6 +998,10 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Error grouping jobs: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Log.pm
+msgid "The log does not exist"
 msgstr ""
 
 #: lib/Baseliner/Controller/Log.pm
