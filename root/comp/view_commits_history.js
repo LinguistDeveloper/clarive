@@ -53,12 +53,26 @@
         return "<div style='color: blue;cursor: pointer;' onclick=Baseliner.add_tabcomp('/comp/view_diff.js','" + str_title + "'," + str_params + ");>" + _('DIFF') + "</div>";
     };
 
-    var search_form = new Baseliner.SearchField({
+    var pagingBar = new Baseliner.PagingToolbar({
+        pageSize: ps,
+        store: store_history,
+        plugins: [new Ext.ux.ProgressBarPager()],
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchForm.setParam('limit', pageSize);
+             }
+        }
+    });
+
+
+    var searchForm = new Baseliner.SearchField({
         enableKeyEvents: true,
+        store: store_history,
+        params: {start: 0, limit: pagingBar.pageSize },
         emptyText: _('<Enter your search string>')
     });
 
-    search_form.on('keypress', function(obj, e) {
+    searchForm.on('keypress', function(obj, e) {
         if (e.which == 13 || e.keyCode == 13) {
             if (this.getValue() == '') {
                 Baseliner.ajax_json('/' + controller + '/get_commits_history', {
@@ -88,19 +102,13 @@
         }
     });
 
-    var pagingBar = new Ext.PagingToolbar({
-        pageSize: ps,
-        store: store_history,
-        displayInfo: true,
-        plugins: new Ext.ux.ProgressBarPager()
-    });
 
     var render_ago = function(value, metadata, rec, rowIndex, colIndex, store) {
         return store.getAt(rowIndex).data.ago;
     };
 
     var grid = new Ext.grid.GridPanel({
-        tbar: [_('Search') + ': ', ' ', search_form,' ',' '],
+        tbar: [_('Search') + ': ', ' ', searchForm,' ',' '],
         store: store_history,
         columns: [{
             header: _("Ago"),

@@ -180,6 +180,23 @@ Ext.override(Ext.form.HtmlEditor, {
             checkOnly: true
         });
         // create the grid
+
+        var ptool = new Baseliner.PagingToolbar({
+            store: store,
+            pageSize: ps,
+            listeners: {
+                pagesizechanged: function(pageSize) {
+                    searchField.setParam('limit', pageSize);
+                 }
+            }
+        });
+
+        var searchField = new Baseliner.SearchField({
+            store: store,
+            params: {start: 0, limit: ptool.pageSize},
+            emptyText: _('<Enter your search string>')
+        });
+
         var grid = new Ext.grid.GridPanel({
             region: 'center',
             title: _('Inbox'),
@@ -210,19 +227,8 @@ Ext.override(Ext.form.HtmlEditor, {
             ],
             autoSizeColumns: true,
             deferredRender:true,
-            bbar: new Ext.PagingToolbar({
-                                store: store,
-                                pageSize: ps,
-                                displayInfo: true,
-                                displayMsg: _('Rows {0} - {1} de {2}'),
-                                emptyMsg: _('There are no rows available')
-                        }),        
-            tbar: [ 
-                new Baseliner.SearchField({
-                    store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: _('<Enter your search string>')
-                }),
+            bbar: ptool,
+            tbar: [ searchField,
                 new Ext.Toolbar.Button({
                     text: _('View'),
                     icon:'/static/images/icons/drop-view.svg',

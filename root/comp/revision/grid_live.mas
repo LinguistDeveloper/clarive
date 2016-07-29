@@ -215,7 +215,7 @@
                 displayInfo : true
             }),
         tbar: [ _('Search')+': ', ' ',
-            new Ext.app.SearchField({
+            new Baseliner.SearchField({
                 store: store_live,
                 params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
                 emptyText: _('<Enter your search string>')

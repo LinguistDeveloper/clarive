@@ -15,37 +15,27 @@
         totalProperty: "totalCount",
         id: 'id',
         url: '/scheduler/json',
-        fields: [{
-            name: 'id'
-        }, {
-            name: 'name'
-        }, {
-            name: 'service'
-        }, {
-            name: 'id_last_log'
-        }, {
-            name: 'id_rule'
-        }, {
-            name: 'what_name'
-        }, {
-            name: 'next_exec'
-        }, {
-            name: 'last_exec'
-        }, {
-            name: 'description'
-        }, {
-            name: 'frequency'
-        }, {
-            name: 'workdays'
-        }, {
-            name: 'status'
-        }, {
-            name: 'pid'
-        }]
+        fields: [
+            {name: 'id'},
+            {name: 'name'},
+            {name: 'service'},
+            {name: 'id_last_log'},
+            {name: 'id_rule'},
+            {name: 'what_name'},
+            {name: 'next_exec'},
+            {name: 'last_exec'},
+            {name: 'description'},
+            {name: 'frequency'},
+            {name: 'workdays'},
+            {name: 'status'},
+            {name: 'pid'}
+        ]
     });
+
     store.on("load", function() {
         show_buttons();
     });
+
     store.load({
         params: {
             start: 0,
@@ -53,14 +43,22 @@
         }
     });
 
-    var search_field = new Baseliner.SearchField({
+    var paging = new Baseliner.PagingToolbar({
         store: store,
-        params: {
-            start: 0,
-            limit: default_page_size
-        },
+        pageSize: default_page_size,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: paging.pageSize },
         emptyText: _('<Enter your search string>')
     });
+
 
     var button_toggle_activation = new Ext.Toolbar.Button({
         text: _('Activate'),
@@ -237,7 +235,7 @@
 
     var tbar = new Ext.Toolbar({
         items: [_('Search') + ': ', ' ',
-            search_field, ' ', ' ',
+            searchField, ' ', ' ',
             button_new_schedule,
             button_edit_schedule,
             button_delete_schedule,
@@ -246,14 +244,6 @@
             button_run_schedule,
             button_kill_schedule
         ]
-    });
-
-    var paging = new Ext.PagingToolbar({
-        store: store,
-        pageSize: default_page_size,
-        displayInfo: true,
-        displayMsg: _('Rows {0} - {1} of {2}'),
-        emptyMsg: _("No records available")
     });
 
     var name_renderer = function(value, metadata, rec, rowIndex, colIndex, store) {

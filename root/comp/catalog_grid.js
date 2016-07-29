@@ -220,6 +220,13 @@
         //groupTextTpl: '{[ values.rs[0].data["' + 'project' + '"] ]}'
     });
 
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ps},
+        emptyText: _('<Enter your search string>')
+    });
+
     var grid = new Ext.grid.GridPanel({
         title: _('Catalog'),
         view: gview,
@@ -232,12 +239,7 @@
         },
         tbar: [ 
             button_expand,
-            _('Search') + ': ', ' ',
-            new Ext.app.SearchField({
-                store: store,
-                params: {start: 0, limit: ps },
-                emptyText: _('<Enter your search string>')
-            }),
+            _('Search') + ': ', ' ', searchField,
             Baseliner.img_button( '/static/images/icons/refresh.svg', function(){ store.load() } ),
             button_add, button_del, button_edit, button_clone, button_raw,
             '->', _('Grouping') + ':', button_by_type, button_by_project 

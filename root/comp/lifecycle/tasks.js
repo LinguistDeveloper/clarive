@@ -1,20 +1,38 @@
 (function(){
     var ps = 40;
-    var store=new Baseliner.JsonStore({
-	    root: 'data', 
+    var store = new Baseliner.JsonStore({
+	    root: 'data',
 	    remoteSort: true,
-	    totalProperty:"totalCount", 
-	    id: 'id', 
+	    totalProperty:"totalCount",
+	    id: 'id',
 	    url: '/tasks/json',
 	    fields: [ 'name', 'category', 'assigned', 'description' ]
     });
     var render_category = function(v,metadata,rec) {
-        return Baseliner.render_tags( [v], metadata, rec );   
+        return Baseliner.render_tags( [v], metadata, rec );
     };
     var render_bold = function(value,metadata,rec,rowIndex,colIndex,store) {
         return '<b>'+value+'</b>';
     };
     store.load();
+
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField =   new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize },
+        emptyText: _('<Enter your search string>')
+    });
+
+
     var grid = new Ext.grid.EditorGridPanel({
 		    title: _('Tasks'),
 		    header: false,
@@ -36,19 +54,8 @@
 		    ],
 		    autoSizeColumns: true,
 		    deferredRender:true,
-		    bbar: new Ext.PagingToolbar({
-							    store: store,
-							    pageSize: ps,
-							    displayInfo: true,
-							    displayMsg: _('Rows {0} - {1} of {2}'),
-							    emptyMsg: "No hay registros disponibles"
-					    }),        
-		    tbar: [ _('Search')+': ', ' ',
-			    new Ext.app.SearchField({
-				    store: store,
-				    params: {start: 0, limit: ps},
-				    emptyText: _('<Enter your search string>')
-			    }),
+		    bbar: ptool,
+		    tbar: [ _('Search')+': ', ' ', searchField,
 			    new Ext.Toolbar.Button({
 				    text: _('Add'),
 				    icon:'/static/images/drop-add.gif',

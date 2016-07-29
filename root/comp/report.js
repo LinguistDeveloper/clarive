@@ -89,19 +89,12 @@
         },
         forceSelection: true
     });
-	
-    var ptool = new Ext.PagingToolbar({
-            store: store,
-            pageSize: ps,
-            plugins:[
-                ps_plugin,
-				new Ext.ux.ProgressBarPager()
-            ],
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-    });	
-	
+
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps
+    });
+
     var grid_report = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
