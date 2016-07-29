@@ -51,211 +51,215 @@
             { text: _('Modified Values'), value: 'modified', checked: false, group: 'view', checkHandler: view_change }
         ]
     });
-        var ps = 99999999999; //page_size
+    var ps = 99999999999; //page_size
 
-        // create the grid
-        var grid = new Ext.grid.GridPanel({
-            renderTo: 'main-panel',
-            title: _('Config'),
-            header: false,
-            autoScroll: true,
-            autoWidth: true,
-            loadMask: true,
-            store: store,
-            viewConfig: [{
-                    forceFit: true
-            }],
-            stripeRows: true,
-            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            columns: [
-                { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	
-                { header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },
-                { header: _('Value'), width: 250, dataIndex: 'value', sortable: true, renderer: Baseliner.columnWrap },
-                { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
-                { header: _('Scope'), width: 50, dataIndex: 'ns', sortable: true },	
-                { header: _('Config'), width: 100, dataIndex: 'config_name', sortable: true },
-                { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
-                { header: _('Default Value'), width: 200, dataIndex: 'config_default', sortable: true, hidden:true },
-                { header: _('Module'), width: 100, dataIndex: 'config_module', sortable: true, hidden:true },
-                { header: _('ChangeStatus'), width: 100, dataIndex: 'status', sortable: true, hidden:true },
-                { header: _('Type'), width: 100, dataIndex: 'config_type', sortable: true, hidden:true }	
-            ],
-            autoSizeColumns: true,
-            deferredRender:true,
-            bbar: new Ext.PagingToolbar({
-                                store: store,
-                                pageSize: ps,
-                                displayInfo: true,
-                                displayMsg: _('Rows {0} - {1} of {2}'),
-                                emptyMsg: "No hay registros disponibles"
-                        }),        
-            tbar: [ _('Search') + ': ', ' ',
-                new Ext.app.SearchField({
-                    store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: _('<Enter your search string>')
-                }),
-                //menu_view,
-                 //'-',
-                 ' ',' ',
-                new Ext.Toolbar.Button({
-                    text: _('Add'),
-                    icon:'/static/images/icons/add.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        edit_config();
-                    }
-                }),
-                new Ext.Toolbar.Button({
-                    text: _('Edit'),
-                    icon:'/static/images/icons/edit.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel(); if (sm.hasSelection()) {
-                            var rec = sm.getSelected();
-                            edit_config(rec);
-                        } else {
-                            Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
-                        };
-                }
-                }),
-                new Ext.Toolbar.Button({
-                    text: _('Delete'),
-                    icon:'/static/images/icons/delete.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();						
-                        var row = sm.getSelected();
-                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?', 
-                            function(btn){ 
-                                if(btn=='yes') {
-                                    var conn = new Ext.data.Connection();
-                                    conn.request({
-                                        url: '/configlist/delete',
-                                        params: { id: row.data.id, key: row.data.key },
-                                        success: function(resp,opt) { grid.getStore().remove(row); },
-                                        failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the config key')); }
-                                    });	
-                                }
-                            } );
-                    }
-                }),
-                ' ',
-                //'-',
-                ' ',
-                new Ext.Toolbar.Button({
-        icon:'/static/images/icons/wrench.svg',
-        cls: 'x-btn-text-icon',
-        disabled: false,
-        menu: [{  text: _('Export'),
-                    icon:'/static/images/icons/downloads_favicon.svg',
-                    cls: 'x-btn-text-icon',
-                     handler: function() {
-                        Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
-                            if( resp.success ) {
-                                Baseliner.message( _('Export'), resp.msg );
-                            } else {
-                                Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
-                            }
-                        });
-                    }
-            },
-            { text: _('CSV'),
-        icon:'/static/images/icons/csv.svg',
-        cls: 'x-btn-text-icon',
-        handler: function() {
-            var self = this;
-            if( !self.grid ) {
-                self.grid = self.findParentByType('grid');
-            }
-            var cfg = self.grid.getColumnModel().config;
-            var s = self.store ? self.store : self.grid.getStore();
-            var html = '';
-            var cols = [], col_names = [];
-            for( var i=0; i<cfg.length; i++ ) {
-                if( ! cfg[i].hidden )
-                    var n = cfg[i].report_header || cfg[i].header;
-                    col_names.push( n );
-                    cols.push({ id: cfg[i].dataIndex, name: n });
-            }
-            html += col_names.join(',') + "\n";
-            s.each( function(row){
-                var arr = [];
-                Ext.each( cols, function(col){
-                    var v = row.data[ col.id ];
-                    if( v == null ) {
-                        v='';
-                    } else {
-                        v = v.replace( '"', '\\"' );
-                    }
-                    arr.push( '"' + v + '"'  );
-                })
-               html += arr.join(',') + "\n";
-            });
-            var ww = window.open('about:blank', '_blank' );
-            ww.document.title = _('config.csv');
-            ww.document.write( '<pre>' + html + '</pre>' );
-            ww.document.close();
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
         }
-            }]
-    }),
+    });
 
-              //  new Ext.Toolbar.Button({
-              //      text: _('Export'),
-             //       icon:'/static/images/download.gif',
-             //       cls: 'x-btn-text-icon',
-             //       handler: function() {
-             //           Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
-             //               if( resp.success ) {
-              //                  Baseliner.message( _('Export'), resp.msg );
-              //              } else {
-              //                  Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
-              //              }
-             //           });
-              //      }
-             //   }),
-               // new Baseliner.button.CSVExport(),
-                //' ',
-                menu_view,
-                 
-                '->'
-                ]
-        });
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
 
-       grid.getView().forceFit = true;
-
-       grid.getView().getRowClass = function(rec, index){
-            var css;
-            var status = rec.data.status;
-            if( status == 'modified' ) 
-                css = 'config-row-modified';
-            else if( status == 'missing' ) 
-                css = 'config-row-not-found';
-            return css;
-       }; 
-
-        grid.on("rowdblclick", function(grid, rowIndex, e ) {
-            var rec = grid.getStore().getAt(rowIndex);
-            edit_config(rec);
-            // Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + ' ' + r.get('name') );
-        });		
-
-
-        grid.on("activate", function(){
-            grid.setTitle( _('Config') );
-        });
-
-        var first_load = true;
-        /*
-        load store is slow
-        grid.on("activate", function() {
-            if( first_load ) {
-                Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
-                first_load = false;
+    var grid = new Ext.grid.GridPanel({
+        renderTo: 'main-panel',
+        title: _('Config'),
+        header: false,
+        autoScroll: true,
+        autoWidth: true,
+        loadMask: true,
+        store: store,
+        viewConfig: [{
+                forceFit: true
+        }],
+        stripeRows: true,
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        columns: [
+            { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	
+            { header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },
+            { header: _('Value'), width: 250, dataIndex: 'value', sortable: true, renderer: Baseliner.columnWrap },
+            { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
+            { header: _('Scope'), width: 50, dataIndex: 'ns', sortable: true },	
+            { header: _('Config'), width: 100, dataIndex: 'config_name', sortable: true },
+            { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
+            { header: _('Default Value'), width: 200, dataIndex: 'config_default', sortable: true, hidden:true },
+            { header: _('Module'), width: 100, dataIndex: 'config_module', sortable: true, hidden:true },
+            { header: _('ChangeStatus'), width: 100, dataIndex: 'status', sortable: true, hidden:true },
+            { header: _('Type'), width: 100, dataIndex: 'config_type', sortable: true, hidden:true }	
+        ],
+        autoSizeColumns: true,
+        deferredRender:true,
+        bbar: ptool,
+        tbar: [ _('Search') + ': ', ' ', searchField,
+            //menu_view,
+             //'-',
+             ' ',' ',
+            new Ext.Toolbar.Button({
+                text: _('Add'),
+                icon:'/static/images/icons/add.svg',
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    edit_config();
+                }
+            }),
+            new Ext.Toolbar.Button({
+                text: _('Edit'),
+                icon:'/static/images/icons/edit.svg',
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    var sm = grid.getSelectionModel(); if (sm.hasSelection()) {
+                        var rec = sm.getSelected();
+                        edit_config(rec);
+                    } else {
+                        Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
+                    };
             }
+            }),
+            new Ext.Toolbar.Button({
+                text: _('Delete'),
+                icon:'/static/images/icons/delete.svg',
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    var sm = grid.getSelectionModel();						
+                    var row = sm.getSelected();
+                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?', 
+                        function(btn){ 
+                            if(btn=='yes') {
+                                var conn = new Ext.data.Connection();
+                                conn.request({
+                                    url: '/configlist/delete',
+                                    params: { id: row.data.id, key: row.data.key },
+                                    success: function(resp,opt) { grid.getStore().remove(row); },
+                                    failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the config key')); }
+                                });	
+                            }
+                        } );
+                }
+            }),
+            ' ',
+            //'-',
+            ' ',
+            new Ext.Toolbar.Button({
+    icon:'/static/images/icons/wrench.svg',
+    cls: 'x-btn-text-icon',
+    disabled: false,
+    menu: [{  text: _('Export'),
+                icon:'/static/images/icons/downloads_favicon.svg',
+                cls: 'x-btn-text-icon',
+                 handler: function() {
+                    Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
+                        if( resp.success ) {
+                            Baseliner.message( _('Export'), resp.msg );
+                        } else {
+                            Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
+                        }
+                    });
+                }
+        },
+        { text: _('CSV'),
+    icon:'/static/images/icons/csv.svg',
+    cls: 'x-btn-text-icon',
+    handler: function() {
+        var self = this;
+        if( !self.grid ) {
+            self.grid = self.findParentByType('grid');
+        }
+        var cfg = self.grid.getColumnModel().config;
+        var s = self.store ? self.store : self.grid.getStore();
+        var html = '';
+        var cols = [], col_names = [];
+        for( var i=0; i<cfg.length; i++ ) {
+            if( ! cfg[i].hidden )
+                var n = cfg[i].report_header || cfg[i].header;
+                col_names.push( n );
+                cols.push({ id: cfg[i].dataIndex, name: n });
+        }
+        html += col_names.join(',') + "\n";
+        s.each( function(row){
+            var arr = [];
+            Ext.each( cols, function(col){
+                var v = row.data[ col.id ];
+                if( v == null ) {
+                    v='';
+                } else {
+                    v = v.replace( '"', '\\"' );
+                }
+                arr.push( '"' + v + '"'  );
+            })
+           html += arr.join(',') + "\n";
         });
-        store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask( grid.getEl() ); } }); 
-        */
+        var ww = window.open('about:blank', '_blank' );
+        ww.document.title = _('config.csv');
+        ww.document.write( '<pre>' + html + '</pre>' );
+        ww.document.close();
+    }
+        }]
+}),
+
+          //  new Ext.Toolbar.Button({
+          //      text: _('Export'),
+         //       icon:'/static/images/download.gif',
+         //       cls: 'x-btn-text-icon',
+         //       handler: function() {
+         //           Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
+         //               if( resp.success ) {
+          //                  Baseliner.message( _('Export'), resp.msg );
+          //              } else {
+          //                  Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
+          //              }
+         //           });
+          //      }
+         //   }),
+           // new Baseliner.button.CSVExport(),
+            //' ',
+            menu_view,
+             
+            '->'
+            ]
+    });
+
+   grid.getView().forceFit = true;
+
+   grid.getView().getRowClass = function(rec, index){
+        var css;
+        var status = rec.data.status;
+        if( status == 'modified' ) 
+            css = 'config-row-modified';
+        else if( status == 'missing' ) 
+            css = 'config-row-not-found';
+        return css;
+   }; 
+
+    grid.on("rowdblclick", function(grid, rowIndex, e ) {
+        var rec = grid.getStore().getAt(rowIndex);
+        edit_config(rec);
+        // Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + ' ' + r.get('name') );
+    });		
+
+
+    grid.on("activate", function(){
+        grid.setTitle( _('Config') );
+    });
+
+    var first_load = true;
+    /*
+    load store is slow
+    grid.on("activate", function() {
+        if( first_load ) {
+            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
+            first_load = false;
+        }
+    });
+    store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask( grid.getEl() ); } }); 
+    */
 
     return grid;
 })();

@@ -62,90 +62,95 @@
 
     <& /comp/search_field.mas &>
 
-        var ps = 30; //page_size
-        store.load({params:{start:0 , limit: ps}}); 
+    var ps = 30; //page_size
+    store.load({params:{start:0 , limit: ps}});
 
-        // create the grid
-        var grid = new Ext.grid.GridPanel({
-            region: 'center',
-            header: false,
-            autoScroll: true,
-            autoWidth: true,
-            store: store,
-            stripeRows: true,
-            viewConfig: {
-                    forceFit: true
-            },
-            selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask: true,
-            columns: [
-                { header: _('From'), width: 200, dataIndex: 'sender', sortable: true }, 
-                { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true }, 
-                { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true }, 
-                { header: _('Config'), width: 300, dataIndex: 'config', sortable: true },   
-                { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
-                { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }  
-            ],
-            autoSizeColumns: true,
-            deferredRender:true,
-            bbar: new Ext.PagingToolbar({
-                                store: store,
-                                pageSize: ps,
-                                displayInfo: true,
-                                displayMsg: _('Rows {0} - {1} de {2}'),
-                                emptyMsg: _('There are no rows available')
-                        }),        
-            tbar: [ 
-                new Baseliner.SearchField({
-                    store: store,
-                    params: {start: 0, limit: ps}
-                }),
-                new Ext.Toolbar.Button({
-                    text: _('View'),
-                    icon:'/static/images/icons/drop-yes.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if (sm.hasSelection()) {
-                            var sel = sm.getSelected();
-                            config_view(sel.data.id);
-                        } else {
-                            Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
-                        };
-                    }
-                }),
-                new Ext.Toolbar.Button({
-                    text: '<% _loc('Delete') %>',
-                    icon:'/static/images/icons/del_all.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        var sel = sm.getSelected();
-                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config') + ' <b>' + sel.data.subject + '</b>?', 
-                            function(btn){ 
-                                if(btn=='yes') {
-                                    var conn = new Ext.data.Connection();
-                                    conn.request({
-                                        url: '/config/delete',
-                                        params: { id_config: sel.data.id_config },
-                                        success: function(resp,opt) { grid.getStore().remove(sel); },
-                                        failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the config') ); }
-                                    }); 
-                                }
-                            } );
-                    }
-                }),
-                '->'
-                ]
-        });
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
 
-        grid.getView().forceFit = true;
-
-        grid.on("rowclick", function(grid, rowIndex, e ) {
-            var row = grid.getStore().getAt(rowIndex);
-            config_view( row.get('id') );
-        });     
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
     
+    var grid = new Ext.grid.GridPanel({
+        region: 'center',
+        header: false,
+        autoScroll: true,
+        autoWidth: true,
+        store: store,
+        stripeRows: true,
+        viewConfig: {
+                forceFit: true
+        },
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        loadMask: true,
+        columns: [
+            { header: _('From'), width: 200, dataIndex: 'sender', sortable: true }, 
+            { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true }, 
+            { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true }, 
+            { header: _('Config'), width: 300, dataIndex: 'config', sortable: true },   
+            { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
+            { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }  
+        ],
+        autoSizeColumns: true,
+        deferredRender:true,
+        bbar: ptool,
+        tbar: [ searchField,
+            new Ext.Toolbar.Button({
+                text: _('View'),
+                icon:'/static/images/icons/drop-yes.svg',
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    var sm = grid.getSelectionModel();
+                    if (sm.hasSelection()) {
+                        var sel = sm.getSelected();
+                        config_view(sel.data.id);
+                    } else {
+                        Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
+                    };
+                }
+            }),
+            new Ext.Toolbar.Button({
+                text: '<% _loc('Delete') %>',
+                icon:'/static/images/icons/del_all.svg',
+                cls: 'x-btn-text-icon',
+                handler: function() {
+                    var sm = grid.getSelectionModel();
+                    var sel = sm.getSelected();
+                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config') + ' <b>' + sel.data.subject + '</b>?', 
+                        function(btn){ 
+                            if(btn=='yes') {
+                                var conn = new Ext.data.Connection();
+                                conn.request({
+                                    url: '/config/delete',
+                                    params: { id_config: sel.data.id_config },
+                                    success: function(resp,opt) { grid.getStore().remove(sel); },
+                                    failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the config') ); }
+                                }); 
+                            }
+                        } );
+                }
+            }),
+            '->'
+            ]
+    });
+
+    grid.getView().forceFit = true;
+
+    grid.on("rowclick", function(grid, rowIndex, e ) {
+        var row = grid.getStore().getAt(rowIndex);
+        config_view( row.get('id') );
+    });
+
     var panel = new Ext.Panel({
         layout: 'border',
         items: [ grid, config_form ]

@@ -70,6 +70,22 @@
         '</div></tpl>'
     );
 
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize, id_job: '<% $c->stash->{id_job} %>'},
+        emptyText: _('<Enter your search string>')
+    });
+
     var grid = new Ext.grid.GridPanel({
         renderTo: 'main-panel',
         title: _("Packages"),
@@ -99,19 +115,8 @@
             { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
             { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
         ],
-        bbar: new Ext.PagingToolbar({
-                            store: store,
-                            pageSize: ps,
-                            displayInfo: true,
-                            displayMsg: _('Rows {0} - {1} of {2}'),
-                            emptyMsg: "No hay registros disponibles"
-                    }),
-        tbar: [ _('Search')+': ', ' ',
-            new Ext.app.SearchField({
-                store: store,
-                params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-                emptyText: _('<Enter your search string>')
-            }),
+        bbar: ptool,
+        tbar: [ _('Search')+': ', ' ', searchField,
             { text: _("Views"), menu: filter_menu },
 <%doc>
             { text: _('Auto Refresh'),
