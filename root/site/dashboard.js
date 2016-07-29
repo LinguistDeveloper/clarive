@@ -192,7 +192,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         }
                     };
                     var btn_yaml = {
-                        icon: '/static/images/icons/yaml.svg',
+                        icon: '/static/images/icons/yaml_1.svg',
                         current_dashlet: dashlet.id,
                         text: _('YAML'),
                         handler: function() {

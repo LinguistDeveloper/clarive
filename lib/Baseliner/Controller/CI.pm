@@ -467,7 +467,7 @@ sub tree_ci_request {
             class      => 'BaselinerX::CI::topic',
             bl         => $bl,
             collection => 'topic',
-            icon       => '/static/images/icons/topic_one.png',
+            icon       => '/static/images/icons/topic.svg',
             ts         => $_->{master_to}{ts},
             data       => { %{ $_->{category} // {} } },
             properties => '',

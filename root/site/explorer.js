@@ -697,7 +697,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                             if( res.success ) {
                                 var new_node = self.$tree_favorites.getLoader().createNode({
                                     text: folder + ' ('+res.id_folder+')',
-                                    icon: '/static/images/icons/favorite_new.svg',
+                                    icon: '/static/images/icons/favorite.svg',
                                     data: { on_drop: on_drop },
                                     url: '/lifecycle/tree_favorite_folder?id_folder=' + res.id_folder
                                 });
