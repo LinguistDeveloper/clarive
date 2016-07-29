@@ -71,11 +71,11 @@ sub service_start {
 
     my @started;
     for my $service_name ( @services ) {
-        my $params = join ' ', map { "$_=$params{$_}" } keys %params;
+        my $params = join ' ', map { "$_ $params{$_} " } keys %params;
         $params .= '--id '.$disp_id;
         my $cmd = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
         _debug "Starting service background command '$cmd'";
-        my $proc = Proc::Background->new($cmd)
+        my $proc = $self->_create_background_proccess($cmd)
           or _throw "Could not start service $service_name: $!";
         push @started,
           {
@@ -88,6 +88,11 @@ sub service_start {
     return @started;
 }
 
+sub _create_background_proccess{
+    my $self = shift;
+    my ($cmd)  = @_;
+    return Proc::Background->new($cmd)
+}
 =head2 service_start_forked
 
 Pure forking service starter. See service_start for options.
