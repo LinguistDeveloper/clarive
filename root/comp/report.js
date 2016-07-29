@@ -1,9 +1,8 @@
 (function(params) {
 	var ps = 25;
-    
     //Baseliner.add_tabcomp( '/comp/topic/topic_grid.js', {}, function(res){
     //});
-    
+
     /*
 	var columns_grid = [];
 	for (i=0;i < params.fields.length; i++){
@@ -12,23 +11,23 @@
 
     var store = new Baseliner.JsonStore({
 		baseParams: { select: params.fields },
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         url: '/report/list_topics',
 		fields: params.fields,
 		autoLoad: true
     });
-	
+
 	var colModel = new Ext.grid.ColumnModel({
-		columns: columns_grid,	 
+		columns: columns_grid,
 		defaults: {
 			sortable: true,
 			menuDisabled: true,
 			width: 100
 		}
    });
-	
+
     var btn_html = {
         icon: '/static/images/icons/html.svg',
         text: _('Basic HTML Report'),
@@ -60,13 +59,13 @@
             //form_report_submit({ url: '/topic/report_csv', target: 'FrameDownload' });
         }
     };
-	
+
     var btn_reports = new Ext.Button({
         icon: '/static/images/icons/reports.svg',
         iconCls: 'x-btn-icon',
         menu: [ btn_html, btn_html_desc, btn_csv, btn_yaml ]
     });
-	
+
     var ps_plugin = new Ext.ux.PageSizePlugin({
         editable: false,
         width: 90,
@@ -109,12 +108,12 @@
         loadMask:'true',
         stripeRows: true,
         tbar:   [
-				'->', 
+				'->',
                 btn_reports
         ],
 		bbar: ptool
     });
-	
+
 	return grid_report;
     */
 })

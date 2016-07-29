@@ -28,7 +28,7 @@
     };
 
     var do_search = function(from){
-        var t = search_field.getValue();
+        var t = searchField.getValue();
         var condition = left_panel.getLayout().activeItem.id == rules_grid.id;
         if(from){
             condition = !condition;
@@ -54,14 +54,13 @@
         }
     };
 
-    var search_field = new Baseliner.SearchSimple({
+    var searchField = new Baseliner.SearchSimple({
         name: 'rule_search',
         width: 140,
         handler: function(){
             do_search();
         }
     });
-
 
     var rule_del = function(){
         var rule_id;
@@ -1793,7 +1792,7 @@
 
 
     var reload_data = function(){
-        var t = search_field.getValue();
+        var t = searchField.getValue();
         if(toggle_button.pressed){
             // Tree mode reload
             reload_tree(t);
@@ -1814,7 +1813,7 @@
         activeItem: 0,
         items: [ rules_grid, rules_tree ],
         tbar: [
-            search_field,
+            searchField,
             { xtype:'button', tooltip:_('Refresh'), handler: function(){ reload_data() }, icon:'/static/images/icons/refresh.svg', cls:'x-btn-icon' },
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.svg', cls: 'x-btn-icon ui-comp-rule-create', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.svg', id: 'x-btn-edit', cls: 'x-btn-icon', handler: function(){ rule_edit(); }, disabled: true },

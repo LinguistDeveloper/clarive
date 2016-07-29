@@ -20,7 +20,7 @@
         }
     });
 
-    var searchField =   new Baseliner.SearchField({
+    var searchField = new Baseliner.SearchField({
         store: store_ci,
         params: {start: 0, limit: ptool.pageSize },
         emptyText: _('<Enter your search string>')

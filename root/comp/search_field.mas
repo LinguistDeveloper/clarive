@@ -26,7 +26,7 @@
                 if(this.params.treegrid){
                     this.store.active_node = null;
                     this.store.reload({add:null, params:o});
-                }else{          
+                }else{
                     this.store.reload({params:o});
                 }
                 this.triggers[0].hide();
@@ -46,7 +46,7 @@
             if(this.params.treegrid){
                 this.store.active_node = null;
                 this.store.reload({add:null, params:o});
-            }else{          
+            }else{
                 this.store.reload({params:o});
             }
             this.hasSearch = true;

@@ -234,7 +234,7 @@
         title: _('Semaphores'),
         width: 300,
         expanded: true,
-        animate : true,          
+        animate : true,
         hideHeaders: true,
         collapsible: true,
         split: true,

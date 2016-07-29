@@ -11,10 +11,11 @@
     my $view_natures = config_value('job_new.view_natures');
 </%perl>
 (function(params) {
-        Cla.help_push({
-            title: _('Monitor'),
-            path: 'getting-started/monitor'
-        });
+    Cla.help_push({
+        title: _('Monitor'),
+        path: 'getting-started/monitor'
+    });
+
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>;
     var state_id = 'job-monitor';
@@ -534,7 +535,8 @@
     });
 
     <& /comp/search_field.mas &>
-    var searchField = new Ext.app.SearchField({
+
+    var searchField = new Baseliner.SearchField({
         store: store,
         params: {start: 0, limit: paging.pageSize},
         emptyText: _('<Enter your search string>')

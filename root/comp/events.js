@@ -96,12 +96,12 @@
         plugins: [new Ext.ux.ProgressBarPager()],
         listeners: {
             pagesizechanged: function(pageSize) {
-                search_field.setParam('limit', pageSize);
+                searchField.setParam('limit', pageSize);
              }
         }
     });
 
-    var search_field =   new Baseliner.SearchField({
+    var searchField = new Baseliner.SearchField({
         store: store_events,
         width: 280,
         params: {start: 0, limit: ptool.pageSize },
@@ -131,7 +131,7 @@
             { header: _('Actions'), width: 120, dataIndex: 'id', renderer: render_data }
         ],
         tbar: [  _('Search') + ': ', ' ',
-            search_field,' ',' ',
+            searchField,' ',' ',
             { icon:'/static/images/icons/refresh.svg', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
             { icon:'/static/images/icons/delete.svg', handler: del_event , 
             text:_('Delete')},

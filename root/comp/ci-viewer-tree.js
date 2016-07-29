@@ -98,7 +98,7 @@
         fields: [ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']
     });
 
-    var search_field = new Baseliner.SearchField({
+    var searchField = new Baseliner.SearchField({
         store: store_ci,
         params: {start: 0, limit: 100 },
         emptyText: _('<Enter your search string>')
@@ -116,7 +116,7 @@
         store: store_ci,
         sm: check_sm,
         stripeRows: true,
-        tbar: [ search_field,
+        tbar: [ searchField,
             { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Etiquetar', icon: '/static/images/icons/tag.svg', cls: 'x-btn-text-icon' },

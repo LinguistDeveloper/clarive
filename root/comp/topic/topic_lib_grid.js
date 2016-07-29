@@ -1234,19 +1234,19 @@ Cla.topic_grid = function(params){
         plugins: [new Ext.ux.ProgressBarPager()],
         listeners: {
             pagesizechanged: function(pageSize) {
-                search_field.setParam('limit', pageSize);
+                searchField.setParam('limit', pageSize);
              }
         }
     });
 
-    var search_field = new Baseliner.SearchField({
+    var searchField = new Baseliner.SearchField({
         store: store_topics,
         params: {start: 0, limit: ptool.pageSize},
         emptyText: _('<Enter your search string>')
     });
 
     if( current_state.baseParams && current_state.baseParams.query ) {
-        search_field.setValue( current_state.baseParams.query );
+        searchField.setValue( current_state.baseParams.query );
     }
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
@@ -1466,7 +1466,7 @@ Cla.topic_grid = function(params){
             action: 'create'
         }, function(res) {
             var categories = res.data;
-            var tbar = [_('Search') + ': ', ' ', search_field];
+            var tbar = [_('Search') + ': ', ' ', searchField];
 
             if (!typeApplication) {
                 var createAllowed = false;
@@ -1585,7 +1585,7 @@ Cla.topic_grid = function(params){
         var id_project = st.reader.jsonData.id_project;
         if (!username) username = "";
         var tg_id = grid_topics.id;
-        Cla.ajax_json('/topic/grid_count', { lq: lq, query: search_field.currentSearch(), username: username, id_project: id_project }, function(res){
+        Cla.ajax_json('/topic/grid_count', { lq: lq, query: searchField.currentSearch(), username: username, id_project: id_project }, function(res){
             if( !Ext.getCmp(tg_id) ) return;  // maybe topic grid is gone by then
             if( st.totalLength != res.count ) {
                 st.totalLength = res.count;
@@ -1926,7 +1926,7 @@ Cla.topic_grid = function(params){
         if (statuses_checked.length == 0) filter_final.clear_filter = 1
 
         store_topics.baseParams = filter_final;
-        search_field.setValue( filter_final.query );
+        searchField.setValue( filter_final.query );
         store_topics.load();
         filter_current = filter_final;
     };
