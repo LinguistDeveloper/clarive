@@ -796,7 +796,7 @@
         });
         win.show();
         store_user_roles_projects.load({ params: {username: username} });
-        store_roles.load({params:{start:0 , limit: ps}});
+        store_roles.load({params:{start:0 }});
     };
     
  
