@@ -207,7 +207,7 @@ function insert_ci_html(topic, res, html, col) {
 function insert_checkbox_html(topic, col, html) {
     if (topic[col.name] ) {
         if(topic[col.name] == 0 ||  topic[col.name] == false){
-            html = html + '<div hidden>' + topic[col.name] + '</div>' + '<div style="text-align:center;"><img class="img-non-checked" src="/static/images/icons/topic_one.svg"></div>';
+            html = html + '<div hidden>' + topic[col.name] + '</div>' + '<div style="text-align:center;"><img class="img-non-checked" src="/static/images/icons/topic.svg"></div>';
         } else {
             html = html + '<div hidden>' + topic[col.name] + '</div>' + '<div style="text-align:center;"><img class="img-checked" src="/static/images/icons/checkbox.svg"></div>'
         }
