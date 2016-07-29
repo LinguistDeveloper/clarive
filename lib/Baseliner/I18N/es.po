@@ -912,8 +912,8 @@ msgid "revisions"
 msgstr "revisiones"
 
 #: lib/Baseliner/Controller/GitTree.pm
-msgid "Next commit set"
-msgstr "Commits siguientes"
+msgid "Show next"
+msgstr "Mostrar Siguientes"
 
 #: lib/Baseliner/Controller/GitTree.pm
 msgid "(and %1 more...)"
@@ -15823,6 +15823,7 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+<<<<<<< HEAD
 #~ msgid "Topic %1 does not match category %2. Skipped"
 #~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
 
@@ -15883,6 +15884,8 @@ msgstr "destino"
 #~ msgstr ""
 #~ "Reintento de escritura en cache a causa del bug de clave duplicada en "
 #~ "mongo 3.2 para el upset. Clave: %1"
+#~ msgid "Next commit set"
+#~ msgstr "Commits siguientes"
 
 #~ msgid ""
 #~ "CAUTION: If activated, variable names will be changed in rules when "

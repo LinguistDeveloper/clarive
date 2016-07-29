@@ -103,7 +103,7 @@ subtest 'branch_commits: returns validation errors' => sub {
 subtest 'branch_commits: returns commits' => sub {
     _setup();
 
-    BaselinerX::CI::bl->new( bl => 'release' )->save;
+    TestUtils->create_ci( 'bl', bl => 'release',  name => 'release' );
 
     my $repo_ci = TestUtils->create_ci_GitRepository();
     TestGit->commit($repo_ci);
@@ -182,10 +182,10 @@ subtest 'branch_commits: returns paged commits with more nodes available for ini
     my $sha1 = TestGit->commit($repo_path);
     my $sha2 = TestGit->commit($repo_path);
 
-    BaselinerX::CI::bl->new( bl => $tag )->save;
+    TestUtils->create_ci( 'bl', bl => $tag,  name => $tag );
 
     BaselinerX::Type::Model::ConfigStore->new->set(
-        key   => 'config.git.revision_paging_size',
+        key   => 'config.git.page_size',
         value => 2
     );
 
@@ -199,7 +199,7 @@ subtest 'branch_commits: returns paged commits with more nodes available for ini
     is scalar @{ $c->stash->{json} }, 3;
     is $c->stash->{json}->[0]->{data}->{sha}, $sha2;
     is $c->stash->{json}->[1]->{data}->{sha}, $sha1;
-    is $c->stash->{json}->[2]->{text}, 'Next commit set';
+    is $c->stash->{json}->[2]->{text}, 'Show next';
     is $c->stash->{json}->[2]->{data}->{page}, 2;
 };
 
@@ -215,10 +215,10 @@ subtest 'branch_commits: always initialized in page 1 by default' => sub {
     my $sha1 = TestGit->commit($repo_path);
     my $sha2 = TestGit->commit($repo_path);
 
-    BaselinerX::CI::bl->new( bl => $tag )->save;
+    TestUtils->create_ci( 'bl', bl => $tag,  name => $tag );
 
     BaselinerX::Type::Model::ConfigStore->new->set(
-        key   => 'config.git.revision_paging_size',
+        key   => 'config.git.page_size',
         value => 2
     );
 
@@ -247,10 +247,10 @@ subtest 'branch_commits: returns paged commits with more nodes available for non
     TestGit->commit($repo_path);
     TestGit->commit($repo_path);
 
-    BaselinerX::CI::bl->new( bl => $tag )->save;
+    TestUtils->create_ci( 'bl', bl => $tag,  name => $tag );
 
     BaselinerX::Type::Model::ConfigStore->new->set(
-        key   => 'config.git.revision_paging_size',
+        key   => 'config.git.page_size',
         value => 2
     );
 
@@ -278,10 +278,10 @@ subtest 'branch_commits: returns paged commits with no more commits to show' => 
     TestGit->commit($repo_path);
     TestGit->commit($repo_path);
 
-    BaselinerX::CI::bl->new( bl => $tag )->save;
+    TestUtils->create_ci( 'bl', bl => $tag,  name => $tag );
 
     BaselinerX::Type::Model::ConfigStore->new->set(
-        key   => 'config.git.revision_paging_size',
+        key   => 'config.git.page_size',
         value => 15
     );
 

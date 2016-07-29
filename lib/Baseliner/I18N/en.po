@@ -903,7 +903,7 @@ msgid "revisions"
 msgstr ""
 
 #: lib/Baseliner/Controller/GitTree.pm
-msgid "Next commit set"
+msgid "Show next"
 msgstr ""
 
 #: lib/Baseliner/Controller/GitTree.pm

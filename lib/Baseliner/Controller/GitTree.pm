@@ -83,7 +83,7 @@ sub branch_commits : Local {
     my $show_commit_tag = $p->{show_commit_tag};
     my $page = $p->{page};
     my $repo_ci = $p->{repo_mid};
-    my $page_size = config_get('config.git')->{revision_paging_size} || 30;
+    my $page_size = config_get('config.git')->{page_size} || 30;
     my $err;
     my @rev_list = try {
         # Change page_size to variable
@@ -192,7 +192,7 @@ sub branch_commits : Local {
     if ( !$no_more_commits ) {
         push @$data,
           +{
-            text => _loc('Next commit set'),
+            text => _loc('Show next'),
             icon => '/static/images/icons/down.png',
             data => {
                 branch       => $p->{branch},
