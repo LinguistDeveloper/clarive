@@ -36,10 +36,32 @@
         gr.window_show();
     };
     // only globals can be seen from grid
-    Baseliner.ci_edit = function( gridid, ix ){
+    Baseliner.ci_edit = function( gridid, rowIndex ){
         var g = Ext.getCmp( gridid );
         if( g!= undefined ) 
-            ci_edit( g.getStore(), g.getStore().getAt(ix).data );
+            ci_edit( g.getStore(), g.getStore().getAt(rowIndex).data );
+    };
+
+    var ciShow = function(rec) {
+        Baseliner.add_tabcomp('/ci/grid', null, {
+            _is_leaf: rec._is_leaf,
+            _id: rec._id,
+            type: rec.type,
+            ts: rec.ts,
+            classname: rec.classname,
+            item: rec.item,
+            properties: rec.properties,
+            icon: rec.icon,
+            versionid: rec.versionid,
+            anode: rec.anode,
+            _parent: rec._parent,
+            ci_form: rec.ci_form,
+            collection: rec.collection,
+            has_bl: rec.has_bl,
+            has_description: rec.has_description,
+            "class": rec["class"],
+            tab_icon: rec.icon
+        });
     };
 
     var ci_edit = function(store, rec){
@@ -47,11 +69,19 @@
         Baseliner.add_tabcomp( '/ci/edit', null, { load: true, mid: rec.mid, action:'edit', bl: data.bl } );
     };
 
-    // only globals can be seen from grid
-    Baseliner.ci_add = function( gridid, ix ){
-        var g = Ext.getCmp( gridid );
-        if( g!= undefined ) 
-            ci_add( g.getStore().getAt(ix).data );
+    Baseliner.ci_add = function(gridid, rowIndex) {
+        var g = Ext.getCmp(gridid);
+        var ciData;
+        if (g != undefined) {
+            ciData = g.getStore().getAt(rowIndex).data;
+            if (ciData) {
+                if (ciData.type == 'class') {
+                    ciShow(ciData);
+                } else {
+                    ci_add(ciData);
+                }
+            }
+        }
     };
 
     var get_valid_selections = function(){
@@ -461,7 +491,14 @@
     });
 
     ci_grid.on('rowdblclick', function(grid, rowIndex, columnIndex, e) {
-        ci_edit( grid.getStore(), grid.getStore().getAt(rowIndex).data );
+        var ciData = grid.getStore().getAt(rowIndex).data;
+        if (ciData) {
+            if (ciData.type == 'class') {
+                ciShow(ciData);
+            } else {
+                ci_edit(grid.getStore(), ciData);
+            }
+        }
     });
 
     ci_grid.on('cellclick', function(grid, rowIndex, columnIndex, e) {
