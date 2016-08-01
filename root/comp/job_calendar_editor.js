@@ -18,25 +18,18 @@
     calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
     calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
     calendar_type_help += '</TABLE>';
-    
+
     var cal_ns = '<% $cal->{ns} %>';
 
-    
     var cal_form = new Ext.FormPanel({
         url: '/job/calendar_update',
         frame: true,
         title: _('Calendar Info'),
-        autoHeight: true,
-        autoWidth: true,
-        defaults: {
-            width: 300
-        },
         items: [{
             itemId: 'text',
             layout: 'column',
             anchor: '90%',
             items: [{
-
                 layout: 'form',
                 columnWidth: 0.5,
                 defaults: {
@@ -62,6 +55,9 @@
                 itemId: 'form',
                 layout: 'form',
                 columnWidth: 0.5,
+                defaults: {
+                    anchor: '90%'
+                },
                 items: [{
                         xtype: 'combo',
                         name: 'bl',
@@ -80,7 +76,6 @@
                     Baseliner.ci_box({
                         name: 'ns',
                         role: ['Infrastructure', 'Project'],
-                        width: 400,
                         fieldLabel: _('Scope'),
                         value: cal_ns != '/' ? cal_ns : '/',
                         emptyText: _('Global'),
@@ -138,7 +133,7 @@
                         });
                     }
                 }]
-            }, ]
+            }]
         }]
     });
 
