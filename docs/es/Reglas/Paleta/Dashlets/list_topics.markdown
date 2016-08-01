@@ -67,6 +67,14 @@ icon: report_default
 ### Número máximo de tópicos a listar
 * Establece el número máximo de tópicos que se van a mostrar en la tabla.
 
+### Ordenar por
+
+* Establece el parametro por el que vamos a ordenar los tópicos (Por defecto ordena por el ID).
+
+### Orden de ordenación
+
+* ASC. Ordena de manera ascendente.
+* DESC. Ordena de manera descendente.
 
 ### Seleccionar tópicos en categorías
 * Selecciona las categorías que se quieren mostrar en la tabla.

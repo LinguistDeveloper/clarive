@@ -81,7 +81,6 @@
                 Ext.each(columns, function(col) {
                     html = html + '<td>';
                     if (col.name == 'name') {
-
                         html = insert_name_html(html, topic);
                     } else if (col.name == 'title') {
                         var title = topic.title;
@@ -92,16 +91,13 @@
                         if (!col.type || col.type == 'text') {
                             html = html + (topic[col.name] || '');
                         } else if (col.type == 'ci') {
-
                             html = insert_ci_html(topic, res, html, col);
                         } else if (col.type == 'checkbox') {
                             html = insert_checkbox_html(topic, col, html);
                         } else if (col.type.match(/^number/)) {
-
                             var data_number = insert_number_html(topic, col, decimal_zone, totals, html);
                             html = data_number.html;
                             totals = data_number.totals;
-
                         }
                     }
                     html = html + '</td>';
@@ -113,11 +109,17 @@
             }
 
             html = html + '</tbody>';
-
+            var sortable = 0;
+            for (var i = 0; i < columns.length; i++){
+                if (sort == columns[i].name){
+                    sortable = i;
+                }
+            }
             if (div) div.innerHTML = html;
             Baseliner.datatable("#<% $iid %>", {
                 "scrollY": (parseInt(rows) * 260),
                 "dom": '<lf<t>ip>',
+                "order": [sortable, dir],
                 "scrollX": true
             });
         });
@@ -202,12 +204,13 @@ function insert_ci_html(topic, res, html, col) {
     return html;
 }
 
-
 function insert_checkbox_html(topic, col, html) {
-    if (!topic[col.name] || topic[col.name] == 0 || topic[col.name] == false) {
-        html = html + '<div style="text-align:center;"><img class="img-non-checked" src="/static/images/icons/topic.svg"></div>';
-    } else {
-        html = html + '<div style="text-align:center;"><img class="img-checked" src="/static/images/icons/checkbox.svg"></div>'
+    if (topic[col.name] ) {
+        if(topic[col.name] == 0 ||  topic[col.name] == false){
+            html = html + '<div hidden>' + topic[col.name] + '</div>' + '<div style="text-align:center;"><img class="img-non-checked" src="/static/images/icons/topic.svg"></div>';
+        } else {
+            html = html + '<div hidden>' + topic[col.name] + '</div>' + '<div style="text-align:center;"><img class="img-checked" src="/static/images/icons/checkbox.svg"></div>'
+        }
     }
     return html;
 }
