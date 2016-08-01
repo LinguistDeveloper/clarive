@@ -7,7 +7,7 @@
             element.readOnly = true;
         }
         if(element.name == 'section'){
-            element.value = 'head';
+            element.value = 'title';
             element.readOnly = true;
         }
         if(element.name == 'hidden') { element.hide() };

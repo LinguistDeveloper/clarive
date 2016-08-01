@@ -18,24 +18,28 @@
 <%perl>
     use Baseliner::Utils;
 
-    my @form = grep { $_->{fields} } _array( $topic_meta );
+    my @form = grep { $_->{fields} } _array($topic_meta);
+    my @sections = ( 'title', 'head', 'details', 'between', 'body', 'more' );
+    my $fields = {};
 
-    my @head = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'head') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'head') } _array( $topic_meta );
+    foreach my $section (@sections) {
+        my @data = sort { $a->{field_order} <=> $b->{field_order} }
+          grep {
+            ( $_->{section} && $_->{section} eq $section )
+              || (!$_->{section}
+                && $_->{section_default}
+                && $_->{section_default} eq $section )
+          } _array($topic_meta);
 
-    my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'details') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'details')} _array( $topic_meta );
-
-    my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'between') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'between') } _array( $topic_meta );
-
-    my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'body') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'body') } _array( $topic_meta ) ;
-
-    my @more = sort { $a->{field_order} <=> $b->{field_order} } grep { ($_->{section} && $_->{section} eq 'more') || (!$_->{section} && $_->{section_default}  && $_->{section_default} eq 'more') } _array( $topic_meta ) ;
-
-    my $tabactive = $has_comments ? 'discussion' :
-        $permissionDashboard && length($dashboard) ? 'dashboard' :
-        @more ? 'more' :
-        $permissionActivity ? 'activity' :
-        $permissionJobs ? 'jobs' :
-        'none';
+        $fields->{$section} = [@data];
+    }
+    my $tabactive =
+        $has_comments ? 'discussion'
+      : $permissionDashboard && length($dashboard) ? 'dashboard'
+      : $fields->{more}     ? 'more'
+      : $permissionActivity ? 'activity'
+      : $permissionJobs     ? 'jobs'
+      :                       'none';
 
 </%perl>
 <style>
@@ -129,7 +133,12 @@ if (imagen.width()>600) { captura.show(); }
         <!-- div class="span7" style="xwidth: 60%" -->
             <table style="width: 100%">
                 <tbody>
-% foreach my $field ( @head ) {
+% foreach my $field ( _array $fields->{title} ) {
+% if ($field->{html}) {
+    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security&>
+% }
+% }
+% foreach my $field ( _array $fields->{head} ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security&>
@@ -144,7 +153,7 @@ if (imagen.width()>600) { captura.show(); }
         <td class="right-box-view-topic">
             <table style="width: 100%" class="table table-bordered table-condensed">
                 <tbody>
-%foreach my $field ( @body ) {
+%foreach my $field ( _array $fields->{body} ) {
      <!--    <tr>
             <td colspan=2 > -->
 %   if ($field->{html}){
@@ -154,10 +163,10 @@ if (imagen.width()>600) { captura.show(); }
         </tr>    -->
 %}
 
-% if( @between ) {
+% if(  _array $fields->{between} ) {
         <tr>
             <td colspan=2>
-%foreach my $field ( @between ) {
+%foreach my $field ( _array $fields->{between} ) {
 %   if ($field->{html}){
         <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %   }
@@ -181,11 +190,11 @@ if (imagen.width()>600) { captura.show(); }
 % }
 
 
-% if( @details ) {
+% if( _array $fields->{details} ) {
 %    my $did = int rand 999999;
         <tr>
             <td colspan=2 id="<% $did %>" style="white-space: nowrap; display: none;">
-% foreach my $field ( @details ) {
+% foreach my $field ( _array $fields->{details} ) {
 %   if ($field->{html}){
         <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %   }
@@ -221,7 +230,7 @@ if (imagen.width()>600) { captura.show(); }
             <a href="#dashboard<% $ii %>" id="tab-dashboard<% $ii %>" data-toggle="tab"><% _loc('Dashboard') %></a>
         </li>
 % }
-% if( @more ) {
+% if( _array $fields->{more} ) {
         <li <% $tabactive eq 'more' and 'class="active"' %>>
             <a href="#more<% $ii %>" id="tab-more<% $ii %>" data-toggle="tab"><% _loc('More info') %></a>
         </li>
@@ -251,10 +260,10 @@ if (imagen.width()>600) { captura.show(); }
 
             <div class="tab-pane <% $tabactive eq 'more' and 'active' %>" id="more<% $ii %>">
                 <div id="topic-more<% $ii %>" class="more_info">
-% if( @more ) {
+% if( _array $fields->{more} ) {
                     <tr>
                         <td colspan=2 >
-% foreach my $field ( @more ) {
+% foreach my $field ( _array $fields->{more} ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
