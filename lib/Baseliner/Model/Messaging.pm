@@ -43,6 +43,7 @@ register 'service.notify.create' => {
 
         my $to = $config->{to};
         my $cc = $config->{cc};
+        my $attach = $config->{attach};
 
         my $template = config_get('config.comm.email')->{default_template};
 #        $config->{url} = config_get('config.comm.email')->{baseliner_url};
@@ -85,6 +86,8 @@ register 'service.notify.create' => {
             template_engine => 'mason',
             utf8 => 1,
             subject => $config->{subject},
+            attach => $attach,
+            attach_filename => $config->{attach_filename},
             carrier => 'email',
             vars => {
                 msg => $config->{body},
@@ -124,10 +127,6 @@ sub create {
 
     _throw "No subject specified" unless $p{subject};
 
-    # catch onto features
-    my @features = map {
-        [ $_->id => _dir( $_->root )->stringify ]
-    } Baseliner->features->list;
     my $vars = $p{vars} ? $p{vars} : {};
     # merge vars and %p
     my %final_vars = %p;
@@ -166,6 +165,7 @@ sub create {
             body    => $body,
             sender  => $p{sender},
             attach  => $p{attach},
+            attach_filename => $p{attach_filename},
             schedule_time => $p{schedule_time}
         }
     );
@@ -303,6 +303,8 @@ sub notify {
                             active => '1',
                             attempts => '0',
                             swreaded => '0',
+                            attach => $p{attach},
+                            attach_filename => $p{attach_filename},
                             sent => $sent
                         }}
                     }

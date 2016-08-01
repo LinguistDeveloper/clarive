@@ -112,6 +112,7 @@ use Exporter::Tidy default => [
     _chdir
     _timeout
     _capture_pipe
+    zip_dir
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -150,6 +151,7 @@ use Scalar::Util qw(looks_like_number);
 use Term::ANSIColor;
 use Try::Tiny;
 use YAML::XS;
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 
 use Baseliner::I18N;
 use Baseliner::VarsParser;
@@ -2002,54 +2004,59 @@ Zip a directory
 
 =cut
 sub zip_dir {
-    my ($self, %p) =@_;
-    my $source_dir = $p{source_dir} // _fail _loc('Missing parameter source_dir');
-    my $zipfile = $p{zipfile} // _fail _loc('Missing parameter tarfile');
-    my $verbose = $p{verbose};
-    my %files = map { $_ => 1 } _array $p{files};
-    my @include = _array $p{include};
-    my @exclude = _array $p{exclude};
+    my ( $self, %p ) = @_;
 
-    # open and close to reset file and attempt write
-    open my $ff, '>', $zipfile
-       or _fail _loc('Could not create zip file `%1`: %2', $zipfile, $!);
-    close $ff;
+    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir';
+    my $zipfile    = $p{zipfile}    // _fail _loc 'Missing parameter tarfile';
+    my $verbose    = $p{verbose};
+    my %files     = map { $_ => 1 } _array $p{files};
+    my @include   = _array $p{include};
+    my @exclude   = _array $p{exclude};
+    my $closefile = 0;
+    my $fh;
 
-
-    _fail _loc('Could not find dir `%1` to zip', $source_dir)
+    if ( tell($zipfile) == -1 ) {
+        open $fh, '>', $zipfile
+            or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
+        $closefile++;
+    }
+    _fail _loc 'Could not find dir `%1` to zip', $source_dir
         unless -e $source_dir;
 
-    use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
-    # build local tar
     my $zip = Archive::Zip->new or _throw $!;
-    my $dir = Util->_dir( $source_dir );
-    $dir->recurse( callback=>sub{
-        my $f = shift;
-        return if _file($zipfile) eq $f;
-        my $rel = $f->relative( $dir );
-        return if %files && !exists $files{$rel}; # check if file is in list
-        my $stat = $f->stat;
-        my $type = $f->is_dir ? 'd' : 'f';
-        for my $in ( @include ) {
-            return if "$f" !~ $in;
-        }
-        for my $ex ( @exclude ) {
-            return if "$f" =~ $ex;
-        }
+    my $dir = Util->_dir($source_dir);
+    $dir->recurse(
+        callback => sub {
+            my $f   = shift;
+            my $rel = $f->relative($dir);
+            return if %files && !exists $files{$rel};
 
-        if( $f->is_dir ) {
-            # directory with empty data
-            my $dir_member = $zip->addDirectory( ''.$rel );
-        } else {
-            # file
-            $zip->addFile( ''.$f, ''.$rel, COMPRESSION_LEVEL_BEST_COMPRESSION  );
+            for my $include (@include) {
+                return if "$f" !~ $include;
+            }
+            for my $exclude (@exclude) {
+                return if "$f" =~ $exclude;
+            }
 
+            if ( $f->is_dir ) {
+                my $dir_member = $zip->addDirectory( '' . $rel );
+            }
+            else {
+                $zip->addFile( '' . $f, '' . $rel, COMPRESSION_LEVEL_BEST_COMPRESSION );
+            }
         }
-    });
-    say "zip_dir: writing zip file `$zipfile`" if $verbose;
-    unless ( $zip->writeToFileNamed( $zipfile ) == AZ_OK ) {
-        _fail 'Error writing file '.$zipfile;
+    );
+
+    my $file = $closefile ? $fh : $zipfile;
+
+    _debug "zip_dir: writing zip file `$file`" if $verbose;
+    unless ( $zip->writeToFileHandle($file) == AZ_OK ) {
+        _fail 'Error writing file ' . $file;
     }
+
+    $file->seek( 0, 0 );
+    close $file if $closefile;
+
     return 1;
 }
 

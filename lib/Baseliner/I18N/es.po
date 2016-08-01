@@ -52,6 +52,14 @@ msgid "CC EMAILS added: '%1' (email_cc)"
 msgstr ""
 
 #: lib/Baseliner/Comm/Email.pm
+msgid "Attachment not sent. The size is too big"
+msgstr "Adjunto no enviado. El tamaño es demasiado grande"
+
+#: lib/Baseliner/Comm/Email.pm
+msgid "Attachment not sent. The path does not exist"
+msgstr "Adjunto no enviado. La ruta del adjunto no existe"
+
+#: lib/Baseliner/Comm/Email.pm
 msgid "Could not send email '$subject'. No recipients in TO or CC.\\n"
 msgstr ""
 
@@ -12347,12 +12355,28 @@ msgid "Commit Items?"
 msgstr "¿Hacer un Commit de los elementos?"
 
 #: root/forms/notify_create.js
+msgid "Send notification"
+msgstr "Enviar notificacion"
+
+#: root/forms/notify_create.js
 msgid "TO"
 msgstr "A"
 
 #: root/forms/notify_create.js
 msgid "CC"
 msgstr "CC"
+
+#: root/forms/notify_create.js
+msgid "Attachment path"
+msgstr "Ruta del adjunto"
+
+#: root/forms/notify_create.js
+msgid "*Note: Maximum size %1 MB"
+msgstr "*Nota: Tamaño máximo %1 MB"
+
+#: root/forms/notify_create.js
+msgid "Output filename"
+msgstr "Nombre del fichero"
 
 #: root/forms/parse_config.js root/forms/write_config.js
 msgid "Ini"

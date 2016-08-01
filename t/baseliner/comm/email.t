@@ -5,9 +5,13 @@ use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
+use Test::Fatal;
 use Test::MonkeyMock;
+use Test::TempDir::Tiny;
 use TestEnv;
+use File::Basename qw(basename);
 BEGIN { TestEnv->setup }
+use TestUtils;
 
 use_ok 'Baseliner::Comm::Email';
 
@@ -61,22 +65,19 @@ subtest 'group_queue: groups queue' => sub {
     _setup();
 
     mdb->message->insert(
-        {
-            active  => '1',
+        {   active  => '1',
             sender  => 'from@me.com',
             subject => 'Subject',
             body    => "hi there!",
             queue   => [
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
                     id            => 356247,
                     username      => 'clarive@bar.com',
                 },
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
@@ -97,7 +98,7 @@ subtest 'group_queue: groups queue' => sub {
     like $key, qr/^[a-f0-9]+$/;
 
     cmp_deeply $value,
-      {
+        {
         body    => 'hi there!',
         from    => 'from@me.com',
         to      => [ 'clarive@bar.com', 'another@bar.com' ],
@@ -105,32 +106,29 @@ subtest 'group_queue: groups queue' => sub {
         attach  => {
             'content_type' => undef,
             'filename'     => undef,
-            'data'         => undef
+            'path'         => undef
         },
         id_list => [ re(qr/^\d+$/), re(qr/^\d+$/) ],
-      };
+        };
 };
 
 subtest 'process_queue: sends emails' => sub {
     _setup();
 
     mdb->message->insert(
-        {
-            active  => '1',
+        {   active  => '1',
             sender  => 'from@me.com',
             subject => 'Subject',
             body    => "hi there!",
             queue   => [
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
                     id            => 356247,
                     username      => 'clarive@bar.com',
                 },
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
@@ -145,7 +143,7 @@ subtest 'process_queue: sends emails' => sub {
 
     my $c = _mock_c();
 
-    $comm->process_queue($c, {max_message_size => 1024});
+    $comm->process_queue( $c, { max_message_size => 1024 } );
 
     my ($msg) = $comm->mocked_call_args('_send');
 
@@ -156,34 +154,30 @@ subtest 'process_queue: sends emails' => sub {
     like $msg, qr/Subject: =\?utf-8\?B\?U3ViamVjdA==\?=/;
 };
 
-subtest 'process_queue: skips unresolved adresses' => sub {
+subtest 'process_queue: skips unresolved addresses' => sub {
     _setup();
 
     mdb->message->insert(
-        {
-            active  => '1',
+        {   active  => '1',
             sender  => 'from@me.com',
             subject => 'Subject',
             body    => "hi there!",
             queue   => [
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
                     id            => 356247,
                     username      => 'clarive@bar.com',
                 },
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
                     id            => 356247,
                     username      => 'unknown user',
                 },
-                {
-                    active        => '1',
+                {   active        => '1',
                     attempts      => '0',
                     carrier       => 'email',
                     carrier_param => 'to',
@@ -198,13 +192,283 @@ subtest 'process_queue: skips unresolved adresses' => sub {
 
     my $c = _mock_c();
 
-    $comm->process_queue($c, {max_message_size => 1024});
+    $comm->process_queue( $c, { max_message_size => 1024 } );
 
     my ($msg) = $comm->mocked_call_args('_send');
 
     $msg = $msg->as_string;
 
     like $msg, qr/To: clarive\@bar\.com,root\@bar\.com/;
+};
+
+subtest 'process_queue: builds emails without attachment if size is too big' => sub {
+    _setup();
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+    TestUtils->write_file( 'foo', $filename );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 0 );
+    mdb->message->insert(
+        {   active  => '1',
+            sender  => 'from@me.com',
+            subject => 'Subject',
+            body    => "hi there!",
+            attach  => $filename,
+            queue   => [
+                {   active        => '1',
+                    attempts      => '0',
+                    carrier       => 'email',
+                    carrier_param => 'to',
+                    id            => 356247,
+                    username      => 'clarive@bar.com',
+                },
+                {   active        => '1',
+                    attempts      => '0',
+                    carrier       => 'email',
+                    carrier_param => 'to',
+                    id            => 356247,
+                    username      => 'another@bar.com',
+                }
+            ],
+        }
+    );
+
+    my $comm = _build_comm();
+
+    my $c = _mock_c();
+
+    $comm->process_queue( $c, { max_message_size => 1024 } );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    $msg = $msg->as_string;
+
+    unlike $msg, qr/filename="foo"/;
+};
+
+subtest 'process_queue: builds emails without attachment if not exist' => sub {
+    _setup();
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+    TestUtils->write_file( 'foo', $filename );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+    mdb->message->insert(
+        {   active  => '1',
+            sender  => 'from@me.com',
+            subject => 'Subject',
+            body    => "hi there!",
+            attach  => '/unknown/file',
+            queue   => [
+                {   active        => '1',
+                    attempts      => '0',
+                    carrier       => 'email',
+                    carrier_param => 'to',
+                    id            => 356247,
+                    username      => 'clarive@bar.com',
+                },
+                {   active        => '1',
+                    attempts      => '0',
+                    carrier       => 'email',
+                    carrier_param => 'to',
+                    id            => 356247,
+                    username      => 'another@bar.com',
+                }
+            ],
+        }
+    );
+
+    my $comm = _build_comm();
+
+    my $c = _mock_c();
+
+    $comm->process_queue( $c, { max_message_size => 1024 } );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    $msg = $msg->as_string;
+
+    unlike $msg, qr/filename="file"/;
+};
+
+subtest 'send: sends attachments if the path is a file' => sub {
+    _setup();
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+    my $comm     = _build_comm();
+
+    TestUtils->write_file( 'foo', $filename );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $filename } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    my $msg_string = $msg->as_string;
+
+    like $msg_string, qr/filename="foo"/;
+};
+
+subtest 'send: builds correct email attaching a directory' => sub {
+    _setup();
+
+    my $tmp  = tempdir();
+    my $dir  = basename($tmp);
+    my $comm = _build_comm();
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $tmp } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    my $msg_string = $msg->as_string;
+
+    like $msg_string, qr/filename="$dir.zip"/;
+};
+
+subtest 'send: renames the attachment' => sub {
+    _setup();
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+    my $comm     = _build_comm();
+
+    TestUtils->write_file( 'foo', $filename );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $filename, filename => 'bar' } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    my $msg_string = $msg->as_string;
+
+    like $msg_string, qr/filename="bar"/;
+};
+
+subtest 'send: adds extension zip if the attachment has not extension in filename' => sub {
+  _setup();
+
+    my $tmp  = tempdir();
+    my $dir  = basename($tmp);
+    my $comm = _build_comm();
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $tmp, filename => 'bar' } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    my $msg_string = $msg->as_string;
+
+    like $msg_string, qr/filename="bar.zip"/;
+};
+
+subtest 'send: throws an error when attachment is not a hash' => sub {
+    _setup();
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+    my $comm     = _build_comm();
+
+    like exception {
+        $comm->send(
+            from    => 'me@localhost',
+            subject => 'Hi there!',
+            body    => 'Hello',
+            to      => 'you@localhost,foo@bar',
+            attach  => [ '2', '3' ]
+
+        );
+    }, qr/Error: attachment is not a hash but a 2/;
+};
+
+subtest 'send: sends directories using a temporal filehandle' => sub {
+  _setup();
+
+    my $tmp  = tempdir();
+    my $dir  = basename($tmp);
+    my $comm = _build_comm();
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $tmp } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    like $msg->{Parts}[2]->{FH}, qr/tmp/;
+};
+
+subtest 'send: adds content_type to the attachment when the path is a directory' => sub {
+    _setup();
+
+    my $tmp  = tempdir();
+    my $dir  = basename($tmp);
+    my $comm = _build_comm();
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $tmp } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    is $msg->{Parts}[2]->{Attrs}->{'content-type'}, 'application/zip';
+};
+
+subtest 'send: adds content_type to the attachment when the path is a text file' => sub {
+    _setup();
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+    my $comm     = _build_comm();
+
+    TestUtils->write_file( 'foo', $filename );
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.comm.email.max_attach_size', value => 1024 * 1024 );
+
+    $comm->send(
+        from    => 'me@localhost',
+        subject => 'Hi there!',
+        body    => 'Hello',
+        to      => 'you@localhost',
+        attach  => [ { path => $filename } ]
+    );
+
+    my ($msg) = $comm->mocked_call_args('_send');
+
+    is $msg->{Parts}[2]->{Attrs}->{'content-type'}, 'text/plain';
 };
 
 sub _mock_c {
@@ -226,6 +490,7 @@ sub _build_comm {
 
 sub _setup {
     mdb->message->drop;
+    mdb->config->drop;
 }
 
 done_testing;

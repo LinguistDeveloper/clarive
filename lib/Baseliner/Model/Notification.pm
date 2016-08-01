@@ -37,6 +37,7 @@ register 'config.comm.email' => {
         { id=>'frequency', name=>'Email daemon frequency', default=>10 },
         { id=>'timeout', name=>'Email daemon process_queue timeout', default=>30 },
         { id=>'max_message_size', name=>'Max message size in bytes', default=>(1024 * 1024) },
+        { id=>'max_attach_size', name=>'Max attach size in bytes', default=>(1024 * 1024 * 7) },
         { id=>'server', name=>'Email server', default=>'smtp.example.com' },
         { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
