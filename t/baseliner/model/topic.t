@@ -88,7 +88,7 @@ subtest 'get_short_name: returns auto acronym when does not exist removing speci
     is $topic->get_short_name( name => 'C123A##TegoRY' ), 'CATRY';
 };
 
-subtest 'get meta returns meta fields' => sub {
+subtest 'get_meta: returns meta fields' => sub {
     _setup();
     _setup_user();
 
@@ -104,6 +104,62 @@ subtest 'get meta returns meta fields' => sub {
     unshift @fields, ( 'created_by', 'modified_by', 'created_on', 'category', 'modified_on' );
     my @fields_from_meta = sort map { $$_{id_field} } @$meta;
     is_deeply \@fields_from_meta, [sort @fields];
+};
+
+subtest 'get_meta: builds topic meta with a topic_mid in stash' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'user' );
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+
+    my $id_changeset_rule = _create_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid, is_changeset => 1 );
+
+    my $topic_mid = TestSetup->create_topic(
+        status      => $status,
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        text        => '${topic_mid}',
+        title       => "Topic"
+    );
+
+    my $meta = Baseliner::Model::Topic->new->get_meta($topic_mid);
+    my @field = grep {$_->{name} && $_->{name} eq 'Textfield'} @$meta;
+
+    is $field[0]->{test_field}, $topic_mid;
+};
+
+subtest 'get_meta: builds category meta with a topic_mid in stash' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project, username => 'user' );
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+
+    my $id_changeset_rule = _create_form();
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid, is_changeset => 1 );
+
+    my $topic_mid = TestSetup->create_topic(
+        status      => $status,
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        text        => '${topic_mid}',
+        title       => "Topic"
+    );
+
+    my $meta = Baseliner::Model::Topic->new->get_meta($topic_mid, $id_changeset_category);
+    my @field = grep {$_->{name} && $_->{name} eq 'Textfield'} @$meta;
+
+    is $field[0]->{test_field}, $topic_mid;
 };
 
 subtest 'include into fieldlet gets its topic list' => sub {
@@ -2788,4 +2844,36 @@ sub _create_file {
 
 sub _build_model {
     return Baseliner::Model::Topic->new;
+}
+
+sub _create_form {
+    my (%params) = @_;
+
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'Status',
+                        "bd_field"     => "id_category_status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field      => 'text',
+                        test_field => '${topic_mid}'
+                    },
+                    "key" => "fieldlet.text",
+                    name  => 'Text',
+                }
+            },
+            @{$params{rule_tree} || []}
+        ],
+    );
 }
