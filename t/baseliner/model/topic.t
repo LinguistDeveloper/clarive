@@ -1367,6 +1367,48 @@ subtest 'topics_for_user: Search a topic with special characters ' => sub {
 
 };
 
+subtest 'topics_for_user: returns can_edit = 1 if user has permissions to edit' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.edit', } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
+
+    my $model = _build_model();
+
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username } );
+
+    is $rows[0]->{can_edit}, '1';
+};
+
+subtest 'topics_for_user: returns can_edit = 0 if user has not permissions to edit' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view', } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
+    TestSetup->create_topic( project => $project, id_category => $id_category, status => $status, title => "Topic" );
+
+    my $model = _build_model();
+
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username } );
+
+    is $rows[0]->{can_edit}, '0';
+};
+
 subtest 'build_sort: builds correct condition' => sub {
     my $model = _build_model();
 

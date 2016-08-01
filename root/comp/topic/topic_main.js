@@ -16,28 +16,28 @@
     $menu_deploy => undef
 </%args>
 
-(function(params){
+(function(params) {
     var topic_mid = '<% $topic_mid %>';
     var category_name = '<% $category_name %>';
     var category_color = '<% $category_color %>';
     var category_id = '<% $category_id %>';
-    var swEdit = <% $swEdit && $swEdit == 1 ? 1 : 0 %>;
-    var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
-    var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
-    var permGraph = <% $permissionGraph ? 'true' : 'false' %>;
-    var permComment = <% $permissionComment ? 'true' : 'false' %>;
-    var viewKanban = <% $viewKanban ? 'true' : 'false' %>;
-    var viewTimeline = <% $viewTimeline ? 'true' : 'false' %>;
-    var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
+    var swEdit = <% $swEdit && $swEdit == 1 ? 1 : 0 %> ;
+    var permEdit = <% $permissionEdit ? 'true' : 'false' %> ;
+    var permDelete = <% $permissionDelete ? 'true' : 'false' %> ;
+    var permGraph = <% $permissionGraph ? 'true' : 'false' %> ;
+    var permComment = <% $permissionComment ? 'true' : 'false' %> ;
+    var viewKanban = <% $viewKanban ? 'true' : 'false' %> ;
+    var viewTimeline = <% $viewTimeline ? 'true' : 'false' %> ;
+    var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %> ;
     var status_items_menu = '<% $status_items_menu %>';
     var menu_deploy = '<% $menu_deploy %>';
     var category_meta = "<% $category_meta %>";
     var topic_main_class_name;
-    if( category_meta ) {
-        topic_main_class_name = Baseliner.topic_category_class[ category_meta ];
+    if (category_meta) {
+        topic_main_class_name = Baseliner.topic_category_class[category_meta];
     }
 
-    Ext.apply( params, {
+    Ext.apply(params, {
         swEdit: swEdit,
         permEdit: permEdit,
         permGraph: permGraph,
@@ -53,28 +53,31 @@
         category_color: category_color
     });
 
-    
     var topic_main;
-    if( topic_main_class_name ) {
-        eval( "var class_name = " + topic_main_class_name + ";" );
+    if (topic_main_class_name) {
+        eval("var class_name = " + topic_main_class_name + ";");
         var obj = new class_name(params);
         topic_main = obj;
     } else {
         topic_main = new Baseliner.TopicMain(params);
     }
 
-    Baseliner.edit_check( topic_main, true );  // block window closing from the beginning
+    Baseliner.edit_check(topic_main, true); // block window closing from the beginning
 
-    if( !params.topic_mid ) {
-        topic_main.title = Baseliner.topic_title( null, category_name, category_color, null,null,{ new_tab:true });
-        topic_main.tab_title = topic_main.title;  // make sure nobody overwrites me text
+    if (!params.topic_mid) {
+        topic_main.title = Baseliner.topic_title(null, category_name, category_color, null, null, {
+            new_tab: true
+        });
+        topic_main.tab_title = topic_main.title; // make sure nobody overwrites me text
     }
-    
-    topic_main.print_hook = function(){
+
+    topic_main.print_hook = function() {
         var t = params.topic_mid || topic_main.title;
-        return { title: t , id: topic_main.getLayout().activeItem.body.id };
+        return {
+            title: t,
+            id: topic_main.getLayout().activeItem.body.id
+        };
     }
-    
+
     return topic_main;
 })
-

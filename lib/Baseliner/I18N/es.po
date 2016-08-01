@@ -224,7 +224,7 @@ msgstr "SAML Fallo de autenticación: %1"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Invalid session"
-msgstr ""
+msgstr "Sesión Inválida"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "S0003: create_user_session not enabled"
