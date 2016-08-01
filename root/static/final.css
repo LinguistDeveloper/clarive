@@ -908,6 +908,19 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 }
 
 
+#boot .label.info-column {
+    float:left;
+    clear: both;
+    cursor:pointer;
+    color:#333;
+    padding-left: 0px;
+    margin-right:5px;
+    background-color: transparent;
+    font-size:10px;
+    margin-top:0px;
+}
+
+
 #boot .right-box-view-topic {
     width:40%;
     padding-left: 15px;
@@ -928,3 +941,4 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 ul.x-tab-strip li {
     margin-bottom: -1px;
 }
+

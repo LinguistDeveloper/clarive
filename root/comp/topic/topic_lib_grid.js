@@ -1093,11 +1093,11 @@ Cla.topic_grid = function(params){
             var ret = [];
             // open children
             ret.push("<a href='javascript:void(0);' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", \""+rec.data.topic_mid+"\"); return false'>");
-            ret.push("<span class='label' style='cursor:pointer; color:#333; borderx: 1px #2ECC71 solid; padding-left: 0px; background-color: transparent; font-size:10px; margin-top:0px'>");
+            ret.push("<span class='label info-column'>");
             ret.push("<img src='/static/images/icons/"+img+".svg'>");
             ret.push( refs.length );
             ret.push("</span>");
-            ret.push("</a>&nbsp;");
+            ret.push("</a>");
             return ret.join('');
         }
         if( Ext.isArray( rec.data.references_out ) && rec.data.references_out.length > 0 ) {
@@ -1106,20 +1106,20 @@ Cla.topic_grid = function(params){
         }
         if(rec.data.numcomment){
             swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.svg' style='height:16px;width:16px;'/> ");
+            actions_html.push("<span style='float: left; color: #808080'><img border=0 src='/static/images/icons/comment_blue.svg' style='height:16px;width:16px;'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
-            actions_html.push("</span>");
-        }
-        if(rec.data.num_file){
-            swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.svg' style='height:16px;width:16px;'/> ");
-            actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
             actions_html.push("</span>");
         }
         if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
             if( swGo && !btn_mini.pressed )  actions_html.push( '<br>' );
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
+        }
+        if(rec.data.num_file){
+            swGo = true;
+            actions_html.push("<span style='float: left; color: #808080'><img border=0 src='/static/images/icons/paperclip.svg' style='height:16px;width:16px;'/> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
+            actions_html.push("</span>");
         }
 
         actions_html.push("</span>");
