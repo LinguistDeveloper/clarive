@@ -1398,8 +1398,8 @@ msgid "Error testing DSL build: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
-msgid "Rule not found"
-msgstr "Regla no encontrada"
+msgid "id_rule is not passed"
+msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Simulation of modification of rule statements"
@@ -1448,10 +1448,6 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm lib/Baseliner/Model/Rules.pm
 msgid "Rule %1 not found"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "Rule %1 not independent or webservice: %2"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -2512,44 +2508,44 @@ msgid "WSDL Error Running Rule from WS"
 msgstr "Error WSDL Ejecutando la Regla desde un WS"
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "Webservice rule call"
+msgstr "Llamada a una regla Webservice"
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Could not find rule %1"
-msgstr ""
+msgstr "No se ha encontrado la regla %1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Invalid rule tree json data: not an array"
-msgstr ""
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Rule tree is empty for rule %1"
-msgstr ""
+msgstr "Datos json inválidos en el árbol de regla: no es un array"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Could not find rule key `%1`"
-msgstr ""
+msgstr "No se ha encontrado la clave de regla `%1`"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Missing dsl/service key for node %1"
-msgstr ""
+msgstr "Falta la clave dsl/servicio para el nodo %1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Error during rule precompilation: %1"
-msgstr ""
+msgstr "Error durante la precompilación de la regla: %1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "a job step section: PRE,RUN,POST..."
-msgstr ""
+msgstr "Un paso de la sección del pase: PRE,RUN,POST..."
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Just group tasks under this but do not run it"
-msgstr ""
+msgstr "Agrupa las tareas bajo esto pero no se ejecutan"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Shortcut jumping to %%1"
-msgstr ""
+msgstr "Atajo saltando a %%1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Missing shortcut `%%1`"
-msgstr ""
+msgstr "Falta el atajo `%%1`"
 
 # #-#-#-#-#  es.po  #-#-#-#-#
 # features/gitscm/lib/BaselinerX/Controller/GitTree.pm (158)
@@ -2559,7 +2555,7 @@ msgstr "%1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Date %1 is not a valid date: %2"
-msgstr ""
+msgstr "La fecha %1 no es una fecha válida: %2"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Dummy Event to Test a Rule"
@@ -2567,15 +2563,15 @@ msgstr "Evento falso para probar la regla"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Current project *%%1* (%%2)"
-msgstr ""
+msgstr "Projecto actual *%%1* (%%2)"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Project *%%1* skipped for bl %%2"
-msgstr ""
+msgstr "Projecto *%%1* omitido para el bl %%2"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Nature Detected *%%1*"
-msgstr ""
+msgstr "Naturaleza Detectada *%%1*"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Error building DSL for rule '%1': %2"
@@ -2583,39 +2579,39 @@ msgstr "Error construyendo el DSL para la regla '%1': %2"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Custom Folders"
-msgstr ""
+msgstr "Carpetas Personalizadas"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Folder already exists"
-msgstr ""
+msgstr "La carpeta ya existe"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule not found, id=%1"
-msgstr ""
+msgstr "Regla no encontrada, id=%1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule version not found for restore, id=%1"
-msgstr ""
+msgstr "Versión de regla no encontrada para la restauración, id=%1"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Unknown rule `%1`"
-msgstr ""
+msgstr "Regla desconocida `%1`"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Version tag already exists"
-msgstr ""
+msgstr "Versión de etiqueta ya existe"
 
 #: lib/Baseliner/Model/Rules.pm lib/Baseliner/RuleRunner.pm
 msgid "Rule with id or name `%1` not found"
-msgstr ""
+msgstr "Regla con id o nombre `%1` no encontrada"
 
 #: lib/Baseliner/Model/Rules.pm lib/Baseliner/RuleRunner.pm
 msgid "Version `%1` of rule `%2` not found"
-msgstr ""
+msgstr "Version `%1` de regla `%2` no encontrada"
 
 #: lib/Baseliner/Model/Rules.pm lib/Baseliner/RuleRunner.pm
 msgid "Version tag `%1` of rule `%2` not found"
-msgstr ""
+msgstr "Versión de etiqueta `%1` para la regla `%2` no encontrada"
 
 #: lib/Baseliner/Model/Scheduler.pm
 msgid "Checking if process $pid exists"
@@ -13965,6 +13961,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Rule not found"
+#~ msgstr "Regla no encontrada"
 
 #~ msgid "ci:bl"
 #~ msgstr "Entorno"

@@ -1383,7 +1383,7 @@ msgid "Error testing DSL build: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
-msgid "Rule not found"
+msgid "id_rule is not passed"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -1433,10 +1433,6 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm lib/Baseliner/Model/Rules.pm
 msgid "Rule %1 not found"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
-msgid "Rule %1 not independent or webservice: %2"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -2486,15 +2482,15 @@ msgid "WSDL Error Running Rule from WS"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "Webservice rule call"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Could not find rule %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Invalid rule tree json data: not an array"
-msgstr ""
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Rule tree is empty for rule %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
