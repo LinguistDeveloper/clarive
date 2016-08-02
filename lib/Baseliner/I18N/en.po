@@ -3881,7 +3881,7 @@ msgstr ""
 msgid "Revisions"
 msgstr ""
 
-#: lib/BaselinerX/CI/job.pm root/comp/feature.js
+#: lib/BaselinerX/CI/job.pm root/ci/review.js root/comp/feature.js
 #: root/fields/system/html/field_revisions.html
 #: root/forms/git_create_branch.js
 msgid "Repository"
@@ -6224,7 +6224,8 @@ msgstr ""
 msgid "Token"
 msgstr ""
 
-#: root/ci/item.js root/dashlets/job_distribution_day_config.js
+#: root/ci/item.js root/ci/review.js
+#: root/dashlets/job_distribution_day_config.js
 #: root/dashlets/topics_burndown_config.js
 #: root/dashlets/topics_burndown_config_ng.js
 #: root/dashlets/topics_by_date_line_config.js
@@ -6312,6 +6313,19 @@ msgstr ""
 
 #: root/ci/project.js
 msgid "Repositories"
+msgstr ""
+
+#: root/ci/review.js root/comp/lifecycle/report_edit.js
+#: root/comp/view_commits_history.js root/comp/view_diff.js
+#: root/fields/system/html/field_revisions.html
+#: root/fields/system/js/list_revisions.js root/forms/link_revision.js
+#: root/site/model.js
+msgid "Revision"
+msgstr ""
+
+#: root/ci/review.js root/comp/log_grid.js root/comp/topic/topic_lib.js
+#: root/site/common.js
+msgid "File"
 msgstr ""
 
 #: root/ci/script.js
@@ -8072,13 +8086,6 @@ msgstr ""
 msgid "Boolean"
 msgstr ""
 
-#: root/comp/lifecycle/report_edit.js root/comp/view_commits_history.js
-#: root/comp/view_diff.js root/fields/system/html/field_revisions.html
-#: root/fields/system/js/list_revisions.js root/forms/link_revision.js
-#: root/site/model.js
-msgid "Revision"
-msgstr ""
-
 #: root/comp/lifecycle/report_edit.js
 msgid "Usuario"
 msgstr ""
@@ -8265,10 +8272,6 @@ msgstr ""
 #: root/comp/log_grid.js root/comp/sms.js root/forms/log.js
 #: root/forms/system_messages.js root/site/common.js
 msgid "Text"
-msgstr ""
-
-#: root/comp/log_grid.js root/comp/topic/topic_lib.js root/site/common.js
-msgid "File"
 msgstr ""
 
 #: root/comp/log_grid.js root/comp/revision/grid_live.mas
