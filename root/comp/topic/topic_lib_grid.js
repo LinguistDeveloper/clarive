@@ -600,7 +600,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_yaml = {
-        icon: '/static/images/icons/yaml_1.svg',
+        icon: '/static/images/icons/yaml.svg',
         text: _('YAML'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_yaml' });
