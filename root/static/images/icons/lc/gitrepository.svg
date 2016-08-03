@@ -4,16 +4,18 @@
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:none;}
-	.st1{fill:#404040;}
-	.st2{fill:#3FA9F5;}
+	.st1{fill:#4FBC78;}
+	.st2{fill:#909090;}
+	.st3{fill:#FF6F6F;}
+	.st4{fill:#404040;}
 </style>
-<title>page_edit</title>
-<rect y="0" class="st0" width="16" height="16"/>
-<path class="st1" d="M12,2l2.1,2.4L14,14.2H1.8L2,2H12 M13,1C5.9,1,1.6,1,1,1v14h13.8l0.1-10.7L13,1L13,1z"/>
-<path class="st1" d="M14.8,4.4h-3.2l0.2-3.2H13L14.8,4.4z"/>
-<path class="st2" d="M12,13.7l-9.5-0.1l4.7-8L12,13.7z M5,13.1l5.7,0.1L7.5,7.7L5,13.1z"/>
-<g id="Layer_2">
-</g>
 <g id="Layer_3">
+</g>
+<line class="st0" x1="8" y1="5" x2="1" y2="5"/>
+<path class="st1" d="M7,10V6h1v4H7z"/>
+<polygon class="st2" points="6,10 3,10 3,6 4,6 6,6 6,7 4,7 4,9 4,9 5,9 5,9 5,8 6,8 "/>
+<polygon class="st3" points="10,7 9,7 9,6 12,6 12,7 11,7 11,10 10,10 "/>
+<g>
+	<path class="st4" d="M2,5h12v6H2V5 M1,4v8h14V4H1L1,4z"/>
 </g>
 </svg>
