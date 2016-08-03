@@ -15,6 +15,14 @@ has realname            => qw(is rw isa Any);
 has alias               => qw(is rw isa Any);
 has project_security    => qw(is rw isa Any), default => sub { +{} };
 has dashboard           => qw(is rw isa Any);
+has repl    => qw(is rw isa HashRef), default => sub {
+    +{
+        'lang'   => 'js-server',
+        'syntax' => 'javascript',
+        'out'    => 'yaml',
+        'theme'  => 'eclipse'
+    };
+};
 has language_pref       => qw(is rw isa Any), default=>Clarive->config->{default_lang};
 has date_format_pref    => qw(is rw isa Str default format_from_local);
 has time_format_pref    => qw(is rw isa Str default format_from_local);

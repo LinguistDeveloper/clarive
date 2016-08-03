@@ -1005,6 +1005,46 @@ sub change_dashboard : Local {
     $c->forward('View::JSON');
 }
 
+sub repl_config : Local {
+    my ( $self, $c ) = @_;
+
+    my $username = $c->username;
+
+    my $row = ci->user->find_one(
+        { username => $username, active => mdb->true } );
+
+    if ($row) {
+        $c->stash->{json} = { data => $row->{repl} };
+    }
+    $c->forward('View::JSON');
+}
+
+sub update_repl_config : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my @fields = qw(lang syntax out theme);
+
+    my $username = $c->username;
+
+    my $row = ci->user->find_one(
+        { username => $username, active => mdb->true } );
+
+    if ($row) {
+        my $user = ci->new( $row->{mid} );
+
+        for my $field (@fields) {
+            $user->repl->{$field} = $p->{$field}
+                if defined $p->{$field};
+        }
+
+        $user->save;
+        $c->stash->{json} = { data => $user->{repl} };
+    }
+    $c->forward('View::JSON');
+}
+
 sub avatar : Local {
     my ( $self, $c, $username, $dummy_filename ) = @_;
 

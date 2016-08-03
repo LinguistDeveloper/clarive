@@ -473,6 +473,85 @@ subtest 'timezone_list: list the timezone' => sub {
     is scalar @cnt, '349';
 };
 
+subtest 'repl_config: return the user preferences in the repl console' =>
+    sub {
+    _setup();
+
+    my $user       = TestSetup->create_user();
+    my $c          = mock_catalyst_c( username => $user->username );
+    my $controller = _build_controller();
+
+    $controller->repl_config($c);
+    my @data = _array $c->stash->{json}->{data};
+
+    cmp_deeply @data,
+        {
+        'lang'   => 'js-server',
+        'syntax' => 'javascript',
+        'out'    => 'yaml',
+        'theme'  => 'eclipse'
+    };
+};
+
+subtest
+    'update_repl_config: updates the user preferences when change language'
+    => sub {
+    _setup();
+
+    my $user = TestSetup->create_user();
+    my $c    = mock_catalyst_c(
+        username => $user->username,
+        req => { params => { 'lang' => 'css', 'syntax' => 's-css' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->update_repl_config($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is $data->{lang},   'css';
+    is $data->{syntax}, 's-css';
+};
+
+subtest
+    'update_repl_config: updates the user preferences when change output' =>
+    sub {
+    _setup();
+
+    my $user = TestSetup->create_user();
+    my $c    = mock_catalyst_c(
+        username => $user->username,
+        req => { params => { 'out' => 'json' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->update_repl_config($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is $data->{out}, 'json';
+};
+
+subtest 'update_repl_config: updates the user preferences when change theme' =>
+    sub {
+    _setup();
+
+    my $user = TestSetup->create_user();
+    my $c    = mock_catalyst_c(
+        username => $user->username,
+        req => { params => { 'theme' => 'chaos' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->update_repl_config($c);
+
+    my $data = $c->stash->{json}->{data};
+
+    is $data->{theme}, 'chaos';
+};
 
 sub _build_c {
     mock_catalyst_c(
