@@ -1669,68 +1669,32 @@ sub upload : Local {
 }
 
 
-sub file : Local {
-    my ( $self, $c, $action ) = @_;
-    my $p      = $c->req->params;
-    my $topic_mid = $p->{topic_mid};
+sub remove_file : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my $topic_mid = $p->{topic_mid} or _fail _loc('topic mid required');
+    my $asset_mid = $p->{asset_mid};
+    my $username  = $c->username;
+    my $fields    = $p->{fields};
 
     try {
-        my $msg;
-        if( $action eq 'delete' ) {
-            for my $mid ( _array( $p->{asset_mid} ) ) {
-                my $ass = ci->find( $mid );
-                ref $ass or _fail _loc("File id %1 not found", $mid );
-                my $count = mdb->master_rel->find({ to_mid=>$ass->mid })->count;  # only used when assets are shared by 2+ topics
-
-                my $topic = mdb->topic->find_one({ mid=> "$$p{topic_mid}" });
-                my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
-                my @users = $c->model('Topic')->get_users_friend(
-                    id_category => $topic->{category}{id},
-                    id_status   => $topic->{category_status}{id},
-                    mid         => "$topic_mid",
-                    projects    => \@projects
-                );
-
-                if( $count < 2 ) {
-                    _log "Deleting file " . $ass->mid;
-                    my $subject = _loc("Deleted file %1", $ass->filename);
-                    event_new 'event.file.remove' => {
-                        username        => $c->username,
-                        mid             => $topic_mid,
-                        id_file         => $ass->mid,
-                        filename        => $ass->filename,
-                        notify_default  => \@users,
-                        subject         => $subject
-                    };
-                    $ass->delete;
-                    $msg = _loc( "File deleted ok" );
-                } else {
-                    # starting in 6.2 assets are not shared, may change back in the future
-                    my $subject = _loc("Detached file %1 from #%2 %3", $ass->filename, $topic->{mid}, $topic->{title});
-                    event_new 'event.topic.file_remove' => {
-                        username => $c->username,
-                        mid      => $topic_mid,
-                        id_file  => $ass->mid,
-                        filename => $ass->filename,
-                        notify_default => \@users,
-                        subject         => $subject
-                        }
-                    => sub {
-                        _log _loc("Deleting file %1 from topic %2",$ass->name,$topic_mid);
-                        my $rel = mdb->master_rel->remove({ from_mid=>"$topic_mid", to_mid=>$ass->mid });
-                        _fail _loc("File not attached to topic") if $rel ne '1';
-                        $msg = _loc( "Relationship deleted ok" );
-                    };
-                }
-            }
-        }
-        cache->remove({mid=>"$topic_mid"});
-        $c->stash->{ json } = { success => \1, msg => $msg };
-    } catch {
+        Baseliner::Model::Topic->new->remove_file(
+            topic_mid => $topic_mid,
+            asset_mid => $asset_mid,
+            username  => $username,
+            fields    => $fields
+        );
+        $c->stash->{json} = { success => \1, msg => _loc( 'Deleted files from topic %1', $topic_mid ) };
+    }
+    catch {
         my $err = shift;
-        $c->stash->{ json } = { success => \0, msg => $err };
+        _error $err;
+        chomp($err);
+
+        $c->stash->{json} = { success => \0, msg => $err };
     };
-    $c->forward( 'View::JSON' );
+    $c->forward('View::JSON');
 }
 
 sub download_file : Local {

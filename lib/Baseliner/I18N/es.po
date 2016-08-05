@@ -1915,33 +1915,13 @@ msgstr "El fichero que desea subir no tiene extensión"
 msgid "This type of file is not allowed: %1 "
 msgstr "El fichero tiene un formato no permitido: %1"
 
-#: lib/Baseliner/Controller/Topic.pm
-msgid "File id %1 not found"
-msgstr "Fichero id %1 no encontrado"
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
+msgid "topic mid required"
+msgstr "Es necesario el mid del tópico"
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "Deleted file %1"
-msgstr "Fichero borrado %1"
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "File deleted ok"
-msgstr "Fichero borrado correctamente"
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Detached file %1 from #%2 %3"
-msgstr "Fichero %1 desligado del tópico #%2 %3"
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Deleting file %1 from topic %2"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "File not attached to topic"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Relationship deleted ok"
-msgstr "Relación borrada correctamente"
+msgid "Deleted files from topic %1"
+msgstr "Ficheros eliminados del tópico %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "More than one asset found for topic %1 matching name `%2`"
@@ -3051,8 +3031,28 @@ msgid "Error uploading file: %1"
 msgstr "Error subiendo fichero: %1"
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "File id %1 not found"
+msgstr "Fichero id %1 no encontrado"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Deleting file %1"
+msgstr "Borrando fichero %1"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Deleted file %1"
+msgstr "Fichero borrado %1"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "Error removing file from topic %1. Error: %2"
+msgstr "Error eliminando ficheros del tópico %1. Error: %2"
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "Missing field"
 msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "The related field does not exist for the topic: %1"
+msgstr "El campo relacionado no existe para el tópico: %1"
 
 #: lib/Baseliner/Model/TopicExporter/Csv.pm root/comp/topic/topic_lib_grid.js
 msgid "Referenced In"
@@ -5798,6 +5798,10 @@ msgid "Error processing file body with templating %1: %2"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
+msgid "Remove files from a topic"
+msgstr "Eliminar ficheros de un tópico"
+
+#: lib/BaselinerX/Service/TopicServices.pm
 msgid "Topic %1 not found"
 msgstr ""
 
@@ -5951,11 +5955,12 @@ msgstr "Datos"
 #: root/email/generic_post.html root/email/generic_rule.html
 #: root/email/generic_topic.html root/forms/asset_file.js
 #: root/forms/eval_remote.js root/forms/link_revision.js
-#: root/forms/retrieve_remote.js root/forms/script_local.js
-#: root/forms/script_remote.js root/forms/ship_remote.js
-#: root/forms/sync_remote.js root/forms/test_server_connect.js
-#: root/forms/topic_status.js root/forms/topic_status_deprecated.js
-#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
+#: root/forms/remove_file.js root/forms/retrieve_remote.js
+#: root/forms/script_local.js root/forms/script_remote.js
+#: root/forms/ship_remote.js root/forms/sync_remote.js
+#: root/forms/test_server_connect.js root/forms/topic_status.js
+#: root/forms/topic_status_deprecated.js root/forms/web_request.js
+#: root/reports/listado_jobs.js root/site/common.js
 msgid "User"
 msgstr "Usuario"
 
@@ -8236,7 +8241,7 @@ msgid "Users and roles"
 msgstr ""
 
 #: root/comp/lifecycle/report_edit.js root/comp/notifications.js
-#: root/forms/topic_related.js
+#: root/forms/remove_file.js root/forms/topic_related.js
 msgid "Fields"
 msgstr "Campos"
 
@@ -12126,9 +12131,9 @@ msgstr "Aprobados"
 msgid "File Path"
 msgstr "Ruta del fichero"
 
-#: root/forms/asset_file.js
+#: root/forms/asset_file.js root/forms/remove_file.js
 msgid "Topic mid"
-msgstr ""
+msgstr "Mid del Tópico"
 
 #: root/forms/asset_file.js
 msgid "Field Name"
@@ -12421,6 +12426,18 @@ msgstr "No falla en tiempo de espera"
 #: root/forms/pause_job.js
 msgid "Reason"
 msgstr "Motivo"
+
+#: root/forms/remove_file.js
+msgid "Remove Files"
+msgstr "Eliminar Ficheros"
+
+#: root/forms/remove_file.js
+msgid "Asset mids"
+msgstr "Mids ficheros"
+
+#: root/forms/remove_file.js
+msgid "Remove by"
+msgstr "Eliminar por"
 
 #: root/forms/repo_create_tags.js
 msgid "Existing Tags"
@@ -13968,6 +13985,39 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Missing or invalid parameter topic_mid"
+#~ msgstr "Falta o parámetro inválido topic_mid"
+
+#~ msgid "Detached files from topic %1"
+#~ msgstr "Fichero desligado del tópico %1"
+
+#~ msgid "Detached file %1 from #%2 %3"
+#~ msgstr "Fichero %1 desligado del tópico #%2 %3"
+
+#~ msgid "Deleting file %1 from topic %2"
+#~ msgstr "Borrando fichero %1 del tópico %2"
+
+#~ msgid "File not attached to topic"
+#~ msgstr "Fichero no adjunto al tópico"
+
+#~ msgid "Error detaching file from topic %1. Error: %2"
+#~ msgstr "Error desligando el fichero del tópico %1. Error: %2"
+
+#~ msgid "Detach files from a topic"
+#~ msgstr "Desligar ficheros de un tópico"
+
+#~ msgid "Detach Files"
+#~ msgstr "Desligar Ficheros"
+
+#~ msgid "Detach by"
+#~ msgstr "Seleccionar adjuntos por"
+
+#~ msgid "File deleted ok"
+#~ msgstr "Fichero borrado correctamente"
+
+#~ msgid "Relationship deleted ok"
+#~ msgstr "Relación borrada correctamente"
 
 #~ msgid "Rule not found"
 #~ msgstr "Regla no encontrada"

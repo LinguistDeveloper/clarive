@@ -252,6 +252,150 @@ subtest 'upload: upload file complete' => sub {
     is $res{success}, 'true';
 };
 
+subtest 'remove_file: croaks when topic mid not found' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->remove_file() }, qr/topic mid required/;
+};
+
+subtest 'remove_file: croaks when asset mid not found' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic();
+    my $model     = _build_model();
+
+    like exception { $model->remove_file( topic_mid => $topic_mid, asset_mid => 'asset-1' ) },
+        qr/File id asset-1 not found/;
+};
+
+subtest 'remove_file: creates correct event.file.remove' => sub {
+    _setup();
+
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.txt', topic_mid => "$topic_mid" };
+    my $tempdir = tempdir();
+
+    my $filename = 'filename.txt';
+    TestUtils->write_file( 'content', "$tempdir/filename.txt" );
+    my $file = Util->_file("$tempdir/$filename");
+
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'test' );
+    my $asset = ci->asset->find_one;
+
+    my $model = _build_model();
+
+    $model->remove_file(
+        username  => 'test',
+        asset_mid => $asset->{mid},
+        topic_mid => $topic_mid
+    );
+
+    my $event = mdb->event->find_one( { event_key => 'event.file.remove' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{username}, 'test';
+    is $event_data->{mid},      $topic_mid;
+    is $event_data->{id_file},  $asset->{mid};
+    is $event_data->{filename}, $filename;
+    is_deeply $event_data->{notify_default}, [];
+    like $event_data->{subject}, qr/Deleted file filename.txt/;
+};
+
+subtest 'remove_file: creates correct notify_default param in event.file.remove' => sub {
+    _setup();
+
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my $tempdir  = tempdir();
+    my $filename = 'filename.txt';
+    TestUtils->write_file( 'content', "$tempdir/filename.txt" );
+    my $file = Util->_file("$tempdir/$filename");
+
+    my $project = ci->new( $base_params->{project} );
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $id_role1 = TestSetup->create_role( role => 'Role1' );
+    my $user1 = TestSetup->create_user( username => 'test', id_role => $id_role1, project => $project );
+
+    my $id_role2 = TestSetup->create_role( role => 'Role2' );
+    my $user2 = TestSetup->create_user( username => 'developer', id_role => $id_role2, project => $project );
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'Status1', type => 'I' );
+
+    my $workflow = [
+        { id_role => $id_role1, id_status_from => $base_params->{status}, id_status_to => $status1->mid },
+        { id_role => $id_role2, id_status_from => $base_params->{status}, id_status_to => $base_params->{status} }
+    ];
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => [ $status1->mid ] } } );
+
+    my $params = { filter => 'test_file', qqfile => 'filename.txt', topic_mid => "$topic_mid" };
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => $user1->username );
+
+    my $asset = ci->asset->find_one;
+    my $model = _build_model();
+
+    $model->remove_file(
+        username  => 'test',
+        asset_mid => $asset->{mid},
+        topic_mid => $topic_mid
+    );
+
+    my $event = mdb->event->find_one( { event_key => 'event.file.remove' } );
+    my $event_data = _load $event->{event_data};
+
+    is_deeply $event_data->{notify_default}, [ 'test', 'developer' ];
+};
+
+subtest 'remove_file: creates correct event.file.remove when the file is removed by field' => sub {
+    _setup();
+
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.txt', topic_mid => "$topic_mid" };
+    my $tempdir = tempdir();
+
+    my $filename = 'filename.txt';
+    TestUtils->write_file( 'content', "$tempdir/filename.txt" );
+    my $file = Util->_file("$tempdir/$filename");
+
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'test' );
+    my $asset = ci->asset->find_one;
+
+    my $model = _build_model();
+
+    $model->remove_file(
+        username  => 'test',
+        asset_mid => [],
+        fields    => 'test_file',
+        topic_mid => $topic_mid
+    );
+
+    my $event = mdb->event->find_one( { event_key => 'event.file.remove' } );
+    my $event_data = _load $event->{event_data};
+
+    is $event_data->{username}, 'test';
+    is $event_data->{mid},      $topic_mid;
+    is $event_data->{id_file},  $asset->{mid};
+    is $event_data->{filename}, $filename;
+    is_deeply $event_data->{notify_default}, [];
+    like $event_data->{subject}, qr/Deleted file filename.txt/;
+};
+
 subtest 'save_data: check master_rel for from_cl and to_cl from set_topics' => sub {
     _setup();
     TestSetup->_setup_user();

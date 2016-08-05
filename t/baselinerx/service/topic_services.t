@@ -174,6 +174,51 @@ subtest 'get_with_condition: returns topics filtering by current user' => sub {
     is $data[0][0]->{title}, 'Topic';
 };
 
+subtest 'remove_file: croaks on missing topic_mid' => sub {
+     _setup();
+
+    my $service = _build_topic_services();
+
+    like exception { $service->remove_file() }, qr/Missing or invalid parameter topic_mid/;
+};
+
+subtest 'remove_file: croaks on non existing asset' => sub {
+     _setup();
+
+    my $user = TestSetup->create_user();
+    my $topic_mid = TestSetup->create_topic();
+
+    my $service = _build_topic_services();
+    my $config = {
+        username => $user->username,
+        topic_mid => $topic_mid,
+        asset_mid => 'asset-1',
+        remove    => 'asset_mid'
+    };
+
+    like exception { $service->remove_file(undef, $config) },
+        qr/Error removing file from topic $topic_mid. Error: File id asset-1 not found/;
+};
+
+subtest 'remove_file: croaks on non existing field' => sub {
+    _setup();
+
+    my $user      = TestSetup->create_user();
+    my $topic_mid = TestSetup->create_topic();
+
+    my $service = _build_topic_services();
+    my $config  = {
+        username  => $user->username,
+        topic_mid => $topic_mid,
+        asset_mid => 'asset-1',
+        fields    => 'test_file',
+        remove    => 'fields'
+    };
+
+    like exception { $service->remove_file( undef, $config ) },
+        qr/Error removing file from topic $topic_mid. Error: The related field does not exist for the topic: $topic_mid/;
+};
+
 done_testing();
 
 sub _build_topic_services {
@@ -202,11 +247,15 @@ sub _create_release_form {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
-        'BaselinerX::Type::Fieldlet',         'BaselinerX::Fieldlets'
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Service::TopicServices',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
     TestUtils->cleanup_cis;
-    TestUtils->register_ci_events();
 
     mdb->topic->drop;
     mdb->category->drop;

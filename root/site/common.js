@@ -3796,7 +3796,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     border: false,
     layout: 'form',
     id_field: 'upload_files_panel',
-    url_delete : '/topic/file/delete', 
+    url_delete : '/topic/remove_file',
     url_list : '/topic/file_tree',
     url_download : '/topic/download_file',
     url_upload : '/topic/upload',

@@ -1360,6 +1360,108 @@ subtest 'upload: does not check extension when none specified' => sub {
     cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Uploaded file filename.jpg/) } };
 };
 
+subtest 'remove_file: croaks when topic mid not found' => sub {
+    _setup();
+
+    my $c          = _build_c();
+    my $controller = _build_controller();
+
+    like exception { $controller->remove_file($c) }, qr/topic mid required/;
+};
+
+subtest 'remove_file: checks json when asset mid not found' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic();
+
+    my $c = _build_c(
+        req => {
+            params => {
+                asset_mid => 'asset-1',
+                topic_mid => $topic_mid
+            }
+        }
+    );
+    my $controller = _build_controller();
+
+    $controller->remove_file($c);
+    cmp_deeply $c->stash, { json => { success => \0, msg => re(qr/File id asset-1 not found/) } };
+};
+
+subtest 'remove_file: checks json when the file is removed by asset_mid' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic();
+    my $params    = { filter => 'test_file', qqfile => 'filename.txt', topic_mid => "$topic_mid" };
+    my $tempdir   = tempdir();
+
+    my $filename = 'filename.txt';
+    TestUtils->write_file( 'content', "$tempdir/filename.txt" );
+    my $file = Util->_file("$tempdir/$filename");
+
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'test' );
+    my $asset = ci->asset->find_one;
+
+    my $c = _build_c(
+        req => {
+            params => {
+                asset_mid => $asset->{mid},
+                topic_mid => $topic_mid
+            },
+            username => 'root'
+        }
+    );
+    my $controller = _build_controller();
+    $controller->remove_file($c);
+
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Deleted files from topic $topic_mid/) } };
+};
+
+subtest 'remove_file: checks json when the file is removed by fields' => sub {
+    _setup();
+
+    TestSetup->_setup_user();
+
+    my $base_params = TestSetup->_topic_setup();
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
+    my $params = { filter => 'test_file', qqfile => 'filename.txt', topic_mid => "$topic_mid" };
+    my $tempdir = tempdir();
+
+    my $filename = 'filename.txt';
+    TestUtils->write_file( 'content', "$tempdir/filename.txt" );
+    my $file = Util->_file("$tempdir/$filename");
+
+    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'test' );
+    my $asset = ci->asset->find_one;
+
+    my $c = _build_c(
+        req => {
+            params => {
+                asset_mid => [],
+                topic_mid => $topic_mid,
+                fields    => 'test_file'
+            },
+            username => 'root'
+        }
+    );
+    my $controller = _build_controller();
+    $controller->remove_file($c);
+
+    $asset = ci->asset->find_one;
+
+    is $asset, undef;
+    cmp_deeply $c->stash, { json => { success => \1, msg => re(qr/Deleted files from topic $topic_mid/) } };
+};
+
 subtest 'list_users: doesnt fail if role is not found and returns 0' => sub {
     my $controller = _build_controller();
     my $c          = _build_c(
@@ -2933,4 +3035,5 @@ sub _setup {
     mdb->role->drop;
     mdb->rule->drop;
     mdb->topic->drop;
+    mdb->event->drop;
 }
