@@ -27,4 +27,6 @@ has 'job' => (
     },
 );
 
+has show_in_palette=> ( is => 'rw', isa => 'Bool', default => 1 );
+
 1;

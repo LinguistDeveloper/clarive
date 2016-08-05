@@ -342,6 +342,7 @@ sub palette : Local {
         map {
             my $key = $_;
             my $s = Baseliner::Core::Registry->get( $key );
+            next unless $s->{show_in_palette};
             my $n= { palette => 1 };
             $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
             $n->{leaf} = \1;
@@ -395,7 +396,7 @@ sub palette : Local {
             }
         }
         grep {
-            $_->{job_service}
+            $_->{job_service} && $_->{show_in_palette}
         }
         map {
             Baseliner::Core::Registry->get( $_ );
@@ -426,7 +427,7 @@ sub palette : Local {
             }
         }
         grep {
-            ! $_->{job_service}
+            ! $_->{job_service} && $_->{show_in_palette}
         }
         map {
             Baseliner::Core::Registry->get( $_ );
@@ -458,6 +459,7 @@ sub palette : Local {
                 text      => $n->{name} // $n->{key},
             }
         }
+        grep { $_->{show_in_palette} }
         map {
             Baseliner::Core::Registry->get( $_ );
         }

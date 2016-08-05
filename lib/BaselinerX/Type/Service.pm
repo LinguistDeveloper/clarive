@@ -48,6 +48,7 @@ has js_input  => ( is=> 'rw', isa=> 'Str', default=>'' );
 has js_output => ( is=> 'rw', isa=> 'Str', default=>'' );
 
 has icon => (is=>'rw', isa=>'Str', default=>'/static/images/icons/job.svg');
+has show_in_palette=> ( is => 'rw', isa => 'Bool', default => 1 );
 
 sub BUILD {
     my ($self, $params) = @_;

@@ -12,6 +12,7 @@ use TestSetup;
 
 use JSON ();
 use Capture::Tiny qw(capture);
+use Baseliner::Core::Registry;
 use Baseliner::Utils qw(_load);
 
 use_ok 'Baseliner::Controller::Rule';
@@ -29,6 +30,37 @@ subtest 'palette: returns fieldlets with active set to true' => sub {
     my ($element) = grep { $_->{text} eq 'Fieldlets' } @{ $c->stash->{json} };
 
     cmp_deeply $element->{'children'}[0]->{active}, \1;
+};
+
+subtest 'palette: returns one element when show_in_palette = 1' => sub {
+    _setup();
+
+    _register_fieldlet(show_in_palette => 1);
+
+    my $c = mock_catalyst_c( req => {} );
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    my @elements = grep { $_->{text} eq 'Fieldlets' } @{ $c->stash->{json} };
+
+    cmp_deeply $elements[0]->{'children'}[0]->{active}, \1;
+};
+
+subtest 'palette: returns no elements when show_in_palette = 0' => sub {
+    _setup();
+
+    _register_fieldlet(show_in_palette => 0);
+
+    my $c = mock_catalyst_c();
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    my @elements = grep { $_->{text} eq 'Fieldlets' } @{ $c->stash->{json} };
+    cmp_deeply $elements[0]->{'children'}, [];
 };
 
 subtest 'stmts_load: returns error when no rule id' => sub {
@@ -999,4 +1031,19 @@ sub _create_rule {
 
 sub _build_controller {
     Baseliner::Controller::Rule->new( application => '' );
+}
+
+sub _register_fieldlet {
+
+    require BaselinerX::Type::Fieldlet;
+
+    Baseliner::Core::Registry->clear();
+    Baseliner::Core::Registry->add_class( undef, 'fieldlet' => 'BaselinerX::Type::Fieldlet' );
+    Baseliner::Core::Registry->add(
+        'BaselinerX::Fieldlet',
+        'fieldlet.system.cis' => {
+            name => 'cis',
+            @_
+    });
+
 }
