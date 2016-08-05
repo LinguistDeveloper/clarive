@@ -63,17 +63,32 @@ sub log : Local {
     EVENT: for my $e ( @rows ) {
         # event_key event_status event_data
         delete $e->{event_data};
-        my $desc = cache->get('event:'.$e->{event_key});
+
+        my $is_error = 0;
+
+        my $desc = cache->get( 'event:' . $e->{event_key} );
         if ( !$desc ) {
             try {
-                my $ev = $c->registry->get( $e->{event_key} );
-                $desc = $ev->description;
+                my $ev = Baseliner::Core::Registry->get( $e->{event_key} );
+                $desc = $ev->can('description') ? $ev->description : '';
                 cache->set( 'event:' . $e->{event_key}, $ev->description );
             }
             catch {
-                 _error( shift() );
-                next EVENT; };
-        } ## end if ( !$ev )
+                my $error = shift();
+                _error $error;
+
+                $is_error = 1;
+
+                push @final,
+                  {
+                    _id         => $e->{id},
+                    description => _loc('Failed to get registry on event: %1', $e->{event_key})
+                  };
+            };
+
+            next EVENT if $is_error;
+        }
+
         $e->{description} = _loc($desc);
         $e->{_id}         = $e->{id};
         $e->{_parent}     = undef;

@@ -595,6 +595,10 @@ msgid "Events"
 msgstr "Eventos"
 
 #: lib/Baseliner/Controller/Event.pm
+msgid "Failed to get registry on event: %1"
+msgstr "Error al obtener el registro para el evento: %1"
+
+#: lib/Baseliner/Controller/Event.pm
 msgid "rule: [%1] %2"
 msgstr "regla: [%1] %2"
 
