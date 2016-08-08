@@ -46,7 +46,7 @@ sub update {
         my $username = $p->{username} || undef;
         mdb->sms->remove({ _id=>mdb->oid($_id) });
         event_new 'event.sms.remove' => { username => $username } => sub {
-            my $subject = _loc("System message %1 remove", $_id);
+            my $subject = _loc("System message %1 removed", $_id);
             { id => $_id, subject => $subject, username=>$username, ts=>$p->{ts}, ua => $p->{ua} };
         };
     }

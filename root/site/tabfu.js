@@ -6,14 +6,6 @@
 
 // Routing
 if( Prefs.routing ) {
-
-
-
-
-
-
-
-
     Baseliner.route_regex = /^#!\/(\w+)\:(.*)$/;
     Baseliner.route = function (path) {
         var match = Baseliner.route_regex.exec( path );
@@ -1469,7 +1461,6 @@ if( Prefs.routing ) {
     };
 
     Baseliner.server_failure = function( text ) {
-        //Ext.Msg.alert( _('Error'), _('Server communication failure. Check your connection.<br>%1', text) );
         // using ext to show an alert is ugly, since it can't find some of its images
         if( text==undefined || text.length <= 40 ) {  //TODO Server communication failure
             alert( _('Server communication failure. Check your connection.') );

@@ -1061,23 +1061,6 @@
                     items: form_res
                 });
                 win_res.show();
-                /*
-                Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to rerun the job') %> ' + sel.data.name + '?',
-                    function(btn){
-                        if(btn=='yes') {
-                            var conn = new Ext.data.Connection();
-                            conn.request({
-                                url: '/job/submit',
-                                params: { action: 'rerun', mid: sel.data.mid },
-                                success: function(resp,opt) {
-                                    Baseliner.message( sel.data.name, '<% _loc('Job Restarted') %>');
-                                    store.load();
-                                },
-                                failure: function(resp,opt) { Baseliner.message('<% _loc('Error') %>', '<% _loc('Could not rerun the job.') %>'); }
-                            });
-                        }
-                    } );
-                */
             }
         }
     });
@@ -1139,13 +1122,42 @@
         return rec.data.ago;
     };
 
-    
+    function statusCodeToStatusName(statusCode) {
+        var map = {
+            REJECTED: _('REJECTED'),
+            CANCELLED: _('CANCELLED'),
+            TRAPPED: _('TRAPPED'),
+            TRAPPED_PAUSED: _('TRAPPED_PAUSED'),
+            ERROR: _('ERROR'),
+            RUNNING: _('RUNNING'),
+            FINISHED: _('FINISHED'),
+            KILLED: _('KILLED'),
+            'IN-EDIT': _('IN-EDIT'),
+            WAITING: _('WAITING'),
+            READY: _('READY'),
+            APPROVAL: _('APPROVAL'),
+            SUSPENDED: _('SUSPENDED'),
+            RESUME: _('RESUME'),
+            PAUSED: _('PAUSED'),
+            REJECTED: _('REJECTED'),
+            ROLLBACK: _('ROLLBACK'),
+            ROLLBACKFAIL: _('ROLLBACKFAIL'),
+            ROLLEDBACK: _('ROLLEDBACK'),
+            PENDING: _('PENDING'),
+            SUPERSEDED: _('SUPERSEDED'),
+            EXPIRED: _('EXPIRED')
+        };
+
+        return map[statusCode] || statusCode;
+    }
+
     var render_level = function(value,metadata,rec,rowIndex,colIndex,store,status) {
         var rollback = rec.data.rollback;
         var status = rec.data.status_code;
         var icon = Baseliner.getJobStatusIcon(status, rollback);
         var type   = rec.data.type_raw;
-        var value = '<b>'+ value + '</b>';
+
+        var value = '<b>'+ statusCodeToStatusName(value) + '</b>';
 
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';

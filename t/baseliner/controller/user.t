@@ -447,7 +447,7 @@ subtest 'country_info: get country info successful' => sub {
     my @cnt = _array $c->stash->{json}->{data};
 
     is scalar @cnt, '249';
-    cmp_deeply $c->stash, { json => { msg => 'country info success', success => \1, data => ignore() } };
+    cmp_deeply $c->stash, { json => { msg => 'Country info success', success => \1, data => ignore() } };
 };
 
 subtest 'country_info: File not found' => sub {

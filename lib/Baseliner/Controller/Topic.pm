@@ -291,7 +291,7 @@ sub check_modified_on: Local {
         modified_before          => $modified_before,
         modified_before_duration => $duration,
         modified_rel             => $modified_rel,
-        msg                      => _loc( 'Prueba' ),
+        msg                      => _loc( 'Test' ),
     };
     $c->forward('View::JSON');
 }
@@ -661,7 +661,7 @@ sub view : Local {
             $c->stash->{category_color} = $category->{color};
             $c->stash->{dashboard} = $category->{dashboard};
 
-            my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
+            my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found'));
 
             my @statuses =
                 sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
@@ -763,7 +763,7 @@ sub data_user_event : Local {
         } catch {
             my $err = shift;
             _error( $err );
-            $c->stash->{json} = { msg => _loc('It seems that the user %1 does not already exist in Clarive', $username ), failure => \1 };
+            $c->stash->{json} = { msg => _loc('The user %1 does not exist in Clarive', $username ), failure => \1 };
         };
     }
     $c->forward('View::JSON');
