@@ -32,6 +32,7 @@ our $group_keys = {
     bl           => 'bl',
     bl_text      => 'bl',
     ts           => 'ts',
+    progress     => 'progress',
     starttime    => 'starttime',
     schedtime    => 'schedtime',
     maxstarttime => 'maxstarttime',
@@ -71,6 +72,7 @@ sub monitor {
     $start ||= 0;
     $limit ||= 50;
     $groupby //= '';
+    $groupdir //= '';
 
     $sort ||= 'starttime';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1;
