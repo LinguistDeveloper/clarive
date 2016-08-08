@@ -1,3 +1,10 @@
+---------------------------------------------- 6.4.7 August 2016 ----------------------------------------------
+- Resizable vector icons
+- WebService events
+- New service for deleting topic files
+- Copy variables between environments
+- Allow attach files into send a notification service
+
 ---------------------------------------------- 6.4.6 May 2016 ----------------------------------------------
 - Improved JavaScript API
 - Improved Rule version selection
