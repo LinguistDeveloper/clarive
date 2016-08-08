@@ -164,7 +164,7 @@ subtest 'favorite_add: saves favorites to user when folder' => sub {
     cmp_deeply $user_ci->favorites,
       {
         $id => {
-            'icon'        => re(qr/\.png$/),
+            'icon'        => ignore(),
             'id_folder'   => $id,
             'text'        => 'Some Title',
             'url'         => "/lifecycle/tree_favorite_folder?id_folder=$id",

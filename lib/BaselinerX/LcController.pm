@@ -1412,7 +1412,7 @@ sub favorite_add : Local {
         if ( length $p->{id_folder} ) {
             #_name_to_id delete $p->{id_folder};
             $p->{id_folder} = $id;
-            $p->{icon}      = '/static/images/icons/folder-collapsed.png';
+            $p->{icon}      = '/static/images/icons/folder-collapsed.svg';
             $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
         }
 

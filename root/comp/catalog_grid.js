@@ -141,7 +141,7 @@
     } ); 
 
     // YAML editor
-    var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml_1.svg', function(){
+    var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml.svg', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ; 
         var sel_save_url = sel.data.url_save;
