@@ -4352,7 +4352,21 @@ msgid "Planned End"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm root/comp/scheduler_grid.js
+#: root/fields/templates/config/scheduler.js
 msgid "Scheduler"
+msgstr ""
+
+#: lib/BaselinerX/Fieldlets.pm root/comp/log_grid.js
+#: root/fields/templates/js/milestones.js
+msgid "Milestone"
+msgstr ""
+
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/js/milestones.js
+msgid "Planned End Date"
+msgstr ""
+
+#: lib/BaselinerX/Fieldlets.pm
+msgid "Real End Date"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm
@@ -8347,10 +8361,6 @@ msgstr ""
 msgid "Provider"
 msgstr ""
 
-#: root/comp/log_grid.js root/fields/templates/js/milestones.js
-msgid "Milestone"
-msgstr ""
-
 #: root/comp/log_grid.js
 msgid "Log Id"
 msgstr ""
@@ -11978,10 +11988,6 @@ msgstr ""
 
 #: root/fields/templates/js/milestones.js
 msgid "Planned Start Date"
-msgstr ""
-
-#: root/fields/templates/js/milestones.js
-msgid "Planned End Date"
 msgstr ""
 
 #: root/fields/templates/js/milestones.js

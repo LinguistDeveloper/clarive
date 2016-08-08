@@ -188,6 +188,13 @@ register 'fieldlet.scheduler' => {
     set_method  => 'set_cal',
     type        => 'generic',
     meta_type   => 'calendar',
+    data_gen    => sub{
+        +{
+            columns=>sprintf(
+                '%s[slotname],textfield,100;%s[plan_end_date],datefield,80;%s[end_date],datefield,80',
+                _loc('Milestone'), _loc('Planned End Date'), _loc('Real End Date') )
+        }
+    },
     section_default => 'head',
     section_allowed => ['head','more']
 };
