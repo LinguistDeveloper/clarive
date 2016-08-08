@@ -264,13 +264,14 @@ Baseliner.model.Revisions = function(c) {
 Ext.extend( Baseliner.model.Revisions, Ext.ux.form.SuperBoxSelect );
 
 Baseliner.UserAndRoleBox = function(c) {
+    var denyEmail = c.denyEmail ? 1 : 0;
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for="."><b>{[_loc(values.type)]}</b>: {name}</tpl>' );
     var store = new Baseliner.JsonStore({
         root: 'data' , remoteSort: true, autoLoad: true,
         id: 'id',
         totalProperty: 'totalCount',
-        //baseParams: c.request || {},
+        baseParams: {denyEmail: denyEmail},
         url: '/message/to_and_cc',
         fields: ['id','ns','name','long', 'type']
     });

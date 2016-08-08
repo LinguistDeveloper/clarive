@@ -125,7 +125,8 @@ sub inbox : Local {
 sub to_and_cc : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $query = $p->{query};
+    my $query = quotemeta($p->{query} // '');
+    my $deny_email = $p->{denyEmail};
     try {
         my @data;
         #my $id = 1;
@@ -134,7 +135,7 @@ sub to_and_cc : Local {
             my $ns = $_->{username} ? "user/".$id : "role/".$id;
             +{
                 type => $_->{username} ? 'User' : 'Role',
-                name => $_->{username} || $_->{role},
+                name => $_->{username} || $_->{role} || '',
                 long => $_->{description} || $_->{realname} || '',
                 id => $id,
                 ns => $ns,
@@ -143,7 +144,9 @@ sub to_and_cc : Local {
         if( $query ) {
             my $re = qr/$p->{query}/i;
             @data = grep { join( ',',values(%$_) ) =~ $re } @data ;
-            push @data, { type=>'Email', name=>$_, long=>'', id=>$_, ns=>$_ } for split /\|/, $query;
+            if(!$deny_email){
+                push @data, { type=>'Email', name=>$_, long=>'', id=>$_, ns=>$_ } for split /\|/, $query;
+            }
         }
         $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar(@data) };
     } catch {
