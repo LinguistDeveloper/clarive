@@ -9,6 +9,7 @@ To do:
 
 */
 (function(){
+    Cla.help_push({ title:_('REPL'), path:'devel/repl' });
     var last_name = "";
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
 

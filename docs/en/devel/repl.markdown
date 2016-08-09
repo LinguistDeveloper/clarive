@@ -23,6 +23,16 @@ The REPL has 3 main panels:
 - The left panel where her History and Saved trees are. 
 - The bottom Output panel
 
+## AutoSave user preferences
+
+REPL keep CLARIVE default values are the default for the following menus:
+
+- Language menu.
+- Output menu.
+- Theme	menu.
+
+The next time the user enters the REPL will start with the last values loaded.
+
 ### Output panel
 
 The output panel holds a representation of the data 
