@@ -81,8 +81,8 @@ msgid "About..."
 msgstr "Acerca de..."
 
 #: lib/Baseliner/Controller/About.pm
-msgid "About "
-msgstr ""
+msgid "About"
+msgstr "Acerca de"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Version"

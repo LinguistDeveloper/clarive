@@ -19,7 +19,7 @@ register 'menu.help.about' => {
     label => _locl('About...'),
     icon  => '/static/images/icons/about.svg',
     url   => '/about/show',
-    title => _locl('About ') . ( Clarive->config->{app_name} // 'Baseliner' ),
+    title => _locl('About') . ' ' . ( Clarive->config->{app_name} // 'Clarive' ),
     index => 999
 };
 

@@ -79,7 +79,7 @@ msgid "About..."
 msgstr ""
 
 #: lib/Baseliner/Controller/About.pm
-msgid "About "
+msgid "About"
 msgstr ""
 
 #: lib/Baseliner/Controller/About.pm
