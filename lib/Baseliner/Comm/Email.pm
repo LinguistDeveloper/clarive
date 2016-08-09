@@ -134,26 +134,32 @@ sub process_queue {
         }
         try {
             my $subject = $msg->{subject};
-            my $body = $msg->{body};
-            my $size        = 0;
-            my $path_attach = $msg->{attach}->{path};
-            my $config      = BaselinerX::Type::Model::ConfigStore->new->get('config.comm.email');
+            my $body    = $msg->{body};
+            my $config  = BaselinerX::Type::Model::ConfigStore->new->get('config.comm.email');
 
-            if ( $path_attach && -e $path_attach ) {
-                if ( -d $path_attach ) {
-                    find( sub { $size += -s if -f }, $path_attach );
+            if (my $path_attach = $msg->{attach}->{path}) {
+                if (-e $path_attach ) {
+                    my $size = 0;
+
+                    if ( -d $path_attach ) {
+                        find( sub { $size += -s if -f }, $path_attach );
+                    }
+                    else {
+                        my $file = _file($path_attach);
+                        $size = -s $file;
+                    }
+
+                    if ( $size > $config->{max_attach_size} ) {
+                        _error( _loc("Attachment not sent. The size is too big") );
+                        delete $msg->{attach};
+                    }
                 }
                 else {
-                    my $file = _file($path_attach);
-                    $size = -s $file;
-                }
-                if ( $size > $config->{max_attach_size} ) {
-                    _error( _loc("Attachment not sent. The size is too big") );
+                    _error( _loc("Attachment not sent. The path does not exist") );
                     delete $msg->{attach};
                 }
             }
             else {
-                _error( _loc("Attachment not sent. The path does not exist") );
                 delete $msg->{attach};
             }
 
