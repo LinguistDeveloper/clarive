@@ -4,17 +4,18 @@ index: 400
 icon: clock
 ---
 
-Allows to introduce a schedule in the form.
-
-There are a list of elements can be configured in the fieldlet:
+Allows to introduce a table as an event planner.
+It operation is similar to the [Milestones](rules/palette/fieldlets/milestones).
+The list of items that can be configured with in the fieldlet.
+The format consists of Milestones, planned end date and real end date.
 
 ### Section to view
 
 Indicates in which part of the view position the fieldlet.
 
-### Row width
+### Width on canvas
 
-Allows to personalize the anchor of the fieldlet.
+It sets the width occupied by the element on the form. The maximum allowable value is 12 (100% width).
 
 ### Hidden from view mode
 
@@ -28,27 +29,6 @@ Indicates if the field will be hidden from the edit mode.
 
 Check if you want the field as mandatory.
 
-### Columns
+### Height
 
-Set the columns to show in the schedule
-
-The first literal indicate de name of the column and the second the type. The separator between columns are ;
-
-    init_date,datefield; end_date, datefield; notes, text;
-
-Types availables
-
-**Datefield**
-
-Introduced a calendar into the column to put a date.
-
-**Textfield**
-
-Put a text field into the column (one text row).
-
-**Text**
-
-Put a text field into the column for example for descriptions or observations (three text rows ).
-
-    init_date,datefield; end_date, datefield; project, text;
-
+Set the height to the table.
