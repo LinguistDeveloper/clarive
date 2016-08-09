@@ -1,6 +1,7 @@
 package Clarive::Cmd::help;
 use Mouse;
 use Path::Class;
+use List::MoreUtils qw(uniq);
 use v5.10;
 
 our $CAPTION = 'This help';
@@ -19,6 +20,7 @@ FIN
     for my $lib ( @INC ) {
         push @cmds, glob "$lib/Clarive/Cmd/*";
     }
+    @cmds = uniq @cmds;
     my @cmd_msg;
     my $main_caption;
     for my $cmd ( sort { uc $a cmp uc $b } @cmds ) {

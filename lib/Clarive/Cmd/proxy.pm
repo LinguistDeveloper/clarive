@@ -19,6 +19,8 @@ has port      => qw(is rw isa Str);
 has unpack    => qw(is rw isa Bool default 0);
 has quotemeta => qw(is rw isa Bool default 0);
 
+our $CAPTION = 'start a debugging proxy';
+
 sub run {
     my ($self, %opts)=@_;
     my $ua = LWP::UserAgent->new();

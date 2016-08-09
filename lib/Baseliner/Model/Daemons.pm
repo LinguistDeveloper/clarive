@@ -73,7 +73,8 @@ sub service_start {
     for my $service_name ( @services ) {
         my $params = join ' ', map { "$_ $params{$_} " } keys %params;
         $params .= '--id '.$disp_id;
-        my $cmd = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
+        #my $cmd = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
+        my $cmd = "$0 $service_name $params";
         _debug "Starting service background command '$cmd'";
         my $proc = $self->_create_background_proccess($cmd)
           or _throw "Could not start service $service_name: $!";

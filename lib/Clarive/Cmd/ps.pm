@@ -24,7 +24,7 @@ sub run {
         $pid =~ s/^([0-9]+).*$/$1/gs;
         $opts{v} and say "PID detected [$pid] in $_";
         my $type = /-web/ ? 'server' : /-job/ ? 'job' : 'disp';
-        $pid>0 && pexists($pid) ? ( $pid => { type=>$type, pid=>$pid } ) : ();
+        length($pid) && $pid>0 && pexists($pid) ? ( $pid => { type=>$type, pid=>$pid } ) : ();
     } glob $self->pid_dir . '/cla*.pid';
 
     say "PARENT PIDS: " . Clarive->yaml( \%pids ) if $opts{v};

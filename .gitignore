@@ -55,3 +55,4 @@ baseliner_jazztel.conf
 config/*.yml
 !config/clarive.yml
 cover_db/
+bin/cla.exe

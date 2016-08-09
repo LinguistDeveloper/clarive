@@ -15,11 +15,9 @@ BEGIN {
         require Cwd;
         $ENV{CLARIVE_BASE} = Cwd::realpath( $ENV{CLARIVE_HOME} . '/..' );
     }
-}
 
-#use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
-#use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
-use lib "$ENV{CLARIVE_HOME}/lib";
+    push @INC, "$ENV{CLARIVE_HOME}/lib";
+}
 
 use Getopt::Mini 0.02 later=>1;
 
