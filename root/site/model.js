@@ -2424,6 +2424,9 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             self.add( field_container );
             //self.add( field );
             self.doLayout(false,true);
+            if (!self.meta) self.meta = {};
+            self.meta[meta.id] = meta;
+
             return field;
         }
     },
@@ -2440,6 +2443,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
 });
 
 Baseliner.VariableForm = Ext.extend( Ext.Panel, {
+    show_btn_copy: false,
     bl: '*',
     frame: true,
     layout: 'card',
@@ -2485,6 +2489,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                allowBlank: true
         });
 
+
         if( !self.variable_name ) {
             // adds variable on combo click
             self.combo_vars.on('select', function(cb,rec){
@@ -2520,8 +2525,17 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             }
         }});
 
-        if( self.show_tbar ) self.tbar = [ self.combo_vars, self.btn_add, self.btn_del ];
-        else self.tbar = [];
+        self.btn_copy = new Ext.Button({
+            hidden: !self.show_btn_copy,
+            icon: IC('copy.svg'),
+            text: _("Copy Vars To..."),
+            menu: []
+        });
+
+        if (self.show_tbar)
+            self.tbar = [self.combo_vars, self.btn_add, self.btn_del, self.btn_copy];
+        else
+            self.tbar = [];
 
         Baseliner.VariableForm.superclass.initComponent.call(this);
 
@@ -2529,6 +2543,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var bls = new Baseliner.store.Baseline();
         bls.load({
             callback: function(records){
+                self.btn_copy.menu.add({ text: _('Common'), handler: function(){ self.copy_vars('*') } });
+
                 var tbar = self.getTopToolbar();
                 tbar.add('->');
                 if( self.force_bl ) {
@@ -2538,6 +2554,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     });
                 }
                 var def_bl = self.force_bl || '*';
+                self.mfs = {};
                 Ext.each(records, function(bl){
                     var name = bl.id == '*' ? 'Common' : bl.id;
                     // create metaform
@@ -2554,6 +2571,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                         tbar: false,
                         autoScroll: true
                     });
+                    self.mfs[bl.id] = mf;
                     mf.on('beforedestroy', function(){
                         self.data[bl.id] = mf.serialize();
                     });
@@ -2565,6 +2583,11 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                         self.data[bl.id] = mf.serialize();
                         //self.combo_vars.reset();
                     });
+
+                    mf.on('activate', function(mf){
+                       mf.doLayout();
+                    });
+
                     // add to card
                     self.add( mf );
                     // add to toolbar
@@ -2581,6 +2604,10 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
                     // load form
                     self.meta_for_data( mf, bl.id );
+
+                    // add to copy menu
+                    if( bl.id != def_bl )
+                        self.btn_copy.menu.add({ text: bl.id, handler: function(){ self.copy_vars(bl.id) } });
                 });
                 tbar.doLayout();
                 self.doLayout();
@@ -2589,6 +2616,37 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         });
 
         // get metadata from data variable names
+    },
+    copy_vars: function(bl) {
+        var self = this;
+
+        var from_bl = self.current_mf().bl;
+        if (from_bl == bl) {
+            Cla.error(_('Copy Error'), _('Cannot copy variables onto itself (%1 == %2)', from_bl, bl));
+            return;
+        }
+
+        Cla.confirm(_("Are you sure you want to copy all vars in %1 to %2?", from_bl, bl), function() {
+            var mf = self.mfs[bl];
+            var newVars = self.current_mf().meta;
+            var newVarsKeys = Object.keys(newVars).sort();
+
+            if (!self.data[bl])
+                self.data[bl] = {};
+
+            for (var i = 0; i < newVarsKeys.length; i++) {
+                var key = newVarsKeys[i];
+
+                if (!self.data[bl].hasOwnProperty(key)) {
+                    newVars[key]['default'] = newVars[key]["field_attributes"].var_copy == 1 ? self.data[from_bl][key] : '';
+
+                    mf.add_field_from_meta(newVars[key]);
+                }
+            }
+
+            self.deferredRender = false;
+            self.doLayout(true);
+        });
     },
     load_initial_var : function(varname) {
         var self = this;
@@ -2643,8 +2701,10 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         var var_ci_mandatory;
         var var_ci_multiple;
+        var var_copy;
         var_ci_mandatory = ci.var_ci_mandatory != 1;
         var_ci_multiple  = ci.var_ci_multiple != 1;
+        var_copy  = ci.var_copy ? ci.var_copy : 0;
         var default_value = Ext.isObject(ci.variables)
                 ? ( ci.variables[bl]==undefined  ? ci.variables['*'] : ci.variables[bl])
                 : ci.var_default;  // FIXME var_default is legacy
@@ -2656,7 +2716,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             'default': default_value,
             classname: ci.var_ci_class,
             role: ci.var_ci_role,
-            field_attributes: { allowBlank: var_ci_mandatory, singleMode: var_ci_multiple },
+            field_attributes: { allowBlank: var_ci_mandatory, singleMode: var_ci_multiple, var_copy: var_copy },
             options: ci.var_combo_options
         };
         return meta;

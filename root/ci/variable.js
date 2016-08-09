@@ -18,25 +18,25 @@
         } else if( ty == 'combo' ) {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
-            var_ci_mandatory.disable(); var_ci_mandatory.hide();
+            var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.enable(); combo_opts.show();
         } else if( ty == 'array' ) {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
-            var_ci_mandatory.disable(); var_ci_mandatory.hide();
+            var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
         } else if( ty == 'textarea' ) {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
-            var_ci_mandatory.disable(); var_ci_mandatory.hide();
+            var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
         } else {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
-            var_ci_mandatory.disable(); var_ci_mandatory.hide();
+            var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
         }
@@ -83,12 +83,19 @@
     });
     
     var var_ci_mandatory = new Baseliner.CBox({
-        fieldLabel: _('CI Mandatory'), 
+        fieldLabel: _('Mandatory'), 
         name: 'var_ci_mandatory',
         checked: params.rec.var_ci_mandatory,
         default_value: true
     });
-    
+
+    var var_copy = new Baseliner.CBox({
+        fieldLabel: _('Copy'),
+        name: 'var_copy',
+        checked: params.rec.var_copy,
+        default_value: false
+    });
+
     var combo_opts = new Baseliner.ArrayGrid({ 
         hidden: true,
         disabled: true,
@@ -118,6 +125,7 @@
         ci_class,
         var_ci_multiple,
         var_ci_mandatory,
+        var_copy,
         combo_opts 
     ];
     if( params.rec.mid == undefined  )

@@ -79,7 +79,7 @@ msgid "About..."
 msgstr ""
 
 #: lib/Baseliner/Controller/About.pm
-msgid "About "
+msgid "About"
 msgstr ""
 
 #: lib/Baseliner/Controller/About.pm
@@ -6470,7 +6470,11 @@ msgid "CI Multiple"
 msgstr ""
 
 #: root/ci/variable.js
-msgid "CI Mandatory"
+msgid "Mandatory"
+msgstr ""
+
+#: root/ci/variable.js root/comp/rules.js
+msgid "Copy"
 msgstr ""
 
 #: root/ci/variable.js
@@ -9587,10 +9591,6 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Delete tag"
-msgstr ""
-
-#: root/comp/rules.js
-msgid "Copy"
 msgstr ""
 
 #: root/comp/rules.js
@@ -13549,6 +13549,22 @@ msgstr ""
 
 #: root/site/model.js
 msgid "Invalid or corrupt data for variables"
+msgstr ""
+
+#: root/site/model.js
+msgid "Copy Vars To..."
+msgstr ""
+
+#: root/site/model.js
+msgid "Copy Error"
+msgstr ""
+
+#: root/site/model.js
+msgid "Cannot copy variables onto itself (%1 == %2)"
+msgstr ""
+
+#: root/site/model.js
+msgid "Are you sure you want to copy all vars in %1 to %2?"
 msgstr ""
 
 #: root/site/model.js

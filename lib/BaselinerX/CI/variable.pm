@@ -9,6 +9,7 @@ has var_ci_class         => qw(is rw isa Maybe[Str]);
 has var_ci_role          => qw(is rw isa Maybe[Str]);
 has var_ci_mandatory     => qw(is rw isa BoolCheckbox coerce 1);
 has var_ci_multiple      => qw(is rw isa BoolCheckbox coerce 1);
+has var_copy             => qw(is rw isa BoolCheckbox coerce 0);
 has var_combo_options    => qw(is rw isa ArrayRef), default=>sub{ [] };
 has var_default          => qw(is rw isa Any);
 has old_name             => qw(is rw isa Str lazy 1), default=>sub{my $self= shift; $self->name};

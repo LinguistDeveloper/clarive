@@ -81,8 +81,8 @@ msgid "About..."
 msgstr "Acerca de..."
 
 #: lib/Baseliner/Controller/About.pm
-msgid "About "
-msgstr ""
+msgid "About"
+msgstr "Acerca de"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Version"
@@ -6532,8 +6532,12 @@ msgid "CI Multiple"
 msgstr "CI Multiple"
 
 #: root/ci/variable.js
-msgid "CI Mandatory"
-msgstr "CI Obligatorio"
+msgid "Mandatory"
+msgstr "Obligatorio"
+
+#: root/ci/variable.js root/comp/rules.js
+msgid "Copy"
+msgstr "Copiar"
 
 #: root/ci/variable.js
 msgid "Combo Options"
@@ -9686,10 +9690,6 @@ msgstr ""
 #: root/comp/rules.js
 msgid "Delete tag"
 msgstr ""
-
-#: root/comp/rules.js
-msgid "Copy"
-msgstr "Copiar"
 
 #: root/comp/rules.js
 msgid "Cut"
@@ -13677,12 +13677,28 @@ msgid "Invalid or corrupt data for variables"
 msgstr "Los datos para las variables son inválidos o están corruptos"
 
 #: root/site/model.js
+msgid "Copy Vars To..."
+msgstr "Copiar Variables A..."
+
+#: root/site/model.js
+msgid "Copy Error"
+msgstr "Error al Copiar"
+
+#: root/site/model.js
+msgid "Cannot copy variables onto itself (%1 == %2)"
+msgstr "No se pueden copiar variables sobre si mismas (%1 == %2)"
+
+#: root/site/model.js
+msgid "Are you sure you want to copy all vars in %1 to %2?"
+msgstr "Está seguro de quirer copiar todas las variables de %1 a %2?"
+
+#: root/site/model.js
 msgid "Variable `%1` not found"
-msgstr ""
+msgstr "Variable `%1` no encontrado"
 
 #: root/site/model.js
 msgid "Variable `%1` already exists"
-msgstr ""
+msgstr "Variable `%1` ya existe"
 
 #: root/site/prefs.js
 msgid "js_dt_format"
@@ -13979,6 +13995,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "CI Mandatory"
+#~ msgstr "CI Obligatorio"
 
 #~ msgid "Missing or invalid parameter topic_mid"
 #~ msgstr "Falta o parámetro inválido topic_mid"
