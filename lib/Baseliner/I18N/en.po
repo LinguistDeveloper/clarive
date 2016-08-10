@@ -1954,6 +1954,10 @@ msgid "User %1 does not have permission to drop into field %2"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
+msgid "Topic #%1 added to #%2 in field `%3`"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
 msgid "No editable or matching fields found in topics #%1 and #%2"
 msgstr ""
 
@@ -3302,6 +3306,10 @@ msgstr ""
 msgid "\" . $reg_fieldlet->{name} . \""
 msgstr ""
 
+#: lib/Baseliner/Schema/Migra/MongoMigration.pm
+msgid " . $not_found{$_} . "
+msgstr ""
+
 #: lib/Baseliner/Sem.pm
 msgid "Timeout wating for semaphore: %1s"
 msgstr ""
@@ -3590,6 +3598,10 @@ msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Looking for common history between %1 and %2"
+msgstr ""
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "Revision [%1] is not in the top revision's history"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
