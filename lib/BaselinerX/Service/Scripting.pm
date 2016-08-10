@@ -81,6 +81,7 @@ sub run_local {
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
 
     my $lev_custom = '';
+
     if( $errors eq 'custom' ) {
         $lev_custom = 'warn' if length $config->{rc_warn} && List::MoreUtils::any { Util->in_range($_, $config->{rc_warn}) } _array($rc);
         $lev_custom = 'fail' if length $config->{rc_error} && List::MoreUtils::any { Util->in_range($_, $config->{rc_error}) } _array($rc);
@@ -88,11 +89,20 @@ sub run_local {
         $lev_custom = 'silent' if length $config->{rc_ok} && List::MoreUtils::any { Util->in_range($_, $config->{rc_ok}) } _array($rc);
         Util->_debug( _loc('Custom error detected: %1 (rc=%2)', $lev_custom, join(',',map { $_ } _array($rc)) ) );
     }
+
     if( ($errors eq 'custom' && $lev_custom ) || List::MoreUtils::any {$_} _array($rc) ) {
-        my $ms = _loc('Error running command %1', join ' ', @cmd); #, ($out // 'script not found or could not be executed (check chmod or chown)');
-        Util->_fail($ms) if $errors eq 'fail' || $lev_custom eq 'fail';
-        Util->_warn($ms) if $errors eq 'warn' || $lev_custom eq 'warn';
-        Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
+        my $ms = _loc('Error running command %1', join(' ', @cmd)); #, ($out // 'script not found or could not be executed (check chmod or chown)');
+        if ( $errors eq 'fail' || $lev_custom eq 'fail') {
+            $job->logger->error( $ms, qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
+            Util->_fail($ms);
+        } elsif ($errors eq 'warn' || $lev_custom eq 'warn') {
+            $job->logger->warn( $ms, qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
+            Util->_warn($ms)
+        } elsif ($errors eq 'silent' || $lev_custom eq 'silent') {
+            $job->logger->debug( $ms, qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
+            Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
+        }
+
     } else {
         $self->publish_output_files( 'info', $job,$output_files );
         $self->check_output_errors($stash, ($fail_on_error ? 'fail' : 'error'),$log,$out,$config);
@@ -168,10 +178,17 @@ sub run_remote {
         }
 
         if( ($errors eq 'custom' && $lev_custom ) || List::MoreUtils::any {$_} _array($rc) ) {
-            my $ms = _loc('Error during script (%1) execution: %2', $path_parsed, ($out // 'script not found or could not be executed (check chmod or chown)'));
-            Util->_fail($ms) if $errors eq 'fail' || $lev_custom eq 'fail';
-            Util->_warn($ms) if $errors eq 'warn' || $lev_custom eq 'warn';
-            Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
+            my $ms = _loc('Error running command %1', $path_parsed); #, ($out // 'script not found or could not be executed (check chmod or chown)');
+            if ( $errors eq 'fail' || $lev_custom eq 'fail') {
+                $job->logger->error( $ms, qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
+                Util->_fail($ms);
+            } elsif ($errors eq 'warn' || $lev_custom eq 'warn') {
+                $job->logger->warn( $ms, qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
+                Util->_warn($ms)
+            } elsif ($errors eq 'silent' || $lev_custom eq 'silent') {
+                $job->logger->debug( $ms, qq{RC: $rc\nRET: $ret\nOUTPUT: $out} );
+                Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
+            }
         } else {
             my $tuple = $agent->tuple_str;
             my $output = $agent->output;

@@ -5647,10 +5647,6 @@ msgid "STARTING remote script %1: '%2'"
 msgstr ""
 
 #: lib/BaselinerX/Service/Scripting.pm
-msgid "Error during script (%1) execution: %2"
-msgstr ""
-
-#: lib/BaselinerX/Service/Scripting.pm
 msgid "FINISHED remote script %1: '%2'"
 msgstr ""
 
