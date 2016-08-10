@@ -3905,19 +3905,36 @@ msgstr "El directorio no existe o no es accesible %1"
 
 #: lib/BaselinerX/CI/ftp_agent.pm
 msgid "FTP: Could not connect to host %1"
+msgstr "FTP: No se ha podido conectar al host %1"
+
+#: lib/BaselinerX/CI/ftp_agent.pm
+msgid "FTP: No username/password were provided or could not be discovered"
 msgstr ""
+"FTP: No se ha proporcionado ningún usuario/contraseña o no se han encontrado"
+
+#: lib/BaselinerX/CI/ftp_agent.pm
+msgid "FTP: Could not login: %1"
+msgstr "FTP: No se ha podido acceder: %1"
 
 #: lib/BaselinerX/CI/ftp_agent.pm
 msgid "FTP: Could not change home directory to %1: %2"
-msgstr ""
+msgstr "FTP: No se ha podido cambiar el directorio de home a %1: %2"
 
 #: lib/BaselinerX/CI/ftp_agent.pm
 msgid "FTP: could not find local file %1"
-msgstr ""
+msgstr "FTP: No se ha encontrado el fichero local %1"
 
 #: lib/BaselinerX/CI/ftp_agent.pm
-msgid "Could not create connection from uri %1"
-msgstr ""
+msgid "FTP: could not cwd to %1"
+msgstr "FTP: No se ha podido cambiar de directorio a %1"
+
+#: lib/BaselinerX/CI/generic_server.pm
+msgid "ERROR: Server is not reachable: %1"
+msgstr "ERROR: Servidor no es accesible: %1"
+
+#: lib/BaselinerX/CI/generic_server.pm
+msgid "ERROR: Could not connect: %1"
+msgstr "ERROR: No podía conectar"
 
 #: lib/BaselinerX/CI/generic_server.pm
 msgid "Agent connection timeout (> %1 sec)"
@@ -3925,6 +3942,10 @@ msgstr ""
 
 #: lib/BaselinerX/CI/generic_server.pm
 msgid "ERROR: could not find agent for this server (methods attempted: %1): %2"
+msgstr ""
+
+#: lib/BaselinerX/CI/generic_server.pm
+msgid "ERROR: no connections configured for this server"
 msgstr ""
 
 #: lib/BaselinerX/CI/grammar.pm
@@ -6307,6 +6328,10 @@ msgstr "Directorio root"
 msgid "Start Path"
 msgstr "Path de inicio"
 
+#: root/ci/ftp_agent.js
+msgid "Home"
+msgstr "Inicio"
+
 #: root/ci/generic_server.js root/ci/windows_server.js
 #: root/forms/windows_server.js
 msgid "Hostname or IP"
@@ -6314,11 +6339,23 @@ msgstr "Nombre o IP de Host"
 
 #: root/ci/generic_server.js
 msgid "OS Version"
-msgstr ""
+msgstr "Versión de SO"
 
 #: root/ci/generic_server.js
 msgid "Architecture"
-msgstr ""
+msgstr "Arquitectura"
+
+#: root/ci/generic_server.js
+msgid "Connect by SSH"
+msgstr "Conectado por SSH"
+
+#: root/ci/generic_server.js
+msgid "Connect by Clax"
+msgstr "Conectado por Clax"
+
+#: root/ci/generic_server.js
+msgid "Connect by FTP"
+msgstr "Conectado por FTP"
 
 #: root/ci/generic_server.js
 msgid "Connect by Worker"
@@ -6327,14 +6364,6 @@ msgstr "Conectado con Worker"
 #: root/ci/generic_server.js
 msgid "Connect by Balix"
 msgstr "Conectado con Balix"
-
-#: root/ci/generic_server.js
-msgid "Connect by SSH"
-msgstr "Conectado por SSH"
-
-#: root/ci/generic_server.js
-msgid "Connect by Clax"
-msgstr ""
 
 #: root/ci/generic_server.js
 msgid "Remote Temp Dir"
