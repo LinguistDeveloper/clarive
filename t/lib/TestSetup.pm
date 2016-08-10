@@ -35,7 +35,7 @@ sub create_label {
     my $class = shift;
     my (%params) = @_;
 
-    my $id_label = mdb->seq('id');
+    my $id_label = mdb->seq('label');
     mdb->label->insert(
         {
             id    => "$id_label",

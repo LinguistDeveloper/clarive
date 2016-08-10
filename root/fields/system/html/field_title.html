@@ -27,7 +27,7 @@
         <!--<div class='alert' style='font-size: 9px;padding:1px 4px 1px 4px;margin-right:4px;color:white;background-color:<% $label->{color} %>'>-->
         <span class='label' style='padding:1px 4px 1px 4px;margin-right:3px;background-color:<% $label->{color} %>'>
             <% _loc($label->{name}) %>
-% if($data->{admin_labels}){        
+% if($data->{remove_labels}){
             <span id='<% $label->{id} %>' class='label_click' style="cursor:pointer; cursor:hand">&nbsp;&#x00D7;</span>
 %}
         </span>
@@ -39,7 +39,7 @@
     <script>
     $(".label_click").click(function(ev) {
         var topic_mid = '<%$data->{topic_mid}%>';
-        Baseliner.ajaxEval( '/topic/delete_topic_label/' + topic_mid + '/' + this.id,{},
+        Baseliner.ajaxEval( '/label/detach/' + topic_mid + '/' + this.id,{},
             function(response) {
                 if ( response.success ) {
                     $( ev.target ).parent().hide();

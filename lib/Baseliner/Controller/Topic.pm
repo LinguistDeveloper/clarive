@@ -7,6 +7,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
+use Baseliner::Model::Label;
 use Baseliner::Model::Users;
 use Baseliner::DataView::Topic;
 use Baseliner::RuleRunner;
@@ -706,7 +707,7 @@ sub view : Local {
 
             my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
 
-            $data->{admin_labels} = Baseliner::Model::Permissions->user_has_any_action( username=> $c->username, action=>$write_action );
+            $data->{remove_labels} = Baseliner::Model::Permissions->user_has_any_action( username=> $c->username, action=>'action.labels.remove_labels' );
             $c->stash->{topic_meta} = $meta;
             $c->stash->{topic_data} = $data;
             $c->stash->{template} = '/comp/topic/topic_msg.html';
@@ -1079,101 +1080,6 @@ sub list_category : Local {
     $c->forward('View::JSON');
 }
 
-sub list_label : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
-    $dir = $dir && lc $dir eq 'desc' ? -1 : 1;
-    $sort ||= 'name';
-
-    my @rows;
-    my $rs = mdb->label->find->sort({ $sort => $dir});
-    while( my $r = $rs->next ) {
-        push @rows,
-          {
-            id          => $r->{id},
-            name        => $r->{name},
-            color       => $r->{color}
-          };
-    }
-
-    $cnt = $#rows + 1 ;
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
-    $c->forward('View::JSON');
-}
-
-sub update_topic_labels : Local {
-    my ($self,$c) = @_;
-    my $p = $c->req->params;
-    my $topic_mid = $p->{topic_mid};
-    my @label_ids = _array( $p->{label_ids} );
-
-    try{
-        if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"},{ labels=>1, category=>1, category_status=>1 }) ) {
-            my @current_labels = _array( $doc->{labels} );
-            mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
-
-            my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
-            my @users = Baseliner::Model::Topic->get_users_friend(
-                mid             => $topic_mid,
-                id_category => $doc->{category}{id},
-                id_status   => $doc->{category_status}{id},
-                projects    => \@projects
-            );
-            my $subject = _loc('Labels assigned');
-            event_new 'event.file.labels' => {
-                username        => $c->username,
-                mid             => $topic_mid,
-                notify_default  => \@users,
-                subject         => $subject
-            };
-        } else {
-            _fail _loc('Topic not found: %1', $topic_mid);
-        }
-        $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
-        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ )
-    }
-    catch{
-        my $err = shift;
-        my $msg = _loc('Error assigning Labels: %1', $err);
-        _error( $msg );
-        $c->stash->{json} = { msg=>$msg, success=>\0 }
-    };
-
-    $c->forward('View::JSON');
-}
-
-sub delete_topic_label : Local {
-    my ($self,$c, $topic_mid, $label_id)=@_;
-    try{
-        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/
-        my $doc = mdb->topic->find_one({mid=>"$topic_mid"});
-        mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
-        my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
-        my @users = $c->model('Topic')->get_users_friend(
-            mid         => $topic_mid,
-            id_category => $doc->{category}{id},
-            id_status   => $doc->{category_status}{id},
-            projects    => \@projects
-        );
-        my $subject = _loc('Labels deleted');
-        event_new 'event.file.labels_remove' => {
-            username        => $c->username,
-            mid             => $topic_mid,
-            notify_default  => \@users,
-            subject         => $subject
-        };
-
-        $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
-    }
-    catch{
-        $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
-    };
-
-    $c->forward('View::JSON');
-}
-
-
 sub update_project : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
@@ -1305,7 +1211,7 @@ sub filters_list : Local {
 
     my @categories;
     my $category_id = $c->req->params->{category_id};
-    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( id=>$category_id, username=>$c->username, type=>'view', all_fields=>1 );
+    my @categories_permissions  = Baseliner::Model::Topic->get_categories_permissions( id=>$category_id, username=>$c->username, type=>'view', all_fields=>1 );
 
     if(@categories_permissions && scalar @categories_permissions gt 1){
         for( @categories_permissions ) {
@@ -1348,6 +1254,7 @@ sub filters_list : Local {
                     idfilter    => $_->{id},
                     text        => _loc($_->{name}),
                     color       => $_->{color},
+                    seq         => $_->{seq},
                     cls         => 'forum label',
                     iconCls     => 'icon-no',
                     checked     => \0,
@@ -1355,7 +1262,7 @@ sub filters_list : Local {
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
             }
-
+            @labels = sort { $a->{seq} <=> $b->{seq} } @labels;
             push @tree, {
                 id          => 'L',
                 text        => _loc('Labels'),
@@ -1382,7 +1289,7 @@ sub filters_list : Local {
         push @{ $where->{'$and'} }, { id_status=>mdb->in(@status_id) };
     }
     my $rs_status = ci->status->find($where)->sort({ seq=>1 });
-    my $is_root = Baseliner->model('Permissions')->is_root( $c->username );
+    my $is_root = Baseliner::Model::Permissions->is_root( $c->username );
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.
     my %tmp;
 
@@ -1390,7 +1297,7 @@ sub filters_list : Local {
         my %p;
         $p{categories} = \@id_categories;
         map { $tmp{$_->{id_status_from}} = $_->{id_category} }
-                    Baseliner->model('Topic')->user_workflow( $c->username, %p );
+                    Baseliner::Model::Topic->user_workflow( $c->username, %p );
     };
 
     my %id_categories_hash = map { $_ => '1' } @id_categories;

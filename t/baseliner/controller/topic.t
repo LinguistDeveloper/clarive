@@ -255,22 +255,6 @@ subtest 'list statuses fieldlet for new topics not yet in database' => sub {
     is $data->[1]->{status}, $id_status_to;
 };
 
-subtest 'add label to topic' => sub {
-    _setup();
-    TestSetup->_setup_user();
-    my $base_params = TestSetup->_topic_setup();
-
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
-    my $label_id = TestSetup->_setup_label;
-
-    my $controller = _build_controller();
-    my $c = _build_c( req => { params => { topic_mid => $topic_mid, label_ids => ["$label_id"] } } );
-    $c->{username} = 'root';    # change context to root
-    $controller->update_topic_labels($c);
-    cmp_deeply( $c->stash, { json => { msg => 'Labels assigned', success => \1 } } );
-    is_deeply( mdb->topic->find_one( { mid => "$topic_mid" } )->{labels}, [$label_id] );
-};
-
 subtest 'grid: sets correct template' => sub {
     my $controller = _build_controller();
 
@@ -3053,6 +3037,36 @@ subtest 'category_list: returns all categories' => sub {
     is $c->stash->{json}->{totalCount}, 3;
 };
 
+subtest 'filters_list: returns labels ordered by seq' => sub {
+    _setup();
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user
+        = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $label_id  = TestSetup->create_label( name => "MyLabel",  seq => 5 );
+    my $label_id2 = TestSetup->create_label( name => "MyLabel2", seq => 4 );
+    my $label_id3 = TestSetup->create_label( name => "MyLabel3", seq => 3 );
+    my $label_id4 = TestSetup->create_label( name => "MyLabel4", seq => 2 );
+    my $label_id5 = TestSetup->create_label( name => "MyLabel5", seq => 1 );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+    );
+
+    $controller->filters_list($c);
+
+    my ($labels) = grep { $_->{text} eq 'Labels' } @{ $c->stash->{json} };
+    my $seqs = $labels->{children};
+
+    is $seqs->[0]->{seq}, 1;
+    is $seqs->[1]->{seq}, 2;
+    is $seqs->[2]->{seq}, 3;
+    is $seqs->[3]->{seq}, 4;
+    is $seqs->[4]->{seq}, 5;
+};
+
 done_testing;
 
 sub _create_user_with_drop_rules {
@@ -3208,4 +3222,5 @@ sub _setup {
     mdb->rule->drop;
     mdb->topic->drop;
     mdb->event->drop;
+    mdb->label->drop;
 }

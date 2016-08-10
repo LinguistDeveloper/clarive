@@ -244,6 +244,7 @@ sub user_agent       { shift->{user_agent} || 'Mozilla/1.0' }
 sub address          { '127.0.0.1' }
 sub parameters       { &params }
 sub query_parameters { &params }
+sub param            { $_[0]->{params}->{$_[1]} }
 sub params           { shift->{params} }
 sub path             { shift->{path} }
 sub headers          { shift->{headers} }

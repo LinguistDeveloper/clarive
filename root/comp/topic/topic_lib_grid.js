@@ -3,6 +3,10 @@
  * Topic Grid
  *********************************************************************************
  */
+var hasPermissionToAttachLabels = false;
+% if ( Baseliner->model('Permissions')->user_has_action( username => $c->username, action => 'action.labels.attach_labels') ) {
+       hasPermissionToAttachLabels = true;
+%}
 var shorten_title = function(t){
     if( !t || t.length==0 ) {
         t = '';
@@ -132,7 +136,6 @@ Cla.topic_grid = function(params){
 
     // Create store instances
     var store_category = new Baseliner.Topic.StoreCategory();
-    //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList(store_config);
 
     store_topics.proxy.conn.timeout = 600000;
@@ -838,7 +841,6 @@ Cla.topic_grid = function(params){
         } else {
             folders = '';
         }
-
         if(rec.data.labels){
             tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
@@ -849,7 +851,7 @@ Cla.topic_grid = function(params){
                     tag_color_html = tag_color_html
                         //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
                         + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;"
-                        + "color: #fff;background-color:" + label_color + "'>" + label_name + "</span>";
+                        + "color: #fff;background-color:" + label_color + "'>" + _(label_name) + "</span>";
                 }
             }
         }
@@ -1718,7 +1720,6 @@ Cla.topic_grid = function(params){
                         }
                     }
 
-                    //if( projects.name.indexOf( data.project ) == -1 ) {
                     if( swSave ) {
                         row.beginEdit();
 
@@ -1752,60 +1753,56 @@ Cla.topic_grid = function(params){
                 };
 
                 var add_label = function(node) {
-                    var text = node.attributes.text;
-                    // determine the row
-                    var t = Ext.lib.Event.getTarget(e);
-                    var rindex = grid_topics.getView().findRowIndex(t);
-                    if (rindex === false ) return false;
-                    var row = s.getAt( rindex );
-                    var swSave = true;
-                    var labels = row.get('labels');
-                    if( typeof labels != 'object' ) labels = new Array();
-                    for (i=0;i<labels.length;i++) {
-                        var label = labels[i].split(';');
-                        var label_name = label[1];
-                        if(label_name == text){
-                            swSave = false;
-                            break;
-                        }
-                    }
-
-                    //if( projects.name.indexOf( data.project ) == -1 ) {
-                    if( swSave ) {
-                        row.beginEdit();
-
-                        labels.push( node.attributes.idfilter + ';' + text + ';' + node.attributes.color );
-                        row.set('labels', labels );
-                        row.endEdit();
-                        row.commit();
-
-                        var label_ids = new Array();
-                        for(i=0;i<labels.length;i++){
+                    if ( hasPermissionToAttachLabels ) {
+                        var text = node.attributes.text;
+                        // determine the row
+                        var t = Ext.lib.Event.getTarget(e);
+                        var rindex = grid_topics.getView().findRowIndex(t);
+                        if (rindex === false ) return false;
+                        var row = s.getAt( rindex );
+                        var swSave = true;
+                        var labels = row.get('labels');
+                        if( typeof labels != 'object' ) labels = [];
+                        for (i=0;i<labels.length;i++) {
                             var label = labels[i].split(';');
-                            label_ids.push(label[0]);
-                        }
-                        Baseliner.ajaxEval( '/topic/update_topic_labels',{ topic_mid: row.get('topic_mid'), label_ids: label_ids },
-                            function(response) {
-                                if ( response.success ) {
-                                    //store_label.load();
-                                    Baseliner.message( _('Success'), response.msg );
-                                    //init_buttons('disable');
-                                } else {
-                                    //Baseliner.message( _('ERROR'), response.msg );
-                                    Ext.Msg.show({
-                                        title: _('Information'),
-                                        msg: response.msg ,
-                                        buttons: Ext.Msg.OK,
-                                        icon: Ext.Msg.INFO
-                                    });
-                                }
+                            var label_name = label[1];
+                            if(label_name == text){
+                                swSave = false;
+                                break;
                             }
+                        }
 
-                        );
-                    } else {
-                        Baseliner.message( _('Warning'), _('Label %1 is already assigned', text));
+                        if( swSave) {
+                            row.beginEdit();
+                            labels.push( node.attributes.idfilter + ';' + text + ';' + node.attributes.color );
+                            row.set('labels', labels );
+                            row.endEdit();
+
+                            var label_ids = [];
+                            for(i=0;i<labels.length;i++){
+                                var label = labels[i].split(';');
+                                label_ids.push(label[0]);
+                            }
+                            Baseliner.ajaxEval( '/label/attach',{ topic_mid: row.get('topic_mid'), ids: label_ids },
+                                function(response) {
+                                    if ( response.success ) {
+                                        row.commit();
+                                        Baseliner.message( _('Success'), response.msg );
+                                    } else {
+                                        Ext.Msg.show({
+                                            title: _('Information'),
+                                            msg: response.msg ,
+                                            buttons: Ext.Msg.OK,
+                                            icon: Ext.Msg.INFO
+                                        });
+                                    }
+                                }
+
+                            );
+                        } else {
+                            Baseliner.message( _('Warning'), _('Label %1 is already assigned', text));
+                        }
                     }
-
                 };
 
                 var attr = n.attributes;
@@ -2065,7 +2062,15 @@ Cla.topic_grid = function(params){
         // expand the whole tree
         tree_filters.getLoader().on( 'load', function(){
             tree_root.expandChildNodes();
-
+            if(!hasPermissionToAttachLabels){
+                for (var i = 0; i < tree_root.childNodes.length; i++) {
+                    if(tree_root.childNodes[i].id == 'L'){
+                        for (var j = 0; j < tree_root.childNodes[i].childNodes.length; j++) {
+                                tree_root.childNodes[i].childNodes[j].draggable = false;
+                        }
+                    }
+                }
+            }
             // draw the collapse button onclick event
             var el_collapse = Ext.get( id_collapse );
             if( el_collapse ){
