@@ -80,7 +80,7 @@
         exist_mode_local,
         rel_path,
         anchor_path,
-        { xtype:'textarea', fieldLabel: _('Remote Path'), height: 80, name: 'remote_path', value: data.remote_path },
+        { xtype:'textarea', fieldLabel: _('Remote Path'), height: 80, allowBlank: false, name: 'remote_path', value: data.remote_path },
         exist_mode,
         backup_mode,
         rollback_mode,

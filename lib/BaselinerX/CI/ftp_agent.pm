@@ -1,38 +1,64 @@
 package BaselinerX::CI::ftp_agent;
 use Baseliner::Moose;
-use Baseliner::Utils;
-
 with 'Baseliner::Role::CI::Agent';
 
-has ftp => ( is=>'rw', isa=>'Net::FTP', required=>1, lazy=>1,
-    default => sub {
+use Baseliner::Utils qw(_fail _loc _throw _file);
+
+has_ci 'server';
+
+has user     => qw(is rw isa Maybe[Str]);
+has password => qw(is rw isa Maybe[Str]);
+has port_num => qw(is rw isa Any);
+has home     => qw(is rw isa Any);
+
+has ftp => (
+    is       => 'rw',
+    required => 1,
+    lazy     => 1,
+    default  => sub {
         my $self = shift;
-        require Net::FTP;
-        my $ftp = Net::FTP->new( $self->resource->host )
-            or _fail _loc("FTP: Could not connect to host %1", $self->resource->host);
-        my ( $user, $password );
-        if( defined $self->resource->user && defined $self->resource->password ) {
-            ( $user, $password )  = ( $self->resource->user, $self->resource->password );
-        } else {
-            require Net::Netrc;
-            if( defined $self->resource->user ) {
-                my $machine = Net::Netrc->lookup( $self->resource->host, $self->resource->user );
-                ( $user, $password )  = ( $self->resource->user, $machine->password );
-            } else {
-                my $machine = Net::Netrc->lookup( $self->resource->host );
-                ( $user, $password )  = ( $machine->login, $machine->password );
+
+        my $hostname = $self->server->hostname;
+        my $user     = $self->user;
+        my $password = $self->password;
+        my $home     = $self->home;
+
+        my $ftp = $self->_build_ftp($hostname)
+          or _fail _loc("FTP: Could not connect to host %1", $hostname);
+
+        my $is_anonymous = $user && $user eq 'anonymous' ? 1 : 0;
+
+        if ( !$is_anonymous && (!defined $user || !defined $password) ) {
+            my $machine = $self->_netrc_lookup( $hostname, $user );
+            if ($machine) {
+                ( $user, $password ) = ( $user // $machine->login, $machine->password );
             }
         }
-        $ftp->login( $user, $password ) or _fail $ftp->message;
-        if(  length $self->resource->home ) {
-            my $rc = $ftp->cwd( $self->resource->home );
-            _fail _loc("FTP: Could not change home directory to %1: %2", $self->resource->home, $ftp->message)
-               unless $rc;
+
+        _fail _loc('FTP: No username/password were provided or could not be discovered')
+          unless $is_anonymous || ($user && $password);
+
+        $ftp->login( $user, $password ) or _fail _loc('FTP: Could not login: %1',$ftp->message);
+
+        if ( length $home ) {
+            my $rc = $ftp->cwd($home);
+            _fail _loc("FTP: Could not change home directory to %1: %2", $home, $ftp->message)
+              unless $rc;
         }
+
         $ftp->binary;
-        $ftp;
+
+        return $ftp;
     }
 );
+
+sub ping {
+    my $self = shift;
+
+    my @ls = $self->ls;
+
+    return @ls ? 'OK' : 'KO';
+}
 
 sub error {
     return shift->ftp->message;
@@ -45,17 +71,27 @@ sub rc { }
 
 sub put_file {
     my ($self, %p) = @_;
-    my $rc;
-    if( ! -e "$p{local}" ) {
+
+    my $local  = "$p{local}";
+    my $remote = "$p{remote}";
+
+    if( ! -e $local ) {
        $self->rc( 19 );
-       _fail $self->ret( _loc("FTP: could not find local file %1", $p{local} ) );
+       _fail $self->ret( _loc("FTP: could not find local file %1", $local ) );
     }
-    $rc = $self->ftp->cwd( "$p{remote}" ) if defined $p{remote};
-    $self->rc( $rc );
-    $rc = $self->ftp->put( "$p{local}" );
-    $self->rc( $rc );
+
+    if (defined $remote && length $remote) {
+        $self->ftp->cwd( _file("$remote")->dir ) or _fail _loc('FTP: could not cwd to %1', $remote);
+    }
+
+    if (!$self->ftp->put( "$local" )) {
+        $self->rc( 19 );
+        $self->ret( $self->ftp->message );
+    }
+
     $self->_throw_on_error;
-    $self->ret( $self->ftp->message );
+
+    return $self->tuple;
 }
 
 sub put_dir {
@@ -84,6 +120,9 @@ sub pwd {
 
 sub ls {
     my ($self, %p) = @_;
+
+    $p{remote} //= '/';
+
     my @files=$self->ftp->ls( "$p{remote}" );
     return ({files=>[@files], message=>$self->ftp->message});
 }
@@ -122,6 +161,16 @@ sub close {
     $self->ftp->message;
 }
 
+method file_exists( $file_or_dir ) {
+    $self->ftp->ls($file_or_dir);
+
+    if ($self->ftp->message =~ m/no such file or directory/i) {
+        return 0;
+    }
+
+    return 1;
+}
+
 sub execute {
     my $self = shift;
     _throw "FTP execute not implemented yet.";
@@ -129,13 +178,20 @@ sub execute {
 
 sub sync_dir { _throw 'sync_dir not supported' }
 
-# not used:
-sub _build_uri {
-    my ($self) = @_;
-    my $uri = $self->uri;
-    my ($conn) = $uri =~ m{//(.*?)(/.*)?$};
-    return $conn if $conn;
-    _throw _loc("Could not create connection from uri %1", $self->uri);
+sub _build_ftp {
+    my $self = shift;
+    my ($hostname) = @_;
+
+    require Net::FTP;
+    return Net::FTP->new( $hostname )
+}
+
+sub _netrc_lookup {
+    my $self = shift;
+    my (@params) = @_;
+
+    require Net::Netrc;
+    return Net::Netrc->lookup( @params );
 }
 
 1;

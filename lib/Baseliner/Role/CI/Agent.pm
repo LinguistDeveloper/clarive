@@ -30,7 +30,7 @@ requires 'mkpath';
 requires 'rmpath';
 requires 'chmod';
 requires 'sync_dir';
-
+requires 'file_exists';
 requires 'execute';
 
 =head2 os
