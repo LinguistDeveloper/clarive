@@ -366,6 +366,9 @@
             store_time.removeAll();
             combo_time.setRawValue('');
             combo_time.fireEvent('change');
+            store_transitions.removeAll();
+            combo_transitions.setValue('');
+            combo_transitions.fireEvent('change');
         }
         if( jc_grid_remove ) jc_store.removeAll();
         topics = [];
@@ -519,7 +522,7 @@
                 Ext.each( topics, function( item_json ){
                     var item = Ext.util.JSON.decode( item_json );
                     if ( item.topic_mid == sel.data.mid ) {
-                        topics.splice(cont);
+                        topics.splice(cont, 1);
                     }
                     cont++;
                 });
@@ -530,6 +533,9 @@
                 store_transitions.baseParams.topics= topics_json;
                 if ( topics.length == 0 ) {
                     set_transition = 'none';
+                    store_transitions.removeAll();
+                    combo_transitions.setValue('');
+                    combo_transitions.fireEvent('change');
                 }
                 jc_store.reload();
             }
@@ -736,23 +742,40 @@
         }
         return (true);
     };
-    function add_node(data,project) {
-        jc_store_topics[ data.topic_mid ] = { text:data.text, data:data, project: project };
-        topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
+    function add_node(data, project) {
+        jc_store_topics[data.topic_mid] = {
+            text: data.text,
+            data: data,
+            project: project
+        };
+        topics.push(Ext.util.JSON.encode({
+            topic_mid: data.topic_mid,
+            project: data.id_project,
+            state: data.state_id
+        }));
         var topics_json = '[' + topics.join(',') + ']';
-        // topics.push( data.topic_mid + '|' + data.id_project + '|' + data.state_id );
 
-        store_transitions.baseParams.topics= topics_json;
-        if ( topics.length == 1 ) {
-            set_transition = data.id;
-        } else {
-            set_transition = '';
+        store_transitions.baseParams.topics = topics_json;
+        set_transition = '';
+        if (topics.length == 1) {
+            var transitions = ['promotable', 'demotable', 'deployable'];
+            var valuesTransitions = [];
+
+            for (i = 0; i <= transitions.length; i++) {
+                if (data[transitions[i]]) {
+                    for (var key in data[transitions[i]]) {
+                        valuesTransitions.push(key);
+                    }
+                }
+            }
+            if (data.job_type) {
+                set_transition = data.id;
+            } else if (valuesTransitions.length == 1) {
+                set_transition = valuesTransitions;
+            }
         }
         store_transitions.reload();
         jc_store.reload();
-
-        // calendar_reload();
-        //button_submit.enable();
     }
     // Drag and drop support
     jc_grid.on( 'render', function(){
