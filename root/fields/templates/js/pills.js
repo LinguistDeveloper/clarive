@@ -26,7 +26,12 @@ params:
         height: meta.height || 30,
         readOnly: Baseliner.eval_boolean(meta.readonly),
         options: meta['options'],
-        value: value
+        value: value,
+        listeners: {
+            change: function() {
+                this.fireEvent('filter', this, this.getValue());
+            }
+        }
     });
     return [
         pills

@@ -80,4 +80,26 @@ To show a default value in the grid.
 
 This field will be active when CI Class is selected.
 
+### Filter field
+
+Specify a condition to the CI grid.
+
+This is a combo with every fieldlets that are in the form. 
+
+This field is required if next field is not empty.
+
+### Filter data
+
+Specify a condition to the data.
+
+This field is required if previous field is not empty.
+
+### Filter type
+
+Specify the logic of the filter.
+
+By default, filter type is OR.
+
+For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).
+
 ### Show class

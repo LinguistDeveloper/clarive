@@ -45,11 +45,22 @@ params:
     var user_box = new Baseliner.model.Users({
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
-        hiddenName: meta.id_field,		
+        hiddenName: meta.id_field,
         store: user_box_store,
-		disabled: Baseliner.eval_boolean(meta.readonly),
-		singleMode: single_mode,
-		allowBlank: Baseliner.eval_boolean(meta.allowBlank, true)
+        disabled: Baseliner.eval_boolean(meta.readonly),
+        singleMode: single_mode,
+        allowBlank: Baseliner.eval_boolean(meta.allowBlank, true),
+        listeners: {
+            render: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            },
+            additem: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            },
+            removeitem: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            }
+        }
     });
     
     user_box_store.on('load',function(){

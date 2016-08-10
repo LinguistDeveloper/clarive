@@ -87,7 +87,7 @@ Cuando se escoja el fieldlet de tipo grid, este campo define la altura del field
 
 Define el número de elementos que aparecerán en la lista de selección de tópico.
 
-*Nota*:Opción solo disponible en el Tipo Grid del fieldlet
+*Nota* - Opción solo disponible en el Tipo Grid del fieldlet
 
 
 ### Campo padre
@@ -99,7 +99,7 @@ Permite seleccionar los tópicos disponibles indicando el id de un fieldlet de o
 
 Define el número de tópicos que aparecen en la tabla en modo visualización del tópico.
 
-*Nota*:Opción solo disponible en el Tipo Grid del fieldlet
+*Nota* - Opción solo disponible en el Tipo Grid del fieldlet
 
 
 ### ¿Mostrar los controles del grid?
@@ -114,9 +114,10 @@ Las opciones son:
 
 **Nunca**
 
-Nota:Opción solo disponible en el Tipo Grid del fieldlet
+Nota - Opción solo disponible en el Tipo Grid del fieldlet
 
 ### Campo para filtrar
+
 Permite filtrar la lista de los tópicos en función de un campo de este mismo formulario.
 
 En el campo se completa con el ID del elemento que se quiere usar de filtro.
@@ -129,4 +130,12 @@ Este campo es obligatorio si el siguiente campo no está vacio.
 
 Indica el campo por el que realizar el filtro.
 
-Si se sigue con el ejemplo anterior, si en las opciones aparecen el nombre de las categorías, el dato para realizar el filtro sería el nombre de la categoría: *category_name* Este campo es obligatorio si el campo anterior no está vacio.
+Este campo es obligatorio si el campo anterior no está vacio.
+
+### Tipo de filtro
+
+Indica la lógica del filtro.
+
+Por defecto, el tipo es OR.
+
+Para más información, hay un how-to llamado [Filtros es fieldlets](how-to/filter-fieldlet).

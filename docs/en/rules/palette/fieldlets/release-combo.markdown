@@ -75,3 +75,25 @@ Where id is the unique key of the category which can be consulted through the RE
 It establishes dependence between this Release topics type and dependent topics.
 
 It is through this field which should be completed by the ID field in the form of the dependent topics.
+
+### Filter field
+
+Specify a condition to the release combo.
+
+This is a combo with every fieldlets that are in the form. 
+
+This field is required if next field is not empty.
+
+### Filter data
+
+Specify a condition to the data.
+
+This field is required if previous field is not empty.
+
+### Filter type
+
+Specify the logic of the filter.
+
+By default, filter type is OR.
+
+For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).

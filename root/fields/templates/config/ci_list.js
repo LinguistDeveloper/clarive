@@ -4,8 +4,8 @@
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
     Cla.help_push({
-        title: _('CI Combo'),
-        path: 'rules/palette/fieldlets/ci-combo'
+        title: _('CI List'),
+        path: 'rules/palette/fieldlets/ci-list'
     });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
@@ -30,6 +30,8 @@
         value: data.default_value,
         store: default_store
     });
+
+    var logicField = Baseliner.LogicField(params, data);
 
     var firstRoleChange = false;
     var role_box_multiselect = new Baseliner.CIRoleCombo({
@@ -177,6 +179,7 @@
         ci_role_field,
         ci_class_field,
         default_box,
+        logicField,
         display_mode, {
             xtype: 'numberfield',
             name: 'height',

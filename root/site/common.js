@@ -2175,6 +2175,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             self.add_to_grid( rec.data );
             self.ci_box.setValue('');
         });
+        self.store.on('add', function(){ self.fireEvent( 'change', self ) });
+        self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
         self.ddGroup = 'bali-grid-data-' + self.id;
         var btn_delete = new Baseliner.Grid.Buttons.Delete({
             disabled: self.readOnly ? self.readOnly : false,
@@ -3101,6 +3103,19 @@ Cla.truncateText = function (text, max_length){
 Cla.truncateTooltip = function (tooltip, max_length){
         max_length = max_length ? max_length : 29;
         return tooltip.length > max_length ?  tooltip : '';
+};
+
+Cla.generateFieldletFilter = function(meta, mids) {
+    var metaFilter = meta.filter ? JSON.parse(meta.filter) : '';
+    var object = {};
+    mids = mids.length ? mids : '';
+    if (meta.filter_data) {
+        object[meta.filter_data] = mids;
+    } else {
+        object[filter_field.name] = mids;
+    };
+
+    return JSON.stringify($.extend(object, metaFilter));
 };
 
 Baseliner.render_checkbox = function(v){

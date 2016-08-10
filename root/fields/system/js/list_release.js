@@ -20,6 +20,7 @@ params:
 (function(params) {
     var data = params.topic_data;
     var meta = params.topic_meta;
+    var form = params.form.getForm();
 
     var topic_mid = data.topic_mid || undefined;
     var ps = meta.page_size || 10; // for combos, 10 is a much nicer on a combo
@@ -40,6 +41,7 @@ params:
             categories: meta.categories,
             statuses: meta.statuses,
             limit: ps,
+            logic: meta.logic,
             mid: topic_mid,
             show_release: 1,
             filter: meta.filter ? meta.filter : ''
@@ -61,10 +63,31 @@ params:
         hidden: Baseliner.eval_boolean(!meta.active),
         display_field: display_field,
         tpl_cfg: tpl_cfg,
-        hidden_value: row_mids
+        hidden_value: row_mids,
+        listeners: {
+            additem: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            },
+            removeitem: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            },
+            render: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            }
+        }
     });
     release_box.value = data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid') ? eval('data.' + meta.id_field + '.mid') : '') : '';
-
+    params.form.on('afterrender', function() {
+        if(!meta.filter_field)
+            return;
+        var filterField = params.fieldletMap[meta.filter_field[0]] ? params.fieldletMap[meta.filter_field[0]][0] : '';
+        if (filterField) {
+            filterField.addListener('filter', function(parent, values) {
+                release_box_store.baseParams['filter'] = Cla.generateFieldletFilter(meta, values);
+                release_box_store.load();
+            });
+        }
+    });
     return [
         release_box
     ]

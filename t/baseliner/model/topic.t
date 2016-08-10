@@ -3839,6 +3839,27 @@ subtest 'build_sort: builds correct condition when sort by label' => sub {
     is_deeply $model->build_sort( 'labels', -1 ),  { '_sort.labels_max_priority' => -1 };
 };
 
+subtest 'get_fieldlets_from_default_form: returns fieldlets of one form' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $model   = _build_model();
+    my @nodes   = $model->get_fieldlets_from_default_form($id_rule);
+
+    my @check_nodes = grep { $_->{key} =~ /fieldlet/ } @nodes;
+
+    is( scalar @nodes, scalar @check_nodes );
+};
+
+subtest 'get_fieldlets_from_default_form: fails if no id_rule' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_form();
+    my $model   = _build_model();
+
+    like exception { $model->get_fieldlets_from_default_form(); }, qr/Id not provided/;
+};
+
 done_testing();
 
 sub _setup {

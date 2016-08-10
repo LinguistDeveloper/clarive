@@ -78,17 +78,39 @@ Selectable fields to filter can be found through the REPL. In this case the comm
 
 Selection of type of description to show in the list.
 
-* Name: Show the name.
+* Name - Show the name.
 
-* Environment: Show the Environment separated by commas.
+* Environment - Show the Environment separated by commas.
 
-* Class: Show the type object.
+* Class - Show the type object.
 
-* Moniker: Show the moniker specified in CI configuration.
+* Moniker - Show the moniker specified in CI configuration.
 
 ### Default Value
 
 * To show a default value in the list.
 
 * This field will be active if CI Class is selected.
+
+### Filter field
+
+Specify a condition to the CI list.
+
+This is a combo with every fieldlets that are in the form.
+
+This field is required if next field is not empty.
+
+### Filter data
+
+Specify a condition to the data.
+
+This field is required if previous field is not empty.
+
+### Filter type
+
+Specify the logic of the filter.
+
+By default, filter type is OR.
+
+For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).
 

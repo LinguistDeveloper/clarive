@@ -11,7 +11,7 @@ use TestUtils ':catalyst';
 use TestSetup;
 use TestGit;
 
-use Baseliner::Utils qw(_array);
+use Baseliner::Utils qw(_array _encode_json);
 
 use Clarive::ci;
 use Clarive::mdb;
@@ -1243,7 +1243,7 @@ subtest 'tree_objects: returns cis with filtering by json condition' => sub {
 
     my $controller = _build_controller();
 
-    my ( $count, @tree ) = $controller->tree_objects( filter => '{"name":"My variable"}' );
+    my ( $count, @tree ) = $controller->tree_objects( filter => _encode_json( { name => 'My variable' } ) );
 
     is $count, 1;
     is scalar @tree, 1;
@@ -1857,6 +1857,46 @@ subtest 'json_tree: returns error when mids are not selected' => sub {
     $controller->json_tree($c);
 
     like $c->stash->{json}->{msg}, qr/Items must be selected/;
+};
+
+subtest 'tree_objects: returns cis with filtering with OR condition' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'variable', name => 'My variable' );
+    TestUtils->create_ci( 'variable', name => 'Your variable' );
+
+    my $controller = _build_controller();
+    my ( $count, @tree ) = $controller->tree_objects(
+        logic  => 'OR',
+        filter => _encode_json( { name => [ 'My variable', 'Your variable' ] } )
+    );
+
+    is $count, 2;
+    is scalar @tree, 2;
+    is $tree[0]->{name}, 'My variable';
+};
+
+subtest 'tree_objects: returns cis with filtering with AND condition' => sub {
+    _setup();
+
+    my $bl1 = TestUtils->create_ci( 'bl', bl => 'DEV',  name => 'DEV' );
+    my $bl2 = TestUtils->create_ci( 'bl', bl => 'PROD', name => 'PROD' );
+
+    my $status1 = TestUtils->create_ci( 'status', bls => [ $bl1->{mid}, $bl2->{mid} ] );
+    my $status2 = TestUtils->create_ci( 'status', bls => [ $bl1->{mid}, $bl2->{mid} ] );
+    my $status3 = TestUtils->create_ci( 'status', bls => [ $bl1->{mid} ] );
+
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects(
+        logic  => 'AND',
+        filter => _encode_json( { bls => [ $bl2->{mid}, $bl1->{mid} ] } )
+    );
+
+    is $count, 2;
+    is scalar @tree, 2;
+    is $tree[0]->{name}, $status1->{name};
+    is $tree[1]->{name}, $status2->{name};
 };
 
 done_testing;
