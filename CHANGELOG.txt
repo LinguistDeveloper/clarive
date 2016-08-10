@@ -1,3 +1,102 @@
+---------------------------------------------- 6.4.7 ----------------------------------------------
+[ENHANCEMENTS]
+- #32495 Show name instead of mid in list_topics fieldlets
+- #33537 Improve localization strings autodiscovery
+- #33831 Add default value in ci fieldlets (#33607)
+- #33901 Change icons to SVG in static/images/icons folder (#33568)
+- #33905 Implement filter step in job step notifications
+- #33983 Rename CI to All in CI explorer (#33564)
+- #34054 Change text message in imported rule
+- #34062 Change icons to SVG format from images/icons folder
+- #34077 Include clarive collection dump in cla db command
+- #34082 Delete job_log related when ci job is deleted
+- #34088 Change default name on duplicated roles
+- #34117 Add attach files into Send a notification (#26396)
+- #34125 "Historical" is translated to "Antiguos" in spanish
+- #34128 Save REPL Scripts with language and username
+- #34153 Allow rename REPL Tabs (#33582)
+- #34172 Add category and statuses box to fieldlet.system.release
+- #34173 Show mask when role actions are loading
+- #34190 Resize icons in list_jobs dashlet and HTML job export
+- #34195 Show Rule content from container Rule (#33657)
+- #34196 Improve ghost in drag & drop tabs
+- #34212 Remove checkbox column in HTML, CSV exports
+- #34214 Implement code review system
+- #34215 Change REPL Theme icon
+- #34219 Show all results of a search in Monitor page (#34159)
+- #34239 Resize icons to 16x16 in HTML exports
+- #34260 Cover permissions with UI tests
+- #34273 Create new service for deleting file from topic (#34267)
+- #34360 Create Webservice events (#9884)
+- #34359 Change menus size and icons related
+- #34362 Change Favorite start icon
+- #34379 Update Clarive Image to SVG Format
+- #34384 Remove not needed services from palette
+- #34402 Update icons from icons/eclipse folder
+- #34416 Add translation to Topics menu
+- #34425 Do not generate i18n files with line numbers
+- #34429 Add topic mid to the form stash
+- #34435 Create new section for title fieldlet
+- #34454 Available roles shows all roles in Create/Edit user
+- #34485 Pack distribution with compiled sources
+- #34497 Add variables copying between environments in project
+
+[FIXES]
+- #33654 Make sure purge deamon is deleting debug level job logs
+- #33655 Show correct icons in combo stores rows
+- #33787 Make sure rule icons are correct
+- #33819 Make sure all characters appear in diff view in Revision tab
+- #33852 Various small fixes
+- #33922 Make sure limit number of characters shown in a revision tab is working
+- #33971 Make sure events have the correct name
+- #33979 Make sure job cannot be created out of window if user doesn't have permissions (#33955)
+- #34032 Make sure role filter is working properly (#33865)
+- #34064 Make sure dispacher allows --env parameter
+- #34074 Cannot export dashlets lists into CSV
+- #34080 Make sure new job window cannot be opened from topic if status doesn't allow it
+- #34084 Make sure job progress is not aggregated to previous execution
+- #34085 Make sure no inactive BLs are used when creating repository tags
+- #34087 Make sure topic.change_status event sent Project names to notification instead of project mid
+- #34091 Field old_value is not filled in event.topic.modify_field for most of the list fields (topic, user, release, ....) (#34014)
+- #34092 Make sure users with action to see job monitor can see it
+- #34095 Make sure scroll bar in job_log is working properly (#34014)
+- #34100 Make sure category workflow available status are correctly updated
+- #34129 Make sure fieldlet.topic_grid is shown properly in allowed sections
+- #34160 Fix event handling for events without description
+- #34170 Be sure users can open configuration fieldlet window twice (#34102)
+- #34171 Make sure users can open Category edit window twice
+- #34177 Make sure list_topics fieldlets are migrated properly (#34149, #34152)
+- #34178 Make sure Description fieldlet shows all images attached
+- #34179 Make sure Kanban promote transitions open job window propertly (#34103)
+- #34188 Make sure REPL works with long responses
+- #34199 Make sure if you click on Edit in the topic grid, opens Edit view (#24336)
+- #34200 Be sure sort topics in list_topic dashlet works propertly
+- #34209 Make sure logo-powered has the correct dimensions
+- #34217 Monitor grid. Icon in running state must be dynamic
+- #34226 Allow accents in Clarive Help docs
+- #34228 Make sure login page shows correctly
+- #34232 Make sure root action is present
+- #34244 Make sure cla disp-tail is showing last entries
+- #34255 Make sure rename truncate_string method is obsolete
+- #34258 Make sure project security is updated
+- #34261 Make sure Ship a File Remotely is not throwing an error (#34256)
+- #34272 Make sure help files are parsed with windows ending lines
+- #34278 Make sure labels are translated in Topic view
+- #34339 Make sure REPL export all to file is working properly
+- #34345 Make sure bl is correctly searched when creating a new job
+- #34350 Make sure tabs are splitted correctly
+- #34372 Make sure notifications are showing status filter
+- #34380 Make sure localization doesn't fail with special strings
+- #34408 Make sure topic tab is shown properly
+- #34410 Make sure search is working in users roles and calendar slots
+- #34436 Replace ui test markers ids with classes
+- #34438 Make sure scope combo in job slots are correct
+- #34439 Make sure projects in report edit windows are loading as filter
+- #34446 Make sure review CI is properly shown
+- #34455 Fix attach file icon in Topic grid
+- #34280 Group by progress, returns fail message in job monitor
+- #34505 Make sure Send Notification treats empty attachment correctly
+
 ---------------------------------------------- 6.4.6 ----------------------------------------------
 [ENHANCEMENTS]
 - #32494 Edit Numberfield library to select currency type
