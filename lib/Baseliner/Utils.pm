@@ -2006,8 +2006,8 @@ Zip a directory
 sub zip_dir {
     my ( $self, %p ) = @_;
 
-    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir';
-    my $zipfile    = $p{zipfile}    // _fail _loc 'Missing parameter tarfile';
+    my $source_dir = $p{source_dir} // _fail _loc('Missing parameter source_dir');
+    my $zipfile    = $p{zipfile}    // _fail _loc('Missing parameter tarfile');
     my $verbose    = $p{verbose};
     my %files     = map { $_ => 1 } _array $p{files};
     my @include   = _array $p{include};
@@ -2017,10 +2017,10 @@ sub zip_dir {
 
     if ( tell($zipfile) == -1 ) {
         open $fh, '>', $zipfile
-            or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
+            or _fail _loc('Could not create zip file `%1`: %2', $zipfile, $!);
         $closefile++;
     }
-    _fail _loc 'Could not find dir `%1` to zip', $source_dir
+    _fail _loc('Could not find dir `%1` to zip', $source_dir)
         unless -e $source_dir;
 
     my $zip = Archive::Zip->new or _throw $!;

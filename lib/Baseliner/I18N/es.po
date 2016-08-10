@@ -1455,6 +1455,10 @@ msgid "Rule %1 not found"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
+msgid "Rule %1 not independent or webservice: %2"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule WS Elapsed: %1s"
 msgstr ""
 
@@ -2467,6 +2471,10 @@ msgstr ""
 msgid "No action or username specified"
 msgstr "No action or username specified"
 
+#: lib/Baseliner/Model/Permissions.pm lib/Baseliner/Model/Users.pm
+msgid "User %1 not found"
+msgstr ""
+
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
 msgstr "Regla Inválida"
@@ -3069,10 +3077,6 @@ msgstr "Referencias"
 #: lib/Baseliner/Model/TopicExporter/Csv.pm
 msgid "Attachments"
 msgstr "Adjuntos"
-
-#: lib/Baseliner/Model/Users.pm
-msgid "User %1 not found"
-msgstr ""
 
 #: lib/Baseliner/Mongo.pm
 msgid "Mongo error connecting to %1: %2"

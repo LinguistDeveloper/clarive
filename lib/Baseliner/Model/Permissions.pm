@@ -603,7 +603,7 @@ sub _get_actions_from_user ($self, $username, @bl) {
         @final = Baseliner->model( 'Actions' )->list;
     }else{
         my $user = ci->user->find_one({ name=>$username });
-        _fail _loc 'User %1 not found', $username unless $user;
+        _fail _loc('User %1 not found', $username) unless $user;
         my @roles = keys %{ $user->{project_security} };
         #my @id_roles = map { $_ } @roles;
         my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
