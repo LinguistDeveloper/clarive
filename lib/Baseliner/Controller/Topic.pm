@@ -963,22 +963,32 @@ sub comment : Local {
 
 sub category_list : Local {    #this is for ComboCategories
     my ( $self, $c ) = @_;
-    my $p = $c->req->parameters;
-    my $is_release = "$p->{is_release}" if $p->{is_release};
+
+    my $p = $c->request->parameters;
+    my $query = $p->{query} // '';
+    my $is_release = $p->{is_release} ? '1' : '0';
+
+    $query = $p->{valuesqry} ? join('|', map {quotemeta $_} split /\|/, $query) : quotemeta ($query);
 
     my @categories = Baseliner::Model::Topic->get_categories_permissions(
         username   => $c->username,
-        type       => 'view',
-        is_release => $is_release
+        is_release => $is_release,
+        type       => 'view'
     );
-    my $return = {
-        data => [
-            map { +{ id => $_->{id}, name => $_->{name} } }
-            sort { lc $a->{name} cmp lc $b->{name} } @categories
-        ],
+
+    @categories = map { +{ id => $_->{id}, color => $_->{color}, name => $_->{name} } }
+      sort { lc $a->{name} cmp lc $b->{name} } @categories;
+
+    if ($query){
+        my $query_key = $p->{valuesqry} ? 'id' : 'name' ;
+        @categories = grep { $_->{$query_key} =~ /$query/i } @categories;
+    }
+
+    $c->stash->{json} = {
+        data       => [@categories],
         totalCount => scalar @categories
     };
-    $c->stash->{json} = $return;
+
     $c->forward('View::JSON');
 }
 

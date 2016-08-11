@@ -4222,12 +4222,6 @@ Baseliner.ErrorOutputTabs = Ext.extend( Ext.TabPanel, {
     }
 });
 
-Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, { 
-    allowBlank: true,
-    url: '/ci/status/combo_list', field: 'id_status', displayField: 'name',
-    fields: [ 'id_status', 'name' ]
-});
-
 Baseliner.datatable = function( el, opts, cb) {
     var opt = $.extend({
         paging: true,

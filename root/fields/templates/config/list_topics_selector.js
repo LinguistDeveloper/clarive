@@ -18,7 +18,7 @@
         editable: false,
         fieldLabel: _('Table format?'),
         emptyText: _('Select one'),
-        data:[ 
+        data:[
             [ 'always', _('Always') ],
             [ 'paging', _('Only if paging') ],
             [ 'never', _('Never') ],
@@ -72,7 +72,7 @@
         value: data.paging_datatable || 10
     });
 
-    ret.push([ 
+    ret.push([
         { xtype:'textfield', fieldLabel: _('List of columns to show in grid'), name: 'columns', value: data.columns },
         { xtype:'numberfield', fieldLabel: _('Height of grid in edit mode'), name: 'height', fieldClass: "x-fieldlet-type-height", minValue:'1', value: data.height || 250 },
         { xtype:'numberfield', name:'page_size', fieldLabel: _('Page size'), value: data.page_size || 20},
@@ -85,7 +85,7 @@
         new Baseliner.ComboSingle({ forceSelection: true, allowBlank: false, fieldLabel: _('Sort Order'), editable: false, name: 'dir', value: data.dir || '', data: [
                     [_('DESC')],
                     [_('ASC')]
-                  ] 
+                  ]
         })
     ]);
     return ret;
