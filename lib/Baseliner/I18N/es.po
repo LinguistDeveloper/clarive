@@ -6057,7 +6057,7 @@ msgstr ""
 msgid "Tables"
 msgstr "Tablas"
 
-#: root/ci/DBDest.js root/comp/lifecycle/report_edit.js root/comp/repl.js
+#: root/ci/DBDest.js root/comp/lifecycle/report_edit.js
 msgid "Table"
 msgstr "Tabla"
 
@@ -6805,8 +6805,8 @@ msgstr "Modificar"
 msgid "Clone"
 msgstr "Clonar"
 
-#: root/comp/catalog_grid.js root/comp/ci-gridtree.js root/comp/repl.js
-#: root/comp/report.js root/comp/rules.js root/comp/topic/topic_lib_grid.js
+#: root/comp/catalog_grid.js root/comp/ci-gridtree.js root/comp/report.js
+#: root/comp/rules.js root/comp/topic/topic_lib_grid.js
 #: root/forms/parse_config.js root/forms/write_config.js
 #: root/site/dashboard.js
 msgid "YAML"
@@ -7077,7 +7077,7 @@ msgstr "Mostrar Gráfico"
 msgid "Export"
 msgstr "Exportar"
 
-#: root/comp/ci-gridtree.js root/comp/repl.js root/forms/parse_config.js
+#: root/comp/ci-gridtree.js root/forms/parse_config.js
 #: root/forms/write_config.js root/site/model.js
 msgid "JSON"
 msgstr "JSON"
@@ -9124,10 +9124,6 @@ msgstr "Salida: %1"
 #: root/comp/repl.js
 msgid "Lang"
 msgstr "Lenguaje"
-
-#: root/comp/repl.js
-msgid "Data Editor"
-msgstr "Editor de datos"
 
 #: root/comp/repl.js root/comp/rules.js root/comp/sem.js root/site/common.js
 msgid "Run"
@@ -14148,6 +14144,9 @@ msgstr "destino"
 
 #~ msgid "CI Mandatory"
 #~ msgstr "CI Obligatorio"
+
+#~ msgid "Data Editor"
+#~ msgstr "Editor de datos"
 
 #~ msgid "Missing or invalid parameter topic_mid"
 #~ msgstr "Falta o parámetro inválido topic_mid"

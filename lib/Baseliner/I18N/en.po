@@ -5986,7 +5986,7 @@ msgstr ""
 msgid "Tables"
 msgstr ""
 
-#: root/ci/DBDest.js root/comp/lifecycle/report_edit.js root/comp/repl.js
+#: root/ci/DBDest.js root/comp/lifecycle/report_edit.js
 msgid "Table"
 msgstr ""
 
@@ -6734,8 +6734,8 @@ msgstr ""
 msgid "Clone"
 msgstr ""
 
-#: root/comp/catalog_grid.js root/comp/ci-gridtree.js root/comp/repl.js
-#: root/comp/report.js root/comp/rules.js root/comp/topic/topic_lib_grid.js
+#: root/comp/catalog_grid.js root/comp/ci-gridtree.js root/comp/report.js
+#: root/comp/rules.js root/comp/topic/topic_lib_grid.js
 #: root/forms/parse_config.js root/forms/write_config.js
 #: root/site/dashboard.js
 msgid "YAML"
@@ -7006,7 +7006,7 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/repl.js root/forms/parse_config.js
+#: root/comp/ci-gridtree.js root/forms/parse_config.js
 #: root/forms/write_config.js root/site/model.js
 msgid "JSON"
 msgstr ""
@@ -9009,10 +9009,6 @@ msgstr ""
 
 #: root/comp/repl.js
 msgid "Lang"
-msgstr ""
-
-#: root/comp/repl.js
-msgid "Data Editor"
 msgstr ""
 
 #: root/comp/repl.js root/comp/rules.js root/comp/sem.js root/site/common.js
