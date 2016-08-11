@@ -631,7 +631,7 @@ Baseliner.Topic.data_user_event = function( username ) {
             Baseliner.error( _('Error'), res.msg );
         } else {
             Ext.Msg.show({
-                title:'Datos del usuario ' + username,
+                title:_('User details %1', username),
                 msg: res.msg,
                 buttons: Ext.Msg.OK,
                 //icon: Ext.Msg.INFO

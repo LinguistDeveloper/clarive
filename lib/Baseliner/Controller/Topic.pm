@@ -746,18 +746,18 @@ sub data_user_event : Local {
             my $phone = $user->{phone};
             my $data = '';
             if ($name ne ''){
-                $data .= "<b>Nombre</b>: " . $name . "<br><br>";
+                $data .= "<b>" . _loc('Name') . "</b>: " . $name . "<br><br>";
             }
             if ($email ne ''){
-                $data .= "<b>E-mail</b>: " . $email . "<br><br>";
+                $data .= "<b>" . _loc('E-mail') . "</b>: " . $email . "<br><br>";
             }
             if ($phone ne ''){
-                $data .= "<b>Phone Number</b>: " . $phone . "<br><br>";
+                $data .= "<b>" . _loc('Phone Number') . "</b>: " . $phone . "<br><br>";
             }
             if ($data eq ''){
-                $data .= "No se tienen datos del usuario <b>" . $username . "</b>.<br>";
+                $data .= _loc("No user details available") . " <b>" . $username . "</b>.<br>";
             }else{
-                $data = "<b>Nombre de usuario</b>: " . $username . "<br><br>" . $data;
+                $data = "<b>" . _loc('Username') . "</b>: " . $username . "<br><br>" . $data;
             }
             $c->stash->{json} = { msg => $data, failure => \0 };
         } catch {
