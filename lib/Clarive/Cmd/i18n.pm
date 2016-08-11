@@ -87,25 +87,24 @@ sub _remove_header {
 sub _process {
     my ( $out_fh, $file ) = @_;
 
+    local $/;
     open my $fh, '<', $file or die "Can't open '$file': $!";
-    while (<$fh>) {
-        my $id;
+    my $content = <$fh>;
+    close $fh;
 
-        while (/_(?:locl?)?\(\s*(?:'(.*?)'|"(.*?)")\s*(?:\)|,)/g) {
-            $id = $1 || $2;
+    while ($content =~ m/_(?:locl?)?\s*\(\s*(?:'(.*?)'|"(.*?)")\s*(?:\)|,)/mg) {
+        my $id = $1 || $2;
 
-            if ( defined $id && $id ne '' ) {
-                $id =~ s{\\}{\\\\}g;
-                $id =~ s{"}{\\"}g;
+        if ( defined $id && $id ne '' ) {
+            $id =~ s{\\}{\\\\}g;
+            $id =~ s{"}{\\"}g;
 
-                print $out_fh "#: $file\n";
-                print $out_fh qq{msgid "$id"\n};
-                print $out_fh qq{msgstr ""\n};
-                print $out_fh "\n";
-            }
+            print $out_fh "#: $file\n";
+            print $out_fh qq{msgid "$id"\n};
+            print $out_fh qq{msgstr ""\n};
+            print $out_fh "\n";
         }
     }
-    close $fh;
 }
 
 1;

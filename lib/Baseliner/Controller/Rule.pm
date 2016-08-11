@@ -962,7 +962,7 @@ sub default : Path {
     my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $run_rule = sub{
         my $rule = $self->rule_from_url( $id_rule );
-        _fail _loc 'Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} !~ /independent|webservice/ ;
+        _fail _loc('Rule %1 not independent or webservice: %2',$id_rule, $rule->{rule_type}) if $rule->{rule_type} !~ /independent|webservice/ ;
 
         my $rule_runner = Baseliner::RuleRunner->new;
         event_new 'event.rule.ws', {

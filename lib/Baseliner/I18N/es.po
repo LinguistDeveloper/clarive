@@ -1455,6 +1455,10 @@ msgid "Rule %1 not found"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
+msgid "Rule %1 not independent or webservice: %2"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule WS Elapsed: %1s"
 msgstr ""
 
@@ -1973,6 +1977,10 @@ msgid "User %1 does not have permission to drop into field %2"
 msgstr "El usuario %1 no tiene permiso para relacionar el campo %2"
 
 #: lib/Baseliner/Controller/Topic.pm
+msgid "Topic #%1 added to #%2 in field `%3`"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
 msgid "No editable or matching fields found in topics #%1 and #%2"
 msgstr ""
 "No hay campos editables o coincidentes que se encuentran en los tópicos #%1 "
@@ -2462,6 +2470,10 @@ msgstr ""
 #: lib/Baseliner/Model/Permissions.pm
 msgid "No action or username specified"
 msgstr "No action or username specified"
+
+#: lib/Baseliner/Model/Permissions.pm lib/Baseliner/Model/Users.pm
+msgid "User %1 not found"
+msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
@@ -3066,10 +3078,6 @@ msgstr "Referencias"
 msgid "Attachments"
 msgstr "Adjuntos"
 
-#: lib/Baseliner/Model/Users.pm
-msgid "User %1 not found"
-msgstr ""
-
 #: lib/Baseliner/Mongo.pm
 msgid "Mongo error connecting to %1: %2"
 msgstr "Error de conexión de mongo con %1: %2"
@@ -3333,6 +3341,10 @@ msgstr ""
 
 #: lib/Baseliner/Schema/Migra/MongoMigration.pm
 msgid "\" . $reg_fieldlet->{name} . \""
+msgstr ""
+
+#: lib/Baseliner/Schema/Migra/MongoMigration.pm
+msgid " . $not_found{$_} . "
 msgstr ""
 
 #: lib/Baseliner/Sem.pm
@@ -3626,6 +3638,11 @@ msgstr ""
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Looking for common history between %1 and %2"
 msgstr ""
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "Revision [%1] is not in the top revision's history"
+msgstr ""
+"La revisión [%1] no está en la historia de la revisión que se va a pasar"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Could not find or create directory %1: %2"
@@ -16502,10 +16519,6 @@ msgstr "destino"
 #~ "No se puede %1 la revision [%2] a %3 puesto que no tiene historia común "
 #~ "con el entorno y puede provocar regresiones.  Probablemente es necesario "
 #~ "combinar ramas antes de realizar este pase"
-
-#~ msgid "Revision [%1] is not in the top revision's history"
-#~ msgstr ""
-#~ "La revisión [%1] no está en la historia de la revisión que se va a pasar"
 
 #~ msgid ""
 #~ "Not all commits are in [%1] history.  You probably need to merge branches"
