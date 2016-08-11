@@ -79,7 +79,7 @@ elif [ "$1" == "cover" ]; then
     cover -delete -silent
     prove -Ilib -It/lib -e 'bin/cla exec perl -It/lib -Ilib -MDevel::Cover=-coverage,statement,branch,condition,path,subroutine,time' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
     cover
-elif [ -f "bin/cla.exe" ]; then
+elif [ -f "$BINDIR/cla.exe" ]; then
     $BINDIR/cla.exe "$@"
 else
     $PERL $BINDIR/cla-cmd "$@"
