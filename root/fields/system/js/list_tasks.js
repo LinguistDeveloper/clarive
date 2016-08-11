@@ -160,26 +160,7 @@ params:
         '<td><span><b>{name}</span></b></td></tr></table></div>',
         '</tpl>'
     );
-    /*
-        name: 'job_combo',
-        hiddenName: 'job_combo',
-        fieldLabel: '<% _loc('Franja horaria') %>',
-        valueField: 'valueJson',
-        displayField:'displayText',
-        itemSelector: 'div.search-item',
-        store: time_store,
-        allowBlank: false,
-        width: 150,
-        labelWidth: 250,
-        typeAhead: true,
-        mode: 'local',
-        forceSelection: true,
-        triggerAction: 'all',
-        tpl: time_tpl,
-        disabled: true,
-        selectOnFocus:true
-     */
-    
+
     var grid_tasks = new Ext.grid.EditorGridPanel({
         style: 'border: solid #ccc 1px',
         store: store_tasks,

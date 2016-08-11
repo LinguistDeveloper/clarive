@@ -587,9 +587,9 @@ sub get_notifications {
     $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config, enforce_metadata => 0)->{template_default};
     $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{template_default};
     if ($template) {
-        _log( "template for $event_key: $template" );
+        _log( _loc("template for %1: %2", $event_key, $template ));
     } else {
-        _error( _("Could not find template for $event_key") );
+        _error( _loc( 'Could not find template for %1', $event_key ) );
     }
 
     if(!$self->exclude_default( {event_key => $event_key} )){

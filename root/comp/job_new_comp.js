@@ -6,8 +6,8 @@
     use utf8;
     my $iid = "div-" . _nowstamp;
     $c->stash->{job_types} = [
-        { name=>'job_type', inputValue=> 'promote', boxLabel => _loc('Promote'), checked=>\1 },
-        { name=>'job_type', inputValue=> 'demote', boxLabel => _loc('Demote') }
+        { name=>'job_type', inputValue=> 'promote', boxLabel => _('Promote'), checked=>\1 },
+        { name=>'job_type', inputValue=> 'demote', boxLabel => _('Demote') }
         ];
     my $now = DateTime->now;
     $now->set_time_zone(_tz);
@@ -34,7 +34,7 @@
         var cnt = jc_grid.getStore().getCount();
         if( cnt == 0 ) {
             if( warn_missing )
-                Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: _('Missing job contents') });
+                Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: _("Form Error"), msg: _('Missing job contents') });
                 return 1;
             }
         var json = [];
@@ -82,8 +82,8 @@
 
     var window_check = new Ext.form.Checkbox({
         name: 'window_check',
-        fieldLabel: 'Ventana Personalizada' ,
-        boxLabel: 'Chequee si quiere crear un pase fuera de ventana.',
+        fieldLabel: _("Custom Window") ,
+        boxLabel: _("Check for job out of window"),
         handler: _setOutWindow
         });
 
@@ -92,7 +92,7 @@
         name: 'job_date',
         disabled: true,
         //readOnly: true,
-        fieldLabel: '<% _loc('Date') %>',
+        fieldLabel: _('Date'),
         allowBlank: false,
         usePickerPlus: true,
         format: 'd/m/Y',
@@ -136,7 +136,7 @@
         id:   'time_spinner<% $iid %>',
         name: 'job_time',
         format : "H:i",
-        fieldLabel: '<% _loc('Time') %>',
+        fieldLabel: _('Time'),
         allowBlank: false,
         disabled:true,
         value: '<% $hm %>',
@@ -154,7 +154,7 @@
         
     var txtComment = new Ext.form.TextArea({
         id:   'comments<% $iid %>',
-        fieldLabel: '<% _loc('Comments') %>',
+        fieldLabel: _('Comments'),
         width: 500,
         name: 'comments'
         });
@@ -212,7 +212,7 @@
     var job_time  = new Ext.form.ComboBox({
         name: 'job_combo',
         hiddenName: 'job_combo',
-        fieldLabel: '<% _loc('Franja horaria') %>',
+        fieldLabel: _('Timezone'),
         valueField: 'valueJson',
         displayField:'displayText',
         itemSelector: 'div.search-item',
@@ -241,7 +241,7 @@
             if( cnt > 0 ) {
                 if(!window_check.checked){
                     //time_store.load({ params: { bl: bl, job_date: job_date, job_contents: json_res } });
-                    Baseliner.showLoadingMask(main_form.getEl(), "Cargando fechas...");
+                    Baseliner.showLoadingMask(main_form.getEl(), _("Loading dates..."));
                     Ext.Ajax.request({
                         url: '/job/check_date',
                         params: { bl: bl, job_date: job_date, job_contents: json_res },
@@ -261,16 +261,16 @@
                                         Baseliner.time_reload();
                                         }
                                 } else {
-                                    Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Sin Fechas", msg: "No hay fechas disponibles para el pase. Seleccione una ventana personalizada."});
+                                    Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: _("Without Dates"), msg: _("There are no allowed dates for the job. Please, select customized window")});
                                     window_check.setValue( true );
                                 }
                             }else{
-                                Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Error Calendarios", msg: "No hay calendarios disponibles para el pase. La busqueda ha devuelto una excepcion:<b>"+_raw.data+"</b>."});
+                                Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: _("Calendar Errors"), msg: _("There are no allowed windows for the job. Searching returns an exception: %1", "<b>" +_raw.data+ "</b>")});
                                 }
                             },
                         failure: function(xhr) {
                             Baseliner.hideLoadingMask( main_form.getEl() );
-                            Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: "Se ha producido un error de timeout."});
+                            Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: _("Form Error"), msg: _("Timeout error ocurred")});
                             //Baseliner.errorWin( 'Logout Error', xhr.responseText );
                             }
                         });
@@ -287,7 +287,7 @@
                             },
                         failure: function(xhr) {
                             Baseliner.hideLoadingMask( main_form.getEl() );
-                            Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: "Se ha producido un error de timeout."});
+                            Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: _("Form Error"), msg: _("Timeout error ocurred")});
                             //Baseliner.errorWin( 'Logout Error', xhr.responseText );
                             }
                         });
@@ -310,7 +310,7 @@
             var job_date = ( t != undefined) ? t.getDate() + "/" + (t.getMonth()+1) + "/" + t.getFullYear() : main_form.getForm().findField('job_date').getRawValue();
             var bl = combo_baseline.getValue();
             var json_res = job_grid_data({ warn: false });
-            Baseliner.showLoadingMask(main_form.getEl(), "Actualizando horas...");
+            Baseliner.showLoadingMask(main_form.getEl(), _("Updating times..."));
             time_store.load({
                 params: { bl: bl, job_date: job_date, job_contents: json_res }
                 });
@@ -371,8 +371,8 @@
         var myHora = parseTime(val, main_form.getForm().findField('job_date').value);
         myHora.setSeconds(59);          
         if ( myHora < __now ) {
-            field_spinner.markInvalid( _('Hora de pase Caducada') );
-            Ext.form.VTypes['hourText'] = _('Hora de pase Caducada');
+            field_spinner.markInvalid( _('Job time expired') );
+            Ext.form.VTypes['hourText'] = _('Job time expired');
             return true;
             }
         return false;
@@ -387,14 +387,14 @@
         var c = to_hour( _range.end_time );
         if( a <= b && b <= c ) return true;
         field_spinner.markInvalid( _('Time off range %1', range_str ) );
-        Ext.form.VTypes['hourText'] = _("Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase fuera de las ventanas permitidas");
+        Ext.form.VTypes['hourText'] = _("Job is out of window. Check 'Custom window' if you want a job out of allowed windows");
         return false;
         };
 
     // hour validator
     Ext.form.VTypes['hourVal']  = /^[0-2][0-9]:[0-5][0-9]$/; 
     Ext.form.VTypes['hourMask'] = /[0-9:]/; 
-    Ext.form.VTypes['hourText'] = _('Formato de Hora inválido (00:00-23:59)');
+    Ext.form.VTypes['hourText'] = _('Invalid time format (00:00-23:59)');
     Ext.form.VTypes['hour']     = function(v){ 
         var t = Ext.form.VTypes['hourVal'].test(v); 
         if( ! t ) return false;
@@ -402,7 +402,7 @@
         if( checkExpired(v) ) return false;
         var arr = v.split(":"); 
         if( arr[0] > 23 || arr[1] > 59 ) {
-            field_spinner.markInvalid( _('Formato de Hora inválido (00:00-23:59)') );
+            field_spinner.markInvalid( _('Invalid time format (00:00-23:59)') );
             return false;
             }
         return true;
@@ -608,7 +608,7 @@
             cls: 'x-btn-text-icon',
             handler: function(){
                 if( window_check.checked && txtComment.getValue().length == 0 ) {
-                    Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar el motivo del pase en el campo observaciones'), width: 500, buttons: { ok: true } });
+                    Ext.Msg.show({ title: _('Failure'), msg: _('For the jobs outside of window it is required to add a reason to the comment field'), width: 500, buttons: { ok: true } });
                 } else {
                     var json_res = job_grid_data();
                     button_submit.disable();
@@ -617,7 +617,7 @@
                         success: function(form,action){
                             //form submit ok
                             //alert( 'ok' + action );
-                            Baseliner.message("<% _loc('New Job') %>", action.result.msg);
+                            Baseliner.message( _('New Job'), action.result.msg);
                             // reset everything
                             Baseliner.jobResetAll();
                             Baseliner.closeCurrentTab();
@@ -681,7 +681,7 @@
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
         frame: true,
-        title: '<% _loc('Job Options') %>',
+        title: _('Job Options'),
         width: 900,
         items: [
             tb,
@@ -690,7 +690,7 @@
             name: 'job_type',
             columns: 3,
             width: 300,
-            fieldLabel: '<% _loc('Job Type') %>',
+            fieldLabel: _('Job Type'),
             listeners: {
                 change: { fn: function(t,checked) {
                     ds_combo.removeAll();
@@ -729,7 +729,7 @@
             load: {
                 fn: function(store,opt) {
                     if( store.getTotalCount() == 0 ) {
-                        Baseliner.message("<% _loc('Warning') %>", "<% _loc('No records found') %>");
+                        Baseliner.message( _('Warning'), _('No records found'));
                         }
                     }
                 }
@@ -777,7 +777,7 @@
         minChars :3,
         displayField:'item',
         typeAhead: false,
-        loadingText: '<% _loc('Searching...') %>',
+        loadingText: _('Searching...'),
         width: 550,
                 resizable: true,
         lazyRender: false,
@@ -830,8 +830,8 @@
     //if( Ext.isIE ) document.getElementById('search<% $iid %>').style.top = 0; // hack fix
 % unless( scalar _array _array( $c->stash->{baselines} ) ) {
     Ext.MessageBox.show({
-        title: 'Error',
-        msg: 'Su usuario no tiene permisos de creación de pases en ningún entorno',
+        title: _('Error'),
+        msg: _('Your user does not have permission to create any job in any environment'),
         buttons: Ext.MessageBox.OK,
         icon: Ext.MessageBox.ERROR
         });

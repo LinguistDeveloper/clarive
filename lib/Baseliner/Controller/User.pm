@@ -1220,7 +1220,7 @@ sub country_info : Local {
             push @countries, $data_country;
         }
 
-        $c->stash->{json} = { success => \1, msg => _loc('country info success'), data => \@countries };
+        $c->stash->{json} = { success => \1, msg => _loc('Country info success'), data => \@countries };
     }
 
     catch {

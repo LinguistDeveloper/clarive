@@ -13,7 +13,7 @@ msgstr ""
 
 #: lib/Baseliner/CI.pm
 msgid "Unexpected reference when loading CI: "
-msgstr ""
+msgstr "Referencia inesperada cuando se cargaba el CI: "
 
 #: lib/Baseliner/CI.pm
 msgid "CI record not found for search %1"
@@ -25,7 +25,7 @@ msgstr "El registro CI no encontrado para el mid %1"
 
 #: lib/Baseliner/Cache.pm
 msgid "Cache set error %1 for key %2"
-msgstr ""
+msgstr "Error de Caché %1 para la clave %2"
 
 #: lib/Baseliner/Cache.pm
 msgid "Cache decode error of key `%1` (`%2`)"
@@ -49,7 +49,7 @@ msgstr ""
 
 #: lib/Baseliner/Comm/Email.pm
 msgid "CC EMAILS added: '%1' (email_cc)"
-msgstr ""
+msgstr "CC EMAILS añadido: '%1' (email_cc)"
 
 #: lib/Baseliner/Comm/Email.pm
 msgid "Attachment not sent. The size is too big"
@@ -65,7 +65,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/About.pm
 msgid "View server info in about window"
-msgstr ""
+msgstr "Ver infromación sobre el servidor en la ventana acerca de"
 
 #: lib/Baseliner/Controller/About.pm lib/BaselinerX/Service/Catalog.pm
 #: root/site/help.js
@@ -86,7 +86,7 @@ msgstr "Acerca de"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Version"
-msgstr ""
+msgstr "Versión del Servidor"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Perl Version"
@@ -102,7 +102,7 @@ msgstr "ID de Proceso"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Time"
-msgstr ""
+msgstr "Hora del Servidor"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Exec"
@@ -133,7 +133,7 @@ msgstr "Cuenta de usuarios activos"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Library Path"
-msgstr ""
+msgstr "Ruta de las librerías"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Authentication required"
@@ -149,7 +149,7 @@ msgstr "Usuario Inválido"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Surrogate error: %1"
-msgstr ""
+msgstr "Error al impersonarse: %1"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Missing login"
@@ -161,7 +161,7 @@ msgstr "El usuario no está activo"
 
 #: lib/Baseliner/Controller/Auth.pm lib/Baseliner/Controller/Root.pm
 msgid "api-key authentication is not enabled for this url"
-msgstr ""
+msgstr "autenticación con api-key no está disponible para esta url"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Invalid User or Password"
@@ -196,7 +196,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "------| Login in attempt: `%1`. Result="
-msgstr ""
+msgstr "------| Intento de login: `%1`. Resultado="
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Invalid User."
@@ -236,7 +236,7 @@ msgstr "S0001: Usuario %1 no autorizado: action.create_user_session"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Missing userid"
-msgstr ""
+msgstr "Falta el id del usuario"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "S0002: User not found: %1"
@@ -295,6 +295,8 @@ msgid ""
 "The changeset must be created and assigned to at least one project.  Save it "
 "first"
 msgstr ""
+"Los cambios deben ser creados y asignados a al menos un proyecto. Guárdalo "
+"priemro"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CI %1 saved ok"
@@ -306,11 +308,11 @@ msgstr "Error de CI: %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Invalid data format: form data is not hash"
-msgstr ""
+msgstr "Formato de datos inválido: los datos no son un hash"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CI %1 not found"
-msgstr ""
+msgstr "CI %1 no encontrado"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Undefined action"
@@ -318,7 +320,7 @@ msgstr "Acción indefinida"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to view CI %2 of class %3"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para ver el CI %2 de la clase %3"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CI %1 loaded ok"
@@ -330,19 +332,19 @@ msgstr "Error al cargar el CI: %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to admin CI of class %2"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para administrar CIs de la clase %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CI class %1 loaded ok"
-msgstr ""
+msgstr "La clase de CI %1 cargado correctamente"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CI class load error: %1"
-msgstr ""
+msgstr "la clase de CI ha cargado con error: %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to delete CI %2"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para borrar el CI %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CIs deleted ok"
@@ -354,11 +356,11 @@ msgstr "Error borrando CIs: %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to export CI %2"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para exportar el CI %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Unknown export format: %1"
-msgstr ""
+msgstr "Formato de exportación desconocido: %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CIs exported ok"
@@ -378,19 +380,19 @@ msgstr "Falta un parámetro en el nombre de la clase"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to admin CIs of class %2"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para administar CIs de la clase %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Could not find CI %1 in database"
-msgstr ""
+msgstr "No se puede encontrar el CI %1 en base de datos"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to view CI class %2"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para ver la clase de CI %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "User %1 not authorized to import CIs"
-msgstr ""
+msgstr "El usuario %1 no está autorizado para importar CIs"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CIs created: %1"
@@ -402,41 +404,43 @@ msgstr "CIs creados: %1, CIs actualizados: %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "No class name defined for ci %1 (%2)"
-msgstr ""
+msgstr "No está definido el nombre de la clase para el ci %1 (%2)"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Related CI not found: %1"
-msgstr ""
+msgstr "CI relacionado no encontrado: %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Missing param method"
-msgstr ""
+msgstr "Falta el parámetro método"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Method '%1' not found in class '%2'"
-msgstr ""
+msgstr "Método '%1' no encontrado en la clase %2"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Method '%1' found in class '%2'"
-msgstr ""
+msgstr "Método '%1' no encontrado en la clase '%2'"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "Method '%1' not found in mid or class '%2'"
-msgstr ""
+msgstr "Método '%1' no encontrado en el mid o clase '%2'"
 
 #: lib/Baseliner/Controller/Calendar.pm
 msgid "Missing calendar field(s)"
-msgstr ""
+msgstr "Faltan campo(s) del calendario"
 
 #: lib/Baseliner/Controller/Calendar.pm
 msgid ""
 "Fieldlet `%1` not in the database for any of the selected topic categories. "
 "Removed or misspelled?"
 msgstr ""
+"El campo `%1` no está en base de datos para ninguna de las categorías de "
+"tópico seleccionadas. ¿Borrado o no se ha escrito correctamente?"
 
 #: lib/Baseliner/Controller/Core.pm
 msgid "Administrator"
-msgstr ""
+msgstr "Administrador"
 
 #: lib/Baseliner/Controller/Core.pm
 msgid "Admin"
@@ -453,7 +457,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Core.pm
 msgid "Registry"
-msgstr ""
+msgstr "Registro"
 
 #: lib/Baseliner/Controller/Core.pm root/site/explorer.js
 msgid "Reports"
@@ -461,15 +465,15 @@ msgstr "Informes"
 
 #: lib/Baseliner/Controller/Core.pm
 msgid "View Reports"
-msgstr ""
+msgstr "Ver Informes"
 
 #: lib/Baseliner/Controller/Core.pm
 msgid "View dynamics fields"
-msgstr ""
+msgstr "Ver campos dinámicos"
 
 #: lib/Baseliner/Controller/Core.pm
 msgid "Show dynamics fields"
-msgstr ""
+msgstr "Mostrar campos dinámicos"
 
 #: lib/Baseliner/Controller/Daemon.pm
 msgid "Daemon started"
@@ -505,23 +509,23 @@ msgstr "Error borrando Demonio"
 
 #: lib/Baseliner/Controller/Dashboard.pm
 msgid "No default rule found for user %1"
-msgstr ""
+msgstr "No existe una regla por defecto para el usuario %1"
 
 #: lib/Baseliner/Controller/Dashboard.pm
 msgid "No dashboard defined"
-msgstr ""
+msgstr "Dashboard no definido"
 
 #: lib/Baseliner/Controller/Dashboard.pm
 msgid "(Default)"
-msgstr ""
+msgstr "(Por defecto)"
 
 #: lib/Baseliner/Controller/Dashboard.pm
 msgid "Error listing jobs: %1 "
-msgstr ""
+msgstr "Error listando pases: %1"
 
 #: lib/Baseliner/Controller/Dashboard.pm
 msgid "Error listing last jobs: %1 "
-msgstr ""
+msgstr "Error listando los últimos pases: %1"
 
 #: lib/Baseliner/Controller/Dashboard.pm
 msgid "Other"
@@ -542,11 +546,11 @@ msgstr "Cambios diarios"
 
 #: lib/Baseliner/Controller/Doc.pm
 msgid "Missing content for topic with mid %1"
-msgstr ""
+msgstr "Falta el contenido para el tópico con mid %1"
 
 #: lib/Baseliner/Controller/Doc.pm
 msgid "Missing title for topic with mid %1"
-msgstr ""
+msgstr "Falta el título para el tópico con mid %1"
 
 #: lib/Baseliner/Controller/Doc.pm lib/Baseliner/Helper/Topic.pm
 #: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
@@ -583,12 +587,12 @@ msgstr "Versión"
 
 #: lib/Baseliner/Controller/Doc.pm
 msgid "Project %1 not found"
-msgstr ""
+msgstr "Proyecto %1 no encontrado"
 
 #: lib/Baseliner/Controller/Doc.pm lib/Baseliner/Controller/FileVersion.pm
 #: lib/Baseliner/Model/Topic.pm
 msgid "Topic mid not found: %1"
-msgstr ""
+msgstr "Mid de tópico no encontrado: %1"
 
 #: lib/Baseliner/Controller/Event.pm
 msgid "Events"
@@ -609,7 +613,7 @@ msgstr "Notificaciones"
 
 #: lib/Baseliner/Controller/Event.pm
 msgid "Event(s) deleted ok"
-msgstr ""
+msgstr "Evento(s) borrados correctamente"
 
 #: lib/Baseliner/Controller/Event.pm
 msgid "Event not found"
@@ -628,10 +632,11 @@ msgstr "No autorizado"
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"
 msgstr ""
+"Se requiere reiniciar el servidor. Use kill HUP $ENV{BASELINER_PARENT_PID}"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Server restart requested. Using bali-web restart"
-msgstr ""
+msgstr "Se requiere reiniciar el servidor. Use bali-web restart"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "File does not exist: %1"
@@ -651,11 +656,11 @@ msgstr "Error en la instalación: no se ha podido instalar la distribución: %1"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Error opening file %1: %2"
-msgstr ""
+msgstr "Error abriendo el fichero %1: %2"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Error opening file: %1"
-msgstr ""
+msgstr "Error abriendo el fichero %1"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "upgrade id: %1"
@@ -663,11 +668,11 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Missing branch"
-msgstr ""
+msgstr "Falta la rama"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "file: %1"
-msgstr ""
+msgstr "fichero: %1"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "remote setup: remote add %1 %2"
@@ -687,15 +692,15 @@ msgstr "Fetching del remoto %1 en la rama %2"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Error: %1"
-msgstr ""
+msgstr "Error: %1"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Feature %1 not found"
-msgstr ""
+msgstr "Feature %1 no encontrada"
 
 #: lib/Baseliner/Controller/Feature.pm
 msgid "Invalid feature %1 directory: %2"
-msgstr ""
+msgstr "Directorio de la feature %1 inválido: %2"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "File already exists"
@@ -711,7 +716,7 @@ msgstr "Carpeta movida"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Missing file id"
-msgstr ""
+msgstr "Falta el id del fichero"
 
 #: lib/Baseliner/Controller/FileVersion.pm root/comp/rules.js
 msgid "Remove from folder"
@@ -723,7 +728,7 @@ msgstr "La longitud del nombre de carpeta no puede ser mayor que %1"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Project not found"
-msgstr ""
+msgstr "Projecto no encontrado"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Folder added"
@@ -753,7 +758,7 @@ msgstr "Tópicos"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Doc"
-msgstr ""
+msgstr "Doc"
 
 #: lib/Baseliner/Controller/FileVersion.pm root/site/explorer.js
 #: root/site/kanban.js
@@ -790,25 +795,23 @@ msgstr "Fichero movido"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Missing %1"
-msgstr ""
+msgstr "Falta %1"
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Source topic #%1 does not exist or is not in this folder anymore"
 msgstr "Tópico Fuente #%1 no existe o no está en esta carpeta nunca más"
 
-# #-#-#-#-#  es.po  #-#-#-#-#
-# features/gitscm/lib/BaselinerX/Controller/GitSmart.pm (30)
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "File %1 does not exist"
 msgstr "Fichero %1 no existe"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "Invalid or unauthorized git repository path %1"
-msgstr "Ruta del repositorio git %1 inválida o no autorizada"
+msgstr "La ruta del repositorio git %1 inválida o no autorizada"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "Project `%1` not found"
-msgstr ""
+msgstr "Proyecto `%1` no encontrado"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "User: %1 does not have access to the project %2"
@@ -816,11 +819,11 @@ msgstr "El usuario: %1 no tiene acceso al proyecto %2"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "Repository `%1` not found for project `%2`"
-msgstr ""
+msgstr "El repositorio `%1` no encontrado para el proyecto `%2`"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "Cannot update internal tag %1"
-msgstr ""
+msgstr "No se puede actualizar la etiqueta interna %1"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "Authentication failed for user '%1': %2"
@@ -828,11 +831,11 @@ msgstr "Fallo de autenticación para el usuario '%1': %2"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "CLARIVE: %1: %2"
-msgstr ""
+msgstr "CLARIVE: %1: %2"
 
 #: lib/Baseliner/Controller/GitSmart.pm
 msgid "Git error: %1 %2 (user=%3)"
-msgstr ""
+msgstr "Error de git: %1 %2 (usuario=%3)"
 
 # features/gitscm/lib/BaselinerX/Controller/GitTree.pm (21)
 #: lib/Baseliner/Controller/GitTree.pm
@@ -850,18 +853,16 @@ msgstr "revisiones"
 
 #: lib/Baseliner/Controller/GitTree.pm
 msgid "(and %1 more...)"
-msgstr ""
+msgstr "(y %1 mas...)"
 
 #: lib/Baseliner/Controller/GitTree.pm lib/BaselinerX/GitServices.pm
 msgid "Adding namespace %1 to job"
-msgstr ""
+msgstr "Añadiendo espacio de nombres %1 al pase"
 
 #: lib/Baseliner/Controller/GitTree.pm lib/BaselinerX/GitServices.pm
 msgid "Could not find revision \"%1\""
-msgstr ""
+msgstr "No se puede encontrar la revisión \"%1\""
 
-# #-#-#-#-#  es.po  #-#-#-#-#
-# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (175)
 #: lib/Baseliner/Controller/GitTree.pm lib/Baseliner/Controller/Topic.pm
 #: lib/BaselinerX/Service/CreateJob.pm
 msgid "Job %1 created ok"
@@ -959,7 +960,7 @@ msgstr "Pase %1 marcha atrás programada"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Job %1 does not need rollback"
-msgstr ""
+msgstr "Pase %1 no necesita marcha atrás"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Unverified"
@@ -1023,7 +1024,7 @@ msgstr "Error reanudando el pase: %1"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Error grouping jobs: %1"
-msgstr ""
+msgstr "Error agrupando los jobs: %1"
 
 #: lib/Baseliner/Controller/Log.pm
 msgid "The log does not exist"
@@ -1708,15 +1709,15 @@ msgstr "Crear"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Invalid report data for report %1"
-msgstr ""
+msgstr "Datos del informe %1 no válidos"
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "Prueba"
-msgstr ""
+msgid "Test"
+msgstr "Prueba"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Template not found: %1 (%2)"
-msgstr ""
+msgstr "Plantilla no encontrada: %1 (%2)"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Topic #%1 not found. Deleted?"
@@ -1739,8 +1740,8 @@ msgid "User %1 is not allowed to access topic %2 contents"
 msgstr "El usuario %1 no puede acceder al contenido del tópico %2"
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "No initial state found "
-msgstr ""
+msgid "No initial state found"
+msgstr "Estado inicial no encontrado"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Problem found opening topic %1. The error message is: %2"
@@ -1753,8 +1754,8 @@ msgid "Topic not found"
 msgstr "Tópico no encontrado"
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "It seems that the user %1 does not already exist in Clarive"
-msgstr ""
+msgid "The user %1 does not exist in Clarive"
+msgstr "El usuario %1 no existe en Clarive"
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Messaging.pm
 msgid "Missing id"
@@ -1774,7 +1775,7 @@ msgstr "El comentario ya no existe"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Comment modified"
-msgstr ""
+msgstr "Comentario modificado"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Error adding Comment: %1"
@@ -1794,7 +1795,7 @@ msgstr "Error borrando el comentario: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "You're not the owner (%1) of the comment."
-msgstr ""
+msgstr "No eres el propietario (%1) del comentario"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Error viewing comment: %1"
@@ -1806,7 +1807,7 @@ msgstr "Etiquetas asignadas"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Topic not found: %1"
-msgstr ""
+msgstr "Tópico no encontrado: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Error assigning Labels: %1"
@@ -1826,15 +1827,15 @@ msgstr "Error borrando etiqueta: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "No metadata found for this topic (%1)"
-msgstr ""
+msgstr "Metadatos no encontrados para este tópico (%1)"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "No project field found for this topic (%1)"
-msgstr ""
+msgstr "Campo de tipo proyecto no encontrado para este tópcio (%1)"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Project not found: %1"
-msgstr ""
+msgstr "Proyecto no encontrado: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Project added to field '%1'"
@@ -1909,7 +1910,7 @@ msgstr "Error borrando vistas"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Status not found: %1"
-msgstr ""
+msgstr "Estado no encontrado: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "The file you want to upload do not have extension"
@@ -1921,7 +1922,7 @@ msgstr "El fichero tiene un formato no permitido: %1"
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
 msgid "topic mid required"
-msgstr "Es necesario el mid del tópico"
+msgstr "mid del topico requerido"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Deleted files from topic %1"
@@ -1930,10 +1931,13 @@ msgstr "Ficheros eliminados del tópico %1"
 #: lib/Baseliner/Controller/Topic.pm
 msgid "More than one asset found for topic %1 matching name `%2`"
 msgstr ""
+"Más de un adjunto encontrado para el tópico %1 coincidiendo con el nombre `"
+"%2`"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "No asset found for topic %1 matching name `%2`"
 msgstr ""
+"No se ha encontrado adjunto para el tópico %1 que coincida con el nombre `%2`"
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/CI/ssh_agent.pm
 msgid "File %1 not found"
@@ -1945,19 +1949,19 @@ msgstr "El usuario %1 ha creado el pase %2 para %3 bl"
 
 #: lib/Baseliner/Controller/Topic.pm root/site/kanban.js
 msgid "No topics available"
-msgstr ""
+msgstr "No hay tópicos disponibles"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "No categories found for topics"
-msgstr ""
+msgstr "Categorías no encontradas para los tópicos"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "No category status found for topics"
-msgstr ""
+msgstr "Estado de la categoría no encontrado para los tópicos"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Error rendering kanban: %1"
-msgstr ""
+msgstr "Error cargando el kanban: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Changed status"
@@ -1970,7 +1974,7 @@ msgstr "El campo %1 es obligatorio"
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
 #: lib/BaselinerX/Service/TopicServices.pm root/comp/lifecycle/deploy.js
 msgid "Missing mid"
-msgstr ""
+msgstr "Falta mid"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "User %1 does not have permission to drop into field %2"
@@ -1992,7 +1996,7 @@ msgstr "No hay campos disponibles para relacionar en tópicos %1 o %2"
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Error adding topic #%1 to #%2: %3"
-msgstr ""
+msgstr "Error añadiendo el tópico #%1 a #%2: %3"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "Admin Topics"
@@ -2082,7 +2086,7 @@ msgstr "Categorías de administrador"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm lib/Baseliner/Model/Topic.pm
 msgid "Category %1 not found"
-msgstr ""
+msgstr "Categoría %1 no encontrada"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "System fields"
@@ -2098,7 +2102,7 @@ msgstr "Lista de datos"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "Custom forms"
-msgstr ""
+msgstr "Formularios customizados"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "Templates"
@@ -2195,7 +2199,7 @@ msgstr "Tema"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "User Admin"
-msgstr ""
+msgstr "Administración de Usuarios"
 
 #: lib/Baseliner/Controller/User.pm root/comp/role_detail.js
 #: root/comp/user_grid.js root/fields/templates/config/listbox.js
@@ -2236,7 +2240,7 @@ msgstr "Usuario modificado"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Could not find ci for user %1"
-msgstr ""
+msgstr "No se ha encontrado ningún ci para el usuario %1"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Error modifying User: %1"
@@ -2268,11 +2272,11 @@ msgstr "Error cambiando la contraseña %1"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Default dashboard changed"
-msgstr ""
+msgstr "Dashboard por defecto cambiado"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Error changing default dashboard %1"
-msgstr ""
+msgstr "Error cambiando el dashboard por defecto %1"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Cannot change avatar for user %1: user %2 not administrator"
@@ -2298,11 +2302,11 @@ msgstr "Error duplicando usuario"
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Error: File not found"
-msgstr ""
+msgstr "Error: Fichero no encontrado"
 
 #: lib/Baseliner/Controller/User.pm
-msgid "country info success"
-msgstr ""
+msgid "Country info success"
+msgstr "Información del país correcta"
 
 #: lib/Baseliner/Core/Baseline.pm
 msgid "Config global baselines"
@@ -2340,15 +2344,15 @@ msgstr ""
 
 #: lib/Baseliner/Model/CI.pm
 msgid "Missing parameter: collection"
-msgstr ""
+msgstr "Falta parámetro: colección"
 
 #: lib/Baseliner/Model/CI.pm
 msgid "User not found for query %1"
-msgstr ""
+msgstr "Usuario no encontrado para la consulta: %1"
 
 #: lib/Baseliner/Model/CI.pm
 msgid "Update user ok"
-msgstr ""
+msgstr "Usuario actualizado correctamente"
 
 #: lib/Baseliner/Model/Events.pm
 msgid "Event daemon starting with frequency %1, timeout %2"
@@ -2449,7 +2453,7 @@ msgstr "Email error. Contenido del email: <pre>%1</pre>"
 
 #: lib/Baseliner/Model/Messaging.pm
 msgid "Error in message mason template %1: %2"
-msgstr ""
+msgstr "Error del mensaje en el template mason %1: %2"
 
 #: lib/Baseliner/Model/Messaging.pm root/comp/topic/topic_lib_grid.js
 msgid "internal"
@@ -2460,12 +2464,16 @@ msgid "Error reading recipients: %1"
 msgstr "Error leyendo los destinatarios: %1"
 
 #: lib/Baseliner/Model/Notification.pm
-msgid "Could not find template for $event_key"
-msgstr ""
+msgid "template for %1: %2"
+msgstr "plantilla para %1: %2"
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Could not find template for %1"
+msgstr "No se ha podido encontrar la plantilla para %1"
 
 #: lib/Baseliner/Model/Permissions.pm
 msgid "User %1 does not have permissions to action %2"
-msgstr ""
+msgstr "El usuario %1 no tiene permisos para la acción %2"
 
 #: lib/Baseliner/Model/Permissions.pm
 msgid "No action or username specified"
@@ -2620,6 +2628,8 @@ msgstr "El proceso $pid no existe"
 #: lib/Baseliner/Model/Scheduler.pm
 msgid "Could not find rule or service for scheduler task run `%1` (%2)"
 msgstr ""
+"No se ha podido encontrar la regla o el servicio para lanzar la tarea "
+"planificada `%1` (%2)"
 
 #: lib/Baseliner/Model/SystemMessages.pm
 msgid "New System Message"
@@ -2635,28 +2645,28 @@ msgstr "Mensaje de Sistema Borrado"
 
 #: lib/Baseliner/Model/SystemMessages.pm
 msgid "Missing message title"
-msgstr ""
+msgstr "Falta el título del mensaje"
 
 #: lib/Baseliner/Model/SystemMessages.pm
 msgid "Missing message text"
-msgstr ""
+msgstr "Falta el texto del mensaje"
 
 #: lib/Baseliner/Model/SystemMessages.pm
 #: lib/BaselinerX/Service/SystemMessages.pm
 msgid "System message %1 created"
-msgstr ""
+msgstr "Mensaje del sistema %1 creado"
 
 #: lib/Baseliner/Model/SystemMessages.pm
 msgid "System message %1 canceled"
-msgstr ""
+msgstr "Mensaje del sistema %1 cancelado"
 
 #: lib/Baseliner/Model/SystemMessages.pm
-msgid "System message %1 remove"
-msgstr ""
+msgid "System message %1 removed"
+msgstr "Mensaje del sistema %1 borrado"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Search topics"
-msgstr ""
+msgstr "Búsqueda de tópicos"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 posted a comment: %3"
@@ -2668,7 +2678,7 @@ msgstr "El usuario añadió un comentario"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 edited a comment: %3"
-msgstr ""
+msgstr "%1 editó un comentario: %3"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User edited a comment"
@@ -2692,7 +2702,7 @@ msgstr "El Usuario nombró a otro usuario en el comentario"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 posted a file: %3"
-msgstr ""
+msgstr "%1 subió un fichero: %3"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User created a file"
@@ -2700,7 +2710,7 @@ msgstr "El Usuario creó un fichero"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 attached %2"
-msgstr ""
+msgstr "%1 adjuntó %2"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User attached a file"
@@ -2708,7 +2718,7 @@ msgstr "El Usuario adjuntó un fichero"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 removed %2"
-msgstr ""
+msgstr "%1 borró %2"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User removed a file"
@@ -2716,7 +2726,7 @@ msgstr "El usuario borró un fichero"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 modify labels"
-msgstr ""
+msgstr "%1 modificó las etiquetas"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User modified labels"
@@ -2724,7 +2734,7 @@ msgstr "El Usuario modificó etiquetas"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 remove labels"
-msgstr ""
+msgstr "%1 etiquetas borradas"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User removed labels"
@@ -2740,7 +2750,7 @@ msgstr "El usario creó un tópico"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 deleted a topic of %2"
-msgstr ""
+msgstr "%1 borró un tópico de %2"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User deleted a topic"
@@ -2776,7 +2786,7 @@ msgstr "Estado del tópico cambiado"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 exported topic list"
-msgstr ""
+msgstr "%1 ha exportado la lista de tópicos"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Topic list exported"
@@ -2812,11 +2822,11 @@ msgstr "Tópico borrado"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Topic deleted: %1 #%2 %3"
-msgstr ""
+msgstr "Tópico borrado: %1 #%2 %3"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Error deleting Topic %1: %2"
-msgstr ""
+msgstr "Error borrando el Tópico %1: %2"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Topic closed"
@@ -2828,21 +2838,23 @@ msgstr "Error cerrando tópico: %1"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User does not have a workflow for category `%1`"
-msgstr ""
+msgstr "El usuario no tiene ciclo de vida para la categoría `%1`"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Category id `%1` not found"
-msgstr ""
+msgstr "Id de categoría `%1` no encontrado"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Category not found: %1"
-msgstr ""
+msgstr "Categoría no encontrada: %1"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid ""
 "Topic category has no form rule associated with it. Please contact your "
 "administrator."
 msgstr ""
+"La categoría de tópicos no tiene formulario de regla asociado. Por favor, "
+"contacte con su administrador"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Category %1 does not have an associated form"
@@ -4020,11 +4032,11 @@ msgstr "El pase %1 sólo puede ser replanificado en estado %2 (actual: %3)"
 
 #: lib/BaselinerX/CI/job.pm root/comp/monitor_grid.js
 msgid "READY"
-msgstr "Esperando Inicio"
+msgstr "ESPERANDO INICIO"
 
 #: lib/BaselinerX/CI/job.pm root/comp/monitor_grid.js
 msgid "APPROVAL"
-msgstr "Pendiente Aprobación"
+msgstr "PENDIENTE APROBACIÓN"
 
 #: lib/BaselinerX/CI/job.pm
 msgid "Job %1 rescheduled by user %2 from `%3` to `%4`"
@@ -7322,14 +7334,14 @@ msgstr "Activar"
 msgid "Success"
 msgstr "Éxito"
 
-#: root/comp/daemon_grid.js root/comp/notifications.js
-#: root/comp/scheduler_grid.js root/comp/sequences.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/js/list_tasks.js root/site/common.js
-#: root/site/explorer.js
+#: root/comp/daemon_grid.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/scheduler_grid.js
+#: root/comp/sequences.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
+#: root/comp/user_grid.js root/fields/system/js/list_tasks.js
+#: root/site/common.js root/site/explorer.js
 msgid "ERROR"
-msgstr "Error"
+msgstr "ERROR"
 
 #: root/comp/daemon_grid.js root/comp/scheduler_grid.js root/comp/sem.js
 #: root/site/common.js
@@ -7939,7 +7951,7 @@ msgstr ""
 
 #: root/comp/job_new.js root/comp/job_new_comp.js
 msgid "Could not reload calendar"
-msgstr ""
+msgstr "No es posible recargar el calendario"
 
 #: root/comp/job_new.js
 msgid "No calendar windows available for selected date"
@@ -7985,7 +7997,7 @@ msgstr ""
 "¿Quieres añadir todos los cambios agrupados que están en el mismo estado de "
 "todos los proyectos?"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid ""
 "En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
 "campo observaciones"
@@ -8011,7 +8023,7 @@ msgstr "Error Desconocido"
 msgid "Connection Error"
 msgstr "Error de Conexión"
 
-#: root/comp/job_new.js root/comp/log_grid.js
+#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/log_grid.js
 msgid "Form Error"
 msgstr "Error en el Formulario"
 
@@ -8084,13 +8096,54 @@ msgstr "Entorno Destino"
 msgid "Origin Baseline"
 msgstr "Entorno Origen"
 
-#: root/comp/job_new_comp.js root/fields/system/js/list_tasks.js
-msgid "Franja horaria"
-msgstr ""
+#: root/comp/job_new_comp.js
+msgid "Custom Window"
+msgstr "Ventana Personalizada"
 
 #: root/comp/job_new_comp.js
-msgid "Hora de pase Caducada"
+msgid "Check for job out of window"
+msgstr "Chequee si quiere crear un pase fuera de ventana"
+
+#: root/comp/job_new_comp.js root/site/prefs.js
+msgid "Timezone"
+msgstr "Zona Horaria"
+
+#: root/comp/job_new_comp.js
+msgid "Loading dates..."
+msgstr "Cargando fechas..."
+
+#: root/comp/job_new_comp.js
+msgid "Without Dates"
+msgstr "Sin Fechas"
+
+#: root/comp/job_new_comp.js
+msgid ""
+"There are no allowed dates for the job. Please, select customized window"
 msgstr ""
+"No hay fechas disponibles para el pase. Seleccione una ventana personalizada"
+
+#: root/comp/job_new_comp.js
+msgid "Calendar Errors"
+msgstr "Errores en Calendario"
+
+#: root/comp/job_new_comp.js
+msgid ""
+"There are no allowed windows for the job. Searching returns an exception: %1"
+msgstr ""
+"No hay calendarios disponibles para el pase. La busqueda ha devuelto una "
+"excepcion: %1"
+
+#: root/comp/job_new_comp.js
+msgid "Timeout error ocurred"
+msgstr "Se ha producido un error de timeout"
+
+#: root/comp/job_new_comp.js
+msgid "Updating times..."
+msgstr "Actualizando horas..."
+
+#: root/comp/job_new_comp.js
+msgid "Job time expired"
+msgstr "Hora de pase caducada"
 
 #: root/comp/job_new_comp.js
 msgid "Time off range %1"
@@ -8098,13 +8151,15 @@ msgstr "Hora fuera de rango %1"
 
 #: root/comp/job_new_comp.js
 msgid ""
+"Job is out of window. Check 'Custom window' if you want a job out of allowed "
+"windows"
+msgstr ""
 "Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase "
 "fuera de las ventanas permitidas"
-msgstr ""
 
 #: root/comp/job_new_comp.js
-msgid "Formato de Hora inválido (00:00-23:59)"
-msgstr ""
+msgid "Invalid time format (00:00-23:59)"
+msgstr "Formato de hora no válido (00:00-23:59)"
 
 #: root/comp/job_new_comp.js
 msgid "Item Type"
@@ -8120,6 +8175,14 @@ msgstr ""
 "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
 #: root/comp/job_new_comp.js
+msgid ""
+"For the jobs outside of window it is required to add a reason to the comment "
+"field"
+msgstr ""
+"En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
+"campo observaciones"
+
+#: root/comp/job_new_comp.js
 msgid "Job Options"
 msgstr "Opciones del Pase"
 
@@ -8127,6 +8190,10 @@ msgstr "Opciones del Pase"
 #: root/comp/topic/topic_admin.js root/forms/create_job.js
 msgid "Job Type"
 msgstr "Tipo de Pase"
+
+#: root/comp/job_new_comp.js
+msgid "Your user does not have permission to create any job in any environment"
+msgstr "Tu usuario no tiene permisos para crear job en ningún entorno"
 
 #: root/comp/job_stash.js
 msgid "Stash Log"
@@ -8647,7 +8714,7 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "(no data)"
-msgstr ""
+msgstr "(no datos)"
 
 #: root/comp/monitor_grid.js
 msgid "Tools"
@@ -8671,7 +8738,7 @@ msgstr "Seleccione una fila"
 
 #: root/comp/monitor_grid.js
 msgid "Are you sure you want to rollback the job?"
-msgstr ""
+msgstr "¿Estás seguro de que quieres hacer rollback del pase?"
 
 #: root/comp/monitor_grid.js root/comp/rules.js
 msgid "Rollback"
@@ -8758,12 +8825,76 @@ msgid "Could not rerun the job: %1"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "Are you sure you want to rerun the job"
-msgstr "¿Seguro que quiere reiniciar el pase"
+msgid "REJECTED"
+msgstr "RECHAZADO"
 
 #: root/comp/monitor_grid.js
-msgid "Could not rerun the job."
-msgstr ""
+msgid "CANCELLED"
+msgstr "CANCELADO"
+
+#: root/comp/monitor_grid.js
+msgid "TRAPPED"
+msgstr "CAPTURADO"
+
+#: root/comp/monitor_grid.js
+msgid "TRAPPED_PAUSED"
+msgstr "CAPTURADO EN PAUSA"
+
+#: root/comp/monitor_grid.js
+msgid "RUNNING"
+msgstr "EN EJECUCIÓN"
+
+#: root/comp/monitor_grid.js
+msgid "FINISHED"
+msgstr "FINALIZADO"
+
+#: root/comp/monitor_grid.js
+msgid "KILLED"
+msgstr "ABORTADO"
+
+#: root/comp/monitor_grid.js
+msgid "IN-EDIT"
+msgstr "EN EDICIÓN"
+
+#: root/comp/monitor_grid.js
+msgid "WAITING"
+msgstr "ESPERANDO"
+
+#: root/comp/monitor_grid.js
+msgid "SUSPENDED"
+msgstr "SUSPENDIDO"
+
+#: root/comp/monitor_grid.js
+msgid "RESUME"
+msgstr "REINICIADO"
+
+#: root/comp/monitor_grid.js
+msgid "PAUSED"
+msgstr "RETENIDO"
+
+#: root/comp/monitor_grid.js root/comp/rules.js
+msgid "ROLLBACK"
+msgstr "MARCHA ATRÁS"
+
+#: root/comp/monitor_grid.js
+msgid "ROLLBACKFAIL"
+msgstr "ERROR MARCHA ATRÁS"
+
+#: root/comp/monitor_grid.js
+msgid "ROLLEDBACK"
+msgstr "MARCHA ATRÁS OK"
+
+#: root/comp/monitor_grid.js root/fields/system/js/list_tasks.js
+msgid "PENDING"
+msgstr "PENDIENTE"
+
+#: root/comp/monitor_grid.js
+msgid "SUPERSEDED"
+msgstr "SOBRESEÍDO"
+
+#: root/comp/monitor_grid.js
+msgid "EXPIRED"
+msgstr "CADUCADO"
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
 msgid "Before"
@@ -9191,8 +9322,8 @@ msgid "Icon"
 msgstr "Icono"
 
 #: root/comp/revision/grid_live.mas
-msgid "Pendiente de Aprobación"
-msgstr ""
+msgid "Pending Approval"
+msgstr "Pendiente de Aprobación"
 
 #: root/comp/revision/grid_live.mas
 msgid "Packages"
@@ -9783,10 +9914,6 @@ msgstr "DSL: %1"
 #: root/comp/rules.js
 msgid "NO ROLLBACK"
 msgstr "NO MARCHA ATRÁS"
-
-#: root/comp/rules.js
-msgid "ROLLBACK"
-msgstr "Marcha Atrás"
 
 #: root/comp/rules.js
 msgid "NO RUN"
@@ -11842,10 +11969,6 @@ msgstr ""
 msgid "Create tasks"
 msgstr "Crear tareas"
 
-#: root/fields/system/js/list_tasks.js
-msgid "PENDING"
-msgstr "Pendiente"
-
 #: root/fields/system/js/list_topics.js
 msgid ""
 "You are about to replace the contents of the following fields: \\n - %1\\n"
@@ -13762,10 +13885,6 @@ msgid "Time Format"
 msgstr "Formato de Hora"
 
 #: root/site/prefs.js
-msgid "Timezone"
-msgstr "Zona Horaria"
-
-#: root/site/prefs.js
 msgid "Server Timezone (%1)"
 msgstr "Zona Horaria Servidor"
 
@@ -13931,7 +14050,7 @@ msgstr ""
 
 #: root/site/tabfu.js
 msgid "Server Timeout. Check connection"
-msgstr ""
+msgstr "Timeout del Servidor. Compruebe su conexión"
 
 #: root/site/tabfu.js
 msgid "Params"
@@ -13986,10 +14105,6 @@ msgid "Submit"
 msgstr "Enviar"
 
 #: root/site/tabfu.js
-msgid "Server communication failure. Check your connection.<br>%1"
-msgstr ""
-
-#: root/site/tabfu.js
 msgid "Error Rendering Component"
 msgstr "Error del componente de prestaciones"
 
@@ -14013,14 +14128,14 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
-#~ msgid "CI Mandatory"
-#~ msgstr "CI Obligatorio"
+#~ msgid "Are you sure you want to rerun the job"
+#~ msgstr "¿Seguro que quiere reiniciar el pase"
 
-#~ msgid "Missing or invalid parameter topic_mid"
-#~ msgstr "Falta o parámetro inválido topic_mid"
+#~ msgid "Could not rerun the job."
+#~ msgstr "No se puede devolver el pase"
 
-#~ msgid "Detached files from topic %1"
-#~ msgstr "Fichero desligado del tópico %1"
+#~ msgid "About "
+#~ msgstr "Acerca de "
 
 #~ msgid "Detached file %1 from #%2 %3"
 #~ msgstr "Fichero %1 desligado del tópico #%2 %3"
@@ -14029,7 +14144,16 @@ msgstr "destino"
 #~ msgstr "Borrando fichero %1 del tópico %2"
 
 #~ msgid "File not attached to topic"
-#~ msgstr "Fichero no adjunto al tópico"
+#~ msgstr "Fichero no adjuntado al tópico"
+
+#~ msgid "CI Mandatory"
+#~ msgstr "CI Obligatorio"
+
+#~ msgid "Missing or invalid parameter topic_mid"
+#~ msgstr "Falta o parámetro inválido topic_mid"
+
+#~ msgid "Detached files from topic %1"
+#~ msgstr "Fichero desligado del tópico %1"
 
 #~ msgid "Error detaching file from topic %1. Error: %2"
 #~ msgstr "Error desligando el fichero del tópico %1. Error: %2"
@@ -14323,9 +14447,6 @@ msgstr "destino"
 #~ msgstr ""
 #~ "¿Seguro que quiere realizar de nuevo la solicitud '%1' para el elemento "
 #~ "'%2'?"
-
-#~ msgid "Pending Approval"
-#~ msgstr "Pendiente de Aprobación"
 
 #~ msgid "Request is already in a %1 state"
 #~ msgstr "Solicitud está en el estado %1"
@@ -14621,62 +14742,14 @@ msgstr "destino"
 #~ msgid "IN EDIT"
 #~ msgstr "En Edición"
 
-#~ msgid "IN-EDIT"
-#~ msgstr "En Edición"
-
-#~ msgid "EXPIRED"
-#~ msgstr "Caducado"
-
-#~ msgid "KILLED"
-#~ msgstr "Abortado"
-
-#~ msgid "RUNNING"
-#~ msgstr "En Ejecución"
-
-#~ msgid "FINISHED"
-#~ msgstr "Finalizado"
-
-#~ msgid "REJECTED"
-#~ msgstr "Rechazado"
-
-#~ msgid "CANCELLED"
-#~ msgstr "Cancelado"
-
-#~ msgid "TRAPPED"
-#~ msgstr "Capturado"
-
-#~ msgid "TRAPPED_PAUSED"
-#~ msgstr "Capturado en pausa"
-
 #~ msgid "SKIPPING"
 #~ msgstr "Ignorando"
 
 #~ msgid "RETRYING"
 #~ msgstr "Reintentando"
 
-#~ msgid "PAUSED"
-#~ msgstr "Retenido"
-
-#~ msgid "RESUME"
-#~ msgstr "Reiniciado"
-
-#~ msgid "SUSPENDED"
-#~ msgstr "Suspendido"
-
-#~ msgid "WAITING"
-#~ msgstr "Esperando"
-
 #~ msgid "DONE"
 #~ msgstr "Finalizado"
-
-#~ msgid "ROLLBACKFAIL"
-#~ msgstr "Error en Marcha Atrás"
-
-#~ msgid "ROLLEDBACK"
-#~ msgstr "Marcha Atrás OK"
-
-#~ msgid "SUPERSEDED"
-#~ msgstr "Sobreseído"
 
 #~ msgid "started"
 #~ msgstr "iniciado"

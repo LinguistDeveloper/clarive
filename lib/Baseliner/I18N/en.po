@@ -1696,8 +1696,8 @@ msgid "Invalid report data for report %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "Prueba"
-msgstr "Test"
+msgid "Test"
+msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Template not found: %1 (%2)"
@@ -1722,7 +1722,7 @@ msgid "User %1 is not allowed to access topic %2 contents"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "No initial state found "
+msgid "No initial state found"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
@@ -1734,7 +1734,7 @@ msgid "Topic not found"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "It seems that the user %1 does not already exist in Clarive"
+msgid "The user %1 does not exist in Clarive"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Messaging.pm
@@ -2275,7 +2275,7 @@ msgid "Error: File not found"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "country info success"
+msgid "Country info success"
 msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
@@ -2434,7 +2434,11 @@ msgid "Error reading recipients: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Notification.pm
-msgid "Could not find template for $event_key"
+msgid "template for %1: %2"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Could not find template for %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Permissions.pm
@@ -2623,7 +2627,7 @@ msgid "System message %1 canceled"
 msgstr ""
 
 #: lib/Baseliner/Model/SystemMessages.pm
-msgid "System message %1 remove"
+msgid "System message %1 removed"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3974,11 +3978,11 @@ msgstr ""
 
 #: lib/BaselinerX/CI/job.pm root/comp/monitor_grid.js
 msgid "READY"
-msgstr "Ready"
+msgstr ""
 
 #: lib/BaselinerX/CI/job.pm root/comp/monitor_grid.js
 msgid "APPROVAL"
-msgstr "Waiting for Approval"
+msgstr ""
 
 #: lib/BaselinerX/CI/job.pm
 msgid "Job %1 rescheduled by user %2 from `%3` to `%4`"
@@ -7259,14 +7263,14 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: root/comp/daemon_grid.js root/comp/notifications.js
-#: root/comp/scheduler_grid.js root/comp/sequences.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/js/list_tasks.js root/site/common.js
-#: root/site/explorer.js
+#: root/comp/daemon_grid.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/scheduler_grid.js
+#: root/comp/sequences.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
+#: root/comp/user_grid.js root/fields/system/js/list_tasks.js
+#: root/site/common.js root/site/explorer.js
 msgid "ERROR"
-msgstr "Error"
+msgstr ""
 
 #: root/comp/daemon_grid.js root/comp/scheduler_grid.js root/comp/sem.js
 #: root/site/common.js
@@ -7893,7 +7897,7 @@ msgid ""
 "projects?"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid ""
 "En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
 "campo observaciones"
@@ -7919,7 +7923,7 @@ msgstr ""
 msgid "Connection Error"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/log_grid.js
+#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/log_grid.js
 msgid "Form Error"
 msgstr ""
 
@@ -7992,13 +7996,51 @@ msgstr "To Environment"
 msgid "Origin Baseline"
 msgstr "From Environment"
 
-#: root/comp/job_new_comp.js root/fields/system/js/list_tasks.js
-msgid "Franja horaria"
-msgstr "Times"
+#: root/comp/job_new_comp.js
+msgid "Custom Window"
+msgstr ""
 
 #: root/comp/job_new_comp.js
-msgid "Hora de pase Caducada"
-msgstr "Job time expires"
+msgid "Check for job out of window"
+msgstr ""
+
+#: root/comp/job_new_comp.js root/site/prefs.js
+msgid "Timezone"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Loading dates..."
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Without Dates"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid ""
+"There are no allowed dates for the job. Please, select customized window"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Calendar Errors"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid ""
+"There are no allowed windows for the job. Searching returns an exception: %1"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Timeout error ocurred"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Updating times..."
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Job time expired"
+msgstr ""
 
 #: root/comp/job_new_comp.js
 msgid "Time off range %1"
@@ -8006,14 +8048,12 @@ msgstr ""
 
 #: root/comp/job_new_comp.js
 msgid ""
-"Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase "
-"fuera de las ventanas permitidas"
+"Job is out of window. Check 'Custom window' if you want a job out of allowed "
+"windows"
 msgstr ""
-"Job out of window. Select 'Custom window' if you want a job out of the "
-"allowed windows"
 
 #: root/comp/job_new_comp.js
-msgid "Formato de Hora inválido (00:00-23:59)"
+msgid "Invalid time format (00:00-23:59)"
 msgstr ""
 
 #: root/comp/job_new_comp.js
@@ -8030,12 +8070,22 @@ msgstr ""
 "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
 #: root/comp/job_new_comp.js
+msgid ""
+"For the jobs outside of window it is required to add a reason to the comment "
+"field"
+msgstr ""
+
+#: root/comp/job_new_comp.js
 msgid "Job Options"
 msgstr ""
 
 #: root/comp/job_new_comp.js root/comp/monitor_grid.js
 #: root/comp/topic/topic_admin.js root/forms/create_job.js
 msgid "Job Type"
+msgstr ""
+
+#: root/comp/job_new_comp.js
+msgid "Your user does not have permission to create any job in any environment"
 msgstr ""
 
 #: root/comp/job_stash.js
@@ -8661,11 +8711,75 @@ msgid "Could not rerun the job: %1"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "Are you sure you want to rerun the job"
+msgid "REJECTED"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "Could not rerun the job."
+msgid "CANCELLED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "TRAPPED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "TRAPPED_PAUSED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "RUNNING"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "FINISHED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "KILLED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "IN-EDIT"
+msgstr "IN EDIT"
+
+#: root/comp/monitor_grid.js
+msgid "WAITING"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "SUSPENDED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "RESUME"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "PAUSED"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/comp/rules.js
+msgid "ROLLBACK"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "ROLLBACKFAIL"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "ROLLEDBACK"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/fields/system/js/list_tasks.js
+msgid "PENDING"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "SUPERSEDED"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "EXPIRED"
 msgstr ""
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
@@ -9094,8 +9208,8 @@ msgid "Icon"
 msgstr ""
 
 #: root/comp/revision/grid_live.mas
-msgid "Pendiente de Aprobación"
-msgstr "Pending approval"
+msgid "Pending Approval"
+msgstr ""
 
 #: root/comp/revision/grid_live.mas
 msgid "Packages"
@@ -9684,10 +9798,6 @@ msgstr ""
 #: root/comp/rules.js
 msgid "NO ROLLBACK"
 msgstr ""
-
-#: root/comp/rules.js
-msgid "ROLLBACK"
-msgstr "Rollback"
 
 #: root/comp/rules.js
 msgid "NO RUN"
@@ -11725,10 +11835,6 @@ msgstr ""
 msgid "Create tasks"
 msgstr ""
 
-#: root/fields/system/js/list_tasks.js
-msgid "PENDING"
-msgstr ""
-
 #: root/fields/system/js/list_topics.js
 msgid ""
 "You are about to replace the contents of the following fields: \\n - %1\\n"
@@ -13636,10 +13742,6 @@ msgid "Time Format"
 msgstr ""
 
 #: root/site/prefs.js
-msgid "Timezone"
-msgstr ""
-
-#: root/site/prefs.js
 msgid "Server Timezone (%1)"
 msgstr ""
 
@@ -13856,10 +13958,6 @@ msgid "Submit"
 msgstr ""
 
 #: root/site/tabfu.js
-msgid "Server communication failure. Check your connection.<br>%1"
-msgstr ""
-
-#: root/site/tabfu.js
 msgid "Error Rendering Component"
 msgstr ""
 
@@ -13883,41 +13981,33 @@ msgstr ""
 msgid "to"
 msgstr ""
 
+#~ msgid "Prueba"
+#~ msgstr "Test"
+
+#~ msgid "Franja horaria"
+#~ msgstr "Times"
+
+#~ msgid "Hora de pase Caducada"
+#~ msgstr "Job time expires"
+
+#~ msgid ""
+#~ "Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un "
+#~ "pase fuera de las ventanas permitidas"
+#~ msgstr ""
+#~ "Job out of window. Select 'Custom window' if you want a job out of the "
+#~ "allowed windows"
+
+#~ msgid "Pendiente de Aprobación"
+#~ msgstr "Pending approval"
+
 #~ msgid "status_new"
 #~ msgstr "Status"
 
 #~ msgid "IN EDIT"
 #~ msgstr "In Edit"
 
-#~ msgid "IN-EDIT"
-#~ msgstr "In Edit"
-
-#~ msgid "EXPIRED"
-#~ msgstr "Expired"
-
-#~ msgid "KILLED"
-#~ msgstr "Abend"
-
-#~ msgid "RUNNING"
-#~ msgstr "Running"
-
-#~ msgid "FINISHED"
-#~ msgstr "Finished"
-
-#~ msgid "REJECTED"
-#~ msgstr "Rejected"
-
-#~ msgid "CANCELLED"
-#~ msgstr "Cancelled"
-
 #~ msgid "DONE"
 #~ msgstr "Finished"
-
-#~ msgid "TRAPPED"
-#~ msgstr "Trapped"
-
-#~ msgid "TRAPPED_PAUSED"
-#~ msgstr "Trap Paused"
 
 #~ msgid "cat"
 #~ msgstr "Catalan"

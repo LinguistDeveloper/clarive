@@ -55,7 +55,7 @@
 
     var filter_menu = new Ext.menu.Menu({
         items: [
-            { id: 'approval', text: _("Pendiente de Aprobación"),checked: filter_obj['info'] , checkHandler: filter_me }
+            { id: 'approval', text: _("Pending Approval"),checked: filter_obj['info'] , checkHandler: filter_me }
         ]
     });
 
@@ -103,18 +103,18 @@
                             store: store,
                             pageSize: ps,
                             displayInfo: true,
-                            displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
+                            displayMsg: _('Rows {0} - {1} of {2}'),
                             emptyMsg: "No hay registros disponibles"
-                    }),        
+                    }),
         tbar: [ _('Search')+': ', ' ',
             new Ext.app.SearchField({
                 store: store,
                 params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-                emptyText: '<% _loc('<Enter your search string>') %>'
+                emptyText: _('<Enter your search string>')
             }),
             { text: _("Views"), menu: filter_menu },
 <%doc>
-            { text: '<% _loc('Auto Refresh') %>',
+            { text: _('Auto Refresh'),
                 icon: '/static/images/icons/slot.svg', 
                 enableToggle: true,
                 pressed: false,
@@ -132,7 +132,7 @@
                 }
             },
             {
-                text: '<% _loc('Annotations') %>',
+                text: _('Annotations'),
                 icon: '/static/images/icons/post.svg',
                 cls: 'x-btn-text-icon',
                 handler: annotation
@@ -213,12 +213,12 @@
             new Ext.app.SearchField({
                 store: store_live,
                 params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-                emptyText: '<% _loc('<Enter your search string>') %>'
+                emptyText: _('<Enter your search string>')
             }),
             { text: _("Views"), menu: filter_menu },
 <%doc>
-            { text: '<% _loc('Auto Refresh') %>',
-                icon: '/static/images/icons/slot.svg', 
+            { text: _('Auto Refresh'),
+                icon: '/static/images/icons/slot.svg',
                 enableToggle: true,
                 pressed: false,
                 cls: 'x-btn-text-icon',
@@ -235,11 +235,11 @@
                 }
             },
             {
-                text: '<% _loc('Annotations') %>',
+                text: _('Annotations'),
                 icon: '/static/images/icons/post.svg',
                 cls: 'x-btn-text-icon',
                 handler: annotation
-            },
+            }, 
 </%doc>
             '->'
             ]
