@@ -14463,6 +14463,15 @@ msgstr ""
 #~ msgid "Se filtraran los paquetes por este campo"
 #~ msgstr "The packages are going to be filtered by this field"
 
+msgid "ci:env_template"
+msgstr "Environment Template"
+
+msgid "ci:inf_template"
+msgstr "Infrastructure Template"
+
+msgid "ci:job"
+msgstr "Job"
+
 #~ msgid ""
 #~ "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase "
 #~ "fuera de las ventanas permitidas"
