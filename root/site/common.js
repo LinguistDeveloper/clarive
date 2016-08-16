@@ -4489,7 +4489,12 @@ Ext.apply(Ext.form.VTypes, {
 
         return false;
     },
-    'jsonText': _('Invalid JSON')
+    'jsonText': _('Invalid JSON'),
+    'port': function(v) {
+        return /^\d+$/.test(v);
+    },
+    'portText': _('Invalid Port'),
+    'portMask': /^\d+$/
 });
 
 Ext.ux.form.XDateField = Ext.extend(Ext.form.DateField, {
