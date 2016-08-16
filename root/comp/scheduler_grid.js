@@ -77,7 +77,7 @@
                             Baseliner.message(_('SUCCESS'), _(response.msg));
                             store.load({
                                 params: {
-                                    limit: default_page_size
+                                    limit: paging.pageSize
                                 }
                             });
                         } else {
@@ -128,7 +128,7 @@
                         Baseliner.message(_('SUCCESS'), _('Scheduled task deleted'));
                         store.load({
                             params: {
-                                limit: default_page_size
+                                limit: paging.pageSize
                             }
                         });
                     } else {
@@ -151,7 +151,7 @@
                         Baseliner.message(_('SUCCESS'), _('Scheduled to run now'));
                         store.load({
                             params: {
-                                limit: default_page_size
+                                limit: paging.pageSize
                             }
                         });
                     } else {
@@ -179,7 +179,7 @@
                                 Baseliner.message(_('SUCCESS'), _('Task killed'));
                                 store.load({
                                     params: {
-                                        limit: default_page_size
+                                        limit: paging.pageSize
                                     }
                                 });
                             } else {
@@ -494,7 +494,7 @@
                     success: function(form, action) {
                         store.load({
                             params: {
-                                limit: default_page_size
+                                limit: paging.pageSize
                             }
                         });
                         ff.reset();

@@ -1,12 +1,12 @@
 (function(){
-    var ps = 9999999999;
-    var store=new Baseliner.JsonStore({
-        root: 'data' , 
+    var ps = 30;
+    var store = new Baseliner.JsonStore({
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/configlist/json',
-        fields: [ 
+        fields: [
             {  name: 'id' },
             {  name: 'ns' },
             {  name: 'bl' },
@@ -30,29 +30,6 @@
 
     <& /comp/search_field.mas &>
 
-    var view_change = function( item, checked ) {
-        var val = item.value;
-        if( val.length > 0 ) {
-            store.baseParams[val] = checked;
-        }
-        if( checked ) {
-            store.load({ params: { ps: ps, start: 0 }});
-        }
-        //store.baseParams = { 
-    };
-    var menu_view = new Ext.Toolbar.Button({
-        text: _('View'),
-        width: 60,
-        cls: 'x-btn-text-icon',
-        icon: '/static/images/icons/views.svg',
-        menu: [
-            { text: _('All'), value: '', checked: true, group: 'view', checkHandler: view_change },
-            { text: _('Original Values'), value: 'original', checked: false, group: 'view', checkHandler: view_change },
-            { text: _('Modified Values'), value: 'modified', checked: false, group: 'view', checkHandler: view_change }
-        ]
-    });
-    var ps = 99999999999; //page_size
-
     var ptool = new Baseliner.PagingToolbar({
         store: store,
         pageSize: ps,
@@ -69,6 +46,27 @@
         emptyText: _('<Enter your search string>')
     });
 
+    var view_change = function( item, checked ) {
+        var val = item.value;
+        if( val.length > 0 ) {
+            store.baseParams[val] = checked;
+        }
+        if( checked ) {
+            store.load({ params: { limit: ptool.pageSize, start: 0 }});
+        }
+    };
+    var menu_view = new Ext.Toolbar.Button({
+        text: _('View'),
+        width: 60,
+        cls: 'x-btn-text-icon',
+        icon: '/static/images/icons/views.svg',
+        menu: [
+            { text: _('All'), value: '', checked: true, group: 'view', checkHandler: view_change },
+            { text: _('Original Values'), value: 'original', checked: false, group: 'view', checkHandler: view_change },
+            { text: _('Modified Values'), value: 'modified', checked: false, group: 'view', checkHandler: view_change }
+        ]
+    });
+
     var grid = new Ext.grid.GridPanel({
         renderTo: 'main-panel',
         title: _('Config'),
@@ -83,25 +81,22 @@
         stripeRows: true,
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         columns: [
-            { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },	
+            { header: _('Key'), width: 150, dataIndex: 'key', sortable: true },
             { header: _('Name'), width: 100, dataIndex: 'config_label', sortable: true },
             { header: _('Value'), width: 250, dataIndex: 'value', sortable: true, renderer: Baseliner.columnWrap },
-            { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },	
-            { header: _('Scope'), width: 50, dataIndex: 'ns', sortable: true },	
+            { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
+            { header: _('Scope'), width: 50, dataIndex: 'ns', sortable: true },
             { header: _('Config'), width: 100, dataIndex: 'config_name', sortable: true },
             { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
             { header: _('Default Value'), width: 200, dataIndex: 'config_default', sortable: true, hidden:true },
             { header: _('Module'), width: 100, dataIndex: 'config_module', sortable: true, hidden:true },
             { header: _('ChangeStatus'), width: 100, dataIndex: 'status', sortable: true, hidden:true },
-            { header: _('Type'), width: 100, dataIndex: 'config_type', sortable: true, hidden:true }	
+            { header: _('Type'), width: 100, dataIndex: 'config_type', sortable: true, hidden:true }
         ],
         autoSizeColumns: true,
         deferredRender:true,
         bbar: ptool,
-        tbar: [ _('Search') + ': ', ' ', searchField,
-            //menu_view,
-             //'-',
-             ' ',' ',
+        tbar: [ _('Search') + ': ', ' ', searchField, ' ',' ',
             new Ext.Toolbar.Button({
                 text: _('Add'),
                 icon:'/static/images/icons/add.svg',
@@ -119,7 +114,7 @@
                         var rec = sm.getSelected();
                         edit_config(rec);
                     } else {
-                        Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');	
+                        Ext.Msg.alert('Error', 'Hay que seleccionar una fila.');
                     };
             }
             }),
@@ -128,18 +123,23 @@
                 icon:'/static/images/icons/delete.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
-                    var sm = grid.getSelectionModel();						
+                    var sm = grid.getSelectionModel();
                     var row = sm.getSelected();
-                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?', 
-                        function(btn){ 
+                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config entry') + ' ' + row.data.key + '?',
+                        function(btn){
                             if(btn=='yes') {
                                 var conn = new Ext.data.Connection();
                                 conn.request({
                                     url: '/configlist/delete',
                                     params: { id: row.data.id, key: row.data.key },
-                                    success: function(resp,opt) { grid.getStore().remove(row); },
-                                    failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the config key')); }
-                                });	
+                                    success: function(resp,opt) {
+                                        grid.getStore().remove(row);
+                                        grid.getStore().reload()
+                                    },
+                                    failure: function(resp,opt) {
+                                        Ext.Msg.alert(_('Error'), _('Could not delete the config key'));
+                                    }
+                                });
                             }
                         } );
                 }
@@ -204,24 +204,7 @@
         }]
 }),
 
-          //  new Ext.Toolbar.Button({
-          //      text: _('Export'),
-         //       icon:'/static/images/download.gif',
-         //       cls: 'x-btn-text-icon',
-         //       handler: function() {
-         //           Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
-         //               if( resp.success ) {
-          //                  Baseliner.message( _('Export'), resp.msg );
-          //              } else {
-          //                  Baseliner.message( _('Export') + " " + _('Error'), "resp.msg" );
-          //              }
-         //           });
-          //      }
-         //   }),
-           // new Baseliner.button.CSVExport(),
-            //' ',
             menu_view,
-             
             '->'
             ]
     });
@@ -231,18 +214,18 @@
    grid.getView().getRowClass = function(rec, index){
         var css;
         var status = rec.data.status;
-        if( status == 'modified' ) 
+        if( status == 'modified' )
             css = 'config-row-modified';
-        else if( status == 'missing' ) 
+        else if( status == 'missing' )
             css = 'config-row-not-found';
         return css;
-   }; 
+   };
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
         var rec = grid.getStore().getAt(rowIndex);
         edit_config(rec);
         // Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + ' ' + r.get('name') );
-    });		
+    });
 
 
     grid.on("activate", function(){
@@ -250,17 +233,6 @@
     });
 
     var first_load = true;
-    /*
-    load store is slow
-    grid.on("activate", function() {
-        if( first_load ) {
-            Baseliner.showLoadingMask( grid.getEl() , _('Loading...') );
-            first_load = false;
-        }
-    });
-    store.load({params:{start:0 , limit: ps }, callback: function(){ Baseliner.hideLoadingMask( grid.getEl() ); } }); 
-    */
-
     return grid;
 })();
 

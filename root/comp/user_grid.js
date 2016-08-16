@@ -314,7 +314,7 @@
                             },
                             success: function(f,a){
                             Baseliner.message(_('Success'), a.result.msg );
-                            store.load({params:{start:0 , limit: ps}});
+                            store.load({params:{start:0 , limit: ptool.pageSize || ps}});
                             grid.getSelectionModel().clearSelections();
                             store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
                             form.findField("id").setValue(a.result.user_id);
@@ -525,7 +525,7 @@
                 Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){ 
                     if(btn=='yes') {
                         var form = form_user.getForm();
-                        var action = 'delete_roles_projects';                   
+                        var action = 'delete_roles_projects';
                         var projects_checked = new Array();
                         var projects_parents_checked = new Array();
                         var roles_checked = new Array();;
@@ -901,6 +901,7 @@
                             if ( response.success ) {
                                 grid.getStore().remove(sel);
                                 Baseliner.message( _('Success'), response.msg );
+                                store.reload();
                                 init_buttons('disable');
                             } else {
                                 Baseliner.message( _('ERROR'), response.msg );

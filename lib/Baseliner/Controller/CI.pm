@@ -73,7 +73,15 @@ sub dispatch {
     if ( !length $p->{anode} && !$p->{type} ) {
         @tree = $self->tree_roles( user => $p->{user} );
     } elsif ( $p->{type} eq 'role' ) {
-        @tree = $self->tree_classes( role => $p->{class}, parent => $p->{anode}, user => $p->{user}, role_name => $p->{item} );
+        ( $total, @tree ) = $self->tree_classes(
+            role      => $p->{class},
+            parent    => $p->{anode},
+            user      => $p->{user},
+            role_name => $p->{item},
+            start     => $p->{start},
+            limit     => $p->{limit}
+        );
+
     } elsif ( $p->{type} eq 'class' ) {
         ( $total, @tree ) = $self->tree_objects(
             class  => $p->{class},
@@ -176,6 +184,8 @@ sub tree_classes {
     my $role_name = $p{role_name} or _fail 'role_name required';
     my $user      = $p{user}      or _fail 'user required';
     my $parent    = $p{parent} || 0;
+    my $start    = $p{start} || 0;
+    my $limit    = $p{limit} && $p{limit} > 0 ? $p{limit} : undef;
 
     my $permissions = $self->_build_permissions;
 
@@ -213,7 +223,13 @@ sub tree_classes {
         $cnt++;
     }
 
-    return sort { lc $a->{class} cmp lc $b->{class} } @tree;
+    @tree = sort { lc $a->{class} cmp lc $b->{class} } @tree;
+    $limit = ( $limit ) ? $limit : $cnt;
+    my $index = $start + $limit -1 ;
+    $index = $index > $cnt - 1 ? $cnt - 1 : $index;
+    @tree = @tree[ $start .. $index ];
+
+    return ($cnt, @tree);
 }
 
 sub form_for_ci {

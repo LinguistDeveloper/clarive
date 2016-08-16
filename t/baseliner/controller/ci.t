@@ -214,13 +214,14 @@ subtest 'tree_classes: returns no roles when user has no permissions' => sub {
 
     my $controller = _build_controller();
 
-    my @tree = $controller->tree_classes(
+    my ($cnt, @tree) = $controller->tree_classes(
         user      => $user->username,
         role      => 'Baseliner::Role::CI::Variable',
         role_name => 'Variable'
     );
 
     is scalar @tree, 0;
+    is $cnt, 0;
 };
 
 subtest 'tree_classes: returns roles when user has permissions' => sub {
@@ -232,13 +233,14 @@ subtest 'tree_classes: returns roles when user has permissions' => sub {
 
     my $controller = _build_controller();
 
-    my @tree = $controller->tree_classes(
+    my ($cnt, @tree) = $controller->tree_classes(
         user      => $user->username,
         role      => 'Baseliner::Role::CI::Agent',
         role_name => 'Agent'
     );
 
     is @tree, 1;
+    is $cnt, 1;
     ok grep { $_->{class} eq 'BaselinerX::CI::balix_agent' } @tree;
 };
 
@@ -251,15 +253,55 @@ subtest 'tree_classes: returns roles when user has all admin permissions' => sub
 
     my $controller = _build_controller();
 
-    my @tree = $controller->tree_classes(
+    my ($cnt, @tree) = $controller->tree_classes(
         user      => $user->username,
         role      => 'Baseliner::Role::CI::Variable',
         role_name => 'Variable'
     );
 
     ok scalar @tree;
+    is $cnt, 1;
     ok grep { $_->{class} eq 'BaselinerX::CI::variable' } @tree;
 };
+
+subtest 'tree_classes: returns 1 role when limit is 1' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+    my ( $cnt, @tree ) = $controller->tree_classes(
+        user      => $user->username,
+        role      => 'Baseliner::Role::CI',
+        role_name => 'Todos',
+        limit     => 1
+    );
+
+    is scalar @tree, 1;
+};
+
+
+subtest 'tree_classes: returns all role when limit is 1' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+    my ($cnt, @tree) = $controller->tree_classes(
+        user      => $user->username,
+        role      => 'Baseliner::Role::CI',
+        role_name => 'Todos'
+    );
+
+    is scalar @tree, $cnt;
+};
+
 
 subtest 'grid: set save to false when no collection' => sub {
     _setup();
