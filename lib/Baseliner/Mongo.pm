@@ -386,6 +386,9 @@ sub index_all {
             [{ to_cl=>1 }],
             [{ from_cl=>1, to_cl=>1 }],
         ],
+        master_seq => [
+            [{_id => 1, seq => 1},{ unique=>1 }],
+        ],
         master_seen => [
             [{ mid=>1, username=>1 }],
         ],

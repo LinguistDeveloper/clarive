@@ -2491,6 +2491,11 @@ sub _timeout {
 
     $msg //= 'timeout';
 
+    if (!$time) {
+        my @result = $code->();
+        return wantarray ? @result : $result[0];
+    }
+
     my @result = alarm_call( $time, $code, $msg );
 
     if ( $result[0] =~ /^TIMEOUT/ ) {

@@ -1,18 +1,708 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
-use TestEnv;
+use Test::Deep;
+use Test::Fatal;
 
+use TestEnv;
 BEGIN { TestEnv->setup }
 
+use POSIX ":sys_wait_h";
 use Try::Tiny;
 use Sys::Hostname;
-use Time::HiRes;
-use Baseliner::Utils qw(_error);
+use Time::HiRes qw(usleep);
+use Socket;
+use IO::Socket;
+use IO::Select;
+use Baseliner::Utils qw(_error _timeout);
 
 use_ok 'Baseliner::Sem';
+
+subtest 'new: creates semaphore' => sub {
+    _setup();
+
+    Baseliner::Sem->new( key => 'sem' );
+
+    my $count = mdb->sem->find->count;
+
+    is $count, 1;
+};
+
+subtest 'new: sets id_sem' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+
+    my $doc = mdb->sem->find_one;
+
+    is $sem->id_sem, $doc->{_id};
+};
+
+subtest 'new: does not create semaphore if already exists' => sub {
+    _setup();
+
+    Baseliner::Sem->new( key => 'sem' );
+    Baseliner::Sem->new( key => 'sem' );
+
+    my $count = mdb->sem->find->count;
+
+    is $count, 1;
+};
+
+subtest 'take: enqueues semaphore' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $doc = mdb->sem->find_one;
+    cmp_deeply $doc->{queue},
+      [
+        {
+            'active'     => '1',
+            'caller'     => ignore(),
+            'hostname'   => ignore(),
+            '_id'        => ignore(),
+            'key'        => 'sem',
+            'pid'        => re(qr/^\d+$/),
+            'seq'        => re(qr/^\d+$/),
+            'session'    => re(qr/^\d+$/),
+            'status'     => 'busy',
+            'ts_grant'   => ignore(),
+            'ts'         => ignore(),
+            'ts_request' => ignore(),
+            'who'        => ignore(),
+        }
+      ];
+
+    $sem->release;
+};
+
+subtest 'take: enqueues next semaphore' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $queue;
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                my $doc = mdb->sem->find_one;
+                if ( @{ $doc->{queue} } == 2 ) {
+                    $queue = $doc->{queue};
+                    $sem->release;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem2 = Baseliner::Sem->new( key => 'sem' );
+        $sem2->take( timeout => 5 );
+        $sem2->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    is @$queue, 2;
+    is $queue->[0]->{pid},    $$;
+    is $queue->[0]->{status}, 'busy';
+    my $seq = $queue->[0]->{seq};
+
+    is $queue->[1]->{status}, 'waiting';
+    isnt $queue->[1]->{pid},  $$;
+    is $queue->[1]->{seq},    $seq + 1;
+};
+
+subtest 'take: unshifts from queue on release' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $queue;
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                $sem->release;
+
+                my $doc = mdb->sem->find_one;
+                if ( @{ $doc->{queue} } == 1 && $doc->{queue}->[0]->{status} eq 'busy' ) {
+                    $queue = $doc->{queue};
+                    last;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem2 = Baseliner::Sem->new( key => 'sem' );
+        $sem2->take( timeout => 5 );
+        $sem2->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    is @$queue, 1;
+    isnt $queue->[0]->{pid},  $$;
+    is $queue->[0]->{status}, 'busy';
+};
+
+subtest 'take: allows several semaphorse when maxslot' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem', slots => 2 );
+    $sem->take( timeout => 5 );
+
+    my $doc = mdb->sem->find_one;
+    is $doc->{slots},    1;
+    is $doc->{maxslots}, 2;
+
+    my $sem2 = Baseliner::Sem->new( key => 'sem' );
+    $sem2->take( timeout => 5 );
+
+    $doc = mdb->sem->find_one;
+    is $doc->{slots}, 2;
+
+    is $doc->{queue}->[0]->{status}, 'busy';
+    is $doc->{queue}->[1]->{status}, 'busy';
+
+    $sem->release;
+    $sem2->release;
+};
+
+subtest 'take: grants semaphore from outside' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $doc;
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                # Simulate granting from outside
+                mdb->sem->update( { key => 'sem', queue => { '$elemMatch' => { status => 'waiting' } } },
+                    { '$set' => { 'queue.$.status' => 'granted' } } );
+
+                my $check = mdb->sem->find_one;
+                if ( @{ $check->{queue} } == 2 && $check->{queue}->[-1]->{status} eq 'busy' ) {
+                    $doc = $check;
+                }
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem2 = Baseliner::Sem->new( key => 'sem' );
+        $sem2->take( timeout => 5 );
+        $sem2->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    is $doc->{slots},    1;
+    is $doc->{maxslots}, 1;
+
+    is $doc->{queue}->[0]->{status}, 'busy';
+
+    is $doc->{queue}->[1]->{status},  'busy';
+    is $doc->{queue}->[1]->{granted}, '1';
+
+    $sem->release;
+};
+
+subtest 'take: cancels semaphore from outside' => sub {
+    _setup();
+
+    socketpair( my $child_sock, my $parent_sock, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
+      or die "socketpair: $!";
+
+    $child_sock->autoflush(1);
+    $parent_sock->autoflush(1);
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $response;
+
+    if ( my $pid = fork ) {
+        close $parent_sock;
+
+        my $s = IO::Select->new();
+        $s->add($child_sock);
+
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                if ( my @fh = $s->can_read(0.1) ) {
+                    foreach my $fh (@fh) {
+                        my $rcount = sysread $fh, my $buffer, 1024;
+
+                        if ($rcount) {
+                            $response = $buffer;
+                        }
+                    }
+                }
+
+                mdb->sem->update( { key => 'sem', queue => { '$elemMatch' => { status => 'waiting' } } },
+                    { '$set' => { 'queue.$.status' => 'cancelled' } } );
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        eval {
+            my $sem2 = Baseliner::Sem->new( key => 'sem' );
+            $sem2->take( timeout => 5 );
+            $sem2->release;
+        };
+
+        print $parent_sock $@;
+
+        close $child_sock;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    like $response, qr/Cancelled semaphore/;
+
+    $sem->release;
+};
+
+subtest 'take: makes sure semaphores are processed in order' => sub {
+    _setup();
+
+    socketpair( my $child_sock, my $parent_sock, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
+      or die "socketpair: $!";
+
+    $child_sock->autoflush(1);
+    $parent_sock->autoflush(1);
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $response = '';
+
+    my %pids;
+    for my $seq ( 1 .. 5 ) {
+        if ( my $pid = fork ) {
+            $pids{$pid}++;
+
+            _timeout 5, sub {
+                while (1) {
+                    my $doc = mdb->sem->find_one;
+
+                    if ( @{ $doc->{queue} } == $seq + 1 ) {
+                        last;
+                    }
+
+                    usleep(100_000);
+                }
+            }, 'timeout during waiting for start';
+        }
+        else {
+            die "cannot fork: $!" unless defined $pid;
+
+            mdb->disconnect;
+
+            my $sem2 = Baseliner::Sem->new( key => 'sem' );
+            $sem2->take( timeout => 5 );
+
+            print $parent_sock $seq;
+
+            $sem2->release;
+
+            close $child_sock;
+
+            mdb->disconnect;
+            exit;
+        }
+    }
+
+    $sem->release;
+
+    close $parent_sock;
+
+    my $s = IO::Select->new();
+    $s->add($child_sock);
+
+    _timeout 5, sub {
+        while (1) {
+            for my $pid ( keys %pids ) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    delete $pids{$pid};
+                }
+            }
+
+            last unless keys %pids;
+
+            if ( my @fh = $s->can_read(0.1) ) {
+                foreach my $fh (@fh) {
+                    my $rcount = sysread $fh, my $buffer, 1024;
+
+                    if ($rcount) {
+                        $response .= $buffer;
+                    }
+                }
+            }
+        }
+    }, 'timeout during waiting for exit';
+
+    is $response, '12345';
+
+    $sem->release;
+};
+
+subtest 'take: removes dead busy semaphor connection' => sub {
+    _setup();
+
+    my $before;
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                my $sem_doc = mdb->sem->find_one( { key => 'sem' } );
+                if ( $sem_doc->{queue} && @{ $sem_doc->{queue} } == 1 && $sem_doc->{queue}->[0]->{status} eq 'busy' ) {
+                    $before = $sem_doc;
+
+                    kill 9, $pid;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem = Baseliner::Sem->new( key => 'sem' );
+        $sem->take( timeout => 5 );
+
+        while (1) {
+            usleep(100_000);
+        }
+
+        $sem->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    is @{ $before->{queue} }, 1;
+    isnt $before->{queue}->[0]->{pid}, $$;
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $sem_doc = mdb->sem->find_one( { key => 'sem' } );
+
+    is @{ $sem_doc->{queue} }, 1;
+    is $sem_doc->{queue}->[0]->{pid}, $$;
+    is $sem_doc->{slots}, 1;
+
+    $sem->release;
+};
+
+subtest 'take: removes dead waiting semaphor connection' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $before;
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                my $sem_doc = mdb->sem->find_one( { key => 'sem' } );
+                if ( $sem_doc->{queue} && @{ $sem_doc->{queue} } == 2 && $sem_doc->{queue}->[1]->{status} eq 'waiting' )
+                {
+                    $before = $sem_doc;
+
+                    kill 9, $pid;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem = Baseliner::Sem->new( key => 'sem' );
+        $sem->take( timeout => 5 );
+
+        while (1) {
+            usleep(100_000);
+        }
+
+        $sem->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    is @{ $before->{queue} }, 2;
+    is $before->{queue}->[0]->{pid},   $$;
+    isnt $before->{queue}->[1]->{pid}, $$;
+
+    $sem->release;
+
+    my $sem2 = Baseliner::Sem->new( key => 'sem' );
+    $sem2->take( timeout => 5 );
+
+    my $sem_doc = mdb->sem->find_one( { key => 'sem' } );
+
+    is @{ $sem_doc->{queue} }, 1;
+    is $sem_doc->{queue}->[0]->{pid}, $$;
+    is $sem_doc->{slots}, 1;
+
+    $sem2->release;
+};
+
+subtest 'take: removes dead granted semaphore' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                mdb->sem->update( { key => 'sem', queue => { '$elemMatch' => { status => 'waiting' } } },
+                    { '$set' => { 'queue.$.status' => 'granted' } } );
+
+                my $sem_doc = mdb->sem->find_one;
+                if ( @{ $sem_doc->{queue} } == 2 && $sem_doc->{queue}->[-1]->{status} eq 'busy' ) {
+                    kill 9, $pid;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem2 = Baseliner::Sem->new( key => 'sem' );
+        $sem2->take( timeout => 5 );
+        $sem2->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    $sem->release;
+
+    my $sem2 = Baseliner::Sem->new( key => 'sem' );
+    $sem2->take( timeout => 5 );
+
+    my $sem_doc = mdb->sem->find_one;
+
+    is $sem_doc->{slots},    1;
+    is $sem_doc->{maxslots}, 1;
+    is @{ $sem_doc->{queue} }, 1;
+
+    $sem2->release;
+};
+
+subtest 'take: throws on timeout' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $sem2 = Baseliner::Sem->new( key => 'sem' );
+    my $e = exception { $sem2->take( timeout => 1 ) };
+
+    $sem->release;
+
+    like $e, qr/Timeout waiting for semaphore: 1s/;
+};
+
+subtest 'purge: removes sem completely' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+
+    $sem->take( timeout => 5 );
+
+    $sem->purge;
+
+    my $sem_doc = mdb->sem->find_one;
+    is_deeply $sem_doc->{queue}, [];
+};
+
+subtest 'take: takes released semaphore' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+
+    $sem->take( timeout => 5 );
+
+    ok !$sem->released;
+
+    $sem->release;
+    ok $sem->released;
+
+    $sem->take( timeout => 5 );
+    ok !$sem->released;
+
+    $sem->release;
+    ok $sem->released;
+};
+
+subtest 'release: does not release semaphore from a child' => sub {
+    _setup();
+
+    socketpair( my $child_sock, my $parent_sock, AF_UNIX, SOCK_STREAM, PF_UNSPEC )
+      or die "socketpair: $!";
+
+    $child_sock->autoflush(1);
+    $parent_sock->autoflush(1);
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $is_released;
+
+    if ( my $pid = fork ) {
+        close $parent_sock;
+
+        my $s = IO::Select->new();
+        $s->add($child_sock);
+
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                if ( my @fh = $s->can_read(0.1) ) {
+                    foreach my $fh (@fh) {
+                        my $rcount = sysread $fh, my $buffer, 1024;
+
+                        if ($rcount) {
+                            $is_released = $buffer;
+                        }
+                    }
+                }
+
+                mdb->sem->update( { key => 'sem', queue => { '$elemMatch' => { status => 'waiting' } } },
+                    { '$set' => { 'queue.$.status' => 'cancelled' } } );
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        $sem->release;
+
+        print $parent_sock $sem->released;
+
+        close $child_sock;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    ok !$sem->released;
+    ok !$is_released;
+
+    my $sem_doc = mdb->sem->find_one;
+    is @{ $sem_doc->{queue} }, 1;
+    is $sem_doc->{queue}->[0]->{status}, 'busy';
+
+    $sem->release;
+};
+
+subtest 'DEMOLISH: releases semaphore' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    undef $sem;
+
+    my $sem_doc = mdb->sem->find_one;
+    is @{ $sem_doc->{queue} }, 0;
+};
+
+subtest 'take: does nothing when CLARIVE_NO_SEMS' => sub {
+    _setup();
+
+    local $ENV{CLARIVE_NO_SEMS} = 1;
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $sem_doc = mdb->sem->find_one;
+    ok !$sem_doc;
+};
 
 subtest 'simple locking' => sub {
     _setup();
@@ -28,7 +718,7 @@ subtest 'simple locking' => sub {
     my $slots1 = $slotcnt->();
     is $slots1, 0, '0 slot before take';
 
-    $sem1->take;
+    $sem1->take( timeout => 5 );
 
     my $slots2 = $slotcnt->();
     is $slots2, 1, '1 slot after take';
@@ -98,6 +788,7 @@ subtest 'critical section' => sub {
 
                 #Time::HiRes::usleep( int( 100 * rand() ) );
             }
+            mdb->disconnect;
             exit 0;
         }
     }
@@ -119,7 +810,7 @@ subtest 'test child death release' => sub {
 
     diag 'set TEST_SEM_LONG to run more tests';
 
-    my $maxchi  = $ENV{TEST_SEM_LONG} ? 40 : 2;
+    my $maxchi  = $ENV{TEST_SEM_LONG} ? 40   : 2;
     my $maxloop = $ENV{TEST_SEM_LONG} ? 1000 : 5;
 
     mdb->sem->update( { key => 'test' }, { '$set' => { maxslots => 1 } } );
@@ -128,9 +819,11 @@ subtest 'test child death release' => sub {
     my $critical = sub {
         my $who = shift;
         my $ran = substr( Time::HiRes::time(), -1, 1 );
+
         #warn "CHILD $who - $ran\n";
         Time::HiRes::usleep( int( 100 * rand() ) );
         if ( $ran == 1 ) {
+
             #warn "---EXIT $who\n";
             kill 9 => $$;
         }
@@ -157,6 +850,7 @@ subtest 'test child death release' => sub {
                     mdb->sem_test->update( {}, { '$inc' => { timeouts => 1 } } );
                 };
             }
+            mdb->disconnect;
             exit 0;
         }
     }
@@ -167,7 +861,7 @@ subtest 'test child death release' => sub {
     is $$doc{timeouts}, 0, 'timeouts is zero at the end';
 
     my $last = Baseliner::Sem->new( key => 'test', who => "cleanup" );
-    $last->take;
+    $last->take( timeout => 5 );
     $last->release;
 
     ok 1, 'take-release last';
@@ -196,6 +890,7 @@ subtest 'granted' => sub {
         $chi->take( wait_interval => .1, timeout => 20 );
         mdb->sem_test->update( { aa => 0 }, { aa => 1 } );
         $chi->release;
+        mdb->disconnect;
         exit 0;
     }
 
@@ -241,6 +936,7 @@ subtest 'cancelled' => sub {
             mdb->sem_test->update( {}, { '$inc' => { aa => -1 } } );
         };
         $chi->release;
+        mdb->disconnect;
         exit 0;
     }
 
@@ -263,12 +959,13 @@ subtest 'cancelled' => sub {
     is $s->{maxslots}, 1, 'cancelled maxslots is 1 at the end';
 };
 
+done_testing;
+
 sub _setup {
     mdb->sem->drop;
     mdb->sem_queue->drop;
     mdb->sem_test->drop;
 
     mdb->index_all('sem');
+    mdb->index_all('master_seq');
 }
-
-done_testing;
