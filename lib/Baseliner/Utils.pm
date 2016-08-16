@@ -2561,22 +2561,23 @@ sub _capture_pipe {
     $s->add( $stderr_child_sock );
     $s->add( $retval_child_sock );
 
+    my $aborted;
+    my $aborted_exit_code;
+    local $SIG{CHLD} = sub {
+        local ( $!, $? );
+        my $pid = waitpid( -1, WNOHANG );
+        return if $pid == -1;
+
+        $aborted_exit_code = $?;
+        $aborted++;
+    };
+
     if ( my $pid = fork ) {
         close $stdout_parent_sock;
         close $stderr_parent_sock;
         close $retval_parent_sock;
 
         while (1) {
-            my $res = waitpid( $pid, WNOHANG );
-
-            if ( $res == -1 ) {
-                last;
-            }
-
-            if ($res) {
-                last;
-            }
-
             if ( my @fh = $s->can_read(0.1) ) {
                 foreach my $fh (@fh) {
                     my $rcount = sysread $fh, my $buffer, 1024;
@@ -2604,6 +2605,28 @@ sub _capture_pipe {
                     }
                 }
             }
+
+            $? = 0;
+            my $res = waitpid( $pid, WNOHANG );
+
+            last if $res || $aborted;
+        }
+
+        $? = $aborted_exit_code if $aborted;
+
+        my $exit_code = 0;
+
+        if ( $? != 0 ) {
+            if ( $? == -1 ) {
+                warn $!;
+                $exit_code = 255;
+            }
+            elsif ( $? & 127 ) {
+                $exit_code = 254;
+            }
+            else {
+                $exit_code = $? >> 8;
+            }
         }
 
         close $stdout_child_sock;
@@ -2613,14 +2636,18 @@ sub _capture_pipe {
         {
             no strict;
 
+            local $@;
             $ret = eval $ret;
+            if ($@) {
+                $ret = { ret => undef, error => $@ };
+            }
         }
 
         return {
             stdout    => $stdout,
             stderr    => $stderr,
             ret       => $ret->{ret},
-            exit_code => $ret->{error} ? 255 : $? >> 8,
+            exit_code => $ret->{error} ? 253 : $exit_code,
             $ret->{error} ? ( error => $ret->{error} ) : (),
           }
     }
