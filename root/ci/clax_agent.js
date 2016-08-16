@@ -5,7 +5,7 @@
         { xtype: 'textfield', fieldLabel: _('User'), name:'user', anchor:'50%' },
         { xtype: 'textfield', fieldLabel: _('Auth Username'), name:'auth_username', anchor:'50%' },
         { xtype: 'textfield', fieldLabel: _('Auth Password'), name:'auth_password', anchor:'50%' },
-        { xtype: 'textfield', fieldLabel: _('Port'), name:'port', anchor:'10%', allowBlank: false }
+        { xtype: 'textfield', fieldLabel: _('Port'), name:'port', anchor:'15%', allowBlank: false }
     ]
 })
 
