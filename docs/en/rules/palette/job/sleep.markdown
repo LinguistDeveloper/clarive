@@ -1,0 +1,10 @@
+---
+title: Sleep for a number of seconds
+icon: time
+---
+
+The process sleeps for a specified number of seconds.
+
+Data editor has the following key:
+
+- **interval**: Time to sleep in seconds. 5 seconds by default

@@ -5723,7 +5723,15 @@ msgid "Error restarting $pid: "
 msgstr ""
 
 #: lib/BaselinerX/Service/Sleep.pm
-msgid "Job sleeping %1 seconds"
+msgid "Sleep for a number of seconds"
+msgstr ""
+
+#: lib/BaselinerX/Service/Sleep.pm
+msgid "Job sleeping for %1 seconds"
+msgstr ""
+
+#: lib/BaselinerX/Service/Sleep.pm
+msgid "Job awaking after %1 seconds"
 msgstr ""
 
 #: lib/BaselinerX/Service/SystemMessages.pm root/comp/sms.js
