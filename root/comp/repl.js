@@ -38,7 +38,6 @@ col.findOne({'foo':'bar'});
 // utils
 cla.parseVars('${foo}',{ foo: 'bar' });
 */}.heredoc();
-
     // setup defaults
     if( Cla.AceEditor === undefined ) Cla.AceEditor = { theme: 'eclipse', mode: { name:'perl' } };
 
@@ -169,6 +168,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 }
                 if( res.output ) set_output( res.output );
                 if( res.lang ) change_lang({ lang: res.lang, checked: true });
+                if( res.out ) change_out({ out: res.out, checked: true });
                 if( res.div ) {
                     var tab = cons.add({ xtype:'panel', closable: true,
                         style: { padding: '10px 10px 10px 10px' },
@@ -301,7 +301,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         if( params.save!==undefined && params.save ) {
             last_name = node_name;
             var f = form.getForm();
-            f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o, lang: params.lang } });
+            f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o, lang: params.lang, out: params.out} });
         }
     };
 
@@ -480,9 +480,10 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             var txt = aceditor.getValue();
             aceditor.setMode(x.syntax);
             aceditor.setValue(txt);
+            var language = languagesMap[x.lang];
             menu_lang.get(x.lang).checked = true;
-            btn_lang.setText(_('Lang: %1', '<b>' + x.text + '</b>'));
-            btn_lang.setIcon('/static/images/icons/' + x.lang + '.svg');
+            btn_lang.setText(_('Lang: %1', '<b>' + language.text + '</b>'));
+            btn_lang.setIcon('/static/images/icons/' + language.lang + '.svg');
             btn_lang.lang = x.lang;
             aceditor.focus();
         }
@@ -494,8 +495,9 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 Baseliner.ajaxEval('/user/update_repl_config', {out: x.out}, function(res){});
             }
             menu_out.get(x.out).checked = true;
-            btn_out.setText( _('Output: %1', '<b>'+x.text+'</b>') );
-            btn_out.setIcon( '/static/images/icons/' + x.out + '.svg' );
+            var out = outsMap[x.out];
+            btn_out.setText( _('Output: %1', '<b>'+out.text+'</b>') );
+            btn_out.setIcon( '/static/images/icons/' + out.out + '.svg' );
             btn_out.out = x.out;
             aceditor.focus();
         }
@@ -606,7 +608,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true, lang: btn_lang.lang });
+                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true, lang: btn_lang.lang, out: btn_out.out });
                             var tooltip = Cla.truncateTooltip(text);
                             panel.setTabTip(tooltip);
                             text = Cla.truncateText(text);
