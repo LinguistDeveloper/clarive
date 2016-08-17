@@ -8694,7 +8694,7 @@ msgstr ""
 msgid "Error trapped"
 msgstr "Error de excepción"
 
-#: root/comp/monitor_grid.js root/comp/rules.js
+#: root/comp/monitor_grid.js root/comp/rules.js root/forms/retry.js
 msgid "Retry"
 msgstr "Reintentar"
 
@@ -12630,6 +12630,14 @@ msgstr "Ruta remota"
 msgid "Local Path"
 msgstr "Ruta Local"
 
+#: root/forms/retry.js
+msgid "Attempts"
+msgstr "Intentos"
+
+#: root/forms/retry.js
+msgid "Pause (s)"
+msgstr "Pausa (s)"
+
 #: root/forms/script_local.js root/forms/script_remote.js
 #: root/forms/wait_for_children.js root/forms/windows_service.js
 msgid "Errors"
@@ -13518,6 +13526,14 @@ msgstr "Formato JSON inválido"
 #: root/site/common.js
 msgid "Invalid Port"
 msgstr ""
+
+#: root/site/common.js
+msgid "Invalid number"
+msgstr "Formato número inválido"
+
+#: root/site/common.js
+msgid "Invalid integer number"
+msgstr "Formato número entero inválido"
 
 #: root/site/dashboard.js
 msgid "Dashlet config"

@@ -1,6 +1,8 @@
 (function(params){
     var data = params.data || {};
 
+    Cla.help_push({ title:_('Retry'), path:'rules/palette/control/retry' });
+
     return [ {
             xtype:'textfield',
             vtype:'integer',
