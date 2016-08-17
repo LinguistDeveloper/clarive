@@ -694,7 +694,7 @@ register 'statement.fail' => {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             Util->_fail( parse_vars( q{%s}, $stash ) );
-        }, $n->{msg} // '' );
+        }, $n->{msg} // 'abort here' );
     }
 };
 
