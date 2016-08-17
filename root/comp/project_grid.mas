@@ -18,9 +18,24 @@
     <& '/comp/search_field.mas' &>
 
     var ps = 100; //page_size
-    store.load({params:{start:0 , limit: ps}}); 
+    store.load({params:{start:0 , limit: ps}});
 
-    // create the grid
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
+
     var grid = new Ext.grid.EditorGridPanel({
             title: _('Projects'),
             header: false,
@@ -44,21 +59,10 @@
             ],
             autoSizeColumns: true,
             deferredRender:true,
-            bbar: new Ext.PagingToolbar({
-                                store: store,
-                                pageSize: ps,
-                                displayInfo: true,
-                                displayMsg: 'Rows {0} - {1} of {2}',
-                                emptyMsg: "No hay registros disponibles"
-                        }),        
-            tbar: [ _('Search')+': ', ' ',
-                new Ext.app.SearchField({
-                    store: store,
-                    params: {start: 0, limit: ps},
-                    emptyText: _('<Enter your search string>')
-                }),
+            bbar: ptool,
+            tbar: [ _('Search')+': ', ' ', searchField,
 <%doc>
-                {  
+                {
                     xtype: 'button',
                     text: _('Surrogate'),
                     icon:'/static/images/project.gif',

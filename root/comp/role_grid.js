@@ -17,11 +17,11 @@
         ]
     });
     Cla.help_push({ title:_('Roles'), path:'admin/roles' });
-    var role_detail = function(id_role, role){
-        Baseliner.add_tabcomp('/comp/role_detail.js', null, { id_role: id_role, role: role, id_grid: grid.getId()  } );
-    }
 
     //////////////// Role Create / Edit Window
+    var openRoleDetail = function(id_role, role){
+        Baseliner.add_tabcomp('/comp/role_detail.js', null, { id_role: id_role, role: role, id_grid: grid.getId() } );
+    }
 
     var render_actions = function (val){
         if( val == null || val == undefined ) return '';
@@ -91,7 +91,7 @@
                     icon:'/static/images/icons/add.svg',
                     cls: 'x-btn-text-icon ui-comp-role-create',
                     handler: function() {
-                        role_detail();
+                        openRoleDetail();
                     }
                 }),
                 new Ext.Toolbar.Button({
@@ -102,7 +102,7 @@
                         var sm = grid.getSelectionModel();
                         if (sm.hasSelection()) {
                             var sel = sm.getSelected();
-                            role_detail(sel.data.id, sel.data.role);
+                            openRoleDetail(sel.data.id, sel.data.role);
                         } else {
                             Ext.Msg.alert('Error', _('Select at least one row'));
                         };
@@ -163,6 +163,7 @@
                                                 },
                                                 success: function(resp, opt) {
                                                     grid.getStore().remove(sel);
+                                                    store.reload();
                                                 },
                                                 failure: function(resp, opt) {
                                                     Ext.Msg.alert(_('Error'), _('Could not delete the role'));
@@ -207,7 +208,6 @@
             first_load = false;
         }
     });
-
     store.load({
         params:{
             start:0,
@@ -266,7 +266,7 @@
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
         var row = grid.getStore().getAt(rowIndex);
         Baseliner.showLoadingMask( grid.getEl());
-        role_detail( row.get('id'), row.get('role'));
+        openRoleDetail( row.get('id'), row.get('role'));
         Baseliner.hideLoadingMaskFade(grid.getEl());
     });
 

@@ -21,7 +21,7 @@
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, record )
     }); 
 
-    var search_field = new Baseliner.SearchField({
+    var searchField = new Baseliner.SearchField({
         store: store_ci,
         params: {start: 0, limit: ps },
         emptyText: _('<Enter your search string>')
@@ -440,7 +440,7 @@
         store: store_ci,
         sm: check_sm,
         tbar: [ 
-            search_field,
+            searchField,
             btn_create,
             btn_delete,
             { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon', 

@@ -9,12 +9,23 @@
         baseParams: Ext.apply({ start:0, limit: ps}, params),
         fields: [ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']
     });
-    var search_field = new Baseliner.SearchField({
+
+    var ptool = new Baseliner.PagingToolbar({
         store: store_ci,
-        params: {start: 0, limit: ps },
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store_ci,
+        params: {start: 0, limit: ptool.pageSize },
         emptyText: _('<Enter your search string>')
     });
-    
+
     /*  Renderers */
     var render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( typeof value == 'object' ) {
@@ -80,19 +91,13 @@
         store: store_ci,
         sm: check_sm,
         stripeRows: true,
-        tbar: [ search_field,
+        tbar: [ searchField,
             { xtype:'button', text: 'Crear', icon: '/static/images/icons/edit.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Borrar', icon: '/static/images/icons/delete.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Etiquetar', icon: '/static/images/icons/tag.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: 'Exportar', icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon' }
         ],
-        bbar: new Ext.PagingToolbar({
-            store: store_ci,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-        }),        
+        bbar: ptool,
         columns:[
             check_sm,
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon, sortable: true },

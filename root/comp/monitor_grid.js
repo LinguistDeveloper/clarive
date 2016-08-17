@@ -11,10 +11,11 @@
     my $view_natures = config_value('job_new.view_natures');
 </%perl>
 (function(params) {
-        Cla.help_push({
-            title: _('Monitor'),
-            path: 'getting-started/monitor'
-        });
+    Cla.help_push({
+        title: _('Monitor'),
+        path: 'getting-started/monitor'
+    });
+
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>;
     var state_id = 'job-monitor';
@@ -513,54 +514,20 @@
             sortInfo: { field: 'starttime', direction: "DESC" }
     });
 
-    // var paging = new Ext.PagingToolbar({
-    //         store: store,
-    //         pageSize: ps,
-    //         displayInfo: true,
-    //         displayMsg: _('Rows {0} - {1} of {2}'),
-    //         emptyMsg: "No hay registros disponibles"
-    // });
-    //paging.on('beforechange', function(){ refresh_stop(); });
-    var ps_plugin = new Ext.ux.PageSizePlugin({
-        editable: false,
-        width: 90,
-        data: [
-            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
-        ],
-        beforeText: _('Show'),
-        afterText: _('rows/page'),
-        value: ps,
+    var paging = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        plugins: [new Ext.ux.ProgressBarPager()],
         listeners: {
-            'select':function(c,rec) {
-                ps = rec.data.value;
-                if( rec.data.value < 0 ) {
-                    paging.afterTextItem.hide();
-                } else {
-                    paging.afterTextItem.show();
-                }
-            }
-        },
-        forceSelection: true
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
     });
 
-    var paging = new Ext.PagingToolbar({
-            store: store,
-            pageSize: ps,
-            plugins:[
-                ps_plugin,
-                new Ext.ux.ProgressBarPager()
-            ],
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-    });
     var next_start = 0;
     store.on('load', function(s,recs,opt) {
-        //console.log( s );
         next_start = s.reader.jsonData.next_start;
-        //store.baseParams.next_start = next_start;
-        //alert(next_start);
     });
 
     paging.on("beforechange", function(p,opts) {
@@ -568,9 +535,10 @@
     });
 
     <& /comp/search_field.mas &>
-    var search_field = new Ext.app.SearchField({
+
+    var searchField = new Baseliner.SearchField({
         store: store,
-        params: {start: 0, limit: ps},
+        params: {start: 0, limit: paging.pageSize},
         emptyText: _('<Enter your search string>')
     });
     //---------- Refreshments
@@ -1338,7 +1306,7 @@
             ],
         bbar: paging,
         tbar: is_portlet ? [] : [
-                search_field,
+                searchField,
                 button_html,
                 menu_projects,
                 menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.svg', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',

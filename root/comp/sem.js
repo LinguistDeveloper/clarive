@@ -222,12 +222,19 @@
     };
 
 
+    var searchField = new Baseliner.SearchField({
+        store: store_sem,
+        width: 100,
+        params: {start: 0, limit: ps},
+        emptyText: _('<Enter your search string>')
+    });
+
     var grid_sem = new Ext.grid.GridPanel({
         region: 'west',
         title: _('Semaphores'),
         width: 300,
         expanded: true,
-        animate : true,          
+        animate : true,
         hideHeaders: true,
         collapsible: true,
         split: true,
@@ -235,13 +242,7 @@
         autoScroll: true,
         autoWidth: true,
         store: store_sem,
-        tbar: [ 
-            new Ext.app.SearchField({
-                store: store_sem,
-                width: 100,
-                params: {start: 0, limit: ps},
-                emptyText: _('<Search>')
-            }), //button_add, button_del,
+        tbar: [ searchField, //button_add, button_del,
             '->', button_sem_refresh
         ],
         viewConfig: {
@@ -283,7 +284,7 @@
     });
     var tbar_queue = new Ext.Toolbar({
         items: [ _('Search')+': ', ' ',
-            new Ext.app.SearchField({
+            new Baseliner.SearchField({
                 store: store_queue,
                 params: {start: 0, limit: ps},
                 emptyText: _('<Enter your search string>')

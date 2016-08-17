@@ -6758,6 +6758,21 @@ msgstr ""
 msgid "Project"
 msgstr ""
 
+#: root/comp/catalog_grid.js root/comp/ci-grid.js root/comp/ci-gridtree.js
+#: root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
+#: root/comp/config/config_grid.mas root/comp/configlist/grid.mas
+#: root/comp/daemon_grid.js root/comp/events.js root/comp/feature_grid.mas
+#: root/comp/job_calendar_grid.js root/comp/lifecycle/repo.js
+#: root/comp/lifecycle/tasks.js root/comp/log.mas root/comp/log_grid.js
+#: root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/project_grid.mas
+#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
+#: root/comp/role_grid.js root/comp/scheduler_grid.js root/comp/sem.js
+#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: root/comp/view_commits_history.js root/site/tabfu.js
+msgid "<Enter your search string>"
+msgstr ""
+
 #: root/comp/catalog_grid.js root/forms/catalog_task.js
 msgid "Catalog"
 msgstr ""
@@ -6772,20 +6787,6 @@ msgstr ""
 #: root/comp/sem.js root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
 #: root/comp/view_commits_history.js
 msgid "Search"
-msgstr ""
-
-#: root/comp/catalog_grid.js root/comp/ci-grid.js root/comp/ci-gridtree.js
-#: root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
-#: root/comp/configlist/grid.mas root/comp/daemon_grid.js root/comp/events.js
-#: root/comp/feature_grid.mas root/comp/lifecycle/repo.js
-#: root/comp/lifecycle/tasks.js root/comp/log_grid.js
-#: root/comp/message_grid.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/project_grid.mas
-#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
-#: root/comp/role_grid.js root/comp/scheduler_grid.js root/comp/sem.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/view_commits_history.js root/site/tabfu.js
-msgid "<Enter your search string>"
 msgstr ""
 
 #: root/comp/catalog_grid.js
@@ -6902,21 +6903,6 @@ msgstr ""
 msgid "Error opening CI %1: %2"
 msgstr ""
 
-#: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/configlist/grid.mas
-#: root/comp/daemon_grid.js root/comp/lifecycle/tasks.js root/comp/log_grid.js
-#: root/comp/monitor_grid.js root/comp/notifications.js root/comp/report.js
-#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
-#: root/comp/scheduler_grid.js root/site/common.js
-msgid "Rows {0} - {1} of {2}"
-msgstr ""
-
-#: root/comp/ci-grid.js root/comp/ci-gridtree.js
-#: root/comp/config/config_grid.mas root/comp/daemon_grid.js
-#: root/comp/message_grid.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js root/site/common.js
-msgid "There are no rows available"
-msgstr ""
-
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
 #: root/comp/ci-viewer.js root/comp/revision/grid.mas
 #: root/comp/revision/grid_live.mas
@@ -6985,19 +6971,24 @@ msgstr ""
 msgid "Select rows first"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/report.js root/site/common.js
 msgid "all rows"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/report.js root/site/common.js
 msgid "Show"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/report.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/report.js root/site/common.js
 msgid "rows/page"
+msgstr ""
+
+#: root/comp/ci-gridtree.js root/site/common.js
+msgid "Rows {0} - {1} of {2}"
+msgstr ""
+
+#: root/comp/ci-gridtree.js root/site/common.js
+msgid "There are no rows available"
 msgstr ""
 
 #: root/comp/ci-gridtree.js
@@ -7096,10 +7087,6 @@ msgstr ""
 
 #: root/comp/config/config_grid.mas root/comp/message_grid.js
 msgid "Received"
-msgstr ""
-
-#: root/comp/config/config_grid.mas root/comp/message_grid.js
-msgid "Rows {0} - {1} de {2}"
 msgstr ""
 
 #: root/comp/config/config_grid.mas root/comp/daemon_grid.js
@@ -7237,10 +7224,6 @@ msgstr ""
 #: root/comp/monitor_grid.js root/comp/revision/grid.mas root/site/common.js
 #: root/site/tabfu.js
 msgid "Log"
-msgstr ""
-
-#: root/comp/configlist/grid.mas root/comp/role_detail.js
-msgid "Loading..."
 msgstr ""
 
 #: root/comp/configlist/resolve_value.mas
@@ -9265,6 +9248,10 @@ msgid "Remove All"
 msgstr ""
 
 #: root/comp/role_detail.js
+msgid "Loading..."
+msgstr ""
+
+#: root/comp/role_detail.js
 msgid "Could not load role form data"
 msgstr ""
 
@@ -9889,10 +9876,6 @@ msgid "Kill"
 msgstr ""
 
 #: root/comp/scheduler_grid.js
-msgid "No records available"
-msgstr ""
-
-#: root/comp/scheduler_grid.js
 msgid "Next execution"
 msgstr ""
 
@@ -9946,10 +9929,6 @@ msgstr ""
 
 #: root/comp/sem.js
 msgid "Semaphores"
-msgstr ""
-
-#: root/comp/sem.js
-msgid "<Search>"
 msgstr ""
 
 #: root/comp/sem.js

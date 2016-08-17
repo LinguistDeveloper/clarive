@@ -19,55 +19,20 @@
         fields: fields
     });
 
-    var search_field = new Baseliner.SearchField({
+    var ptool = new Baseliner.PagingToolbar({
         store: store_notifications,
-        width: 280,
-        emptyText: _('<Enter your search string>'),
-        params: {
-            start: 0,
-            limit: ps
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
         }
     });
 
-    var ptool = new Ext.PagingToolbar({
+    var searchField = new Baseliner.SearchField({
         store: store_notifications,
-        pageSize: ps,
-        plugins: [
-            new Ext.ux.PageSizePlugin({
-                editable: false,
-                width: 90,
-                data: [
-                    ['5', 5],
-                    ['10', 10],
-                    ['15', 15],
-                    ['20', 20],
-                    ['25', 25],
-                    ['50', 50],
-                    ['100', 100],
-                    ['200', 200],
-                    ['500', 500],
-                    ['1000', 1000],
-                    [_('all rows'), -1]
-                ],
-                beforeText: _('Show'),
-                afterText: _('rows/page'),
-                value: ps,
-                listeners: {
-                    'select': function(c, rec) {
-                        ps = rec.data.value;
-                        if (rec.data.value < 0) {
-                            ptool.afterTextItem.hide();
-                        } else {
-                            ptool.afterTextItem.show();
-                        }
-                    }
-                },
-                forceSelection: true
-            })
-        ],
-        displayInfo: true,
-        displayMsg: _('Rows {0} - {1} of {2}'),
-        emptyMsg: _('There are no rows available')
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
     });
 
     var store_actions = new Baseliner.JsonStore({
@@ -1731,7 +1696,7 @@
             }
         ],
         tbar: [_('Search') + ': ', ' ',
-            search_field, ' ', ' ',
+            searchField, ' ', ' ',
             btn_add,
             btn_edit,
             btn_delete,

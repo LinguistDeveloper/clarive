@@ -7,7 +7,7 @@
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
     }); 
 
-    var search_field = new Baseliner.SearchField({
+    var searchField = new Baseliner.SearchField({
         store: store_ci, params: {start: 0, limit: 100 }, emptyText: _('<Enter your search string>')
     });
 
@@ -96,7 +96,7 @@
         //enableDD: true,
 
         tbar: [
-            search_field,
+            searchField,
             { xtype:'button', text: _('Create'), cls: , icon: '/static/images/icons/edit.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.svg', cls: 'x-btn-text-icon' },

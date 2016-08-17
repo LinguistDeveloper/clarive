@@ -304,6 +304,22 @@
         win.show();
     };
 
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField =   new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize },
+        emptyText: _('<Enter your search string>')
+    });
+
     // create the grid
     var grid = new Ext.grid.GridPanel({
     	renderTo: 'main-panel',
@@ -327,20 +343,8 @@
 	    ],
 	    autoSizeColumns: true,
 	    deferredRender:true,
-	    bbar: new Ext.PagingToolbar({
-		    store: store,
-		    pageSize: ps,
-		    displayInfo: true,
-		    displayMsg: _('Rows {0} - {1} of {2}'),
-		    emptyMsg: _('There are no rows available')
-	    }),
-	    tbar: [ _('Search') + ': ', ' ',
-			    new Ext.app.SearchField({
-			    store: store,
-			    params: {start: 0, limit: ps},
-			    emptyText: _('<Enter your search string>')
-		    }),' ',' ',
-
+	    bbar: ptool,
+	    tbar: [ _('Search') + ': ', ' ', searchField,' ',' ',
 		    btn_add,
 		    btn_edit,
 		    btn_delete,

@@ -76,7 +76,7 @@ var edit_config = function(rec) {
                 var ff = form.getForm();
                 ff.submit({
                         success: function(form, action) {
-                            grid.getStore().load();
+                            grid.getStore().reload();
                             win.close();
                         },
                         failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }

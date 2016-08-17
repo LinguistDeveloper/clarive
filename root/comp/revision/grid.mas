@@ -434,13 +434,25 @@
             return '';
         }
     };
+
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize, id_job: '<% $c->stash->{id_job} %>'},
+        emptyText: _('<Enter your search string>')
+    });
+
     var toolbar = new Ext.Toolbar({
-        items: [ _('Search')+': ', ' ',
-            new Ext.app.SearchField({
-                store: store,
-                params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
-                emptyText: '<% _loc('<Enter your search string>') %>'
-            }),
+        items: [ _('Search')+': ', ' ', searchField,
             filter_button,
             //{ text: _("Approvals"), menu: approval_menu },
             { text: _("Actions"), menu: action_menu },
@@ -495,13 +507,7 @@
             { id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },	
             { header: _("Description"), width: 150, dataIndex: 'text', sortable: true, cls: 'nowrapgrid' , hidden: is_portlet ? true : false }
         ],
-        bbar: new Ext.PagingToolbar({
-                            store: store,
-                            pageSize: ps,
-                            displayInfo: true,
-                            displayMsg: '<% _loc('Rows {0} - {1} of {2}') %>',
-                            emptyMsg: "No hay registros disponibles"
-                    }),        
+        bbar: ptool,
         tbar: is_portlet ? [] : toolbar
     });
 

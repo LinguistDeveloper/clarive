@@ -453,6 +453,22 @@
         hideGroupedColumn: true
     });
 
+    var ptool = new Baseliner.PagingToolbar({
+        store: store,
+        pageSize: ps,
+        listeners: {
+            pagesizechanged: function(pageSize) {
+                searchField.setParam('limit', pageSize);
+             }
+        }
+    });
+
+    var searchField = new Baseliner.SearchField({
+        store: store,
+        params: {start: 0, limit: ptool.pageSize},
+        emptyText: _('<Enter your search string>')
+    });
+
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
         // create the grid
         var grid = new Ext.grid.EditorGridPanel({
@@ -490,19 +506,8 @@
                 { header: _('Rule Id'), width: 80, dataIndex: 'rule', sortable: true, hidden: true },
                 { header: _('Actions'), width: 100, dataIndex: 'more', renderer: Baseliner.actionsRenderer, sortable: true } 
             ],
-            bbar: new Ext.PagingToolbar({
-                                store: store,
-                                pageSize: ps,
-                                displayInfo: true,
-                                displayMsg: _('Rows {0} - {1} of {2}'),
-                                emptyMsg: "No hay registros disponibles"
-                        }),        
-            tbar: [ _('Search') + ': ', ' ',
-                new Ext.app.SearchField({
-                    store: store,
-                    params: {start: 0, limit: ps, mid: '<% $mid %>' },
-                    emptyText: _('<Enter your search string>')
-                }),
+            bbar: ptool,
+            tbar: [ _('Search') + ': ', ' ', searchField,
                 button_html,
                 { text: _('Level'), menu: filter_menu },
                 menu_exec_left,

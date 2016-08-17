@@ -1,4 +1,5 @@
 (function(params) {
+    var ps = 100;
     var repo_path = '<% $c->stash->{repo_path} %>';
     var repo_mid  = '<% $c->stash->{repo_mid} %>';
     var repo_type = '<% $c->stash->{collection} %>';
@@ -17,11 +18,13 @@
         }
     };
     <& /comp/search_field.mas &>
-    var search_field = new Ext.app.SearchField({
+
+    var searchField = new Baseliner.SearchField({
         store: store,
-        params: {start: 0, limit: 100 },
+        params: {start: 0, limit: ps },
         emptyText: _('<Enter your search string>')
     });
+
     var render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( typeof value == 'object' ) {
             var va = value.slice(0); // copy array
@@ -55,7 +58,7 @@
         enableDD: true,
         dataUrl: '/lifecycle/repo_data',
         //dataUrl: '/cia/data.json',
-        tbar: [ search_field ],
+        tbar: [ searchField ],
         columns:[
             {
                 header: 'Item',

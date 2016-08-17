@@ -492,7 +492,7 @@
 
                             var grid = Ext.getCmp(params.id_grid);
                             if (grid) {
-                                grid.getStore().load();
+                                grid.getStore().reload();
                             }
                             Baseliner.showLoadingMask(action_tree.getEl());
                             action_tree.getRootNode().reload();
