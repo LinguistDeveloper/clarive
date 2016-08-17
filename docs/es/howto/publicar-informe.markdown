@@ -2,7 +2,7 @@
 ---
 title: Hacer publico un informe
 index: 1
-icon: wrench.svg
+icon: report.svg
 ---
 
 Cada vez que se realiza una exportación de cualquier tipo, ya sea un grid de tópicos o un informe, se genera un evento llamado *event.topic_list.export* que contiene los datos de dicha exportación; formato, parámetros, título, autor y fichero temporal generado.

@@ -2,7 +2,7 @@
 ---
 title: Publish a report
 index: 1
-icon: wrench.svg
+icon: report.svg
 ---
 
 Every time a user makes an export (topic grid or a report) a new event is generated. This event calls *event.topic_list.export*, contains all information related to the export; format, parameters, title, author and the temporaly file generated.
