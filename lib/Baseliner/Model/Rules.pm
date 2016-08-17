@@ -681,7 +681,7 @@ register 'statement.fail' => {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             Util->_fail( parse_vars( q{%s}, $stash ) );
-        }, $n->{msg}, $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{msg} // '' );
     }
 };
 
@@ -899,7 +899,7 @@ register 'statement.perl.do' => {
                 my $ret = do { %s };
                 $stash->{$dk} = $ret if length $dk;
             }
-        }, $n->{data_key} // '', $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{data_key} // '', $n->{code} // ''  );
     },
 };
 

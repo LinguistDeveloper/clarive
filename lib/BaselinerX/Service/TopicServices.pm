@@ -351,7 +351,7 @@ sub related {
     my $not_in_statuses = $config->{not_in_status} // 'off';
     my $categories = $config->{related_categories} // [];
     my $depth = $config->{depth} // 1;
-    my $include_event_mid = $config->{include_event_mid} eq 'on' ? '':$event_mid;
+    my $include_event_mid = $config->{include_event_mid} && $config->{include_event_mid} eq 'on' ? '':$event_mid;
     my $query_type = $config->{query_type} // 'children';
     my @fields = $config->{fields} ? split(',',$config->{fields}):();
     my $condition = {};
@@ -370,7 +370,6 @@ sub related {
 
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
-    _warn $condition;
     my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
 
     return \@related;
