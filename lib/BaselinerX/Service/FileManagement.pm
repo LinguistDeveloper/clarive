@@ -98,6 +98,14 @@ register 'service.fileman.sync_remote' => {
     handler     => \&run_sync_remote,
 };
 
+register 'service.fileman.mkpath_remote' => {
+    name        => _locl('Create Remote Directory'),
+    icon        => $ICON_DEFAULT,
+    form        => '/forms/mkpath_remote.js',
+    job_service => 1,
+    handler     => \&run_mkpath_remote,
+};
+
 register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
@@ -653,6 +661,34 @@ sub run_sync_remote {
     return 1;
 }
 
+sub run_mkpath_remote {
+    my ( $self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+
+    my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_path';
+    my $user = $config->{user} // '';
+
+    my @servers = $self->_parse_servers($config->{server}, $log);
+    for my $server ( @servers ) {
+        my $remote = $server->parse_vars("$remote_path");
+
+        my $server_str = "$user\@" . $server->name;
+        _debug "Connecting to server " . $server_str;
+
+        my $agent = $server->connect( user => $user );
+
+        $log->info( _loc( "Creating remote directory '%1'", $remote_path ) );
+
+        my ($rc, $ret) = $agent->mkpath($remote_path);
+        _fail _loc( 'Error while creating remote directory: %1', $ret ) if $rc;
+    }
+
+    return 1;
+}
+
 sub run_rm {
     my ($self, $c, $config ) = @_;
 
@@ -829,6 +865,30 @@ sub run_write_config {
     return '';
 }
 
+sub _parse_servers {
+    my $self = shift;
+    my ($servers, $log) = @_;
+
+    my @servers;
+    for my $server ( Util->_array_or_commas($servers) ) {
+        $server = ci->new($server) unless ref $server;
+
+        Util->is_ci_or_fail( $server, 'server' );
+
+        if ( !$server->active ) {
+            $log->warn( _loc( 'Server %1 is inactive. Skipped', $server->name ) );
+            next;
+        }
+
+        _fail _loc "Could not instanciate CI for server `%1`", $server unless ref $server;
+
+        push @servers, $server;
+    }
+
+    _fail _loc "Server(s) not configured" unless @servers;
+
+    return @servers;
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
