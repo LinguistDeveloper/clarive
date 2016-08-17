@@ -1,4 +1,5 @@
 (function(params) {
+    Cla.help_push({ title:_('Create a new topic'), path:'rules/palette/job/create-topic' });
     var data = params.data || {};
 
     return [{
