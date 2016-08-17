@@ -841,7 +841,3 @@ body#login-page {
         transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
     }
 }
-img[src$='.svg'][src^='/static/images'] {
-  height:16px;
-  width: 16px;
-}
