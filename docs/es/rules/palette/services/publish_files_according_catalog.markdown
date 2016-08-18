@@ -10,4 +10,4 @@ Servicio que permite publicar ficheros en un repositorio. Es necesario configura
 
 * **Origen**: Selecciona el fichero origen que se quiere copiar.
 
-Uno de las funciones utiles para este servicio es para publicar informes en el repositorio de artefactos. Este proceso está descrito en la sección [How to](howto/publish-reports)
+Uno de las funciones utiles para este servicio es para publicar informes en el repositorio de artefactos. Este proceso está descrito en la sección [How to](how-to/publish-reports)

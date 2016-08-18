@@ -36,7 +36,7 @@
     my $tabactive =
         $has_comments ? 'discussion'
       : $permissionDashboard && length($dashboard) ? 'dashboard'
-      : $fields->{more}     ? 'more'
+      : _array($fields->{more}) ? 'more'
       : $permissionActivity ? 'activity'
       : $permissionJobs     ? 'jobs'
       :                       'none';
