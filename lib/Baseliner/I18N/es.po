@@ -13115,6 +13115,10 @@ msgid "Input Stash Variable"
 msgstr ""
 
 #: root/forms/write_file.js
+msgid "Write local file"
+msgstr "Escribir en fichero local"
+
+#: root/forms/write_file.js
 msgid "Log Body"
 msgstr "Log del cuerpo"
 
@@ -13141,6 +13145,10 @@ msgstr "Variables de la plantilla"
 #: root/forms/write_file.js
 msgid "Content Encoding"
 msgstr "Codificación del Contenido"
+
+#: root/forms/write_file.js
+msgid "Line Endings"
+msgstr "Los finales de línea"
 
 #: root/forms/zip_local.js root/forms/zip_local_nature.js
 msgid "Zip File Path"

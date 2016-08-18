@@ -1,6 +1,7 @@
 (function(params){
     var data = params.data || {};
-    
+    Cla.help_push({ title:_('Write local file'), path:'rules/palette/services/write-local-file' });
+
     var body;
     if( Ext.isIE ) {
         body = new Ext.form.TextArea({ fieldLabel:_('Contents'), anchor:'100%', height: 350, name:'body', value: data.body  });
