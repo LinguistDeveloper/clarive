@@ -767,6 +767,33 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     height: 100% !important;
 }
 
+.img-main-logo-file {
+    border:0px;
+    max-width:220px;
+    max-height:35px;
+}
+
+.img-custom-logo-file{
+    border:0px;
+    max-width:220px;
+    max-height:28px;
+}
+
+img[src$='.svg'][src^='/static/images'] {
+   height: 16px;
+   width: 16px;
+}
+
+img.img-main-logo-file[src$='.svg'] {
+   height: 26px;
+   width: 106px;
+}
+
+img.img-custom-logo-file[src$='.svg'] {
+   height: 31px;
+   width: 208px;
+}
+
 .x-fieldlet-type-height {
     width: 50px !important;
     font: normal 12px tahoma, arial, helvetica, sans-serif;
