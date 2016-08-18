@@ -1,6 +1,8 @@
 (function(params) {
     var data = params.data || {};
 
+    Cla.help_push({ title: _('Create CI'), path: 'rules/palette/services/create-ci' });
+
     var classname = new Baseliner.CIClassCombo({
         name: 'classname',
         allowBlank: false,

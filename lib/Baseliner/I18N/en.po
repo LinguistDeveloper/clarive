@@ -5023,7 +5023,7 @@ msgstr ""
 msgid "Invoke CI methods"
 msgstr ""
 
-#: lib/BaselinerX/Service/CIServices.pm
+#: lib/BaselinerX/Service/CIServices.pm root/forms/ci_create.js
 msgid "Create CI"
 msgstr ""
 
