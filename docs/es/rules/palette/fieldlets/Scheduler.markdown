@@ -5,7 +5,7 @@ icon: clock.svg
 ---
 
 Permite añadir una tabla como planificadora de eventos.
-Su funcionamiento es similar a los [Milestones](Reglas/Paleta/Fieldlets/Milestones).
+Su funcionamiento es similar a los [Milestones](rules/palette/fieldlets/Milestones).
 La lista de elementos que pueden ser configurados dentro del fieldlet.
 El formato del planificador se compone de Hito, fecha fin planificada y fecha fin real.
 

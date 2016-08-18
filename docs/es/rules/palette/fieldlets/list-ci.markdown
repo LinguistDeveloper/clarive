@@ -53,7 +53,7 @@ Permite añadir un filtro avanzado JSON
 
 
 
-Donde id es el [MID](Conceptos/mid) de la categoría.
+Donde id es el [MID](concepts/mid) de la categoría.
 
 
 ### Clase CI

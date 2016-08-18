@@ -3,81 +3,71 @@ title: Conceptos de regla
 index: 200
 icon: rule.svg
 ---
-* Una vez que las diferentes necesidades se registran y se gestionan a tavés de los distintos estados que componen su ciclo de vida, estos deben de ser desplegados y entregados como operación final del ciclo. 
+* Una vez que las diferentes necesidades se registran y se gestionan a tavés de los distintos estados que componen su ciclo de vida, estos deben de ser desplegados y entregados como operación final del ciclo.
 * La gestión de reglas permite automatizar el despligue entre sistemas.
-* La automatización se realiza a través de ejecuciones de reglas; estas son creadas utilizando la definición de los procesos de Clarive, la cual además, suministra todas las herramientas necesarias para su gestión. 
+* La automatización se realiza a través de ejecuciones de reglas; estas son creadas utilizando la definición de los procesos de Clarive, la cual además, suministra todas las herramientas necesarias para su gestión.
 
-
-  
-<br /> 
 ### Tipos de reglas
-* Existen seis tipos de reglas: <br />
+Existen seis tipos de reglas:
 
-&nbsp; &nbsp;• **Eventos** - Lanzadores desencadenantes basados en acciones realizadas por el sistema. Hay tres tipos de reglas de evento: <br />
+**Eventos** - Lanzadores desencadenantes basados en acciones realizadas por el sistema. Hay tres tipos de reglas de evento:
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Pre online* - Carga la regla antes de la ejecución del evento. <br />
+ *Pre online* - Carga la regla antes de la ejecución del evento.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Post online* - La regla se carga de manera síncrona con el evento. <br />
+ *Post online* - La regla se carga de manera síncrona con el evento.
 
-&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; • *Post offline* - La regla se ejecuta tras producirse el evento. <br />
+ *Post offline* - La regla se ejecuta tras producirse el evento.
 
+**Cadena de pase**: Referentes a las cadenas de pase, para desplegar o realizar [rollback](concepts/rollback). Tres posibles pasos finales:
 
-&nbsp; &nbsp;• **Cadena de pase**: Referentes a las cadenas de pase, para desplegar o realizar [rollback](Conceptos/rollback). Tres posibles pasos finales: <br />
-    
-&nbsp; &nbsp;&nbsp; &nbsp; • *Promote* - Despliega a otro entorno, conceptualmente otro superior, por ejemplo de pre-producción a producción. <br />
-    
-&nbsp; &nbsp;&nbsp; &nbsp; • *Static* - Despliega al mismo entorno.
-    
-&nbsp; &nbsp;&nbsp; &nbsp; • *Demote* - Degrada a un entorno inferior, por ejemplo, de producción a pre-producción.
+ *Promote* - Despliega a otro entorno, conceptualmente otro superior, por ejemplo de pre-producción a producción.
 
-<br />
+ *Static* - Despliega al mismo entorno.
+
+ *Demote* - Degrada a un entorno inferior, por ejemplo, de producción a pre-producción.
+
 #### Pasos de un job
-* Cuando se crea una regla de tipo cadena de pase, se muestran cinco pasos: <br />
+* Cuando se crea una regla de tipo cadena de pase, se muestran cinco pasos:
 
-&nbsp; &nbsp;• **CHECK** - Comprueba antes de crear el job, el objeto del job no está disponible todavía. <br />
+**CHECK** - Comprueba antes de crear el job, el objeto del job no está disponible todavía.
 
-&nbsp; &nbsp;• **INIT** - Comprueba después de la creación, pero el job no se ejecuta aún. <br />
+**INIT** - Comprueba después de la creación, pero el job no se ejecuta aún.
 
-&nbsp; &nbsp;• **PRE** - Inmediatamente despues de la implmentación antes de la hora programada <br />
+**PRE** - Inmediatamente despues de la implmentación antes de la hora programada
 
-&nbsp; &nbsp;• **RUN** - Se ejecuta a la hora programada. <br />
+**RUN** - Se ejecuta a la hora programada.
 
-&nbsp; &nbsp;• **POST** - Fase que siempre se ejecuta cuando el trabajo ha terminado independientemente de su resultado.
+**POST** - Fase que siempre se ejecuta cuando el trabajo ha terminado independientemente de su resultado.
 
-<br />
 ### Tipos de tareas
-* La regla se puede dividir en tres tipos de tareas: <br />
+* La regla se puede dividir en tres tipos de tareas:
 
+**Control** - Proporciona a la regla flujos de control, como son condicionales IF o iteraciones FOR asi como tareas *ad-hoc*.
 
-&nbsp; &nbsp;• **Control** - Proporciona a la regla flujos de control, como son condicionales IF o iteraciones FOR asi como tareas *ad-hoc*. <br />
+**Servicios** - Para definir el pase, puede ser:
 
-&nbsp; &nbsp;• **Servicios** - Para definir el pase, puede ser: <br />
-      
-&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; • *Servicios del job* - Tareas asociadas al job. <br />
-      
-&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; • *Servicios generales* - De tipo general. <br />
+ *Servicios del job* - Tareas asociadas al job.
 
-&nbsp; &nbsp;• **Reglas** - Permite incluir reglas dentro de otras reglas para simplicar el flujo. Estas reglas tiene que ser de tipo independiente.
+ *Servicios generales* - De tipo general.
 
-&nbsp; &nbsp;• **Dashlets** - Componentes que sirven para construir los [dashboards](Conceptos/dashboards) 
+**Reglas** - Permite incluir reglas dentro de otras reglas para simplicar el flujo. Estas reglas tiene que ser de tipo independiente.
 
-&nbsp; &nbsp;• **Fieldlets** - Elementos que dan forma a los formularios de los [tópicos](Conceptos/topic) 
+**Dashlets** - Componentes que sirven para construir los [dashboards](concepts/dashboards)
 
+**Fieldlets** - Elementos que dan forma a los formularios de los [tópicos](concepts/topic)
 
 ### Otras reglas
 
+**Report** - Crea un informe con código PER
 
-&nbsp; &nbsp;• **Report** - Crea un informe con código PERL<br />
+**Servicio web** - Permite integrar servicios web en reglas.
 
-&nbsp; &nbsp;• **Servicio web** - Permite integrar servicios web en reglas. <br />
+**Independent** - Pequeñas reglas que pueden ser utilizadas en otras reglas más complejas simplificando el sistema.
 
-&nbsp; &nbsp;• **Independent** - Pequeñas reglas que pueden ser utilizadas en otras reglas más complejas simplificando el sistema. <br />
+**Dashboard** - Regla que permite al usuario crear dashboards personalizados con componentes dashlets.
 
-&nbsp; &nbsp;• **Dashboard** - Regla que permite al usuario crear dashboards personalizados con componentes dashlets. <br />
-
-&nbsp; &nbsp;• **Form** - Regla compuesta por fieldlets para crear los formularios que se usarán en los tópicos. <br />
+**Form** - Regla compuesta por fieldlets para crear los formularios que se usarán en los tópicos.
 
 
-<br />
 ### Stash
-*  El [stash](Conceptos/stash) de las reglas en el sistema de CLarive mantienen el estao de los pases entre ejecuciones. Las variables stash son utilizadas para comunicar diferentes tareas.
+*  El [stash](concepts/stash) de las reglas en el sistema de CLarive mantienen el estao de los pases entre ejecuciones. Las variables stash son utilizadas para comunicar diferentes tareas.

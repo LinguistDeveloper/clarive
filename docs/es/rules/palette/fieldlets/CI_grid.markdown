@@ -52,7 +52,7 @@ icon: grid
 
 
 
-• Los campos seleccionables para poder filtrar se pueden consultar a través del REPL. En este caso el comando será: `ci->project->find_one();`
+Los campos seleccionables para poder filtrar se pueden consultar a través del REPL. En este caso el comando será: `ci->project->find_one();`
 
 * También es posible aplicar intervalos para limitar los resultados. Para ello es necesario hacer uso de los comandos *lt* y *gt* propios de MongoDB.
 * Así para mostrar solo proyectos creados durante un intervalo de tiempo bastaria con construir la siguiente query:
@@ -66,9 +66,7 @@ icon: grid
 * Permite filtrar las posibles opciones seleccionables.
 
 **Selección por rol**
-
 **Selección por clase**
-
 
 
 ### Roles

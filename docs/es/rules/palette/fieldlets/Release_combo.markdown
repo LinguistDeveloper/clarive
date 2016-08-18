@@ -9,13 +9,9 @@ icon: combo_box
 
 ### Ubicación del fieldlet
 * Indica en que parte de la vista se pondrá el fieldlet.
-
-&nbsp; &nbsp;• **Cabecera** - Se muestra en la parte central del formulario.
-
-&nbsp; &nbsp;• **Cuerpo** - Se muestra en la parte derecha del formulario, debajo de la sección de detalles.
-
-&nbsp; &nbsp;• **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.
-
+    **Cabecera** - Se muestra en la parte central del formulario.
+    **Cuerpo** - Se muestra en la parte derecha del formulario, debajo de la sección de detalles.
+    **Más información** - Se muestra en la pestaña de Más información situada en la parte inferior del tópico.
 
 ### Anchura en canvas
 * Establece el ancho que ocupará el elemento en el formulario.
@@ -56,9 +52,7 @@ Permite añadir un filtro avanzado JSON
 
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-
-&nbsp;&nbsp;• Donde id es el [MID](Conceptos/mid) de la categoría.
-
+Donde id es el [MID](concepts/mid) de la categoría.
 
 ### Campo Release
 * Establece la dependencia entre este tópico de tipo Release y los tópicos dependientes.

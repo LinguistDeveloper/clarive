@@ -49,7 +49,7 @@ Permite añadir un filtro avanzado JSON
 
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-Donde id es el [MID](Conceptos/mid) de la categoría.
+Donde id es el [MID](concepts/mid) de la categoría.
 
 ### Clase CI
 * Especifica la clase de CI que se va a mostrar en las opciones. 

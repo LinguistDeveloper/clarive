@@ -9,23 +9,19 @@ icon: prefs
 * Para acceder a estas preferencias, hay que hacer click en el usuario localizado arriba a la derecha de la aplicación y seleccionar la opción de `Preferencias`
 * Estas son las propiedades que se pueden ver o modificar:
 
-<br />
 ### General
-- **Idioma de la interfaz** - Establece el idioma de la interfaz de la herramienta. <br />
-- **Zona horaria** - Establece la zona horaria preferida del usuario. <br />
-- **Country** - Establece el país del usuario. <br />
-- **Zona horaria del navegador** - Informa de la zona horaria desde donde se está accediendo a Clarive. <br />
-- **Zona horaria del servidor** - Informa de la zona horaria donde está alojado el servidor. <br />
-- **Formato de la fecha** - Permite seleccionar el formato de la fecha preferido por el usuario. <br />
-- **Formato de la hora** - Permite seleccionar el formato de la hora preferido por el usuario. <br />
+- **Idioma de la interfaz** - Establece el idioma de la interfaz de la herramienta.
+- **Zona horaria** - Establece la zona horaria preferida del usuario.
+- **Country** - Establece el país del usuario.
+- **Zona horaria del navegador** - Informa de la zona horaria desde donde se está accediendo a Clarive.
+- **Zona horaria del servidor** - Informa de la zona horaria donde está alojado el servidor.
+- **Formato de la fecha** - Permite seleccionar el formato de la fecha preferido por el usuario.
+- **Formato de la hora** - Permite seleccionar el formato de la hora preferido por el usuario.
 - **Dashboard por defecto** - Establece el dashboard por defecto. Los dashboard son asignados mediante los roles. Asegurese que su administrador ha habilitado a su usuario acceso a dashboards.
 
-<br />
 ### Avatar
-- **Cambiar Avatar** - Se genera de manera aleatoria un nuevo avatar. <br />
+- **Cambiar Avatar** - Se genera de manera aleatoria un nuevo avatar.
 - **Subir fichero** - Permite subir una imagen propia para utilizar de avatar.
 
-
-<br />
 ### API
-* Los usuarios con permiso de acceso a la API pueden obtener aqui su clave. Más información sobre las claves API [aqui](Conceptos/api_key).
+* Los usuarios con permiso de acceso a la API pueden obtener aqui su clave. Más información sobre las claves API [aqui](concepts/api_key).

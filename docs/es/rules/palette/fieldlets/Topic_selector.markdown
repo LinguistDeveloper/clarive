@@ -68,7 +68,7 @@ Permite añadir un filtro avanzado JSON
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
 
-Donde id es el [MID](Conceptos/mid) de la categoría.
+Donde id es el [MID](concepts/mid) de la categoría.
 
 
 
@@ -118,11 +118,11 @@ Nota:Opción solo disponible en el Tipo Grid del fieldlet
 
 ### Campo para filtrar
 Permite filtrar la lista de los tópicos en función de un campo de este mismo formulario.
- 
+
 En el campo se completa con el ID del elemento que se quiere usar de filtro.
- 
-Por ejemplo, si en el formulario existen [opciones](Reglas/Paleta/Fieldlets/Pills) de categorías, la herramienta listará solo los tópicos de la categoría seleccionada en las opciones. Si el usuario cambia de opción, la lista también cambia a los tópicos de la otra categoría.
- 
+
+Por ejemplo, si en el formulario existen [opciones](rules/palette/fieldlets/Pills) de categorías, la herramienta listará solo los tópicos de la categoría seleccionada en las opciones. Si el usuario cambia de opción, la lista también cambia a los tópicos de la otra categoría.
+
 Este campo es obligatorio si el siguiente campo no está vacio.
 
 ### Datos para filtrar

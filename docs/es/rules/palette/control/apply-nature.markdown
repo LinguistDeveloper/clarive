@@ -2,7 +2,7 @@
 title: APPLY NATURE
 icon: loop.gif
 ---
-* Si se aplica una naturaleza a un cambio, se cargan las variables de configuración del CI al [stash](Conceptos/stash)
-* A continuación hay que configurar el componente: <br />
+* Si se aplica una naturaleza a un cambio, se cargan las variables de configuración del CI al [stash](concepts/stash)
+* A continuación hay que configurar el componente:
 
-&nbsp; &nbsp;• **Naturaleza**: Cuadro desplegable donde aparecen solo las naturalezas existentes. Solo se puede seleccionar una.
+**Naturaleza**: Cuadro desplegable donde aparecen solo las naturalezas existentes. Solo se puede seleccionar una.

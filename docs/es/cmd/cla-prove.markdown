@@ -2,11 +2,11 @@
 title: cla prove - Ejecuta un test interno
 icon: console.svg
 ---
-* `cla prove`: Ejecuta un test interno y comprueba el resultado. 
+* `cla prove`: Ejecuta un test interno y comprueba el resultado.
 * Este comando ejecuta fichero de test localizados en el directorio y muestra los resultados en pantalla.
 * Cada caso de prueba comienza con:
 
-`[start] <nombre_caso_prueba>`  
+`[start] <nombre_caso_prueba>`
 
 * Y finaliza con: 
 
@@ -14,10 +14,8 @@ icon: console.svg
 
 * En caso de error, se mostrará un mensaje de error en rojo.
 * El comando acepta las siguientes opciones:
-
-&nbsp; &nbsp;• `-- type <directorio>` - Ejecuta solo los test que estén definidos en la ruta de `<directorio>`. <br />
-
-&nbsp; &nbsp;• `-- case <nombre_caso>` - Ejecuta solo el test `<nombre_caso>`.
+    `-- type <directorio>` - Ejecuta solo los test que estén definidos en la ruta de `<directorio>`.
+    `-- case <nombre_caso>` - Ejecuta solo el test `<nombre_caso>`.
 
 Este comando tiene un subcomando que puede ser consultado a través de la opción de ayuda:
             

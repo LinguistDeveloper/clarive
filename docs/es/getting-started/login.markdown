@@ -3,23 +3,19 @@ title: Login
 index: 3000
 icon: user.svg
 ---
-* Antes de poder acceder a la herramienta, el Administrador de Clarive debe de registrar al usuario desde la [Administración de usuarios](Administracion/user)
-* El administrador tiene que suministrar al usuario la siguiente información: <br />
+* Antes de poder acceder a la herramienta, el Administrador de Clarive debe de registrar al usuario desde la [Administración de usuarios](admin/user)
+* El administrador tiene que suministrar al usuario la siguiente información:
+    **Usuario** – El usuario creado dentro de la herramienta y con el que tendrá acceso a Clarive.
+    **Contraseña** – Contraseña generada por el administrador. Sensible a mayúsculas/minúsculas.
 
-&nbsp; &nbsp;• **Usuario** – El usuario creado dentro de la herramienta y con el que tendrá acceso a Clarive. <br />
-
-&nbsp; &nbsp;• **Contraseña** – Contraseña generada por el administrador. Sensible a mayúsculas/minúsculas. <br />
-
-&nbsp;* *El usuario podrá modificar la contraseña desde las preferencias de usuario.* <br />
+* El usuario podrá modificar la contraseña desde las preferencias de usuario.*
 
 **Nota**: Por lo general, los administradores deshabilitan los privilegios de poder cambiar la contraseña cuando se trata de un inicio único de sesión o la autenticación LDAP / SAML está habilitada.
 
-
-<br />
 ### Login externo
 * Si se quiere realizar el login a Clarive directamente desde otra ubicación (portal web por ejemplo), se puede utilizar este código HTML como plantilla para crear el formulario:
 
-<br />
+
 <textarea style="height: 250px; width: 90%">
     &lt;form action="https://clariveserver:port/login" method="POST"&gt;<br />
     &lt;table border="0" cellspacing="5" cellpadding="5"&gt;<br />

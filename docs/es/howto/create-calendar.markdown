@@ -37,4 +37,4 @@ Para finalizar pulsamos el botón <img src="/static/images/icons/save.png"
 /> Guardar.
 
 Una vez guardado se puede editar en la sección [Editar
-calendario](howto/editar-calendario).
+calendario](howto/create-calendar).

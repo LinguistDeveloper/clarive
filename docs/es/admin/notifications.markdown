@@ -9,43 +9,30 @@ icon: email
 * Esta ventana muestra una lista con las notificaciones existentes y un menú de acciones.
 * La información se presenta de la siguiente manera:
 
-
 ## Columnas
-
 
 #### Eventos
 * Describe el evento y su acción asociada.
 * En Clarive, las notificaciones se configuran a través de eventos.
 
-
-
 #### Destinatarios
 * Indica los destinatarios de la notificación.
 
-
 #### Ámbitos
 * Describe más propiedades de la notificación. Estas propiedades son:
-    
-    *Proyecto*: Indica el proyecto definido al crear la notificación. Esto permite enviar notificaciones en función al proyecto donde ocurra el evento.
-
-    *Entorno*: Indica el entorno definido para la notificación.
-
-    *Estado*: Indica el estado final que se quiere para la notificación.
-
-    *Paso*: Indica el paso que se quiere para la notificación. 
-    
-    *Categoría*: Indica las categorías por las que el evento podrá activarse.  
-    
-    *Categoría / Estado*: Define los estados de las categorías para la notificación.
-
+        *Proyecto*: Indica el proyecto definido al crear la notificación. Esto permite enviar notificaciones en función al proyecto donde ocurra el evento.
+        *Entorno*: Indica el entorno definido para la notificación.
+        *Estado*: Indica el estado final que se quiere para la notificación.
+        *Paso*: Indica el paso que se quiere para la notificación.
+        *Categoría*: Indica las categorías por las que el evento podrá activarse.
+        *Categoría / Estado*: Define los estados de las categorías para la notificación.
 
 #### Acción
 * Indica el tipo de acción de la notificación.
 
-
 #### Activado
 * Todas las notificaciones pueden ser activadas o desactivadas. Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start.png" /> o <img src ="/static/images/icons/stop.png "/>.
-* Al igual que el resto de listas que hay en Clarive, tiene las mismas funcionalidades que las demás, esto es, posibilidad de ordenar una columna pinchando en el nombre de la misma, seleccionando las columnas que se quieren mostrar o realizar una [búsqueda](Primeros_pasos/search-syntax).
+* Al igual que el resto de listas que hay en Clarive, tiene las mismas funcionalidades que las demás, esto es, posibilidad de ordenar una columna pinchando en el nombre de la misma, seleccionando las columnas que se quieren mostrar o realizar una [búsqueda](getting-started/search-syntax).
 * Además, se pueden filtrar los resultados en función de la acción o del estado de la notificación. Para ello, pinchar en la pestaña situada en el lateral del campo Acción o del campo Activado y, a continuación, seleccionar el filtro que se desee.
 
 
@@ -53,7 +40,7 @@ icon: email
 ## Acciones disponibles
 
 #### <img src = "/static/images/icons/add.svg" /> Crear
-* Permite crear una nueva configuración. Para ello hay que configurar los siguientes parámetros: <br />
+* Permite crear una nueva configuración. Para ello hay que configurar los siguientes parámetros:
 
 Ejemplo: event.topic.create
 
@@ -84,9 +71,9 @@ Como regla general, se describen los siguientes eventos:
 *Ws*: Servicios web.
 
 
-`Enviar / Excluir` 
+`Enviar / Excluir`
 
-Las notificaciones puede ser configuradas para ser enviadas o excluidas. 
+Las notificaciones puede ser configuradas para ser enviadas o excluidas.
 
 Por defecto Clarive tiene algunas notificaciones activadas como por ejemplo enviar una notificaciones al propietario del estado del tópico o al responsable de una categoría determinada. Esta notificacion se puede evitar añadiendo una notificación de tipo Exclusión.
 
@@ -94,73 +81,73 @@ En el orden de las notificaciones para ser ejecutadas, primero se ejecutan las n
 
 
 
-`Pantilla` 
+`Pantilla`
 
-Son plantillas HTML que define el diseño de la notificación. 
+Son plantillas HTML que define el diseño de la notificación.
 
-Es necesario seleccionar las opciones que comienzan por "generic". 
+Es necesario seleccionar las opciones que comienzan por "generic".
 
-La plantillas *generic.html* es la más sencilla compuesta por un título y un cuerpo. 
+La plantillas *generic.html* es la más sencilla compuesta por un título y un cuerpo.
 
-El resto de plantillas contienen elementos más concretos: 
+El resto de plantillas contienen elementos más concretos:
 
-*generic_assigned.html*: Plantilla más especifica para eventois de tipo `event.topic.modify_field`. 
+*generic_assigned.html*: Plantilla más especifica para eventois de tipo `event.topic.modify_field`.
 
-*generic_post.html*: Utilizada comunmente para eventos sobre comentarios. 
+*generic_post.html*: Utilizada comunmente para eventos sobre comentarios.
 
-*generic_rule.html*: Plantilla HTML optimizada para eventos de tipo regla. 
+*generic_rule.html*: Plantilla HTML optimizada para eventos de tipo regla.
 
-*generic_topic.html*: Plantilla utilizada para eventos sobre tópicos. 
+*generic_topic.html*: Plantilla utilizada para eventos sobre tópicos.
 
 
 
-`Asunto` - Para el asunto de la notificación es posible crear uno nuevo o utilizar el que tendrá por defecto. En caso de querer establecer un asunto personalizado hay que tener en cuenta: 
+`Asunto` - Para el asunto de la notificación es posible crear uno nuevo o utilizar el que tendrá por defecto. En caso de querer establecer un asunto personalizado hay que tener en cuenta:
 
-Que el asunto sea breve. 
+Que el asunto sea breve.
 
 El asunto puede ser dinámico utilizando variables stash, por ejemplo `$ {username}`.
 
 `Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.gif" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
 
-*To* 
+*To*
 
-*CC* 
+*CC*
 
-*BCC* 
+*BCC*
 
 
-Segunda selección - Selecciona los destinatarios, estos pueden ser: 
+Segunda selección - Selecciona los destinatarios, estos pueden ser:
 
-*Usuarios* - Permite seleccionar a los usuarios que recibirán la notificación. 
+*Usuarios* - Permite seleccionar a los usuarios que recibirán la notificación.
 
 *Roles* - Permite notificar del evento a un grupo de usuarios que tenga un mismo rol.
 
-*Acciones* 
+*Acciones*
 
-*Fields* 
+*Fields*
 
-*Owner* 
+*Owner*
 
 *Email* - Envia la notificacion a los emails especficados, sean usuarios de la herramienta o no.
 
 
 
-En algunos casos se necesita información adicional sobre el ámbito del evento, por ejemplo, las condiciones que se tienen que cumplir en un evento de despliegue. 
+En algunos casos se necesita información adicional sobre el ámbito del evento, por ejemplo, las condiciones que se tienen que cumplir en un evento de despliegue.
 
 *Evento de tipo job*. Campo adicional: Proyecto/Entorno/Estado - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, entorno o estado. Los eventos de tipo step tiene un campo adicional Paso, el cuál permite avisar en función del paso.
 
 *Post*. Campos adicionales - Proyecto/Categoría/Estado. - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, categoría o estado.
 
-*Topic*. Campos adicionales - Proyecto/Categoría/Estado. - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, categoría o estado. 
+*Topic*. Campos adicionales - Proyecto/Categoría/Estado. - Permite realizar un mejor sistema de notificaciones al poder avisar en función del proyecto, categoría o estado.
 
 
 
-Cada sistema de eventos tiene distintos comportamientos: 
+Cada sistema de eventos tiene distintos comportamientos:
 
-Cuando se deja en blanco la definición de la notificación, la notificación sólo se pondrá en marcha si el evento también tiene el campo vacío. 
+Cuando se deja en blanco la definición de la notificación, la notificación sólo se pondrá en marcha si el evento también tiene el campo vacío.
 
 
-Cuando se marca la casilla "Todos", a la derecha de los campos, la condición se cumple para cualquier valor de los datos en el evento. 
+Cuando se marca la casilla "Todos", a la derecha de los campos, la condición se cumple para cualquier valor de los datos en el evento.
 
 
 

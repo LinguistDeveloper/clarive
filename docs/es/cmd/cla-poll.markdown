@@ -4,18 +4,13 @@ icon: console.svg
 ---
 * `cla poll`: Herramienta de monitorización.  Monitoring tool. Without any option checks.
 * Ejecutando `cla poll` sin ningun argumento se comprueba:
-
-&nbsp; &nbsp;• Los procesos que se están ejecutando. <br />
-
-&nbsp; &nbsp;• La conexión al servicio web de Clarive. <br />
-
-&nbsp; &nbsp;• La conexión a *nginx*. <br />
-
-&nbsp; &nbsp;• La conexión a Mongo.
+    Los procesos que se están ejecutando.
+    La conexión al servicio web de Clarive.
+    La conexión a *nginx*.
+    La conexión a Mongo.
 
 * Las opciones del comando son las siguientes:
-
-&nbsp; &nbsp;• `-h` - Muestra la ayuda del comando específico.
+    `-h` - Muestra la ayuda del comando específico.
 
     >cla poll -h
 
@@ -37,17 +32,15 @@ icon: console.svg
          --act_redis            1=try redis connection, 0=skip redis status
          --timeout_web    seconds to wait for clarive/nginx web response, 0=no timeout
          --error_rc       return code for fatal errors
-         --pid_filter     regular expression to filter in pid files    
+         --pid_filter     regular expression to filter in pid files
 
 
 * `--error_rc`: Define un nivel personalizado para los errores importantes. Tiene que ser un número y su valor predeterminado es 10.
 * `--web`: Si está indicado, se comprueba la conexión al servidor web Clarive, por defecto su valor se establece en 1. Si se indica con 0, no se hará la comprobación
 * `--url_web`: Host y puertodonde el servidor está corriendo. Si no tiene valor definido, la opción puede ser definida a través de:
+    `--host <host Web Server>` - Host se establecerá con el valor ‘localhost’.
+    `-- port <port where Clarive is listening>` - El valor del puerto se establece a ‘3000’.
 
-&nbsp; &nbsp;• `--host <host Web Server>` - Host se establecerá con el valor ‘localhost’. <br />
-
-&nbsp; &nbsp;• `-- port <port where Clarive is listening>` - El valor del puerto se establece a ‘3000’. <br/>
-    
 * `--api_key`: Muestra la clave API para acceder a Clarive.
 * `--timeout_web`:  Tiempo de espera para obtener respuesta de la web. Por defecto son 5 segundos. Si el parámetro se configura a 0, no habrá tiempo límite.
 * `--act_nginx`: Si está 0 la herramienta no comprobará la correcta conexión a nginx. Por defecto este valor es 1.

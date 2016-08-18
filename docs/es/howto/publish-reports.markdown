@@ -14,7 +14,7 @@ Este fichero temporal se **elimina** cuando se termina el evento. Sin embargo, s
 
 Crearemos una regla de tipo evento donde el evento seleccionado será *event.topic_list.export*.
 
-Una regla básica para el funcionamiento de la exportación es incluir el elemento *[service.artifacts.publish](Reglas/Paleta/Servicios/publish_files_according_catalog)* que permite publicar el informe en el repostorio de artefactos.
+Una regla básica para el funcionamiento de la exportación es incluir el elemento *[service.artifacts.publish](rules/palette/services/publish_files_according_catalog)* que permite publicar el informe en el repostorio de artefactos.
 
 A continuación configuramos el servicio:
 

@@ -6,11 +6,9 @@ icon: changesets
 * Los ficheros y elementos que pertenezcan a otro entorno será eliminados.
 * Los elementos configurables son los siguientes:
 
-<br />
 ### Rename files
 * Se establece a 1 en el caso de querer cambiar el nombre.
 
-<br />
 ### Rename items
 * Se establece a 1 si se requiere el cambio de nombre.
 * Por defecto ambos valores están a 1.

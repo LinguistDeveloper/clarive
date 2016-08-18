@@ -5,11 +5,9 @@ icon: console.svg
 ---
 * `cla help`: Clarive dispone de una serie de comandos que pueden ser ejecutados para poder administrar correctamente la aplicación.
 * Estos comandos son llamados a través del comando `cla`: `cla <comando><argumentos>`
-* El comando `cla` tiene dos opciones: <br />
-
-&nbsp; &nbsp;• `version`: Muestra la versión de Clarive. <br />
-
-&nbsp; &nbsp;• `help`: Muestra los comandos disponibles para su uso. La ayuda también se puede consultar a través de la opción `-h`: `cla -h`
+* El comando `cla` tiene dos opciones:
+    `version`: Muestra la versión de Clarive.
+    `help`: Muestra los comandos disponibles para su uso. La ayuda también se puede consultar a través de la opción `-h`: `cla -h`
 
 * El comando `Cla` está a cargo de la recopilación de todos los datos de configuración de los archivos de configuración, el medio ambiente y los argumentos que se pasan a través de la línea de comandos antes de ejecutar la propia convocatoria de comandos.
 * El comando `Cla` recopila todos los datos de configuración, archivos, entornos y argumentos que se pasan por medio de argumentos a través de la linea de comandos antes de ejecutar la llamada.

@@ -10,42 +10,31 @@ icon: rule.svg
 * Desde el editor de reglas, crear una nueva regla de tipo `Evento` asociada al evento `User Login Attempt`
 (`event.auth.attempt`).
 
-
-<br />
 ### Escriba los detalles de la regla
 * Escriba sus propias rutinas de autenticación dentro la regla, por ejemplo, llamar a un servicio web o buscar a un usuario a través de un comando.
 
-Las variables puestos a disposición en el alijo para usted, son los siguientes:* Las variables puestas a disposición del usuario en el stash son: <br />
+Las variables puestos a disposición en el alijo para usted, son los siguientes:* Las variables puestas a disposición del usuario en el stash son:
+    `Username` - El ID de usuario, debe coincidir con el registro en la base de datos de usuario en Clarive.
+    `Login` - El texto completo introducido en el cuadro de inicio de sesión.
+    `Password` - La contraseña introducida por el usuario.
+    `Realm` - Define el dominio de autenticación de inicio de sesión que el usuario ha introducido. Puede estar vacío o puede tener algo como 'local' para usuarios locales.
 
-&nbsp; &nbsp;• `Username` - El ID de usuario, debe coincidir con el registro en la base de datos de usuario en Clarive. <br />
-
-&nbsp; &nbsp;• `Login` - El texto completo introducido en el cuadro de inicio de sesión. <br />
-
-&nbsp; &nbsp;• `Password` - La contraseña introducida por el usuario. <br />
-
-&nbsp; &nbsp;• `Realm` - Define el dominio de autenticación de inicio de sesión que el usuario ha introducido. Puede estar vacío o puede tener algo como 'local' para usuarios locales.
-
-<br />
 ### Permiso para que el usuario se autentique
 * Arrastre y suelte la tarea `Login usuario autorizado` de la paleta a la regla para autorizar al usuario.
 
-<br />
 ### Denegar la autentificación de un usuario
 * Arrastre y suelte la tarea `Login usuario denegado` de la paleta a la regla para denegar al usuario el acceso a Clarive.
 
-
 Considere también el uso del elemento de la paleta `Mensaje de error en el login` para publicar un mensaje de error en caso cuando un usuario que tenga denegada la autentificación lo intente.
 
-<br />
 ### Notas
 * Si no se permite que ni negar la autenticación de usuario, Clarive seguirá sus controles normales de autenticación.
 * En caso de que ni se permita ni se niegue de manera explicita la autenticación a un usuario, Clarive seguirá los pasos establecidos en el sistema para ello.
-* Esta regla invoca la clave de autenticación [Clave API](Conceptos/api_key).
+* Esta regla invoca la clave de autenticación [Clave API](concepts/api_key).
 
-<br />
 ### Ejemplo
 Esta regla es un ejemplo de la estructura básica para validar un usuario mediante una regla. Se puede importar desde las reglas importandola y pegando el código.
-            
+
         [{
         "attributes": {
             "palette": false,
@@ -134,6 +123,3 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
         }]
         }]
 
-
-
-    
