@@ -172,6 +172,42 @@ subtest 'put_file: sends correct request' => sub {
     like $sent, qr/hello/;
 };
 
+subtest 'put_file: sends correct crc when file is empty' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock( post => sub { { success => 1 } } );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my ( $local_fh, $local_file ) = tempfile();
+    print $local_fh '';
+    close $local_fh;
+
+    my $ret = $clax_agent->put_file( local => $local_file, remote => 'remote-file', user => 'user' );
+
+    my ($url) = $ua->mocked_call_args('post');
+
+    is $url, 'http://bar:8888/tree/?crc=00000000';
+};
+
+subtest 'put_file: sends correct padded crc' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock( post => sub { { success => 1 } } );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my ( $local_fh, $local_file ) = tempfile();
+    print $local_fh 'RLXK0tyT';
+    close $local_fh;
+
+    my $ret = $clax_agent->put_file( local => $local_file, remote => 'remote-file', user => 'user' );
+
+    my ($url) = $ua->mocked_call_args('post');
+
+    is $url, 'http://bar:8888/tree/?crc=0f5cb862';
+};
+
 subtest 'put_file: sends request with attributes' => sub {
     my $ua = _mock_ua();
 

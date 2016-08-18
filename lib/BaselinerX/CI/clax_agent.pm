@@ -228,7 +228,7 @@ sub _crc32_from_file {
     my $crc = String::CRC32::crc32($fh);
     close $fh;
 
-    return sprintf '%x', $crc;
+    return sprintf '%08x', $crc;
 }
 
 sub _build_url {
