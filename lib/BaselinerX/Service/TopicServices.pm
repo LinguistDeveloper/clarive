@@ -169,51 +169,50 @@ sub web_request {
 sub change_status {
     my ( $self, $c, $config ) = @_;
 
-    my $stash = $c->stash;
     my $topics = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
-    my $old_status = $config->{old_status};
-    my $new_status = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
+    my $old_status_id_or_name = $config->{old_status};
+    my $new_status_id_or_name = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
 
-    # Let's check that all topics exist in the system
     my @topic_mids = Util->_array_or_commas($topics);
-    my @topic_rows;
 
-    # Generate the list of old_statuses valid to do the change
     my @statuses;
-    if ( $old_status ) {
-        @statuses = Util->_array_or_commas( $old_status );
+    if ( $old_status_id_or_name ) {
+        @statuses = Util->_array_or_commas( $old_status_id_or_name );
     }
 
+    my $new_status = ci->status->find_one(
+        { '$or' => [ { id_status => "$new_status_id_or_name" }, { name => "$new_status_id_or_name" } ] } );
+    if ( !$new_status ) {
+        _fail _loc( "Status %1 does not exist in the system", $new_status_id_or_name );
+    }
+
+    my @topic_rows;
     for my $mid ( @topic_mids ) {
         my $topic = mdb->topic->find_one( { mid => "$mid" } );
-        if ( !$topic ) {
-            _fail _loc("Topic %1 does not exist in the system", $mid);
+        _fail _loc("Topic %1 does not exist in the system", $mid) unless $topic;
+
+        my $old_status = $topic->{category_status};
+
+        if ( @statuses && !( grep { $old_status->{id_status} eq $_ || $old_status->{name} eq $_ } @statuses ) ) {
+            _fail _loc( 'Topic %1 not changed to %2 (%3). Current status is not in the valid old_status list',
+                $topic->{mid}, $new_status->{name}, $new_status_id_or_name );
         }
-        if ( @statuses && !($topic->{name_status} ~~ @statuses) ) {
-            _fail _loc('Topic %1 not changed to %2. Current status is not in the valid old_status list', $topic->{mid}, $new_status);
-        }
+
         push @topic_rows, $topic;
     }
 
-    #Let's get the new_status id
-    my $new_status_id;
-
-
-    ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => "$new_status"} );
-
-    if ( !$new_status_id ) {
-        ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => "$new_status"} );
-    }
-
-    if ( !$new_status_id ) {
-        _fail _loc("Status %1 does not exist in the system", $new_status);
-    }
-
     for my $topic ( @topic_rows ) {
-        _log _loc('Changing status for topic %1 to status %2', $topic->{mid}, $new_status_id);
-        Baseliner->model('Topic')->change_status(
+        my $old_status = $topic->{category_status};
+
+        _log _loc(
+            'Changing status for topic %1 from status `%2` (%3) to status `%4` (%5)',
+            $topic->{mid},       $old_status->{name}, $old_status->{id_status},
+            $new_status->{name}, $new_status->{id_status}
+        );
+
+        Baseliner::Model::Topic->new->change_status(
             change     => 1,
-            id_status  => $new_status_id,
+            id_status  => $new_status->{id_status},
             mid        => $topic->{mid},
             username   => $config->{username} // 'clarive'
         );
@@ -352,7 +351,7 @@ sub related {
     my $not_in_statuses = $config->{not_in_status} // 'off';
     my $categories = $config->{related_categories} // [];
     my $depth = $config->{depth} // 1;
-    my $include_event_mid = $config->{include_event_mid} eq 'on' ? '':$event_mid;
+    my $include_event_mid = $config->{include_event_mid} && $config->{include_event_mid} eq 'on' ? '':$event_mid;
     my $query_type = $config->{query_type} // 'children';
     my @fields = $config->{fields} ? split(',',$config->{fields}):();
     my $condition = {};
@@ -371,7 +370,6 @@ sub related {
 
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
-    _warn $condition;
     my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
 
     return \@related;
