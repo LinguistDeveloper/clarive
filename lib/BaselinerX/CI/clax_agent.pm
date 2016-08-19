@@ -26,7 +26,6 @@ sub BUILD {
 };
 
 sub error;
-sub rmpath;
 
 method mkpath ( $path ) {
     my $ua = $self->_build_ua;
@@ -254,7 +253,7 @@ sub rmpath {
     my $self = shift;
     my ($path) = @_;
 
-    return $self->delete_file(remote => $path);
+    return $self->delete_file(remote => $path, recursive => 1);
 }
 
 sub delete_file {
@@ -268,7 +267,11 @@ sub delete_file {
 
     my $ua = $self->_build_ua();
 
-    my $url      = $self->_build_url("/tree/$remote");
+    my $url = $self->_build_url("/tree/$remote");
+    if ( $params{recursive} ) {
+        $url->query_form( recursive => 1 );
+    }
+
     my $response = $ua->delete($url);
 
     if ( !$response->{success} ) {

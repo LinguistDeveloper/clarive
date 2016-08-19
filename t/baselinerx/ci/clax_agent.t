@@ -375,7 +375,7 @@ subtest 'rmpath: sends correct request' => sub {
 
     my ( $url ) = $ua->mocked_call_args('delete');
 
-    is $url, 'http://bar:8888/tree//foo/bar';
+    is $url, 'http://bar:8888/tree//foo/bar?recursive=1';
 };
 
 subtest 'mkpath: sends correct request' => sub {
