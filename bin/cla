@@ -76,9 +76,14 @@ elif [ "$1" == "proveui" ]; then
 elif [ "$1" == "cover" ]; then
     shift
 
+    ARGV=( "$@" )
+
+    if [ $# -eq 0 ]; then
+        ARGV[0]=t;
+    fi
+
     cover -delete -silent
-    prove -Ilib -It/lib -e 'bin/cla exec perl -It/lib -Ilib -MDevel::Cover=-coverage,statement,branch,condition,path,subroutine,time' -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "$@"
-    cover
+    cla exec cover -t +select ^lib +ignore ^ -make "prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r ${ARGV[@]}; echo >/dev/null"
 elif [ -f "$BINDIR/cla.exe" ]; then
     $BINDIR/cla.exe "$@"
 else
