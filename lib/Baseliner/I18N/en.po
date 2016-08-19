@@ -5722,7 +5722,7 @@ msgstr ""
 msgid "Error restarting $pid: "
 msgstr ""
 
-#: lib/BaselinerX/Service/Sleep.pm
+#: lib/BaselinerX/Service/Sleep.pm root/forms/sleep_job.js
 msgid "Sleep for a number of seconds"
 msgstr ""
 

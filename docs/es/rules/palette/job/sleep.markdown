@@ -7,4 +7,4 @@ El proceso se duerme por el número de segundos especificados.
 
 El editor tiene la siguiente clave:
 
-- **intervalo**: Tiempo a esperar en segundos. Por defecto es 5 segundo
+- **Segundos**: Tiempo a esperar en segundos. Por defecto, se duerme durante 5 segundos. Admite parte decimal (ejemplo: 3.5)

@@ -7,4 +7,4 @@ The process sleeps for a specified number of seconds.
 
 Data editor has the following key:
 
-- **interval**: Time to sleep in seconds. 5 seconds by default
+- **Seconds**: Time to sleep in seconds. 5 seconds by default.
