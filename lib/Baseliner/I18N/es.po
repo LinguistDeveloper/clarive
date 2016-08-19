@@ -5793,9 +5793,17 @@ msgstr ""
 msgid "Error restarting $pid: "
 msgstr ""
 
+#: lib/BaselinerX/Service/Sleep.pm root/forms/sleep_job.js
+msgid "Sleep for a number of seconds"
+msgstr "Esperar por un número de segundos"
+
 #: lib/BaselinerX/Service/Sleep.pm
-msgid "Job sleeping %1 seconds"
-msgstr ""
+msgid "Job sleeping for %1 seconds"
+msgstr "El pase espera por %1 segundos"
+
+#: lib/BaselinerX/Service/Sleep.pm
+msgid "Job awaking after %1 seconds"
+msgstr "El pase continua después de %1 segundos"
 
 #: lib/BaselinerX/Service/SystemMessages.pm root/comp/sms.js
 msgid "System Messages"
@@ -14170,6 +14178,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Job sleeping %1 seconds"
+#~ msgstr "Job esperando %1 segundos"
 
 #~ msgid "Are you sure you want to rerun the job"
 #~ msgstr "¿Seguro que quiere reiniciar el pase"
