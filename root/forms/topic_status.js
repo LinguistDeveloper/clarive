@@ -1,4 +1,7 @@
 (function(params) {
+
+    Cla.help_push({ title:_('Change topic status'), path:'rules/palette/job/change-status' });
+
     var data = params.data || {};
 
     var old_status = new Baseliner.StatusBox({

@@ -5159,7 +5159,6 @@ msgid "Missing or invalid parameter new_status"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-#: lib/BaselinerX/Service/TopicServices.pm
 msgid "Changing status for topic %1 to status %2"
 msgstr ""
 
@@ -5842,17 +5841,21 @@ msgid "Topic %1 not found"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
+msgid "Status %1 does not exist in the system"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
 msgid "Topic %1 does not exist in the system"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
 msgid ""
-"Topic %1 not changed to %2. Current status is not in the valid old_status "
-"list"
+"Topic %1 not changed to %2 (%3). Current status is not in the valid "
+"old_status list"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
-msgid "Status %1 does not exist in the system"
+msgid "Changing status for topic %1 from status `%2` (%3) to status `%4` (%5)"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
@@ -12934,8 +12937,12 @@ msgid "Do not exclude event mid"
 msgstr ""
 
 #: root/forms/topic_status.js
+msgid "Change topic status"
+msgstr "Cambiar el estado del tópico"
+
+#: root/forms/topic_status.js
 msgid "Old Statuses"
-msgstr ""
+msgstr "Estados antiguos"
 
 #: root/forms/topic_status.js
 msgid "New Status"

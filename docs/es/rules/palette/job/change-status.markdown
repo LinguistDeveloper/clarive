@@ -9,10 +9,10 @@ icon: topic.svg
 * Campo de texto donde introducir el MID del tópico o tópicos a transitar.
 * Permite varios tópicos a la vez, para ello, hay que separar los MIDs mediante comas.
 
-### Old statuses
-* Indica en que estado o estados ha de estar el tópico para que pueda transitar.
+### Estados actuales
+* Indica en que estado o estados está actualmente el tópico o tópicos.
 
-### New status
+### Nuevo estado
 * Indica el estado al que va a transitar el tópico.
 
 ### Usuario
