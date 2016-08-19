@@ -5341,6 +5341,7 @@ msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
 #: lib/BaselinerX/Service/Scripting.pm
+#: lib/BaselinerX/Service/WindowsService.pm
 msgid "Server %1 is inactive. Skipped"
 msgstr ""
 
@@ -5815,6 +5816,34 @@ msgstr ""
 msgid "Error parsing %1: %2"
 msgstr ""
 
+#: lib/BaselinerX/Service/WindowsService.pm root/forms/windows_service.js
+msgid "Windows Service"
+msgstr ""
+
+#: lib/BaselinerX/Service/WindowsService.pm
+msgid "Service `%1` is already running"
+msgstr ""
+
+#: lib/BaselinerX/Service/WindowsService.pm
+msgid "Service `%1` starting failed: %2"
+msgstr ""
+
+#: lib/BaselinerX/Service/WindowsService.pm
+msgid "Service `%1` started"
+msgstr ""
+
+#: lib/BaselinerX/Service/WindowsService.pm
+msgid "Service `%1` is already stopped"
+msgstr ""
+
+#: lib/BaselinerX/Service/WindowsService.pm
+msgid "Service `%1` stopping failed: %2"
+msgstr ""
+
+#: lib/BaselinerX/Service/WindowsService.pm
+msgid "Service `%1` stopped"
+msgstr ""
+
 #: lib/BaselinerX/Type/Controller/Config.pm
 msgid "Error storing config data"
 msgstr ""
@@ -5946,7 +5975,8 @@ msgstr ""
 #: root/ci/web_instance.js root/comp/lifecycle/workspace_new.js
 #: root/forms/eval_remote.js root/forms/ldap_search.js
 #: root/forms/retrieve_remote.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js root/site/model.js
+#: root/forms/ship_remote.js root/forms/sync_remote.js
+#: root/forms/windows_service.js root/site/model.js
 msgid "Server"
 msgstr ""
 
@@ -7292,7 +7322,8 @@ msgstr ""
 msgid "Daemons"
 msgstr ""
 
-#: root/comp/daemon_grid.js root/comp/dashboard_job.html root/site/model.js
+#: root/comp/daemon_grid.js root/comp/dashboard_job.html
+#: root/forms/windows_service.js root/site/model.js
 msgid "Service"
 msgstr ""
 
@@ -8929,6 +8960,7 @@ msgstr ""
 
 #: root/comp/notifications.js root/comp/user_actions.mas
 #: root/comp/user_info.mas root/comp/user_infoactions.mas
+#: root/forms/windows_service.js
 msgid "Action"
 msgstr ""
 
@@ -10518,7 +10550,7 @@ msgstr ""
 msgid "by %1"
 msgstr ""
 
-#: root/comp/topic/topic_lib_grid.js
+#: root/comp/topic/topic_lib_grid.js root/forms/windows_service.js
 msgid "start"
 msgstr ""
 
@@ -12456,7 +12488,7 @@ msgid "Local Path"
 msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
-#: root/forms/wait_for_children.js
+#: root/forms/wait_for_children.js root/forms/windows_service.js
 msgid "Errors"
 msgstr ""
 
@@ -12845,6 +12877,26 @@ msgstr ""
 
 #: root/forms/web_request.js
 msgid "Headers"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "fail"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "warn"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "silent"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "restart"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "stop"
 msgstr ""
 
 #: root/forms/write_config.js
