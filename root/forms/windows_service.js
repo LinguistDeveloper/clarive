@@ -1,6 +1,6 @@
 (function(params) {
     var data = params.data || {};
-
+    Cla.help_push({ title:_('Windows Service'), path:'rules/palette/job/windows-service' });
     var errors = new Baseliner.ComboDouble({
         fieldLabel: _('Errors'),
         name: 'errors',
@@ -29,7 +29,8 @@
             name: 'server',
             role: 'Baseliner::Role::HasAgent',
             fieldLabel: _('Server'),
-            with_vars: 1,
+            singleMode: false,
+	    with_vars: 1,
             value: data.server,
             force_set_value: true
         }),

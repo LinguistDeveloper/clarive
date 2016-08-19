@@ -5887,33 +5887,33 @@ msgstr "%1 debe cumplir la expresión regular %2"
 msgid "Error parsing %1: %2"
 msgstr "Error parseando %1: %2"
 
-#: lib/BaselinerX/Service/WindowsService.pm
+#: lib/BaselinerX/Service/WindowsService.pm root/forms/windows_service.js
 msgid "Windows Service"
-msgstr ""
+msgstr "Servicios de Windows"
 
 #: lib/BaselinerX/Service/WindowsService.pm
 msgid "Service `%1` is already running"
-msgstr ""
+msgstr "Servicio `%1` está en ejecución"
 
 #: lib/BaselinerX/Service/WindowsService.pm
 msgid "Service `%1` starting failed: %2"
-msgstr ""
+msgstr "Servicio `%1` falló al iniciarse: %2 "
 
 #: lib/BaselinerX/Service/WindowsService.pm
 msgid "Service `%1` started"
-msgstr ""
+msgstr "Servicio `%1` iniciado "
 
 #: lib/BaselinerX/Service/WindowsService.pm
 msgid "Service `%1` is already stopped"
-msgstr ""
+msgstr "El servicio `%1` está ya detenido"
 
 #: lib/BaselinerX/Service/WindowsService.pm
-msgid "Service '%1' stopping failed: %2"
-msgstr ""
+msgid "Service `%1` stopping failed: %2"
+msgstr "El servicio `%1` no se ha podido detener: %2"
 
 #: lib/BaselinerX/Service/WindowsService.pm
 msgid "Service `%1` stopped"
-msgstr ""
+msgstr "Servicio `%1` detenido"
 
 #: lib/BaselinerX/Type/Controller/Config.pm
 msgid "Error storing config data"
@@ -10674,7 +10674,7 @@ msgstr "Customizar"
 msgid "by %1"
 msgstr "por %1"
 
-#: root/comp/topic/topic_lib_grid.js
+#: root/comp/topic/topic_lib_grid.js root/forms/windows_service.js
 msgid "start"
 msgstr "inicio"
 
@@ -13015,6 +13015,26 @@ msgstr "Argumentos formales"
 #: root/forms/web_request.js
 msgid "Headers"
 msgstr "Cabeceras"
+
+#: root/forms/windows_service.js
+msgid "fail"
+msgstr "error"
+
+#: root/forms/windows_service.js
+msgid "warn"
+msgstr "advertencia"
+
+#: root/forms/windows_service.js
+msgid "silent"
+msgstr "silencio"
+
+#: root/forms/windows_service.js
+msgid "restart"
+msgstr "reiniciar"
+
+#: root/forms/windows_service.js
+msgid "stop"
+msgstr "detener"
 
 #: root/forms/write_config.js
 msgid "Input Type"

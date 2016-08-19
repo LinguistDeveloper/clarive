@@ -5816,7 +5816,7 @@ msgstr ""
 msgid "Error parsing %1: %2"
 msgstr ""
 
-#: lib/BaselinerX/Service/WindowsService.pm
+#: lib/BaselinerX/Service/WindowsService.pm root/forms/windows_service.js
 msgid "Windows Service"
 msgstr ""
 
@@ -5837,7 +5837,7 @@ msgid "Service `%1` is already stopped"
 msgstr ""
 
 #: lib/BaselinerX/Service/WindowsService.pm
-msgid "Service '%1' stopping failed: %2"
+msgid "Service `%1` stopping failed: %2"
 msgstr ""
 
 #: lib/BaselinerX/Service/WindowsService.pm
@@ -10550,7 +10550,7 @@ msgstr ""
 msgid "by %1"
 msgstr ""
 
-#: root/comp/topic/topic_lib_grid.js
+#: root/comp/topic/topic_lib_grid.js root/forms/windows_service.js
 msgid "start"
 msgstr ""
 
@@ -12877,6 +12877,26 @@ msgstr ""
 
 #: root/forms/web_request.js
 msgid "Headers"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "fail"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "warn"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "silent"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "restart"
+msgstr ""
+
+#: root/forms/windows_service.js
+msgid "stop"
 msgstr ""
 
 #: root/forms/write_config.js
