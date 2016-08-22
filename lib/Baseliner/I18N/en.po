@@ -3856,6 +3856,14 @@ msgid "FTP: Could not connect to host %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/ftp_agent.pm
+msgid "FTP: No username/password were provided or could not be discovered"
+msgstr ""
+
+#: lib/BaselinerX/CI/ftp_agent.pm
+msgid "FTP: Could not login: %1"
+msgstr ""
+
+#: lib/BaselinerX/CI/ftp_agent.pm
 msgid "FTP: Could not change home directory to %1: %2"
 msgstr ""
 
@@ -3864,7 +3872,15 @@ msgid "FTP: could not find local file %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/ftp_agent.pm
-msgid "Could not create connection from uri %1"
+msgid "FTP: could not cwd to %1"
+msgstr ""
+
+#: lib/BaselinerX/CI/generic_server.pm
+msgid "ERROR: Server is not reachable: %1"
+msgstr ""
+
+#: lib/BaselinerX/CI/generic_server.pm
+msgid "ERROR: Could not connect: %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/generic_server.pm
@@ -3873,6 +3889,10 @@ msgstr ""
 
 #: lib/BaselinerX/CI/generic_server.pm
 msgid "ERROR: could not find agent for this server (methods attempted: %1): %2"
+msgstr ""
+
+#: lib/BaselinerX/CI/generic_server.pm
+msgid "ERROR: no connections configured for this server"
 msgstr ""
 
 #: lib/BaselinerX/CI/grammar.pm
@@ -6236,6 +6256,10 @@ msgstr ""
 msgid "Start Path"
 msgstr ""
 
+#: root/ci/ftp_agent.js
+msgid "Home"
+msgstr ""
+
 #: root/ci/generic_server.js root/ci/windows_server.js
 #: root/forms/windows_server.js
 msgid "Hostname or IP"
@@ -6250,19 +6274,23 @@ msgid "Architecture"
 msgstr ""
 
 #: root/ci/generic_server.js
-msgid "Connect by Worker"
-msgstr ""
-
-#: root/ci/generic_server.js
-msgid "Connect by Balix"
-msgstr ""
-
-#: root/ci/generic_server.js
 msgid "Connect by SSH"
 msgstr ""
 
 #: root/ci/generic_server.js
 msgid "Connect by Clax"
+msgstr ""
+
+#: root/ci/generic_server.js
+msgid "Connect by FTP"
+msgstr ""
+
+#: root/ci/generic_server.js
+msgid "Connect by Worker"
+msgstr ""
+
+#: root/ci/generic_server.js
+msgid "Connect by Balix"
 msgstr ""
 
 #: root/ci/generic_server.js
