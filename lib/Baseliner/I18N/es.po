@@ -448,8 +448,7 @@ msgstr ""
 msgid "Registry"
 msgstr "Registro"
 
-#: lib/Baseliner/Controller/Core.pm root/comp/lifecycle/report_edit.js
-#: root/site/explorer.js
+#: lib/Baseliner/Controller/Core.pm root/site/explorer.js
 msgid "Reports"
 msgstr "Informes"
 
@@ -8389,6 +8388,10 @@ msgstr "source"
 #: root/comp/lifecycle/repo.js root/comp/view_file.js
 msgid "blame"
 msgstr "blame"
+
+#: root/comp/lifecycle/report_edit.js
+msgid "Create a report"
+msgstr "Crear un informe"
 
 #: root/comp/lifecycle/report_edit.js
 msgid "New Search"

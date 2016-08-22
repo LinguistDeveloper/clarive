@@ -64,4 +64,3 @@ sub _setup {
 sub _build_c {
     mock_catalyst_c( username => 'root', @_ );
 }
-

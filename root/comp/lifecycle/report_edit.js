@@ -1,5 +1,5 @@
 (function(d) {
-    Cla.help_push({ title:_('Reports'), path:'how-to/report' });
+    Cla.help_push({ title:_('Create a report'), path:'how-to/create-reports' });
     var win;
     var lc_node = d.node;
     var is_new = d.is_new;
@@ -696,7 +696,7 @@
        items: [{
            boxLabel: _('Private'),
            inputValue: 'private',
-           checked: lc_node.attributes.permissions == 'private' ? true : false,
+           checked: !lc_node.attributes.permissions || lc_node.attributes.permissions == 'private' ? true : false,
        }, {
            boxLabel: _('Public'),
            inputValue: 'public',
