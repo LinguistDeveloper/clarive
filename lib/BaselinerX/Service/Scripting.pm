@@ -163,7 +163,7 @@ sub run_remote {
 
         my $agent = $server->connect( user=>$user );
         $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
-        $agent->execute( { chdir=>$home }, $path_parsed, _array($args_parsed) );
+        $agent->execute( { chdir=>$home, env => $config->{environment} }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
         my $ret = $agent->ret;

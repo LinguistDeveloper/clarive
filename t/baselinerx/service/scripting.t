@@ -116,10 +116,45 @@ subtest 'run_local: prints to STDOUT/STDERR logging' => sub {
       };
 };
 
+subtest 'run_remote: runs remote command with correct arguments' => sub {
+    _setup();
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => _mock_job() } );
+    my $config = { path => 'echo', args => ['hello'], environment => ['FOO=bar'], server => $server };
+
+    my $output;
+    capture {
+        $output = $service->run_remote( $c, $config );
+    };
+
+    my ( $options, $command, @args ) = $agent->mocked_call_args('execute');
+
+    is_deeply $options, { chdir => undef, env => ['FOO=bar'] };
+    is $command, 'echo';
+    is_deeply \@args, ['hello'];
+
+    is_deeply $output,
+      {
+        'output' => 'OUTPUT',
+        'rc'     => 0,
+        'ret'    => 'OUTPUT'
+      };
+};
+
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry();
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'Baseliner::Model::Jobs' );
     TestUtils->cleanup_cis;
 
     mdb->job_log->drop;
@@ -142,6 +177,18 @@ sub _mock_c {
     my $c = Test::MonkeyMock->new;
     $c->mock( stash => sub { $params{stash} } );
     return $c;
+}
+
+sub _mock_agent {
+    my $agent = Test::MonkeyMock->new;
+
+    $agent->mock( execute   => sub { } );
+    $agent->mock( output    => sub { 'OUTPUT' } );
+    $agent->mock( rc        => sub { 0 } );
+    $agent->mock( ret       => sub { 'OUTPUT' } );
+    $agent->mock( tuple_str => sub { "RET: RC=0\nOUTPUT\nRET: OUTPUT" } );
+
+    return $agent;
 }
 
 sub _mock_job {

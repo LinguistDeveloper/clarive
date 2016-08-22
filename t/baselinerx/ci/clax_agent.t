@@ -30,12 +30,64 @@ subtest 'execute: sends correct request' => sub {
 
     my $clax_agent = _build_clax_agent( ua => $ua );
 
+    my $ret = $clax_agent->execute( 'echo bar' );
+
+    my ( $url, $data ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'http://bar:8888/command';
+    is_deeply $data, { chdir => '', command => q{echo bar}, user => 'foo' };
+
+    is_deeply $ret, {rc => 0, ret => 'bar', output => 'bar'};
+};
+
+subtest 'execute: sends correct request with args' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
     my $ret = $clax_agent->execute( 'echo', 'bar' );
 
     my ( $url, $data ) = $ua->mocked_call_args('post_form');
 
     is $url, 'http://bar:8888/command';
-    is_deeply $data, { chdir => undef, command => q{echo 'bar'}, user => 'foo' };
+    is_deeply $data, { chdir => '', command => q{echo 'bar'}, user => 'foo' };
+
+    is_deeply $ret, {rc => 0, ret => 'bar', output => 'bar'};
+};
+
+subtest 'execute: sends correct request with environment' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->execute( { env => [ 'FOO=bar', 'BAR=baz' ] }, 'echo', 'bar' );
+
+    my ( $url, $data ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'http://bar:8888/command';
+    is_deeply $data, { chdir => '', env => "FOO=bar\nBAR=baz", command => q{echo 'bar'}, user => 'foo' };
 
     is_deeply $ret, {rc => 0, ret => 'bar', output => 'bar'};
 };

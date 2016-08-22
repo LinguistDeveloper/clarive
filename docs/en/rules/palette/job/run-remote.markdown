@@ -13,11 +13,13 @@ Form to configure has the following fields:
 
 - **User**: User allowed to connect to remote server.
 
-- **Path**: Path where script to run is located.
+- **Command**: Commands to be executed in Server.
 
 - **Arguments**: List of input parameters script is waiting for.
 
-- **Home**: Directory from which the local script is launched.
+- **Environments**: List of variables that can be use in Command field.
+
+- **Home directory**: Directory from which the local script is launched.
 
 - **Errors and output**: These two fields are related to manage control errors. Options are:
 
