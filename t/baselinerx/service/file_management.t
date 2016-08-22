@@ -11,6 +11,8 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
+use Baseliner::Utils qw(_slurp);
+
 use_ok 'BaselinerX::Service::FileManagement';
 
 subtest 'run_ship: fails when no server was configured' => sub {
@@ -337,6 +339,97 @@ subtest 'run_retrieve: throws an error when no remote path' => sub {
             }
         );
     }, qr/Missing parameter remote_file/;
+};
+
+subtest 'run_write: writes local file' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job } );
+
+    $service->run_write(
+        $c,
+        {
+            filepath => "$tempdir/file",
+            body     => '123'
+        }
+    );
+
+    ok "$tempdir/file";
+    is _slurp("$tempdir/file"), '123';
+};
+
+subtest 'run_write: keeps line endings' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job } );
+
+    $service->run_write(
+        $c,
+        {
+            filepath => "$tempdir/file",
+            body     => "foo\nbar\r\nbaz"
+        }
+    );
+
+    is _slurp("$tempdir/file"), "foo\nbar\r\nbaz";
+};
+
+subtest 'run_write: converts to win line endings' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job } );
+
+    $service->run_write(
+        $c,
+        {
+            filepath => "$tempdir/file",
+            body     => "foo\nbar\r\nbaz",
+            line_endings => 'CRLF'
+        }
+    );
+
+    is _slurp("$tempdir/file"), "foo\r\nbar\r\nbaz";
+};
+
+subtest 'run_write: converts to unix line endings' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job } );
+
+    $service->run_write(
+        $c,
+        {
+            filepath => "$tempdir/file",
+            body     => "foo\nbar\r\nbaz",
+            line_endings => 'LF'
+        }
+    );
+
+    is _slurp("$tempdir/file"), "foo\nbar\nbaz";
 };
 
 done_testing;
