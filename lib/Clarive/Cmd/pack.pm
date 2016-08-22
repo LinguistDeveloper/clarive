@@ -3,10 +3,13 @@ package Clarive::Cmd::pack;
 use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
 
-use Cwd qw(getcwd);
-use File::Spec;
-use File::Copy qw(copy);
 use Capture::Tiny qw(capture_merged);
+use Cwd qw(getcwd abs_path);
+use File::Basename qw(dirname);
+use File::Copy qw(copy);
+use File::Path qw(mkpath rmtree);
+use File::Find qw(find);
+use File::Spec;
 
 our $CAPTION = 'Pack binary distribution ready for release';
 
@@ -44,7 +47,59 @@ sub run_source {
     my $cmd = sprintf 'git archive --format=tar --prefix=%s/ HEAD | gzip > %s', $dist, $archive;
 
     warn "Packing $archive...\n";
-    system($cmd);
+    $self->_execute( $cmd, every => 10 );
+
+    if ( -f $archive ) {
+        print $archive, "\n";
+        exit 0;
+    }
+    else {
+        exit 1;
+    }
+}
+
+sub run_features {
+    my $self = shift;
+    my (%opts) = @_;
+
+    my $dist = sprintf 'clarive_features_%s', $self->version;
+    mkdir $dist;
+    my $archive = "$dist.tar.gz";
+
+    my $root = abs_path $dist;
+
+    my $cwd = Cwd::getcwd();
+    my @features = Clarive->features->list;
+    foreach my $feature (@features) {
+        next unless -d $feature->path;
+        next if $feature->id =~ m/^ext/;
+
+        chdir $feature->path;
+
+        my $id = $feature->id;
+
+        my @files;
+        if (-d '.git') {
+            @files = map { chomp; $_ } `git ls-files`;
+        }
+        else {
+            find( { wanted => sub { return unless -f $_; push @files, $_ }, no_chdir => 1 }, '.' );
+        }
+
+        foreach my $file (@files) {
+            mkpath dirname "$root/$id/$file";
+            copy "$file", "$root/$id/$file";
+        }
+
+    }
+    chdir($cwd);
+
+    my $cmd = sprintf 'tar czf %s %s', $archive, $dist;
+
+    warn "Packing $archive...\n";
+    $self->_execute( $cmd, every => 100 );
+
+    rmtree $dist;
 
     if ( -f $archive ) {
         print $archive, "\n";
@@ -388,6 +443,10 @@ Common options:
 =head2 source
 
 Pack the sources.
+
+=head2 features
+
+Pack the features.
 
 =head2 dist
 
