@@ -269,6 +269,40 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
     is $_->{sem_cnt}, 1 for @{ $stash->{foo} };
 };
 
+subtest 'statement.retry: rethrows last error' => sub {
+    _setup();
+
+    my $statement = TestUtils->registry->registrar->{'statement.retry'};
+
+    my $dsl = $statement->{param}->{dsl};
+
+    local $ENV{attempts};
+
+    my $code = $dsl->(
+        Baseliner::Model::Rules->new,
+        {
+            children => [
+                {
+                    "attributes" => {
+                        "key"  => "statement.perl.code",
+                        "data" => {
+                            "code" => qq{die "error=" . \$ENV{attempts}++}
+                        },
+                    }
+                }
+            ],
+            data => { attempts => 3 }
+        }
+    );
+
+    $code = sprintf q/package %s; my $stash = {}; sub current_task {} sub { %s }/, 'TestRetry' . int( rand(1000) ),
+      $code;
+
+    $code = eval $code;
+
+    like exception { $code->() }, qr/error=2/;
+};
+
 subtest 'meta key with attributes sent to service op' => sub {
     TestUtils->cleanup_cis();
     mdb->rule->drop;

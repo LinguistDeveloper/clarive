@@ -544,6 +544,19 @@ register 'statement.catch' => {
     },
 };
 
+register 'statement.retry' => {
+    text => 'RETRY statement',
+    type => 'if',
+    form => '/forms/retry.js',
+    data => { attempts => 1, pause => 0 },
+    dsl => sub {
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            Util->_retry(sub { %s }, attempts => %s, pause => %s);
+        }, $self->dsl_build( $n->{children}, %p), $n->{data}->{attempts} // 1, $n->{data}->{pause} // 0);
+    },
+};
+
 register 'statement.let.merge' => {
     text => 'MERGE value INTO stash',
     type => 'let',
@@ -681,7 +694,7 @@ register 'statement.fail' => {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             Util->_fail( parse_vars( q{%s}, $stash ) );
-        }, $n->{msg} // '' );
+        }, $n->{msg} // 'abort here' );
     }
 };
 

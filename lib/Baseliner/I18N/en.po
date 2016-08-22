@@ -8582,7 +8582,7 @@ msgstr ""
 msgid "Error trapped"
 msgstr ""
 
-#: root/comp/monitor_grid.js root/comp/rules.js
+#: root/comp/monitor_grid.js root/comp/rules.js root/forms/retry.js
 msgid "Retry"
 msgstr ""
 
@@ -12495,6 +12495,14 @@ msgstr ""
 msgid "Local Path"
 msgstr ""
 
+#: root/forms/retry.js
+msgid "Attempts"
+msgstr ""
+
+#: root/forms/retry.js
+msgid "Pause (s)"
+msgstr ""
+
 #: root/forms/script_local.js root/forms/script_remote.js
 #: root/forms/wait_for_children.js root/forms/windows_service.js
 msgid "Errors"
@@ -13379,6 +13387,14 @@ msgstr ""
 #: root/site/common.js
 msgid "Invalid Port"
 msgstr "Puerto Inválido"
+
+#: root/site/common.js
+msgid "Invalid number"
+msgstr ""
+
+#: root/site/common.js
+msgid "Invalid integer number"
+msgstr ""
 
 #: root/site/dashboard.js
 msgid "Dashlet config"

@@ -4490,11 +4490,30 @@ Ext.apply(Ext.form.VTypes, {
         return false;
     },
     'jsonText': _('Invalid JSON'),
+
     'port': function(v) {
         return /^\d+$/.test(v);
     },
     'portText': _('Invalid Port'),
-    'portMask': /^\d+$/
+    'portMask': /^\d+$/,
+
+    'numeric': function(v) {
+        if (typeof v === 'undefined') {
+            return false;
+        }
+        return /^[-+]?\d*\.?\d*$/i.test(v);
+    },
+    'numericMask': /[\-\+0-9.]/,
+    'numericText': _('Invalid number'),
+
+    'integer': function(v) {
+        if (typeof v === 'undefined') {
+            return false;
+        }
+        return /^[-+]?\d*/i.test(v);
+    },
+    'integerMask': /[\-\+0-9]/,
+    'integerText': _('Invalid integer number')
 });
 
 Ext.ux.form.XDateField = Ext.extend(Ext.form.DateField, {

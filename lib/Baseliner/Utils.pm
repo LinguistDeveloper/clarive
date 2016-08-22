@@ -2677,4 +2677,33 @@ sub _capture_pipe {
     }
 }
 
+sub _retry {
+    my ( $cb, %params ) = @_;
+
+    my $attempts = $params{attempts} || 1;
+    my $pause = $params{pause};
+
+    my $ok = 0;
+    my $last_error;
+    my $last_val;
+    for ( 1 .. $attempts ) {
+        try {
+            $last_val = $cb->();
+            $ok       = 1;
+        }
+        catch {
+            $last_error = shift;
+        };
+
+        last if $ok;
+        sleep($pause) if $pause;
+    }
+
+    if ( !$ok ) {
+        die $last_error;
+    }
+
+    return $last_val;
+}
+
 1;
