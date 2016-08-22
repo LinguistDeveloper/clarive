@@ -5019,6 +5019,14 @@ msgstr ""
 msgid "Monthly request trend"
 msgstr ""
 
+#: lib/BaselinerX/Service/CIServices.pm
+msgid "Invoke CI methods"
+msgstr ""
+
+#: lib/BaselinerX/Service/CIServices.pm root/forms/ci_create.js
+msgid "Create CI"
+msgstr ""
+
 #: lib/BaselinerX/Service/Catalog.pm
 msgid "Name of category created"
 msgstr ""
@@ -12201,8 +12209,13 @@ msgstr ""
 msgid "Status on Rollback Failure"
 msgstr ""
 
-#: root/forms/ci_invoke.js root/site/model.js
+#: root/forms/ci_create.js root/forms/ci_invoke.js root/site/model.js
 msgid "CI Class"
+msgstr ""
+
+#: root/forms/ci_create.js
+msgid ""
+"CI data. Type id_field in Key and string or variable (${variable}) in Value"
 msgstr ""
 
 #: root/forms/ci_invoke.js
