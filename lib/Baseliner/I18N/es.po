@@ -4245,13 +4245,25 @@ msgstr ""
 msgid "Missing parameter item"
 msgstr ""
 
+#: lib/BaselinerX/CI/project.pm
+msgid "Import template"
+msgstr "Importar plantilla"
+
+#: lib/BaselinerX/CI/project.pm
+msgid "Error: missing template"
+msgstr "Error: falta la plantilla"
+
+#: lib/BaselinerX/CI/project.pm
+msgid "Update the project tab to review the new variables"
+msgstr "Actualize la pestaña del proyecto para revisar las nuevas variables"
+
 #: lib/BaselinerX/CI/report.pm
 msgid "My Reports"
 msgstr "Mis Informes"
 
 #: lib/BaselinerX/CI/report.pm root/comp/lifecycle/report_edit.js
 msgid "New search"
-msgstr ""
+msgstr "Nueva búsqueda"
 
 #: lib/BaselinerX/CI/report.pm
 msgid "Public Reports"
@@ -6296,7 +6308,8 @@ msgstr "Repositorio Git"
 msgid "<select variable>"
 msgstr "<selecciona variable>"
 
-#: root/ci/area.js root/ci/nature.js root/ci/project.js root/site/model.js
+#: root/ci/area.js root/ci/env_template.js root/ci/inf_template.js
+#: root/ci/nature.js root/ci/project.js root/site/model.js
 msgid "Variables"
 msgstr "Variables"
 
@@ -9161,7 +9174,7 @@ msgstr "Evento"
 msgid "Steps"
 msgstr "Pasos"
 
-#: root/comp/notifications.js
+#: root/comp/notifications.js root/forms/import_template.js
 msgid "Template"
 msgstr "Plantilla"
 

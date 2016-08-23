@@ -38,7 +38,7 @@ service 'scan' => 'Run Scanner' => sub {
 };
 
 service 'import_template' => {
-    name    => _loc('Import template'),
+    name    => _locl('Import template'),
     form    => '/forms/import_template.js',
     icon    => '/static/images/icons/template.ico',
     handler => \&import_template
@@ -46,10 +46,11 @@ service 'import_template' => {
 
 sub import_template {
     my ( $self, $c, $config ) = @_;
-
+    if(!$config->{template} || scalar _array($config->{template}) == 0){
+        _fail _loc("Error: missing template");
+    }
     my ($ref) = _array($config->{template});
     my $template = ci->new($ref);
-    
     my $local_vars = $self->{variables};
     my $template_vars = $template->{variables};
 

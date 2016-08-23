@@ -7,6 +7,6 @@ use BaselinerX::CI::variable;
 with 'Baseliner::Role::CI::Template';
 with 'Baseliner::Role::CI::VariableStash';
 
-sub icon { '/static/images/icons/template.ico' }
+sub icon { '/static/images/icons/template.svg' }
 
 1;

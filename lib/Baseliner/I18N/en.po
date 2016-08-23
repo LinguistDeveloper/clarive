@@ -4188,6 +4188,18 @@ msgstr ""
 msgid "Missing parameter item"
 msgstr ""
 
+#: lib/BaselinerX/CI/project.pm
+msgid "Import template"
+msgstr ""
+
+#: lib/BaselinerX/CI/project.pm
+msgid "Error: missing template"
+msgstr ""
+
+#: lib/BaselinerX/CI/project.pm
+msgid "Update the project tab to review the new variables"
+msgstr ""
+
 #: lib/BaselinerX/CI/report.pm
 msgid "My Reports"
 msgstr ""
@@ -6221,7 +6233,8 @@ msgstr ""
 msgid "<select variable>"
 msgstr ""
 
-#: root/ci/area.js root/ci/nature.js root/ci/project.js root/site/model.js
+#: root/ci/area.js root/ci/env_template.js root/ci/inf_template.js
+#: root/ci/nature.js root/ci/project.js root/site/model.js
 msgid "Variables"
 msgstr ""
 
@@ -9043,7 +9056,7 @@ msgstr ""
 msgid "Steps"
 msgstr ""
 
-#: root/comp/notifications.js
+#: root/comp/notifications.js root/forms/import_template.js
 msgid "Template"
 msgstr ""
 
@@ -14463,14 +14476,14 @@ msgstr ""
 #~ msgid "Se filtraran los paquetes por este campo"
 #~ msgstr "The packages are going to be filtered by this field"
 
-msgid "ci:env_template"
-msgstr "Environment Template"
+#~ msgid "ci:env_template"
+#~ msgstr "Environment Template"
 
-msgid "ci:inf_template"
-msgstr "Infrastructure Template"
+#~ msgid "ci:inf_template"
+#~ msgstr "Infrastructure Template"
 
-msgid "ci:job"
-msgstr "Job"
+#~ msgid "ci:job"
+#~ msgstr "Job"
 
 #~ msgid ""
 #~ "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase "
@@ -14538,9 +14551,6 @@ msgstr "Job"
 
 #~ msgid "ci:generic_server"
 #~ msgstr "Generic Server"
-
-#~ msgid "ci:job"
-#~ msgstr "Job"
 
 #~ msgid "ci:db_loader"
 #~ msgstr "DB Loader"
