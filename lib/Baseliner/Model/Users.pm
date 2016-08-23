@@ -309,6 +309,17 @@ sub get_projectnames_and_descriptions_from_user{
     return @documents;
 }
 
+sub get_usernames_from_user_mids {
+    my ( $self, $p ) = @_;
+    return undef if(!$p->{users});
+    my @usernames;
+    foreach my $user_mid (_array $p->{users}) {
+        my $username = ci->user->find_one({mid=>$user_mid});
+        push @usernames, $username->{username};
+    }
+    return @usernames;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

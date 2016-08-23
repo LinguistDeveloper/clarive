@@ -48,12 +48,22 @@ sub process {
 sub system_messages {
     my ( $self, $c ) = @_;
     return if $c->stash->{no_system_messages};
-    my @all = mdb->sms->find({ username=>{ '$in'=>[undef,$c->username] }, expires=>{ '$gt'=>mdb->ts } })->fields({ _id=>1 })->all;
+    my @all = mdb->sms->find( { '$and' => [
+        { users   => { '$in' => [ undef, $c->username ] } },
+        { expires => { '$gt' => mdb->ts } },
+        { '$or' => [
+            { read => { '$exists' => 0 }},
+            {'$nor' => [
+                { read => { '$exists' => 0 } },
+                { read => { '$elemMatch' => { u => { '$eq' => $c->username } } } }
+            ]}
+        ] }
+    ] } )->fields( { _id => 1 } )->all;
+
     if( my @sms = map { $$_{_id}.=''; $_ } @all ) {
         $c->stash->{__broadcast}{system_messages} = \@sms;
     }
 }
-
 
 =head1 NAME
 

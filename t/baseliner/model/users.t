@@ -81,7 +81,29 @@ subtest 'get_projectnames_and_descriptions_from_user: return a project and descr
             'description' => "test project description",
         }
       ];
-  };
+};
+
+subtest 'get_usernames_from_user_mids: return undef if not users given' => sub {
+    _setup();
+    my $model = _build_model();
+
+    my @usernames = $model->get_usernames_from_user_mids();
+
+    cmp_deeply @usernames, undef;
+};
+
+subtest 'get_usernames_from_user_mids: list usernames from mids' => sub {
+    _setup();
+    my $model = _build_model();
+    my $user1 = TestSetup->create_user(username=>'user1');
+    my $user2 = TestSetup->create_user(username=>'user2');
+
+    my @usernames = $model->get_usernames_from_user_mids({users => [$user1->{mid}, $user2->{mid}]});
+
+    is scalar @usernames, 2;
+    is $usernames[0], $user1->username;
+    is $usernames[1], $user2->username;
+};
 
 done_testing;
 

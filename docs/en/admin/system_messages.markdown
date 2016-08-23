@@ -34,9 +34,9 @@ Hit `Compose` to create a new message.
 
 - **Text**: The longer message shown in the upper bar. The title can actually be long, up to 130 is an acceptable title.
 
-- **Expires**: When the message will stop being shown to users
+- **Expires**: When the message will stop being shown to users. Follow the format (1H - 1 hour, 1D - one day ...).
 
-- **Username**: Direct the message to only a given user. This can be used to quickly message a user that is logged in.
+- **Users**: Direct the message to only a given user. This can be used to quickly message a user that is logged in. Empty field means that all users will get the message
 
 - **More Info**: *Optional*. A longer message body, with detailed content.
 The text area accepts even images, where you can explain a new behaviour or phone numbers to call, etc.

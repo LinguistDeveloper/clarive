@@ -516,6 +516,22 @@ sub create_calendar {
     return "$id_cal";
 }
 
+sub create_sms {
+    my $class = shift;
+    my (%params) = @_;
+    my $p = {
+        title => 'title',
+        text => 'text',
+        more => 'more',
+        %params
+    };
+
+    my $model = Baseliner::Model::SystemMessages->new();
+    my $sms = $model->create($p);
+
+    return $sms->{id};
+}
+
 sub create_job {
     my $class = shift;
     my (%params) = @_;

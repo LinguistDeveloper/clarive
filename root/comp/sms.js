@@ -1,20 +1,24 @@
 (function(params){
+    Cla.help_push({
+        title: _('System Messages'),
+        path: 'admin/system_messages'
+    });
     var form = new Baseliner.FormPanel({
         defaults:{ anchor:'100%' },
         bodyStyle: 'padding: 10px 10px 10px 10px;',
         items:[
-            { xtype:'textfield', fieldLabel:_('Title'), name:'title', maxLength: 80, value:_('Alert') },
-            { xtype:'textarea', fieldLabel:_('Text'), height: 60, maxLength: 255, name:'text', value:'' },
-            { xtype:'textfield', fieldLabel:_('Expires'), name:'expires', value:'24h' },
-            new Baseliner.model.Users({ fieldLabel: _('Username'), name:'username', store: new Baseliner.Topic.StoreUsers({ autoLoad: true }), singleMode: true, }),
+            { xtype:'textfield', fieldLabel:_('Title'), name:'title', maxLength: 80, allowBlank: false },
+            { xtype:'textarea', fieldLabel:_('Text'), height: 60, maxLength: 255, allowBlank: false, name:'text' },
+            { xtype:'textfield', fieldLabel:_('Expires'), name:'expires', allowBlank: false, value:'24h' },
+            new Baseliner.model.Users({ fieldLabel: _('Users'), name:'users', store: new Baseliner.Topic.StoreUsers({ autoLoad: true }), singleMode: false, }),
             new Baseliner.CLEditor({ name:'more', fieldLabel:_('More Info'), height:340 })
         ]
     });
     var btn_new = new Ext.Button({ icon:IC('action_save.svg'), text:_('Publish'), hidden: true, handler:function(){
         if( !form.getForm().isValid() ) return;
         var d = form.getValues();
-        var m = d.username 
-            ? _('Are you sure you want to broadcast this message?') 
+        var m = d.users
+            ? _('Are you sure you want to broadcast this message?')
             : _('Are you sure you want to broadcast this message to all users?');
         Baseliner.confirm(m, function(){
             Baseliner.ajax_json('/systemmessages/sms_create', d, function(res){
@@ -45,7 +49,7 @@
             });
         }
     } });
-    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('copy.svg'), handler:function(){ 
+    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('copy.svg'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -53,30 +57,54 @@
             card_show(false);
         }
     } });
+
     var card_show = function(is_grid){
         if( is_grid ) {
             grid.store.load();
+            btn_grid.hide();
             btn_new.hide();
             btn_del.show();
             btn_cancel.show();
             btn_clone.show();
-            btn_grid.toggle(true);
             btn_compose.toggle(false);
+            btn_compose.show();
             card.getLayout().setActiveItem( grid );
+            form.getForm().reset();
         } else {
             btn_del.hide();
             btn_cancel.hide();
             btn_clone.hide();
             btn_new.show();
+            btn_grid.show();
             btn_grid.toggle(false);
-            btn_compose.toggle(true);
+            btn_compose.hide();
             card.getLayout().setActiveItem( form );
         }
     };
-    var btn_grid = new Ext.Button({ text:_('View Messages'),
-     icon:IC('sms.svg'), 
-     pressed: true, toggleGroup:'sms-btn', handler:function(){ card_show(true) } });
-    var btn_compose = new Ext.Button({ text:_('Compose'), icon:IC('edit.svg'), pressed: false, toggleGroup:'sms-btn', handler:function(){ card_show(false) } });
+    var btn_grid = new Ext.Button({
+        text: _('View Messages'),
+        icon: IC('sms.svg'),
+        hidden: true,
+        pressed: false,
+        toggleGroup: 'sms-btn',
+        handler: function() {
+            card_show(true)
+        }
+    });
+    var btn_compose = new Ext.Button({
+        text: _('Compose'),
+        icon: IC('edit.svg'),
+        pressed: false,
+        toggleGroup: 'sms-btn',
+        handler: function() {
+            card_show(false)
+        }
+    });
+
+    var btn_close = new Ext.Button({ icon:IC('close.svg'), hidden: false, text:_('Close'), handler: function(){
+        win.close();
+    } });
+
     Baseliner.sms_read = function(ix,grid_id){
         var gr = Ext.getCmp(grid_id);
         if( gr ) {
@@ -104,7 +132,7 @@
     var ps = 60;
     var sms_store =  new Baseliner.JsonStore({ 
             url:'/systemmessages/sms_list', root: 'data' , totalProperty:"totalCount", id:'_id', autoLoad: true,
-            fields:['_id','title','text','more','read','t','expires','expired'] 
+            fields:['_id','title','text','more','read','t','expires','expired', 'users']
         });
     var grid = new Ext.grid.GridPanel({ 
         store: sms_store,
@@ -139,9 +167,10 @@
         layout:'fit',
         width:800,
         height:600,
-        tbar: [ btn_grid, btn_compose,'->', btn_clone, btn_del, btn_cancel, btn_new ],
+        tbar: [ btn_grid, btn_compose,'->', btn_clone, btn_del, btn_cancel, btn_new, btn_close ],
         items: card
     });
+
 
     grid.on("activate", function() {
         Baseliner.showLoadingMask( grid.getEl());
