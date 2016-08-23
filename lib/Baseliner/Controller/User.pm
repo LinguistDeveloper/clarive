@@ -172,19 +172,15 @@ sub infodetail : Local {
                 my $nature;
                 my $project = ci->find($prjid);
 
-                if ( $project and $project->{name} ) {
+                if ( $project && $project->{name} && $project->{active} ) {
                     if ( $project->{nature} ) {
-                        $str = $project->{name} . ' ('
-                            . $project->{nature} . ')';
+                        $str = $project->{name} . ' (' . $project->{nature} . ')';
                     }
                     else {
                         $str = $project->{name};
                     }
+                    push @projects, $str;
                 }
-                else {
-                    $str = '';
-                }
-                push @projects, $str;
             }
             @projects = sort(@projects);
 
@@ -195,14 +191,16 @@ sub infodetail : Local {
             }
             my $projects_txt = \@jsonprojects;
 
-            push @rows,
-                {
-                id          => $r->{id},
-                id_role     => $r->{id},
-                role        => $r->{role},
-                description => $r->{description},
-                projects    => $projects_txt
-                };
+            if (@jsonprojects) {
+                push @rows,
+                    {
+                    id          => $r->{id},
+                    id_role     => $r->{id},
+                    role        => $r->{role},
+                    description => $r->{description},
+                    projects    => $projects_txt
+                    };
+            }
         }
     }
     else {
@@ -853,7 +851,7 @@ sub projects_list : Local {
     my @colls = map { Util->to_base_class($_) }
         Util->packages_that_do('Baseliner::Role::CI::Project');
     my @datas
-        = mdb->master_doc->find( { collection => mdb->in(@colls) } )
+        = mdb->master_doc->find( { collection => mdb->in(@colls), active => '1' } )
         ->fields( { name => 1, description => 1, mid => 1 } )
         ->sort( { name => 1 } )->all;
     my @tree;

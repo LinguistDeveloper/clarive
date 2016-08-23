@@ -111,4 +111,41 @@ sub merged_variables {
     return $vars;
 }
 
+around delete => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    my $ci_mid_delete      = $self->mid;
+    my $security_dimension = Util->to_base_class($self);
+
+    my @all_users = grep { values %{ $_->{project_security} } }
+        ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
+
+    foreach my $user (@all_users) {
+        my $security_level = $user->{project_security};
+        foreach my $user_role ( keys %$security_level ) {
+            my $role_ci_mids = $security_level->{$user_role}->{$security_dimension};
+            if ( grep {$ci_mid_delete} _array($role_ci_mids) ) {
+                my @new_proj = grep { $_ ne $ci_mid_delete } _array($role_ci_mids);
+
+                my $ci_update = ci->new( $user->{mid} );
+                if ( !@new_proj ) {
+                    delete $ci_update->{project_security}->{$user_role}->{$security_dimension};
+                }
+                else {
+                    $ci_update->{project_security}->{$user_role}->{$security_dimension} = \@new_proj;
+                }
+                if ( $ci_update->{project_security}->{$user_role}
+                    && !keys %{ $ci_update->{project_security}->{$user_role} } )
+                {
+                    delete $ci_update->{project_security}->{$user_role};
+                }
+
+                $ci_update->update;
+            }
+        }
+    }
+    $self->$orig($ci_mid_delete);
+};
+
 1;

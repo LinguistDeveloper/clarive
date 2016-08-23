@@ -117,6 +117,38 @@ subtest 'infodetail: root user is allowed to query any user details' => sub {
     cmp_deeply $c->stash, { json => { data => ignore() } };
 };
 
+subtest 'infodetail: gets role if the project associated is active' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project( active => '1' );
+    my $id_role = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req      => { params => { username => 'user1' } },
+        username => 'root'
+    );
+    $controller->infodetail($c);
+    is $c->stash->{json}->{data}[0]->{id_role}, $id_role;
+};
+
+subtest 'infodetail: does not get role if the project associated is not active' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project( active => '0' );
+    my $id_role = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req      => { params => { username => 'user1' } },
+        username => 'root'
+    );
+    $controller->infodetail($c);
+    is $c->stash->{json}->{data}[0], undef;
+};
+
 subtest 'list: returns complete user list' => sub {
     _setup();
 
@@ -551,6 +583,23 @@ subtest 'update_repl_config: updates the user preferences when change theme' =>
     my $data = $c->stash->{json}->{data};
 
     is $data->{theme}, 'chaos';
+};
+
+subtest 'projects_list: shows only the projects actives' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci( 'project', name => 'Project', active => '1' );
+    my $project2 = TestUtils->create_ci( 'project', name => 'Project', active => '0' );
+
+    my $c          = mock_catalyst_c();
+    my $controller = _build_controller();
+
+    $controller->projects_list($c);
+
+    my @tree = _array $c->stash->{json};
+
+    is @tree, 1;
+    is $tree[0]->{data}->{id_project}, $project->mid;
 };
 
 done_testing;

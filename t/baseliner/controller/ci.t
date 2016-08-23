@@ -861,7 +861,34 @@ subtest 'delete: updates user security when deleting a project' => sub {
 
     $user = ci->new( $user->mid );
 
-    is_deeply $user->{project_security}->{$id_role}->{project}, [];
+    is_deeply $user->{project_security}->{$id_role}, undef;
+};
+
+subtest 'delete: updates project security when deleting areas' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+    my $area    = TestUtils->create_ci( 'area',    name => 'Area' );
+    my $area1   = TestUtils->create_ci( 'area',    name => 'Area1' );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user = TestSetup->create_user(
+        id_role => $id_role,
+        project => $project,
+        area    => [ $area, $area1 ]
+    );
+
+    my $c = _build_c(
+        req => { params => { collection => 'area', delete_confirm => 1, mids => [ $area->mid, $area1->mid ] } },
+        username => $user->username
+    );
+
+    my $controller = _build_controller();
+
+    $controller->delete($c);
+
+    $user = ci->new( $user->mid );
+
+    is_deeply $user->{project_security}->{$id_role}->{area}, undef;
 };
 
 subtest 'delete: asks user before deleting an area' => sub {
