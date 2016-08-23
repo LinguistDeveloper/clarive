@@ -52,10 +52,10 @@ sub system_messages {
         { users   => { '$in' => [ undef, $c->username ] } },
         { expires => { '$gt' => mdb->ts } },
         { '$or' => [
-            { read => { '$exists' => 0 }},
+            { shown => { '$exists' => 0 }},
             {'$nor' => [
-                { read => { '$exists' => 0 } },
-                { read => { '$elemMatch' => { u => { '$eq' => $c->username } } } }
+                { shown => { '$exists' => 0 } },
+                { shown => { '$elemMatch' => { u => { '$eq' => $c->username } } } }
             ]}
         ] }
     ] } )->fields( { _id => 1 } )->all;

@@ -1,7 +1,7 @@
 (function(params){
     Cla.help_push({
         title: _('System Messages'),
-        path: 'admin/system_messages'
+        path: 'admin/system-messages'
     });
     var form = new Baseliner.FormPanel({
         defaults:{ anchor:'100%' },

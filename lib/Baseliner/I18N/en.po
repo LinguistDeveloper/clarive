@@ -1667,6 +1667,10 @@ msgstr ""
 msgid "Missing message id"
 msgstr ""
 
+#: lib/Baseliner/Controller/SystemMessages.pm
+msgid "Missing action"
+msgstr ""
+
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Helper/Topic.pm
 #: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
 #: lib/BaselinerX/Job.pm lib/BaselinerX/Reports/listado_jobs.pm
@@ -1764,8 +1768,8 @@ msgid "No user details available"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Reports/listado_jobs.pm
-#: root/comp/sms.js root/forms/create_job.js root/forms/system_messages.js
-#: root/site/login.js root/site/tabfu.js root/site/timeline-graph.js
+#: root/forms/create_job.js root/forms/system_messages.js root/site/login.js
+#: root/site/tabfu.js root/site/timeline-graph.js
 msgid "Username"
 msgstr ""
 
@@ -2209,7 +2213,7 @@ msgstr ""
 msgid "User Admin"
 msgstr ""
 
-#: lib/Baseliner/Controller/User.pm root/comp/role_detail.js
+#: lib/Baseliner/Controller/User.pm root/comp/role_detail.js root/comp/sms.js
 #: root/comp/user_grid.js root/fields/templates/config/listbox.js
 msgid "Users"
 msgstr ""
@@ -2663,7 +2667,11 @@ msgid "System message %1 canceled"
 msgstr ""
 
 #: lib/Baseliner/Model/SystemMessages.pm
-msgid "System message %1 removed"
+msgid "System message %1 remove"
+msgstr ""
+
+#: lib/Baseliner/Model/SystemMessages.pm lib/Baseliner/Model/Topic.pm
+msgid "Missing username"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3026,10 +3034,6 @@ msgstr ""
 #: root/fields/system/html/field_title.html
 #: root/fields/templates/html/status_changes.html
 msgid "Created"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Missing username"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -6827,7 +6831,7 @@ msgstr ""
 #: root/comp/daemon_grid.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/lifecycle/report_edit.js
 #: root/comp/notifications.js root/comp/role_detail.js
-#: root/comp/scheduler_grid.js root/comp/topic/form_editor.js
+#: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
 #: root/comp/user_grid.js root/comp/user_info.mas root/site/common.js
 #: root/site/explorer.js
@@ -10165,10 +10169,6 @@ msgstr ""
 
 #: root/comp/show_email.js
 msgid "Request"
-msgstr ""
-
-#: root/comp/sms.js
-msgid "Alert"
 msgstr ""
 
 #: root/comp/sms.js root/forms/system_messages.js
