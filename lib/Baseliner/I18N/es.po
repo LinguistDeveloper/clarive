@@ -1694,8 +1694,8 @@ msgstr ""
 #: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
 #: root/dashlets/my_topics.html root/dashlets/number_of_topics_chart_config.js
 #: root/dashlets/pending_jobs.html root/dashlets/swarm_config.js
-#: root/fields/system/js/field_status.js root/reports/listado_jobs.js
-#: root/site/common.js root/site/model.js
+#: root/fields/system/js/field_status.js root/forms/topic_create.js
+#: root/reports/listado_jobs.js root/site/common.js root/site/model.js
 msgid "Status"
 msgstr "Estado"
 
@@ -2370,7 +2370,7 @@ msgstr ""
 #: root/dashlets/filtered_topics.html root/dashlets/my_topics.html
 #: root/email/generic_post.html root/email/generic_topic.html
 #: root/fields/templates/config/grid_editor.js root/forms/link_revision.js
-#: root/site/common.js
+#: root/forms/topic_create.js root/site/common.js
 msgid "Title"
 msgstr "Título"
 
@@ -8445,6 +8445,7 @@ msgstr ""
 #: root/email/generic_topic.html root/fields/system/js/field_category.js
 #: root/fields/templates/config/origin_issue_chart_pie.js
 #: root/fields/templates/config/status_chart_pie.js root/forms/catalog_task.js
+#: root/forms/topic_create.js
 msgid "Category"
 msgstr "Categoría"
 
@@ -12985,26 +12986,20 @@ msgid "Encoding"
 msgstr "Codificación"
 
 #: root/forms/topic_create.js
-msgid "Title of the Topic"
-msgstr ""
-
-#: root/forms/topic_create.js
-msgid "Category (id or name)"
-msgstr ""
-
-#: root/forms/topic_create.js
-msgid "Status (id or name)"
-msgstr ""
+msgid "Create a new topic"
+msgstr "Crear un nuevo tópico"
 
 #: root/forms/topic_create.js
 msgid "Owner of the Topic (Blank for 'clarive')"
-msgstr ""
+msgstr "Propietario del tópico (En blanco para 'clarive')"
 
 #: root/forms/topic_create.js
 msgid ""
 "Topic data. Type id_field in Key and string or variable (${variable}) in "
 "Value"
 msgstr ""
+"Datos del tópico. Escribir el id_field en Clave y el string o variable "
+"(${variable}) en Valor"
 
 #: root/forms/topic_related.js
 msgid "Filter statuses"

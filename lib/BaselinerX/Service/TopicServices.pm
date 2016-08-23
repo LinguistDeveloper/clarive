@@ -222,57 +222,32 @@ sub change_status {
 sub create {
     my ( $self, $c, $config ) = @_;
 
-    my $stash = $c->stash;
-    my $category = $config->{category} // _fail( _loc('Missing parameter category' ) );
-    my $data = $config->{variables};
+    my $data     = $config->{variables};
     my $username = $config->{username} // 'clarive';
-    my $new_status = $config->{status} // _fail(_loc('Missing parameter status'));
-    my $title = $config->{title};
-    my $category_id;
-    my $new_status_id;
+    my $title    = $config->{title};
 
-    #Let's get the category id
-    if ( !is_number( $category ) ) {
-        my $cat = mdb->category->find_one({ name => $category });
-        if ( $cat ) {
-            $category_id = $cat->{id};
-        } else {
-            _fail _loc("Category %1 does not exist in the system", $category);
-        }
-    } else {
-        my $cat = mdb->category->find_one({ id => $category });
-        if ( $cat ) {
-            $category_id = $cat->{id};
-        } else {
-            _fail _loc("Category %1 does not exist in the system", $category);
-        }
-    }
+    my ($category_id_or_name) = _array $config->{category};
+    _fail( _loc('Missing parameter category') ) unless $category_id_or_name;
+    my ($status_id_or_name) = _array $config->{status};
+    _fail( _loc('Missing parameter status') ) unless $status_id_or_name;
 
-    #Let's get the new_status id
-    if ( $new_status ) {
-        if ( is_number( $new_status ) ) {
-            ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => $new_status} );
-        } else {
-            ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => $new_status} );
-        }
+    my $category =
+      mdb->category->find_one( { '$or' => [ { id => $category_id_or_name }, { name => $category_id_or_name } ] } );
+    _fail _loc( "Category %1 does not exist in the system", $category_id_or_name ) unless $category;
 
-        if ( !$new_status_id ) {
-            _fail _loc("Status %1 does not exist in the system", $new_status);
-        } else {
-            $data->{id_category_status} = $new_status_id;
-        }
-    };
-    if ( !$new_status_id ) {
-        _fail _loc("Status %1 does not exist in the system", $new_status);
-    }
-    $data->{title} = $title;
-    $data->{username} = $username;
-    $data->{action} = 'add';
-    $data->{category} = $category_id;
+    my $status = ci->status->find_one(
+        { '$or' => [ { id_status => $status_id_or_name }, { name => $status_id_or_name } ] } );
+    _fail _loc("Status %1 does not exist in the system", $status_id_or_name) unless $status;
 
-    Baseliner->model('Topic')->update(
-        $data
-    );
+    $data->{title}              = $title;
+    $data->{username}           = $username;
+    $data->{action}             = 'add';
+    $data->{category}           = $category->{id};
+    $data->{id_category_status} = $status->{id_status};
+
+    my (undef, $topic_mid) = Baseliner::Model::Topic->new->update($data);
+
+    return $topic_mid;
 }
 
 sub update {
