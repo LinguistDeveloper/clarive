@@ -11,7 +11,7 @@ with 'Baseliner::Role::Service';
 our $ICON_DEFAULT = '/static/images/icons/file.svg';
 
 register 'service.fileman.foreach' => {
-    name => 'Load files/items into stash',
+    name => _locl('Load files/items into stash'),
     form => '/forms/file_foreach.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -19,7 +19,7 @@ register 'service.fileman.foreach' => {
 };
 
 register 'statement.fileman.foreach' => {
-    text => 'FOREACH file/item',
+    text => _locl('FOREACH file/item'),
     type => 'loop',
     form => '/forms/file_foreach.js',
     dsl => sub {
@@ -35,7 +35,7 @@ register 'statement.fileman.foreach' => {
 };
 
 register 'service.fileman.tar' => {
-    name => 'Tar Local Files',
+    name => _locl('Tar Local Files'),
     icon => $ICON_DEFAULT,
     form => '/forms/tar_local.js',
     job_service  => 1,
@@ -43,7 +43,7 @@ register 'service.fileman.tar' => {
 };
 
 register 'service.fileman.zip' => {
-    name => 'Zip Local Files',
+    name => _locl('Zip Local Files'),
     form => '/forms/zip_local.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -51,7 +51,7 @@ register 'service.fileman.zip' => {
 };
 
 register 'service.fileman.tar_nature' => {
-    name => 'Tar Nature Files',
+    name => _locl('Tar Nature Files'),
     form => '/forms/tar_local_nature.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -59,7 +59,7 @@ register 'service.fileman.tar_nature' => {
 };
 
 register 'service.fileman.zip_nature' => {
-    name => 'Zip Nature Files',
+    name => _locl('Zip Nature Files'),
     form => '/forms/zip_local_nature.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -67,7 +67,7 @@ register 'service.fileman.zip_nature' => {
 };
 
 register 'service.fileman.zip' => {
-    name => 'Zip Files',
+    name => _locl('Zip Files'),
     form => '/forms/zip_files.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -75,7 +75,7 @@ register 'service.fileman.zip' => {
 };
 
 register 'service.fileman.ship' => {
-    name => 'Ship a File Remotely',
+    name => _locl('Ship a File Remotely'),
     form => '/forms/ship_remote.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -83,7 +83,7 @@ register 'service.fileman.ship' => {
 };
 
 register 'service.fileman.retrieve' => {
-    name => 'Retrieve a Remote File',
+    name => _locl('Retrieve a Remote File'),
     icon => $ICON_DEFAULT,
     form => '/forms/retrieve_remote.js',
     job_service  => 1,
@@ -91,7 +91,7 @@ register 'service.fileman.retrieve' => {
 };
 
 register 'service.fileman.sync_remote' => {
-    name        => 'Sync Local and Remote Directories',
+    name        => _locl('Sync Local and Remote Directories'),
     icon        => $ICON_DEFAULT,
     form        => '/forms/sync_remote.js',
     job_service => 1,
@@ -107,7 +107,7 @@ register 'service.fileman.mkpath_remote' => {
 };
 
 register 'service.fileman.store' => {
-    name => 'Store Local File',
+    name => _locl('Store Local File'),
     form => '/forms/store_file.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -115,7 +115,7 @@ register 'service.fileman.store' => {
 };
 
 register 'service.fileman.write' => {
-    name => 'Write Local File',
+    name => _locl('Write Local File'),
     form => '/forms/write_file.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
@@ -123,21 +123,21 @@ register 'service.fileman.write' => {
 };
 
 register 'service.fileman.rm' => {
-    name => 'Delete Local File',
+    name => _locl('Delete Local File'),
     icon => $ICON_DEFAULT,
     job_service  => 1,
     handler => \&run_rm,
 };
 
 register 'service.fileman.rmtree' => {
-    name => 'Delete Local Directory',
+    name => _locl('Delete Local Directory'),
     icon => $ICON_DEFAULT,
     job_service  => 1,
     handler => \&run_rmtree,
 };
 
 register 'service.fileman.parse_config' => {
-    name => 'Parse a Config File',
+    name => _locl('Parse a Config File'),
     form => '/forms/parse_config.js',
     icon => '/static/images/icons/detail.svg',
     job_service  => 1,
@@ -145,7 +145,7 @@ register 'service.fileman.parse_config' => {
 };
 
 register 'service.fileman.write_config' => {
-    name => 'Write a Config File',
+    name => _locl('Write a Config File'),
     form => '/forms/write_config.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,
