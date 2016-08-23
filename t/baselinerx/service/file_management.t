@@ -432,6 +432,56 @@ subtest 'run_write: converts to unix line endings' => sub {
     is _slurp("$tempdir/file"), "foo\nbar\nbaz";
 };
 
+subtest 'mkpath_remote: calls correct agent method' => sub {
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $job = _mock_job();
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'task' } );
+
+    $service->run_mkpath_remote( $c, { server => $server, remote_path => '/path/to/file' } );
+
+    my ($path) = $agent->mocked_call_args('mkpath');
+
+    is $path, '/path/to/file';
+};
+
+subtest 'mkpath_remote: throws when mkpath fails' => sub {
+
+    _setup();
+
+    my $tempdir = tempdir();
+
+    my $job = _mock_job();
+
+    my $agent = _mock_agent( mkpath => sub { return ( 255, 'error' ) } );
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'task' } );
+
+    like exception { $service->run_mkpath_remote( $c, { server => $server, remote_path => '/path/to/file' } ) },
+      qr/Error while creating remote directory: error/
+};
+
 done_testing;
 
 sub _setup {
@@ -478,11 +528,15 @@ sub _mock_job {
 }
 
 sub _mock_agent {
+    my (%params) = @_;
+
     my $agent = Test::MonkeyMock->new;
     $agent->mock( copy_attrs  => sub { } );
     $agent->mock( file_exists => sub { 0 } );
-    $agent->mock( mkpath      => sub { } );
+    $agent->mock( mkpath      => $params{mkpath} || sub { } );
     $agent->mock( put_file    => sub { } );
+
+    return $agent;
 }
 
 sub _mock_c {

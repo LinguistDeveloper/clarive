@@ -5385,12 +5385,80 @@ msgid "Could not start service %1. Service ignored: %2"
 msgstr "No se puede iniciar el servicio %1. Servicio ignorado: %2"
 
 #: lib/BaselinerX/Service/FileManagement.pm
+msgid "Load files/items into stash"
+msgstr "Cargar ficheros/items al stash"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "FOREACH file/item"
+msgstr "FOREACH fichero/item"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Tar Local Files"
+msgstr "Ficheros locales Tar"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Zip Local Files"
+msgstr "Ficheros locales Zip"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Tar Nature Files"
+msgstr "Ficheros naturaleza Tar"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Zip Nature Files"
+msgstr "Ficheros naturaleza Zip"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Zip Files"
+msgstr "Ficheros Zip"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Ship a File Remotely"
+msgstr "Enviar un fichero a remoto"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Retrieve a Remote File"
+msgstr "Recibir un fichero remoto"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Sync Local and Remote Directories"
+msgstr "Sincronizar directorios locales y remotos"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Create Remote Directory"
+msgstr "Crear directorio remoto"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Store Local File"
+msgstr "Almacenar en un fichero local"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Write Local File"
+msgstr "Escribir en un fichero local"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Delete Local File"
+msgstr "Borrar un fichero local"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Delete Local Directory"
+msgstr "Borrar un directorio local"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Parse a Config File"
+msgstr "Parsear un fichero de configuración"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Write a Config File"
+msgstr "Escribir un fichero de configuración"
+
+#: lib/BaselinerX/Service/FileManagement.pm
 msgid "Root path not configured"
-msgstr ""
+msgstr "Ruta Root no configurada"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Path does not exist or is not readable: `%1`"
-msgstr ""
+msgstr "La ruta no existe o no es legible: `%1`"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Filter paths, include, excludes"
@@ -5398,45 +5466,48 @@ msgstr "Filtrar rutas, incluir, excluir"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Tar of directory '%1' into file '%2'"
-msgstr ""
+msgstr "Tar del directorio '%1' en el fichero '%2'"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Zip of directory '%1' into file '%2'"
-msgstr ""
+msgstr "Zip del directorio '%1' en el fichero '%2'"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid ""
 "Nature path not relative for file `%1`. This file will not be included in "
 "the tar. Check your IF NATURE `Cut Path` has at least a slash `/`"
 msgstr ""
+"Ruta de la naturaleza no relativa al fichero `%1`. Este fichero no se "
+"incluirá en el tar. Comprueba si IF NATURE `Ruta corte` tiene al menos la "
+"barra `/`"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Zip source '%1' into file '%2'"
-msgstr ""
+msgstr "Fuente Zip '%1' en el fichero '%2'"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Could not open file for writing (%1): %2"
-msgstr ""
+msgstr "No es posible abir el fichero para escritura (%1): %2"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "File content written: '%1'"
-msgstr ""
+msgstr "Escrito el contenido del fichero: '%1'"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Missing parameter file"
-msgstr ""
+msgstr "Falta el archivo de parámetros"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Missing parameter filename"
-msgstr ""
+msgstr "Falta el nombre del fichero de parámetros"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Could not find file `%1` nor `%2` to store"
-msgstr ""
+msgstr "No se ha podido encontrar el fichero `%1` o `%2` para almacenar"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Server not configured"
-msgstr ""
+msgstr "Servidor no configurado"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 #: lib/BaselinerX/Service/Scripting.pm
@@ -5446,7 +5517,7 @@ msgstr "El servidor %1 está inactivo. Ignorado"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Could not instanciate CI for server `%1`"
-msgstr ""
+msgstr "No se ha podido instanciar el CI para el servidor `%1`"
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "local_mode=%1, local list"
@@ -5518,6 +5589,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Syncing directories '%1' and '%2'"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Creating remote directory '%1'"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Error while creating remote directory: %1"
 msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
@@ -6060,12 +6139,12 @@ msgstr "Datos"
 #: root/email/generic_post.html root/email/generic_rule.html
 #: root/email/generic_topic.html root/forms/asset_file.js
 #: root/forms/eval_remote.js root/forms/link_revision.js
-#: root/forms/remove_file.js root/forms/retrieve_remote.js
-#: root/forms/script_local.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js
-#: root/forms/test_server_connect.js root/forms/topic_status.js
-#: root/forms/topic_status_deprecated.js root/forms/web_request.js
-#: root/reports/listado_jobs.js root/site/common.js
+#: root/forms/mkpath_remote.js root/forms/remove_file.js
+#: root/forms/retrieve_remote.js root/forms/script_local.js
+#: root/forms/script_remote.js root/forms/ship_remote.js
+#: root/forms/sync_remote.js root/forms/test_server_connect.js
+#: root/forms/topic_status.js root/forms/topic_status_deprecated.js
+#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
 msgid "User"
 msgstr "Usuario"
 
@@ -6082,9 +6161,9 @@ msgstr "Contraseña"
 #: root/ci/script.js root/ci/ssh_agent.js root/ci/web_cluster.js
 #: root/ci/web_instance.js root/comp/lifecycle/workspace_new.js
 #: root/forms/eval_remote.js root/forms/ldap_search.js
-#: root/forms/retrieve_remote.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js
-#: root/forms/windows_service.js root/site/model.js
+#: root/forms/mkpath_remote.js root/forms/retrieve_remote.js
+#: root/forms/script_remote.js root/forms/ship_remote.js
+#: root/forms/sync_remote.js root/forms/windows_service.js root/site/model.js
 msgid "Server"
 msgstr "Servidor"
 
@@ -12558,6 +12637,11 @@ msgstr ""
 msgid "Message Level"
 msgstr ""
 
+#: root/forms/mkpath_remote.js root/forms/retrieve_remote.js
+#: root/forms/ship_remote.js root/forms/sync_remote.js
+msgid "Remote Path"
+msgstr "Ruta remota"
+
 #: root/forms/nature_items.js
 msgid "Commit Items?"
 msgstr "¿Hacer un Commit de los elementos?"
@@ -12662,11 +12746,6 @@ msgstr ""
 #: root/forms/repo_create_tags.js
 msgid "Tags separated by commas"
 msgstr ""
-
-#: root/forms/retrieve_remote.js root/forms/ship_remote.js
-#: root/forms/sync_remote.js
-msgid "Remote Path"
-msgstr "Ruta remota"
 
 #: root/forms/retrieve_remote.js root/forms/ship_remote.js
 #: root/forms/sync_remote.js

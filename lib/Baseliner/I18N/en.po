@@ -5314,6 +5314,74 @@ msgid "Could not start service %1. Service ignored: %2"
 msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
+msgid "Load files/items into stash"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "FOREACH file/item"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Tar Local Files"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Zip Local Files"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Tar Nature Files"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Zip Nature Files"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Zip Files"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Ship a File Remotely"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Retrieve a Remote File"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Sync Local and Remote Directories"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Create Remote Directory"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Store Local File"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Write Local File"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Delete Local File"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Delete Local Directory"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Parse a Config File"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Write a Config File"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
 msgid "Root path not configured"
 msgstr ""
 
@@ -5447,6 +5515,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
 msgid "Syncing directories '%1' and '%2'"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Creating remote directory '%1'"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Error while creating remote directory: %1"
 msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
@@ -5988,12 +6064,12 @@ msgstr ""
 #: root/email/generic_post.html root/email/generic_rule.html
 #: root/email/generic_topic.html root/forms/asset_file.js
 #: root/forms/eval_remote.js root/forms/link_revision.js
-#: root/forms/remove_file.js root/forms/retrieve_remote.js
-#: root/forms/script_local.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js
-#: root/forms/test_server_connect.js root/forms/topic_status.js
-#: root/forms/topic_status_deprecated.js root/forms/web_request.js
-#: root/reports/listado_jobs.js root/site/common.js
+#: root/forms/mkpath_remote.js root/forms/remove_file.js
+#: root/forms/retrieve_remote.js root/forms/script_local.js
+#: root/forms/script_remote.js root/forms/ship_remote.js
+#: root/forms/sync_remote.js root/forms/test_server_connect.js
+#: root/forms/topic_status.js root/forms/topic_status_deprecated.js
+#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
 msgid "User"
 msgstr ""
 
@@ -6010,9 +6086,9 @@ msgstr ""
 #: root/ci/script.js root/ci/ssh_agent.js root/ci/web_cluster.js
 #: root/ci/web_instance.js root/comp/lifecycle/workspace_new.js
 #: root/forms/eval_remote.js root/forms/ldap_search.js
-#: root/forms/retrieve_remote.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js
-#: root/forms/windows_service.js root/site/model.js
+#: root/forms/mkpath_remote.js root/forms/retrieve_remote.js
+#: root/forms/script_remote.js root/forms/ship_remote.js
+#: root/forms/sync_remote.js root/forms/windows_service.js root/site/model.js
 msgid "Server"
 msgstr ""
 
@@ -12422,6 +12498,11 @@ msgstr ""
 msgid "Message Level"
 msgstr ""
 
+#: root/forms/mkpath_remote.js root/forms/retrieve_remote.js
+#: root/forms/ship_remote.js root/forms/sync_remote.js
+msgid "Remote Path"
+msgstr "Ruta remota"
+
 #: root/forms/nature_items.js
 msgid "Commit Items?"
 msgstr ""
@@ -12526,11 +12607,6 @@ msgstr ""
 #: root/forms/repo_create_tags.js
 msgid "Tags separated by commas"
 msgstr ""
-
-#: root/forms/retrieve_remote.js root/forms/ship_remote.js
-#: root/forms/sync_remote.js
-msgid "Remote Path"
-msgstr "Ruta remota"
 
 #: root/forms/retrieve_remote.js root/forms/ship_remote.js
 #: root/forms/sync_remote.js
