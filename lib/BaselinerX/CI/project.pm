@@ -1,6 +1,7 @@
 package BaselinerX::CI::project;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Hash::Merge;
 use Baseliner::Model::Permissions;
 use BaselinerX::CI::variable;
 
@@ -35,6 +36,32 @@ sub unique_keys {
 service 'scan' => 'Run Scanner' => sub {
     return 'Project scanner disabled';
 };
+
+service 'import_template' => {
+    name    => _locl('Import template'),
+    form    => '/forms/import_template.js',
+    icon    => '/static/images/icons/template.ico',
+    handler => \&import_template
+};
+
+sub import_template {
+    my ( $self, $c, $config ) = @_;
+    if(!$config->{template} || scalar _array($config->{template}) == 0){
+        _fail _loc("Error: missing template");
+    }
+    my ($ref) = _array($config->{template});
+    my $template = ci->new($ref);
+    my $local_vars = $self->{variables};
+    my $template_vars = $template->{variables};
+
+    my $merge = Hash::Merge->new( 'RIGHT_PRECEDENT' );
+    my %merged = %{$merge->merge($local_vars, $template_vars)};
+
+    $self->variables(\%merged);
+    $self->save;
+
+    _warn(_loc("Update the project tab to review the new variables"));
+}
 
 method user_has_action( :$username, :$action=undef ) {
     return

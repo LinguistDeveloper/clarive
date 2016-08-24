@@ -3,17 +3,13 @@ use warnings;
 use lib 't/lib';
 
 use Test::More;
+use Test::Deep;
+use Test::Fatal;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 
 use TestUtils;
-
-use Baseliner::CI;
-use Clarive::ci;
-use Baseliner::Core::Registry;
-use Baseliner::Role::CI;    # WTF this is needed for CI
-use BaselinerX::CI::variable;
 
 use_ok('BaselinerX::CI::project');
 
@@ -142,7 +138,54 @@ subtest 'variable from default some other bl from saved and instantiated ci' => 
     is( ci->new($mid)->merged_variables('QA')->{var}, 44 );
 };
 
-done_testing;
+subtest 'import_template: throws an exception if not template' => sub {
+    _setup();
+
+    my $mid = BaselinerX::CI::project->new(name=>'dad', moniker => 'daa', variables=>{ 'TEST'=>{var=>'88' } } );
+    $mid->save;
+    like exception { ci->new($mid)->import_template() }, qr/Error: missing template/;
+};
+
+subtest 'import_template: keeps local variables if template is empty' => sub {
+    _setup();
+
+    my $template = TestUtils->create_ci('env_template',  name=>'template' );
+    my $mid = BaselinerX::CI::project->new(name=>'dad', moniker => 'daa', variables=>{ 'TEST'=>{var=>'88' } } );
+    $mid->save;
+
+    ci->new($mid)->import_template(undef, {template=>$template->mid});
+
+    my $variables = ci->new($mid)->{variables};
+    cmp_deeply $variables, {'TEST' => {var=>'88'} };
+};
+
+subtest 'import_template: imports template variables' => sub {
+    _setup();
+
+    my $template = TestUtils->create_ci('env_template',  name=>'template', variables=>{ 'TEST'=>{var=>'88' } });
+    my $mid = BaselinerX::CI::project->new(name=>'dad', moniker => 'daa');
+    $mid->save;
+
+    ci->new($mid)->import_template(undef, {template=>$template->mid});
+
+    my $variables = ci->new($mid)->{variables};
+    cmp_deeply $variables, {'TEST' => {var=>'88'} };
+};
+
+subtest 'import_template: overwrites local variables' => sub {
+    _setup();
+
+    my $template = TestUtils->create_ci('env_template',  name=>'template', variables=>{ 'TEST'=>{var=>'88' }, '*'=>{server=>'22'} });
+    my $mid = BaselinerX::CI::project->new(name=>'dad', moniker => 'daa', variables=>{ 'TEST'=>{var=>'66' }, '*'=>{server=>'22'}});
+    $mid->save;
+
+    ci->new($mid)->import_template(undef, {template=>$template->mid});
+
+    my $variables = ci->new($mid)->{variables};
+    cmp_deeply $variables, {'TEST'=>{var=>'88' }, '*'=>{server=>'22'} };
+};
+
+done_testing();
 
 sub _setup {
     TestUtils->cleanup_cis;
