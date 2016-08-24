@@ -14335,6 +14335,12 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "Detach Files"
+#~ msgstr "Desligar Ficheros"
+
+#~ msgid "Detach by"
+#~ msgstr "Seleccionar adjuntos por"
+
 #~ msgid "Library Path"
 #~ msgstr "Ruta de las librerías"
 
@@ -14382,12 +14388,6 @@ msgstr "destino"
 
 #~ msgid "Detach files from a topic"
 #~ msgstr "Desligar ficheros de un tópico"
-
-#~ msgid "Detach Files"
-#~ msgstr "Desligar Ficheros"
-
-#~ msgid "Detach by"
-#~ msgstr "Seleccionar adjuntos por"
 
 #~ msgid "File deleted ok"
 #~ msgstr "Fichero borrado correctamente"
