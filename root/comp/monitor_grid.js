@@ -911,9 +911,10 @@
                 Ext.Msg.alert(_('Error'), _('Select a row first'));
             } else {
                 var sel = sm.getSelected();
+                var data_users = sel.data.username == '<% $c->username %>' ? [ [sel.data.username] ] : [ ['<% $c->username %>'], [sel.data.username] ];
                 var users = new Ext.data.SimpleStore({
                     fields: ['username'],
-                    data: [ [sel.data.username], ['<% $c->username %>'] ]
+                    data: data_users
                 });
                 var steps = new Ext.data.SimpleStore({
                     fields: ['step'],
@@ -926,7 +927,7 @@
                     store: users,
                     valueField: 'username',
                     lazyRender: false,
-                    value: sel.data.username,
+                    value: '<% $c->username %>',
                     mode: 'local',
                     editable: true,
                     triggerAction: 'all',
