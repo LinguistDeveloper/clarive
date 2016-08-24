@@ -1683,6 +1683,10 @@ msgstr "Nuevo"
 msgid "Missing message id"
 msgstr ""
 
+#: lib/Baseliner/Controller/SystemMessages.pm
+msgid "Missing action"
+msgstr "Falta la acción"
+
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Helper/Topic.pm
 #: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
 #: lib/BaselinerX/Job.pm lib/BaselinerX/Reports/listado_jobs.pm
@@ -1784,8 +1788,8 @@ msgid "No user details available"
 msgstr "No datos de usuario disponible"
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Reports/listado_jobs.pm
-#: root/comp/sms.js root/forms/create_job.js root/forms/system_messages.js
-#: root/site/login.js root/site/tabfu.js root/site/timeline-graph.js
+#: root/forms/create_job.js root/forms/system_messages.js root/site/login.js
+#: root/site/tabfu.js root/site/timeline-graph.js
 msgid "Username"
 msgstr "Usuario"
 
@@ -2237,7 +2241,7 @@ msgstr "Tema"
 msgid "User Admin"
 msgstr "Administración de Usuarios"
 
-#: lib/Baseliner/Controller/User.pm root/comp/role_detail.js
+#: lib/Baseliner/Controller/User.pm root/comp/role_detail.js root/comp/sms.js
 #: root/comp/user_grid.js root/fields/templates/config/listbox.js
 msgid "Users"
 msgstr "Usuarios"
@@ -2697,8 +2701,12 @@ msgid "System message %1 canceled"
 msgstr "Mensaje del sistema %1 cancelado"
 
 #: lib/Baseliner/Model/SystemMessages.pm
-msgid "System message %1 removed"
-msgstr "Mensaje del sistema %1 borrado"
+msgid "System message %1 remove"
+msgstr "Mensaje del systema %1 borrado"
+
+#: lib/Baseliner/Model/SystemMessages.pm lib/Baseliner/Model/Topic.pm
+msgid "Missing username"
+msgstr "Falta el nombre de usuario"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Search topics"
@@ -3065,10 +3073,6 @@ msgstr "%3: #%1 %2"
 #: root/fields/templates/html/status_changes.html
 msgid "Created"
 msgstr "Creado"
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Missing username"
-msgstr "Falta el nombre de usuario"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Error getting Topics ( %1 )"
@@ -6902,7 +6906,7 @@ msgstr "Error de escritura al catálogo"
 #: root/comp/daemon_grid.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/lifecycle/report_edit.js
 #: root/comp/notifications.js root/comp/role_detail.js
-#: root/comp/scheduler_grid.js root/comp/topic/form_editor.js
+#: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
 #: root/comp/user_grid.js root/comp/user_info.mas root/site/common.js
 #: root/site/explorer.js
@@ -10287,13 +10291,9 @@ msgstr "Email para la solicitud %1 no disponible"
 msgid "Request"
 msgstr "Solicitud"
 
-#: root/comp/sms.js
-msgid "Alert"
-msgstr "Aviso"
-
 #: root/comp/sms.js root/forms/system_messages.js
 msgid "Expires"
-msgstr ""
+msgstr "Expira"
 
 #: root/comp/sms.js root/forms/system_messages.js
 msgid "More Info"
@@ -10313,19 +10313,19 @@ msgstr "¿Seguro que quieres transmitir este mensaje a todos los usuarios?"
 
 #: root/comp/sms.js
 msgid "SMS"
-msgstr ""
+msgstr "SMS"
 
 #: root/comp/sms.js
 msgid "Created message with id %1"
-msgstr ""
+msgstr "Mensaje creado con id %1"
 
 #: root/comp/sms.js
 msgid "Deleted message with id %1"
-msgstr ""
+msgstr "Borrado mensaje con id %1"
 
 #: root/comp/sms.js
 msgid "Cancelled message with id %1"
-msgstr ""
+msgstr "Cancelado mensaje con id %1"
 
 #: root/comp/sms.js
 msgid "View Messages"
@@ -10337,15 +10337,15 @@ msgstr "Componer"
 
 #: root/comp/sms.js
 msgid "Read (%1)"
-msgstr ""
+msgstr "Leído (%1)"
 
 #: root/comp/sms.js
 msgid "More"
-msgstr ""
+msgstr "Más"
 
 #: root/comp/sms.js
 msgid "Read"
-msgstr ""
+msgstr "Leído"
 
 #: root/comp/topic/form_editor.js
 msgid "Fields configuration"
@@ -14325,6 +14325,12 @@ msgstr "destino"
 
 #~ msgid "Job sleeping %1 seconds"
 #~ msgstr "Job esperando %1 segundos"
+
+#~ msgid "System message %1 removed"
+#~ msgstr "Mensaje del sistema %1 borrado"
+
+#~ msgid "Alert"
+#~ msgstr "Aviso"
 
 #~ msgid "Are you sure you want to rerun the job"
 #~ msgstr "¿Seguro que quiere reiniciar el pase"

@@ -553,6 +553,8 @@ subtest 'update_repl_config: updates the user preferences when change theme' =>
     is $data->{theme}, 'chaos';
 };
 
+done_testing;
+
 sub _build_c {
     mock_catalyst_c(
         username => 'test',
@@ -576,5 +578,3 @@ sub _setup {
 sub _build_controller {
     Baseliner::Controller::User->new( application => '' );
 }
-
-done_testing;
