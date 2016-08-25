@@ -12,6 +12,7 @@ use TestUtils qw(mock_time);
 use Class::Date;
 use Time::HiRes qw(usleep);
 use JSON ();
+use Capture::Tiny qw(capture);
 use Baseliner::Role::CI;
 use BaselinerX::Type::Statement;
 use BaselinerX::Type::Service;
@@ -1060,6 +1061,35 @@ subtest 'resolve_rule: throws when cannot load by version tag' => sub {
 
     like exception { $model->resolve_rule( id_rule => '1', version_tag => '123' ) },
       qr/Version tag `123` of rule `1` not found/;
+};
+
+subtest 'compile_wsdl: returns the wsdl compiled' => sub {
+    _setup();
+
+    my $model            = _build_model();
+    my $target_namespace = "url";
+    my $wsdl             = qq'<definitions name="HelloService"
+   targetNamespace= "$target_namespace"
+   xmlns="http://schemas.xmlsoap.org/wsdl/">
+   <service name="Hello_Service">
+   </service>
+   </definitions>';
+
+    my $output = $model->compile_wsdl($wsdl);
+
+    is $output->{index}->{service}->{"{$target_namespace}Hello_Service"}->{name}, 'Hello_Service';
+};
+
+subtest 'compile_wsdl: throws an error if wsdl has incorrect format' => sub {
+    _setup();
+
+    my $model = _build_model();
+    my $wsdl  = 'foo';
+    like exception {
+        capture {
+            my $output = $model->compile_wsdl($wsdl);
+        }
+    }, qr/Error compiling WSDL:<br \/><pre>error: don't known how to interpret XML data/;
 };
 
 sub _setup {

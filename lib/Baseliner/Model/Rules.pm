@@ -1425,6 +1425,22 @@ sub list_versions {
     return @versions;
 }
 
+sub compile_wsdl {
+    my ( $self, $wsdl ) = @_;
+    return try {
+        require XML::Compile::SOAP11;
+        require XML::Compile::SOAP::Daemon::CGI;
+        require XML::Compile::WSDL11;
+        require XML::Compile::SOAP::Util;
+        return XML::Compile::WSDL11->new(
+            Util->parse_vars( $wsdl, { WSURL => 'http://fakeurl:8080/rule/soap/fake_for_compile' } ) );
+    }
+    catch {
+        my $err = shift;
+        _fail( _loc( 'Error compiling WSDL:' ) . '<br /><pre>' . Util->_html_escape($err) . '</pre>' );
+    };
+}
+
 method find_version_by_tag(:$id_rule, :$version_tag) {
     _fail _loc('Unknown rule `%1`', $id_rule) unless mdb->rule->find_one({id => $id_rule}, {_id => 1});
 
