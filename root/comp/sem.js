@@ -194,7 +194,7 @@
         var up = rowIndex == 0
             ? '<img src="/static/images/icons/arrow-up.svg" style="visibility: hidden"></img>'
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'up\', \''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex-1).id+'\' )">'
-                + '<img src="/static/images/icons/arrow-up.g"></img></a>';
+                + '<img src="/static/images/icons/arrow-up.svg"></img></a>';
         var down = rowIndex == store_queue.getCount() -1  
             ? ''
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'down\',\''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex+1).id +'\')">'

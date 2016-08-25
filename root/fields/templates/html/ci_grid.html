@@ -16,8 +16,7 @@
       <td width="1"><% $ci->collection %></td>
   </tr>
 % }
-</tbody></table></td></tr>
-% } 
+% }
 
 % if( !@rows && !$meta->{hidden} ) {
     <tr><th><h5 style="border-bottom: 1px solid #bbb; margin-top: 15px"><% _loc($meta->{name_field}) %>:</h5></th></tr>
@@ -25,3 +24,4 @@
     <table class="table table-bordered" style="margin-top: 10px; width: 100%"><tbody>
     <tr><td colspan="2"><% _loc( 'None' ) %></td></tr>
 % }
+</tbody></table></td></tr>
