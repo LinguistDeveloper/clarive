@@ -1302,10 +1302,6 @@ msgid "Rule %1 deleted"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
-msgid "Error compiling WSDL: <br /><pre>%1</pre>"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule %1 saved"
 msgstr ""
 
@@ -2596,6 +2592,10 @@ msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Unknown rule `%1`"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Error compiling WSDL:"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm

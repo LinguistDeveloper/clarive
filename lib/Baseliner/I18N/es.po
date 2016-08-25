@@ -1316,10 +1316,6 @@ msgid "Rule %1 deleted"
 msgstr "Regla %1 borrada"
 
 #: lib/Baseliner/Controller/Rule.pm
-msgid "Error compiling WSDL: <br /><pre>%1</pre>"
-msgstr ""
-
-#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule %1 saved"
 msgstr ""
 
@@ -2629,6 +2625,10 @@ msgstr "Versión de regla no encontrada para la restauración, id=%1"
 #: lib/Baseliner/Model/Rules.pm
 msgid "Unknown rule `%1`"
 msgstr "Regla desconocida `%1`"
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Error compiling WSDL:"
+msgstr "Error compilando WSDL:"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Version tag already exists"
@@ -14340,6 +14340,9 @@ msgstr "destino"
 
 #~ msgid "Detach by"
 #~ msgstr "Seleccionar adjuntos por"
+
+#~ msgid "Error compiling WSDL: <br /><pre>%1</pre>"
+#~ msgstr "Error compilando WSDL: <br /><pre>%1</pre>"
 
 #~ msgid "Library Path"
 #~ msgstr "Ruta de las librerías"
