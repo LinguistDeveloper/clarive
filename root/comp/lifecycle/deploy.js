@@ -43,7 +43,8 @@
     Baseliner.ajaxEval( '/topic/json', { topic_mid: topic.topic_mid}, function(rec) {
         var db_status = rec.topic_data.id_category_status;
         var form_status = topic.state_id;
-        if (db_status != form_status){
+        var is_release = rec.topic_data.is_release && (rec.topic_data.is_release == "1" )? true : false;
+        if ( !is_release && db_status != form_status){
             Ext.Msg.alert(_('Error'), _('That job cannot be created for that changeset probably because its status has changed. Please, reload the node.'));
         }else{
             Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: topic } );
