@@ -22,33 +22,16 @@
 
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>;
-    var state_id = 'job-monitor';
-    var canCreateJobOutsideSlots = <% $has_no_cal ? 'true' : 'false'  %>;
-    var showCreateJobOutsideSlots = <% $show_no_cal ? 'true' : 'false'  %>;
-    var current_state = params.current_state || {};
-    var dateFormat = Cla.js_date_to_moment_hash[Cla.user_js_date_format()];
-    var preferencesDateFormat = Cla.user_js_date_format();
+    var stateId = 'job-monitor';
+    var currentState = params.current_state || {};
+    var canResumeJob = <% $c->stash->{user_action}->{'action.job.resume'} ? 'true' : 'false' %>;
+    var canDeleteJob = <% $c->stash->{user_action}->{'action.job.delete'} ? 'true' : 'false' %>;
+    var canCreateJob = <% $c->stash->{user_action}->{'action.job.create'} ? 'true' : 'false' %>;
+    var canCancelJob = <% $c->stash->{user_action}->{'action.job.cancel'} ? 'true' : 'false' %>;
+    var canRestartJob = <% $c->stash->{user_action}->{'action.job.restart'} ? 'true' : 'false' %>;
+    var canForceRollback = <% $c->stash->{user_action}->{'action.job.force_rollback'} ? 'true' : 'false' %>;
+    var canReschedule = <% $c->stash->{user_action}->{'action.job.reschedule'} ? 'true' : 'false' %>;
 
-    var dataAnyTime = function() {
-        var arr = [];
-        var name = _('no calendar window');
-        var today = moment().format(dateFormat);
-        var dateSelected = moment(today, dateFormat).format("YYYY-MM-DD")
-
-        var time = moment().format("HH:mm");
-        var startHour = 0;
-        var startTime = 0;
-
-        for (var h = startHour; h < 24; h++) {
-            var startMinute = startTime;
-            for (var m = startMinute; m < 60; m++) {
-                arr.push(
-                    [String.leftPad(h, 2, '0') + ':' + String.leftPad(m, 2, '0'), name, 'F', dateSelected]
-                );
-            }
-        }
-        return arr;
-    };
 
     // -- ADDING Arr.map() method --
     // Production steps of ECMA-262, Edition 5, 15.4.4.19
@@ -188,6 +171,7 @@
             {  name: 'natures' },
             {  name: 'subapps' },
             {  name: 'can_restart' },
+            {  name: 'force_rollback' },
             {  name: 'can_cancel' },
             {  name: 'can_delete' }
         ]
@@ -277,7 +261,7 @@
             // deletes
             var cp=new Ext.state.CookieProvider();
             Ext.state.Manager.setProvider(cp);
-            Ext.state.Manager.clear( state_id );
+            Ext.state.Manager.clear( stateId );
             Baseliner.refreshCurrentTab();
         }
     });
@@ -305,7 +289,6 @@
     ];
     nature_menu.push( natures.map(function (x) {
 
-      // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
       var nature_name = x.name == 'ZOS'      ? 'z/OS'
                       : x.name == 'FICHEROS' ? 'Ficheros'
                       : x.name == 'TODAS'    ? 'Todas'
@@ -325,7 +308,6 @@
     }));
 
     var nature_menu_btn = new Ext.Button({
-      //text: _('Natures'),
       tooltip: _('Natures'),
       icon: '/static/images/icons/nature.svg',
       menu: nature_menu
@@ -485,7 +467,6 @@
         })
     );
     var menu_bl = new Ext.Button({
-      //text: _("Baseline"),
       tooltip: _("Baseline"),
       icon: '/static/images/icons/baseline.svg',
       menu: menu_list
@@ -536,10 +517,9 @@
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
-            baseParams: current_state.baseParams || { limit: ps, query_id: '<% $query_id %>', query: params.query },
+            baseParams: currentState.baseParams || { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
             remoteGroup: true,
-            //groupField: 'when',
             sortInfo: { field: 'starttime', direction: "DESC" }
     });
 
@@ -579,8 +559,6 @@
         run: function() {
             var ids=[];
             var top_id=0;
-            //var q = store.baseParams['query']; //current search query
-            //if( q != undefined && q !='' ) { return; } //no refresh while querying
             refresh_button_wait_on();
             var flag_running = false;
             store.each( function(rec) {
@@ -589,7 +567,6 @@
                     top_id = id;
                 }
                 ids.push(id);
-                // anything live and running?
                 if( rec.data.status_code == 'RUNNING' ) {
                     flag_running = true;
                 }
@@ -700,7 +677,7 @@
         trap_win.show();
     }
 
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.svg',
+    var htmlButton = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.svg',
         tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -780,19 +757,43 @@
       ]
     });
 
-    var do_backout = function(){
+    var do_backout = function() {
         var sm = grid.getSelectionModel();
         var sel = sm.getSelected();
-        if( sel ) {
-            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to rollback the job?'),
-                function(btn){
-                    if(btn=='yes') {
-                        Baseliner.ajaxEval('/job/rollback', sel.data, function(res){
-                                Baseliner.message( _('Rollback'), res.msg ) ;
+        var message = '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to rollback the job?');
+        if (sel) {
+            Ext.Msg.confirm(_('Confirmation'), message, function(btn) {
+                if (btn == 'yes') {
+                    Baseliner.ajaxEval('/job/rollback', sel.data, function(res) {
+                        if (res.needs_confirmation) {
+                            message += '<br><br>' + _('Force Rollback Warning');
+                            buttons = {
+                                yes: _("Yes, I'm sure"),
+                                no: _('Cancel')
+                            };
+                            Ext.Msg.show({
+                                title: _('Confirmation'),
+                                msg: message,
+                                buttons: buttons,
+                                animEl: 'elId',
+                                icon: Ext.MessageBox.WARNING,
+                                fn: function(btn_force) {
+                                    if (btn_force == 'yes') {
+                                        sel.data.force_confirmation = 1;
+                                        Baseliner.ajaxEval('/job/rollback', sel.data, function(res) {
+                                                Baseliner.message(_('Rollback'), res.msg);
+                                                grid.getStore().reload();
+                                        });
+                                    }
+                                }
+                            });
+                        } else {
+                            // TODO use an extjs Grid with links that open the job dashboard for each, and cols for Project and BL
+                            if (res.success) {
+                                Baseliner.message(_('Rollback'), res.msg);
                                 grid.getStore().reload();
-                            }, function(res){
+                            } else {
                                 var deps = Ext.isArray(res.deps) ? res.deps.map(function(r){ return { job: r } }) : [];
-                                // TODO use an extjs Grid with links that open the job dashboard for each, and cols for Project and BL
                                 var msg = function(){/*
                                       <div id="boot">
                                       <div class="container_24">
@@ -824,21 +825,25 @@
                                       </div>
                                 */}.tmpl({ msg: res.msg, deps: res.deps });
                                 var win = new Baseliner.Window({
-                                    width: 800, height: 400, layout:'fit', //layout:'vbox', layoutConfig: { align:'stretch' },
+                                    width: 800,
+                                    height: 400,
+                                    layout: 'fit',
                                     title: _('Dependencies'),
-                                    items: [
-                                        { xtype:'panel', autoScroll: true, padding: 20, html: msg }
-                                    ]
+                                    items: [{
+                                        xtype: 'panel',
+                                        autoScroll: true,
+                                        padding: 20,
+                                        html: msg
+                                    }]
                                 });
                                 win.show();
-                                //Baseliner.message( _('Rollback'), res.msg ) ;
                             }
-                        );
-                    }
+                        }
+                    });
                 }
-            );
+            });
         }
-    };
+    }
 
     Baseliner.resume_job = function(mid,name) {
         Ext.Msg.confirm(_('Confirmation'),  '<b>' + name + '</b>: ' + _('Are you sure you want to resume the job?'),
@@ -858,7 +863,7 @@
         );
     };
 
-    var button_resume = new Ext.Toolbar.Button({
+    var resumeButton = new Ext.Toolbar.Button({
         text: _('Resume'),
         hidden: true,
         icon:'/static/images/icons/play.svg',
@@ -869,17 +874,17 @@
             var mode;
             if( sel.data.status_code == 'PAUSED' ) {
                 Baseliner.resume_job(sel.data.mid,sel.data.name);
-                button_resume.hide();
+                resumeButton.hide();
             }
             else if( sel.data.status_code == 'TRAPPED' || sel.data.status_code == 'TRAPPED_PAUSED' ) {
                 Baseliner.trap_check(sel.data.mid);
-                button_resume.hide();
+                resumeButton.hide();
             }
         }
     });
 
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
-    var button_cancel = new Ext.Toolbar.Button({
+    var cancelButton = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
         disabled: true,
         icon:'/static/images/icons/delete.svg',
@@ -908,8 +913,8 @@
                             if( res.success ) {
                                 grid.getStore().reload();
                                 if(sel.data.can_cancel){
-                                    // button_cancel.enable();
-                                    button_cancel.setText( msg_cancel_delete[1] );
+                                    // cancelButton.enable();
+                                    cancelButton.setText( msg_cancel_delete[1] );
                                 }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
@@ -921,7 +926,7 @@
     });
 
 
-    var button_rollback = new Ext.Toolbar.Button({
+    var rollbackButton = new Ext.Toolbar.Button({
         text: _('Rollback'),
         disabled: true,
         icon:'/static/images/icons/left.svg',
@@ -929,7 +934,7 @@
         handler: function() { do_backout() }
     });
 
-    var button_rerun = new Ext.Toolbar.Button({
+    var rerunButton = new Ext.Toolbar.Button({
         text: _('Rerun'),
         disabled: true,
         icon:'/static/images/icons/restart.svg',
@@ -1063,6 +1068,98 @@
         }
     });
 
+    var rescheduleButton = new Ext.Toolbar.Button({
+        text: _('Reschedule'),
+        icon: '/static/images/date_field.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                if (sel.data.status_code != 'READY' && sel.data.status_code != 'APPROVAL') {
+                    Baseliner.error(_('Reschedule'),
+                        _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY') + "|" + _('APPROVAL'), _(sel.data.status)));
+                    return;
+                }
+                var currentTime = Date.parseDate(sel.data.schedtime, 'Y-m-d H:i:s');
+                var fUpdatePanel = new Baseliner.FormPanel({
+                    frame: true,
+                    items: [{
+                        xtype: 'xdatefield',
+                        anchor: '100%',
+                        fieldLabel: _('Date'),
+                        name: 'date',
+                        value: currentTime
+                    }, {
+                        xtype: 'uxspinner',
+                        name: 'time',
+                        fieldLabel: _('Time'),
+                        anchor: '100%',
+                        allowBlank: false,
+                        value: currentTime.format('H:i'),
+                        strategy: new Ext.ux.form.Spinner.TimeStrategy()
+                    }]
+                });
+                var updateWin = new Baseliner.Window({
+                    layout: 'fit',
+                    height: 150,
+                    width: 380,
+                    tbar: [
+                        '->', {
+                            text: _('Cancel'),
+                            icon: IC('close.svg'),
+                            handler: function() {
+                                updateWin.close();
+                            }
+                        }, {
+                            text: _('Update'),
+                            icon: IC('edit.svg'),
+                            handler: function() {
+                                var d = fUpdatePanel.getValues();
+                                Baseliner.ci_call(sel.data.mid, 'reschedule', d, function(res) {
+                                    Baseliner.message(_('Reschedule'), res.msg);
+                                    store.reload();
+                                    updateWin.close();
+                                });
+                            }
+                        }
+                    ],
+                    title: 'Modificar fecha y hora del pase.',
+                    items: fUpdatePanel
+                });
+                updateWin.show();
+            } else {
+                Ext.Msg.alert(_('Error'), _('Select a row first'));
+            };
+        }
+    });
+
+    var logButton = new Ext.Toolbar.Button({
+        icon: '/static/images/icons/moredata.svg',
+        text: _('Log'),
+        cls: 'x-btn-text-icon ui-job-log',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid + '&auto_refresh=1', sel.data.name);
+            } else {
+                Cla.message(_('Error'), _('Select a row first'));
+            };
+        }
+    });
+
+    var newjobButton = new Ext.Toolbar.Button({
+        text: _('New'),
+        icon: '/static/images/icons/job.svg',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            Baseliner.add_tabcomp('/job/create', _('New Job'), {
+                tab_icon: '/static/images/icons/job.svg'
+            });
+        }
+    });
+
     //------------ Renderers
     var render_contents = function(value,metadata,rec,rowIndex,colIndex,store) {
         var return_value = new Array();
@@ -1171,12 +1268,12 @@
         if( status == 'APPROVAL' ) {
             value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id );
         }
-% if( $c->stash->{user_action}->{'action.job.resume'} ) {
-        else if( status == 'PAUSED' ) {
-            value = String.format("<a href='javascript:Baseliner.resume_job(\"{0}\",\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name );
+        if( canResumeJob ) {
+            if( status == 'PAUSED' ) {
+                value = String.format("<a href='javascript:Baseliner.resume_job(\"{0}\",\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name );
+            }
         }
-% }
-        else if( status == 'TRAPPED' || status == 'TRAPPED_PAUSED' ) { // add a link to the trap
+        if( status == 'TRAPPED' || status == 'TRAPPED_PAUSED' ) { // add a link to the trap
             value = String.format("<a href='javascript:Baseliner.trap_check(\"{0}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id );
         }
         if( icon!=undefined ) {
@@ -1255,13 +1352,6 @@
                 return css;
             }
     });
-    /* gview.getGroup = function(v, r, groupRenderer, rowIndex, colIndex, ds){
-        var g = groupRenderer ? groupRenderer(v, {}, r, rowIndex, colIndex, ds) : String(v);
-        if( g === '' ) {
-            g = this.cm.config[colIndex].emptyGroupText || this.emptyGroupText;
-        }
-        return g;
-    }; */
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
 
     var filters = new Ext.ux.grid.GridFilters({
@@ -1269,7 +1359,6 @@
         encode: true,
         local: false,
         filters: [
-           //{ type: 'string', dataIndex: 'status', emptyText: _('Job Status') },
            { type: 'date', dataIndex: 'starttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
            { type: 'date', dataIndex: 'endtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
            { type: 'date', dataIndex: 'maxstarttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
@@ -1277,7 +1366,32 @@
         ]
 	});
 
-    // create the grid
+    var tbar = new Ext.Toolbar({
+        items: is_portlet ? [] : [
+            searchField,
+            htmlButton,
+            menu_projects,
+            menu_bl, nature_menu_btn, {
+                icon: '/static/images/icons/state.svg',
+                text: _('Status'),
+                menu: menu_job_states
+            },
+            menu_type_filter, '-',
+            canCreateJob ? newjobButton : [],
+            logButton,
+            canResumeJob ? resumeButton : [],
+            canDeleteJob || canCancelJob ? cancelButton : [],
+            canRestartJob || canForceRollback ? rollbackButton : [],
+            canRestartJob ? rerunButton : [],
+            canRestartJob || canReschedule ? rescheduleButton : [],
+            '->',
+            menu_tools,
+            btn_reports,
+            btn_clear_state,
+            refresh_button
+        ]
+    });
+
     var grid = new Ext.grid.EditorGridPanel({
         cls: 'ui-job-monitor-grid',
         title: _('Monitor'),
@@ -1289,7 +1403,7 @@
         loadMask: true,
         stripeRows: true,
         stateful: true,
-        stateId: state_id,
+        stateId: stateId,
         store: store,
         view: gview,
         selModel: row_sel,
@@ -1335,228 +1449,8 @@
 
             ],
         bbar: paging,
-        tbar: is_portlet ? [] : [
-                searchField,
-                button_html,
-                menu_projects,
-                menu_bl, nature_menu_btn, {  icon:'/static/images/icons/state.svg', text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
-                // end
-% if( $c->stash->{user_action}->{'action.job.create'} ) {
-                new Ext.Toolbar.Button({
-                    text: _('New'),
-                    icon:'/static/images/icons/job.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        Baseliner.add_tabcomp('/job/create', _('New Job'), { tab_icon: '/static/images/icons/job.svg' } );
-                    }
-                }),
-% }
-                new Ext.Toolbar.Button({
-                    //text: _('View Log'),
-                    icon:'/static/images/icons/moredata.svg',
-                    text: _('Log'),
-                    cls: 'x-btn-text-icon ui-job-log',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if (sm.hasSelection())
-                        {
-                            var sel = sm.getSelected();
-                            Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid+'&auto_refresh=1', sel.data.name );
-                        } else {
-                            Cla.message(_('Error'), _('Select a row first'));
-                        };
-                    }
-                }),
-% if( $c->stash->{user_action}->{'action.job.resume'} ) {
-                button_resume,
-% }
-% if( $c->stash->{user_action}->{'action.job.delete'} || $c->stash->{user_action}->{'action.job.cancel'} ) {
-                button_cancel,
-% }
-% if( $c->stash->{user_action}->{'action.job.restart'} ) {
-                button_rollback,
-                button_rerun,
-% }
-% if( $c->stash->{user_action}->{'action.job.restart'} || $c->stash->{user_action}->{'action.job.reschedule'} ) {
-                new Ext.Toolbar.Button({
-                    text: _('Reschedule'),
-                    icon:'/static/images/icons/datefield.svg',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if (sm.hasSelection())
-                        {
-                            var sel = sm.getSelected();
-                            if( sel.data.status_code != 'READY' && sel.data.status_code != 'APPROVAL' ) {
-                                Baseliner.error( _('Reschedule'),
-                                    _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY')+"|"+_('APPROVAL'), _(sel.data.status) ) );
-                                return;
-                            }
-                            var dateToday = new Date();
-                            Baseliner.ajaxEval('/job/build_job_window', {
-                                    bl: sel.data.bl,
-                                    job_date: dateToday.format('Y-m-d'),
-                                    job_contents: JSON.stringify({
-                                        mid: sel.data.mid
-                                    }),
-                                    date_format: '%Y-%m-%d'
-                                },
-                                function(res) {
-                                    if (res.success) {
-                                        var timeStore = new Ext.data.SimpleStore({
-                                            id: 'time',
-                                            fields: ['time', 'name', 'type', 'env_date']
-                                        });
-                                        var timeTpl = new Ext.XTemplate(
-                                            '<tpl for=".">',
-                                            '<div class="search-item">',
-                                            '<span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span>',
-                                            '<span style="margin-left:8px; color: #333;font-weight:bold">',
-                                            '@{[ Cla.user_date_job(values.env_date, Cla.js_date_to_moment_hash[Cla.user_js_date_format()]) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
-                                            '</div>',
-                                            '</tpl>'
-                                        );
-                                        var commentsTextArea = new Ext.form.TextArea({
-                                            anchor: '100%',
-                                            height: 80,
-                                            fieldLabel: _('Comments'),
-                                            name: 'comments'
-                                        });
-                                        var timeComboBox = new Ext.form.ComboBox({
-                                            name: 'job_time',
-                                            anchor: '100%',
-                                            hiddenName: 'job_time',
-                                            valueField: 'time',
-                                            displayField: 'time',
-                                            fieldLabel: _('Time'),
-                                            mode: 'local',
-                                            store: timeStore,
-                                            allowBlank: false,
-                                            typeAhead: true,
-                                            forceSelection: true,
-                                            triggerAction: 'all',
-                                            tpl: timeTpl,
-                                            itemSelector: 'div.search-item',
-                                            selectOnFocus: false
-                                        });
-                                        var outsideOfSlotsCheckbox = new Ext.form.Checkbox({
-                                            name: 'check_no_cal',
-                                            fieldLabel: '',
-                                            boxLabel: _("Create a job outside of the available time slots."),
-                                            hidden: !showCreateJobOutsideSlots,
-                                            disabled: !canCreateJobOutsideSlots,
-                                            cls: 'ui-chk-no-cal',
-                                            handler: function(chk, val) {
-                                                var timeNow = new Date();
-                                                if (val) {
-                                                    updateBtn.enable();
-                                                    timeStore.removeAll();
-                                                    timeStore.loadData(dataAnyTime());
-                                                    if (calendarDateField.value == timeNow.format(preferencesDateFormat)) {
-                                                        setFirstDateAvailable(timeStore, timeComboBox);
-                                                    } else {
-                                                        timeComboBox.setValue('00:00');
-                                                    }
-                                                } else {
-                                                    var selectedDate = calendarDateField.getValue().format('Y-m-d');
-                                                    reloadCalendar(sel.data.bl, selectedDate, sel.data.mid, timeStore, calendarDateField, timeComboBox, updateBtn);
-                                                }
-                                            }
-                                        });
-                                        var calendarDateField = new Ext.ux.form.XDateField({
-                                            anchor: '100%',
-                                            fieldLabel: _('Date'),
-                                            name: 'date',
-                                            value: dateToday,
-                                            format: preferencesDateFormat,
-                                            listeners: {
-                                                'select': function(picker, t) {
-                                                    if (!outsideOfSlotsCheckbox.checked) {
-                                                        reloadCalendar(sel.data.bl, t.format('Y-m-d'), sel.data.mid, timeStore, calendarDateField, timeComboBox, updateBtn)
-                                                    }
-                                                }
-                                            }
-                                        });
-                                        timeStore.on('load', function() {
-                                            setFirstDateAvailable(timeStore, timeComboBox);
-                                        });
-
-                                        var updateFormPanel = new Baseliner.FormPanel({
-                                            frame: true,
-                                            padding: 15,
-                                            items: [
-                                                calendarDateField,
-                                                timeComboBox,
-                                                outsideOfSlotsCheckbox,
-                                                commentsTextArea
-                                            ]
-                                        });
-                                        var updateBtn = new Ext.Toolbar.Button({
-                                            text: _('Update'),
-                                            icon: IC('edit.svg'),
-                                            handler: function() {
-                                                if (outsideOfSlotsCheckbox.checked && commentsTextArea.getValue().trim().length == 0) {
-                                                    Ext.Msg.show({
-                                                        title: _('Failure'),
-                                                        msg: _('For the jobs outside of window it is required to add a reason to the comment field'),
-                                                        width: 500,
-                                                        buttons: {
-                                                            ok: true
-                                                        }
-                                                    });
-                                                    return;
-                                                }
-                                                var formValues = updateFormPanel.getValues();
-                                                formValues.date = formValues.date.split(" ");
-                                                formValues.date[1] = formValues.job_time;
-                                                formValues.date = formValues.date.join(" ");
-                                                Baseliner.ci_call(sel.data.mid, 'reschedule', formValues, function(res) {
-                                                    Baseliner.message(_('Reschedule'), res.msg);
-                                                    store.reload();
-                                                    updateWindow.close();
-                                                });
-                                            }
-                                        });
-                                        var updateWindow = new Baseliner.Window({
-                                            layout: 'fit',
-                                            height: 280,
-                                            width: 380,
-                                            tbar: [
-                                                '->', {
-                                                    text: _('Cancel'),
-                                                    icon: IC('close.svg'),
-                                                    handler: function() {
-                                                        updateWindow.close();
-                                                    }
-                                                },
-                                                updateBtn
-                                            ],
-                                            title: _('Update time and date of the job'),
-                                            items: updateFormPanel
-                                        });
-                                        updateWindow.show();
-                                        if (!res.data || res.data == 0) {
-                                            Ext.Msg.alert(_('Error'), _('There are no allowed windows for the job'));
-                                            updateBtn.disable();
-                                        } else {
-                                            timeStore.loadData(res.data);
-                                        }
-                                    }
-                                }
-                            );
-                        } else {
-                            Ext.Msg.alert(_('Error'), _('Select a row first'));
-                        };
-                    }
-                }),
-% }
-                '->',
-                menu_tools,
-                btn_reports,
-                btn_clear_state,
-                refresh_button
-                ]
-        });
+        tbar: tbar
+    });
 
         grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
@@ -1566,34 +1460,34 @@
         });
 
     var first_load = true;
-
-    // Yellow row selection
         row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
         var sc = rec.data.status_code;
-        button_resume.hide();
+        resumeButton.hide();
         if ( rec.data.can_cancel || rec.data.can_delete ) {
             if( (sc == 'FINISHED' || sc == 'ERROR' || sc == 'CANCELLED' || sc == 'ABORT' || sc == 'KILLED' || sc == 'EXPIRED' ) && rec.data.can_delete == '1' ) {
-                button_cancel.setText( msg_cancel_delete[1] );
-                button_cancel.enable();
+                cancelButton.setText( msg_cancel_delete[1] );
+                cancelButton.enable();
             } else if (rec.data.can_cancel == '1') {
-                button_cancel.setText( msg_cancel_delete[0] );
-                button_cancel.enable();
+                cancelButton.setText( msg_cancel_delete[0] );
+                cancelButton.enable();
             } else {
-                button_cancel.disable();
+                cancelButton.disable();
             }
         } else {
-            button_cancel.disable();
+            cancelButton.disable();
         };
         if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' || rec.data.status_code === 'TRAPPED_PAUSED' ) {
-            button_resume.show();
+            resumeButton.show();
         }
         if (rec.data.can_restart == '1'){
-            button_rollback.enable();
-            button_rerun.enable();
+            rollbackButton.enable();
+            rerunButton.enable();
+        } else if (rec.data.force_rollback) {
+            rollbackButton.enable();
         } else {
-            button_rollback.disable();
-            button_rerun.disable();
+            rollbackButton.disable();
+            rerunButton.disable();
         };
     });
     row_sel.on('rowdeselect', function(row, index, rec) {

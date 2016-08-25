@@ -17,13 +17,36 @@ use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 
 register 'action.search.job' => { name => _locl('Search jobs') };
-
-register 'event.job.rerun' => { name=>'Rerun a job', description => _locl('Rerun a job'), notify=>{ scope=>['project','bl'] }  };
-register 'event.job.reschedule' => { name=>'Reschedule a job', description =>_locl('Reschedule a job'), notify=>{ scope=>['project','bl'] }  };
-register 'event.job.start' => { name=>'Job start', description =>_locl('Job start'), notify=>{ scope=>['project','bl'] } };
-register 'event.job.start_step' => { name=>'Job step start', description =>_locl('Job step start'), notify=>{ scope=>['project','bl','step'] } };
-register 'event.job.end' => { name=>'Job end, after POST', description =>_locl('Job end, after POST'), notify=>{ scope=>['project','bl','status'] } };
-register 'event.job.end_step' => { name=>'Job step end', description =>_locl('Job step end'), notify=>{ scope=>['project','bl','status','step'] } };
+register 'event.job.rerun' => {
+    name        => 'Rerun a job',
+    description => _locl('Rerun a job'),
+    notify      => { scope => [ 'project', 'bl' ] }
+};
+register 'event.job.reschedule' => {
+    name        => 'Reschedule a job',
+    description => _locl('Reschedule a job'),
+    notify      => { scope => [ 'project', 'bl' ] }
+};
+register 'event.job.start' => {
+    name        => 'Job start',
+    description => _locl('Job start'),
+    notify      => { scope => [ 'project', 'bl' ] }
+};
+register 'event.job.start_step' => {
+    name        => 'Job step start',
+    description => _locl('Job step start'),
+    notify      => { scope => [ 'project', 'bl', 'step' ] }
+};
+register 'event.job.end' => {
+    name        => 'Job end, after POST',
+    description => _locl('Job end, after POST'),
+    notify      => { scope => [ 'project', 'bl', 'status' ] }
+};
+register 'event.job.end_step' => {
+    name        => 'Job step end',
+    description => _locl('Job step end'),
+    notify      => { scope => [ 'project', 'bl', 'status', 'step' ] }
+};
 
 our $group_keys = {
     id           => 'jobid',
@@ -186,6 +209,8 @@ sub monitor {
 
         my $can_restart
             = $permissions->user_has_action( $username, 'action.job.restart', bounds => { bl => $job->{bl} } );
+        my $can_force_rollback
+            = $permissions->user_has_action( $username, 'action.job.force_rollback', bounds => { bl => $job->{bl} } );
         my $can_cancel
             = $permissions->user_has_action( $username, 'action.job.cancel', bounds => { bl => $job->{bl} } );
         my $can_delete
@@ -241,6 +266,7 @@ sub monitor {
             run_start => $last_exec ? $job->{milestones}->{$last_exec}->{RUN}->{start} || " " : " ",
             run_end   => $last_exec ? $job->{milestones}->{$last_exec}->{RUN}->{end}   || " " : " ",
             can_restart => $can_restart,
+            force_rollback => $can_force_rollback,
             can_cancel  => $can_cancel,
             can_delete  => $can_delete,
             progress    => $self->_calculate_progress($job),

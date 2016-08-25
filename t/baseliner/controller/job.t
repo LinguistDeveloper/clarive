@@ -1007,6 +1007,483 @@ subtest 'by_status: returns the amount of jobs and the status of the jobs filter
     is $c->stash->{json}->{data}[0][0], 'FINISHED';
 };
 
+subtest 'rollback: returns an error when user does not have permissions to rollback' => sub {
+    _setup();
+
+    my $user     = TestSetup->create_user();
+    my $username = $user->username;
+
+    my $controller = _build_controller();
+    my $c          = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {} }
+    );
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            success => \0,
+            msg     => re(qr/User $username does not have permissions to action Rollback/)
+        }
+        };
+};
+
+subtest 'rollback: fails when job not exists' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+    );
+
+    my $user       = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $controller = _build_controller();
+    my $c          = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => {} }
+    );
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            success => \0,
+            msg     => re(qr/Missing mid/)
+        }
+        };
+};
+
+subtest 'rollback: returns an error when job does not need rollback' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+    );
+
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $id_rule = TestSetup->create_rule( rule_type => "pipeline", rule_when => "promote" );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback',
+        username    => $user->username
+    );
+
+    my $job_ci;
+    capture {
+        $job_ci = TestUtils->create_ci( 'job', changesets => [$changeset_mid], );
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { mid => $job_ci->mid, name => $job_ci->name } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    my $job_name = $job_ci->name;
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            success => \0,
+            msg     => re(qr/Job $job_name does not need rollback/)
+        }
+        };
+};
+
+subtest 'rollback: returns an error when job is currently running' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+    );
+
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $id_rule = TestSetup->create_rule( rule_type => "pipeline", rule_when => "promote" );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback',
+        username    => $user->username
+    );
+
+    my $job_ci;
+    capture {
+        $job_ci = TestUtils->create_ci( 'job', changesets => [$changeset_mid], );
+    };
+
+    $job_ci->status('RUNNING');
+    $job_ci->save;
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { mid => $job_ci->mid, name => $job_ci->name } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    my $job_name = $job_ci->name;
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            success => \0,
+            msg     => re(qr/Job $job_name is currently running/)
+        }
+        };
+};
+
+subtest 'rollback: returns an error when job has dependencies' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+    );
+
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $id_rule = TestSetup->create_rule( rule_type => "pipeline", rule_when => "promote" );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $other_changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback #2',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $job_ci;
+    capture {
+        mock_time '2016-01-01 00:00:00', sub {
+            $job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+            );
+            }
+    };
+
+    my $other_job_ci;
+    capture {
+        mock_time '2016-01-01 00:05:00', sub {
+            $other_job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$other_changeset_mid],
+            );
+            }
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { mid => $job_ci->mid, name => $job_ci->name } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    is $c->stash->{json}->{deps}[0]->{mid}, $other_job_ci->mid;
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            needs_confirmation => \0,
+            msg                => re(qr/Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled./),
+            deps               => ignore()
+        }
+        };
+};
+
+subtest 'rollback: creates a rollback' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+    );
+
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $id_rule = TestSetup->create_rule_pipeline();
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $job_ci;
+    capture {
+        $job_ci = TestUtils->create_ci(
+            'job',
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+        );
+    };
+
+    my $controller = _build_controller();
+    my $c          = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { id_rule => $id_rule, changesets => $changeset_mid, window_type => 'N' } }
+    );
+
+    capture {
+        $job_ci->run();
+    };
+
+    $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { mid => $job_ci->mid, name => $job_ci->name } }
+    );
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    my $job_name = $job_ci->name;
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            success => \1,
+            msg     => re(qr/Job $job_name rollback scheduled/)
+        }
+        };
+};
+
+subtest 'rollback: returns confirmation to force rollback' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+    );
+
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $id_rule = TestSetup->create_rule_pipeline();
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $other_changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback #2',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $job_ci;
+    capture {
+        mock_time '2016-01-01 00:00:00', sub {
+            $job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+            );
+            }
+    };
+
+    my $other_job_ci;
+    capture {
+        mock_time '2016-01-01 00:05:00', sub {
+            $other_job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$other_changeset_mid],
+            );
+            }
+    };
+
+    capture {
+        $job_ci->run();
+        $other_job_ci->run();
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { mid => $job_ci->mid, name => $job_ci->name } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    is $c->stash->{json}->{deps}[0]->{mid}, $other_job_ci->mid;
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            deps               => ignore(),
+            needs_confirmation => \0,
+            msg                => re(qr/Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled./),
+        }
+        };
+};
+
+subtest 'rollback: returns rollback created with special permission to rollback' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.force_rollback', bounds => [ {} ] } ]
+    );
+
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+    my $id_rule = TestSetup->create_rule_pipeline();
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $other_changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Force Rollback #2',
+        project     => $project,
+        username    => $user->username
+    );
+
+    my $job_ci;
+    capture {
+        mock_time '2016-01-01 00:00:00', sub {
+            $job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+            );
+            }
+    };
+
+    my $other_job_ci;
+    capture {
+        mock_time '2016-01-01 00:05:00', sub {
+            $other_job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$other_changeset_mid],
+            );
+            }
+    };
+
+    capture {
+        $job_ci->run();
+        $other_job_ci->run();
+    };
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req      => { params => { mid => $job_ci->mid, name => $job_ci->name, force_confirmation => 1 } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->rollback($c);
+    };
+
+    my $job_name = $job_ci->name;
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            success => \1,
+            msg     => re(qr/Job $job_name rollback scheduled/),
+        }
+        };
+};
+
+
 done_testing;
 
 sub _setup {

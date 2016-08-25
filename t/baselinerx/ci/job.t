@@ -18,13 +18,13 @@ use_ok 'BaselinerX::CI::job';
 subtest 'start_task: sets current_service' => sub {
     _setup();
 
-    my $project = TestUtils->create_ci_project( );
+    my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
 
-    my $job = _build_ci(changesets => [$changeset]);
+    my $job = _build_ci( changesets => [$changeset] );
 
     capture {
         $job->save;
@@ -39,18 +39,18 @@ subtest 'start_task: creates job_log entry' => sub {
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
 
-    my $job = _build_ci(changesets => [$changeset]);
+    my $job = _build_ci( changesets => [$changeset] );
 
     capture {
         $job->save;
-        $job->start_task('some_task', 123)
+        $job->start_task( 'some_task', 123 )
     };
 
-    my $job_log = mdb->job_log->find_one({service_key => 'some_task'});
+    my $job_log = mdb->job_log->find_one( { service_key => 'some_task' } );
 
     ok $job_log;
     is $job_log->{milestone},  2;
@@ -62,18 +62,18 @@ subtest 'new: creates job and runs CHECK & INIT' => sub {
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
 
     my $job;
-    capture { $job = TestUtils->create_ci('job', changesets => [$changeset]) };
+    capture { $job = TestUtils->create_ci( 'job', changesets => [$changeset] ) };
 
     is_deeply $job->step_status,
-      {
+        {
         INIT  => 'FINISHED',
         CHECK => 'FINISHED',
-      };
+        };
 };
 
 subtest 'new: saves rule versions for INIT & CHECK' => sub {
@@ -81,21 +81,20 @@ subtest 'new: saves rule versions for INIT & CHECK' => sub {
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
     my $job;
     capture {
-        $job = TestUtils->create_ci('job', changesets => [$changeset]);
+        $job = TestUtils->create_ci( 'job', changesets => [$changeset] );
     };
 
     cmp_deeply $job->rule_versions,
-      [
-        {
-            INIT  => ignore(),
+        [
+        {   INIT  => ignore(),
             CHECK => ignore(),
         }
-      ];
+        ];
 };
 
 subtest 'run: runs rule with version tag' => sub {
@@ -103,9 +102,9 @@ subtest 'run: runs rule with version tag' => sub {
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic(is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
 
     Baseliner::Model::Rules->new->write_rule(
         id_rule  => '1',
@@ -121,16 +120,15 @@ subtest 'run: runs rule with version tag' => sub {
 
     my $job;
     capture {
-        $job = TestUtils->create_ci('job', changesets => [$changeset], rule_version_tag => 'production');
+        $job = TestUtils->create_ci( 'job', changesets => [$changeset], rule_version_tag => 'production' );
     };
 
     cmp_deeply $job->rule_versions,
-      [
-        {
-            INIT  => "$version_id (production)",
+        [
+        {   INIT  => "$version_id (production)",
             CHECK => "$version_id (production)",
         }
-      ];
+        ];
 };
 
 subtest 'run: creates notify with job step in event.job.end_step' => sub {
@@ -158,17 +156,17 @@ subtest 'run: creates notify with job step in event.job.end_step' => sub {
 subtest 'run: creates notify with job step in event.job.end' => sub {
     _setup();
 
-    my $project   = TestUtils->create_ci_project();
-    my $id_role   = TestSetup->create_role();
-    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $project       = TestUtils->create_ci_project();
+    my $id_role       = TestSetup->create_role();
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $bl            = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
     my $changeset_mid = TestSetup->create_changeset();
-    my $job = _build_ci( changesets => [$changeset_mid], bl => 'QA', projects => $project );
+    my $job           = _build_ci( changesets => [$changeset_mid], bl => 'QA', projects => $project );
 
     capture {
-         $job->run();
-         $job->run();
-         $job->run();
+        $job->run();
+        $job->run();
+        $job->run();
     };
     my @event  = mdb->event->find_one( { event_key => 'event.job.end' } );
     my $event  = _load( $event[0]->{event_data} );
@@ -264,16 +262,17 @@ subtest 'save: throws an error when the job is already created' => sub {
 
     my $project = TestUtils->create_ci_project();
     my $id_role = TestSetup->create_role();
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $changeset = TestSetup->create_changeset();
     my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
     my $job;
     capture {
-        $job =  BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA' )->save;
+        $job = BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA' )->save;
     };
 
-    like exception {BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA')->save}, qr/is in an active job to bl QA/;
+    like exception { BaselinerX::CI::job->new( changesets => [$changeset], bl => 'QA' )->save },
+        qr/is in an active job to bl QA/;
 };
 
 subtest 'run_inproc: runs job in process' => sub {
@@ -313,7 +312,69 @@ subtest 'run_inproc: throws when user does not have permission' => sub {
     };
 
     like exception { $job->run_inproc( { username => $user->name } ) },
-      qr/User .*? does not have permissions to start jobs in process/;
+        qr/User .*? does not have permissions to start jobs in process/;
+};
+
+subtest 'is_rollback_needed: returns flag true or false if job has steps with rollback' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $changeset_mid = TestSetup->create_changeset();
+
+    my $job = _build_ci( changesets => [$changeset_mid], bl => 'QA', projects => $project );
+
+    capture {
+        $job->run();
+    };
+
+    ok $job->is_rollback_needed;
+};
+
+subtest 'rollback_steps: returns an array with all rollback steps' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $changeset_mid = TestSetup->create_changeset();
+
+    my $job = _build_ci( changesets => [$changeset_mid], bl => 'QA', projects => $project );
+
+    capture {
+        $job->run();
+    };
+
+    my @rollback_steps = $job->rollback_steps;
+
+    is $rollback_steps[0], 'PRE';
+};
+
+subtest 'start_rollback: starts job in rollback mode' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $changeset_mid = TestSetup->create_changeset();
+
+    my $job = _build_ci( changesets => [$changeset_mid], bl => 'QA', projects => $project );
+
+    capture {
+        $job->run();
+        $job->start_rollback;
+    };
+
+    is $job->step,     'PRE';
+    is $job->rollback, '1';
+    is $job->status,   'READY';
 };
 
 subtest 'reschedule: updates time and date of the job' => sub {
@@ -379,12 +440,9 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Registor',
-        'BaselinerX::Type::Action',
-        'BaselinerX::Type::Service',
-        'BaselinerX::Type::Config',
-        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Event',     'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Action',    'BaselinerX::Type::Service',
+        'BaselinerX::Type::Config',    'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Statement', 'BaselinerX::CI',
         'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
@@ -401,13 +459,7 @@ sub _setup {
     mdb->rule_version->drop;
     mdb->topic->drop;
 
-    mdb->rule->insert(
-        {
-            id        => "1",
-            rule_type => "pipeline",
-            rule_when => 'promote',
-        }
-    );
+    TestSetup->create_rule_pipeline( id => "1" );
 }
 
 sub _build_ci {
