@@ -13,6 +13,61 @@ use TestSetup;
 
 use_ok 'BaselinerX::CI::report';
 
+subtest 'report_update: deletes report' => sub {
+    _setup();
+
+    my $report      = TestUtils->create_ci('report');
+    my $id_form     = TestSetup->create_rule_form();
+    my $status      = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_category = TestSetup->create_category(
+        id_rule      => $id_form,
+        name         => 'Category',
+        id_status    => $status->mid,
+        default_grid => $report->{mid}
+    );
+    my $topic_mid = TestSetup->create_topic( id_category => $id_category, default_grid => $report->{mid} );
+
+    my $return_data = $report->report_update( { action => 'delete', username => 'developer' } );
+
+    my $category_grid = mdb->category->find_one();
+
+    ok !exists $category_grid->{default_grid};
+
+    is_deeply $return_data,
+        {
+        'success' => \1,
+        'msg'     => 'Search deleted'
+        };
+};
+
+subtest 'report_update: deletes report then exists several categories' => sub {
+    _setup();
+
+    my $report        = TestUtils->create_ci('report');
+    my $id_form       = TestSetup->create_rule_form();
+    my $status        = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_category_1 = TestSetup->create_category(
+        id_rule      => $id_form,
+        name         => 'Category_1',
+        id_status    => $status->mid,
+        default_grid => $report->{mid}
+    );
+    my $id_category_2 = TestSetup->create_category(
+        id_rule      => $id_form,
+        name         => 'Category_2',
+        id_status    => $status->mid,
+        default_grid => $report->{mid}
+    );
+
+    my $return_data = $report->report_update( { action => 'delete', username => 'developer' } );
+
+    my $category_grid_1 = mdb->category->find_one( { id => $id_category_1 } );
+    my $category_grid_2 = mdb->category->find_one( { id => $id_category_2 } );
+
+    ok !exists $category_grid_1->{default_grid};
+    ok !exists $category_grid_2->{default_grid};
+};
+
 subtest 'reports_from_rule: returns empty tree when no report rules' => sub {
     _setup();
 
@@ -467,17 +522,26 @@ subtest 'get_where: builds correct string not in where' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::CI', 'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'Baseliner::Model::Rules' );
+    TestUtils->setup_registry(
+        'BaselinerX::CI',          'Baseliner::Model::Topic',
+        'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
+        'Baseliner::Model::Rules', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+    );
+
 
     TestUtils->cleanup_cis;
 
     mdb->rule->drop;
+    mdb->user->drop;
     mdb->role->drop;
+    mdb->category->drop;
+    mdb->topic->drop;
 
-    my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project     = TestUtils->create_ci_project;
+    my $id_role     = TestSetup->create_role();
+    my $user        = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
 }
 
 sub _create_report_rule {

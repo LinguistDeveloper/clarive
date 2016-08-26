@@ -4382,10 +4382,6 @@ msgstr "Dinámico"
 msgid "Undefined"
 msgstr "Sin definir"
 
-#: lib/BaselinerX/CI/report.pm
-msgid "Missing 'Categories' in search configuration"
-msgstr "No está 'Categorías' en la configuración de búsqueda"
-
 #: lib/BaselinerX/CI/script.pm
 msgid "Run Script"
 msgstr ""
@@ -14391,6 +14387,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Missing 'Categories' in search configuration"
+#~ msgstr "No está 'Categorías' en la configuración de búsqueda"
 
 #~ msgid "Detach Files"
 #~ msgstr "Desligar Ficheros"

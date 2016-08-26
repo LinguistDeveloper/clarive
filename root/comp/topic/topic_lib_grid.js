@@ -92,6 +92,7 @@ Cla.topic_grid = function(params){
 	var store_config;
     if( id_report ) {
         base_params.id_report = params.id_report;
+        base_params.id_category_report = category_id;
         base_params.id_report_rule = params.id_report_rule;
         store_config = {
             baseParams: base_params,
@@ -700,15 +701,12 @@ Cla.topic_grid = function(params){
                 ptool.pageSize =  ps_mini;
                 store_topics.baseParams.limit = ps_mini;
                 ps = ps_mini;
-                ps_plugin.setValue( ps_mini );
             }
             else if( !btn_mini.pressed && ptool.pageSize == ps_mini ) {
                 ptool.pageSize =  ps_maxi;
                 store_topics.baseParams.limit = ps_maxi;
                 ps = ps_maxi;
-                ps_plugin.setValue( ps_maxi );
             }
-            //store_topics.reload();
             ptool.doRefresh();
         }
     });

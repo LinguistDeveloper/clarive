@@ -380,8 +380,7 @@ sub report_update {
     my $username = $p->{username};
     my $mid = $p->{mid};
     my $data = $p->{data};
-
-    my $user = Baseliner->user_ci( $username );
+    my $user = ci->user->search_ci(name=>$username);
     if(!$user){
         _fail _loc('Error user does not exist. ');
     }
@@ -440,14 +439,17 @@ sub report_update {
         }
         when ('delete') {
             try {
+                mdb->category->update( { default_grid => $self->{mid} }, { '$unset' => { default_grid => '' } },{multiple => 1} );
                 $self->delete;
-                $ret = { msg=>_loc('Search deleted'), success=>\1 };
-            } catch {
-                _fail _loc('Error deleting search: %1', shift());
+                $ret = { msg => _loc('Search deleted'), success => \1 };
+            }
+            catch {
+                _fail _loc( 'Error deleting search: %1', shift() );
             };
         }
+
     }
-    $ret;
+    return $ret;
 }
 
 sub dynamic_fields {
@@ -593,13 +595,13 @@ sub selected_fields {
     my $meta = $p->{meta};
 
     if ( !$meta ) {
-        my %meta_temp = map {  $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );
+        my %meta_temp = map {  $_->{id_field} => $_ } _array( Baseliner::Model::Topic->new->get_meta(undef, undef, $p->{username}) );
         $meta = \%meta_temp;
     }
 
     my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
     my @status = values +{ ci->status->statuses( id_category=>\@categories ) };
-    my @cols_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $p->{username} );
+    my @cols_roles = Baseliner::Model::Permissions->new->user_projects_ids_with_collection( username => $p->{username} );
 
     my %filters;
     for my $filter ( _array($fields{where}) ) {
@@ -885,7 +887,7 @@ sub get_where {
     return $where;
 }
 
-method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef, :$sort=undef, :$sortdir=undef ) {
+method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef, :$sort=undef, :$sortdir=undef ) {
     # setup a temporary alternative connection if configured
     my $has_rep_db = exists Baseliner->config->{mongo}{reports};
     my $mdb2 = !$has_rep_db
@@ -900,15 +902,20 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my $rows = $limit // $self->rows;
 
-    my $rel_query;
-    for my $selected (_array( $self->selected )){
-        if (exists $selected->{query}){
-            $rel_query = $selected->{query};
+    my $rel_query ;
+    for my $selected ( _array( $self->selected ) ) {
+        if ( exists $selected->{query} ) {
+            if ($id_category_report) {
+                $rel_query->{$id_category_report} = $selected->{query}{$id_category_report} // {} ;
+            }else {
+                $rel_query = $selected->{query};
+            }
             last;
         }
-    };
-    #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $rel_query;
-    # _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $self->selected;
+    }
+
+    return () unless keys %{ $rel_query || {} };
+
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
@@ -959,7 +966,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @All_Categories;
     my @ids_category;
-    _fail( _loc("Missing 'Categories' in search configuration") ) unless keys %{ $rel_query || {} };
+
     foreach my $key (sort { $b <=> $a} keys $rel_query) {
         my $wh = {};
         push @ids_category, _array $rel_query->{$key}->{id_category};
@@ -984,7 +991,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         my %data_to_compare =  map { $_->{mid} => 1 } @data_relation;
                         my @all_mids;
                         map {
-                            if (ref $_->{$rel_name} eq'ARRAY'){
+                            if (ref $_->{$rel_name} eq 'ARRAY'){
                                 $queries{$rel_name}->{$_->{$rel_name}[0]} = 1 if (($_->{$rel_name}[0]) && ($data_to_compare{$_->{$rel_name}[0]}));
                                 push @all_mids, $_->{$rel_name}[0] if (($_->{$rel_name}[0]) &&($data_to_compare{$_->{$rel_name}[0]}));
                                 $categories_queries->{$_->{name_category}}->{$_->{mid}} = $_ if (($_->{$rel_name}[0]) && ($data_to_compare{$_->{$rel_name}[0]}));
@@ -1050,12 +1057,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     }
 
     Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;
+
+    $where->{id_category} = '' if ( !$where->{id_category} && $id_category_report );
+
     my $rs = $mdb2->topic->find($where);
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;
     $rs->sort({ @sort });
     #_debug \%meta;
-
     my %select_system = (
         mid            => 1,
         category    => 1,
@@ -1063,7 +1072,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         modified_by    => 1,
         labels        => 1
     );
-    my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
+    my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 ,'category.color' => 1};
     # _log "FIELDS==================>" . _dump( $fields );
     #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
