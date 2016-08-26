@@ -23,25 +23,6 @@ register 'menu.help.about' => {
     index => 999
 };
 
-sub dehash {
-    my $v = shift;
-    my $ret ='';
-    if( ref($v) eq 'HASH' ) {
-        $ret.='<ul>';
-        for( sort keys %{ $v || {} } ) {
-           $ret .= "<li>$_: " . dehash( $v->{$_} ) . '</li>';
-        }
-        $ret.='</ul>';
-    } elsif( ref($v) eq 'ARRAY' ) {
-        for( sort @{ $v || [] } ) {
-           $ret .= "<li>".dehash($_) . '</li>';
-        }
-    } else {
-        $ret = $v;
-    }
-    return $ret;
-}
-
 sub show : Local {
     my ( $self, $c ) = @_;
     require Sys::Hostname;
@@ -56,11 +37,8 @@ sub show : Local {
         push @about, { name=>_loc('Server Exec'), value=>$0 };
         push @about, { name=>_loc('Server Bin'), value=>$FindBin::Bin };
         push @about, { name=>_loc('Server Parent ID'), value=>$ENV{BASELINER_PARENT_PID} };
-        #push @about, { name=>_locl('Path'), value=>join '<li>',split /;|:/,$ENV{PATH} };
         push @about, { name=>_loc('OS'), value=>$^O };
         push @about, { name => _loc('Active users count'), value => ci->user->find({ active => '1', name => { '$ne' => 'root' }})->count };
-        #push @about, { name=>_loc('Library Path'), value=>join '<li>',split /;|:/,$ENV{LIBPATH} || '-' };
-        #$body = dehash( $c->config );
         $c->stash->{environment_vars} = [
             map {
                 +{ name=>$_, value=>$ENV{$_} }
@@ -76,7 +54,6 @@ sub show : Local {
     foreach my $license_file ( grep { -e } glob('LICENSE* features/*/LICENSE') ) {
         my $content = _file($license_file)->slurp;
         $content =~ s/\(CURRENT_DATE\)/2010-$current_year/g;
-
         push @$licenses,
           {
             name => $_,
@@ -98,24 +75,6 @@ sub show : Local {
     }
     $c->stash->{third_party} = try { scalar $c->path_to('THIRD-PARTY-NOTICES')->slurp };
     $c->stash->{template} = '/site/about.html';
-}
-
-sub page : Local {
-    my ( $self, $c ) = @_;
-    $c->stash->{name} = { aa=>11 };
-    $c->stash->{template} = '/aaa.html';
-}
-
-sub version : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->req->params;
-    $c->stash->{json} = try {
-        { success => \1, msg => 'ok', version=>$Baseliner::VERSION };
-    } catch {
-        my $err = shift;
-        { success => \0, msg => "$err", };
-    };
-    $c->forward('View::JSON');
 }
 
 no Moose;
