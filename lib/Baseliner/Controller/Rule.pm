@@ -282,23 +282,6 @@ sub grid : Local {
     $c->forward("View::JSON");
 }
 
-sub compile_wsdl {
-    my ($self,$wsdl)=@_;
-    return try {
-        require XML::Compile::SOAP11;
-        require XML::Compile::SOAP::Daemon::CGI;
-        require XML::Compile::WSDL11;
-        require XML::Compile::SOAP::Util;
-        return XML::Compile::WSDL11->new( Util->parse_vars($wsdl,{
-                    #server_type => 'BEA',
-                    WSURL=>'http://fakeurl:8080/rule/soap/fake_for_compile',
-                }) );
-    } catch {
-        my $err = shift;
-        _fail( _loc('Error compiling WSDL: <br /><pre>%1</pre>', Util->_html_escape($err)) );
-    };
-}
-
 sub save : Local {
     my ( $self, $c ) = @_;
     my $p    = $c->req->params;
@@ -1014,7 +997,7 @@ sub default : Path {
             $c->res->body( $wsdl_body );
         } else {
             # soap envelope received
-            my $wsdl = $self->compile_wsdl($wsdl_body);
+            my $wsdl = Baseliner::Model::Rules->new->compile_wsdl($wsdl_body);
             my $daemon = XML::Compile::SOAP::Daemon::CGI->new();
             try {
                 $daemon->operationsFromWSDL(
