@@ -137,15 +137,13 @@ sub infodetail : Local {
             @roles = keys $user->{project_security};
             @roles = map {$_} @roles;
         }
-        my $roles_from_user
-            = mdb->role->find( { id => { '$in' => \@roles } } )->fields(
+        my $roles_from_user = mdb->role->find( { id => { '$in' => \@roles } } )->fields(
             {   role        => 1,
                 description => 1,
                 id          => 1,
                 _id         => 0
             }
-            )->sort( $sort ? { $sort => $dir } : { role => 1 } );
-
+        )->sort( $sort ? { $sort => $dir } : { role => 1 } );
         while ( my $r = $roles_from_user->next ) {
             my $rs_user = ci->user->find(
                 {   username                    => $username,
@@ -155,15 +153,10 @@ sub infodetail : Local {
             my @roles = keys $rs_user->{project_security};
 
             my @user_projects;
-            my @colls = map { Util->to_base_class($_) }
-                Util->packages_that_do('Baseliner::Role::CI::Project');
+            my @colls = map { Util->to_base_class($_) } Util->packages_that_do('Baseliner::Role::CI::Project');
             foreach my $col (@colls) {
-                @user_projects = (
-                    @user_projects,
-                    _array $rs_user->{project_security}->{ $r->{id} }->{$col}
-                );
+                @user_projects = ( @user_projects, _array $rs_user->{project_security}->{ $r->{id} }->{$col} );
             }
-
             my @projects;
             foreach my $prjid (@user_projects) {
                 my $str;
@@ -205,10 +198,7 @@ sub infodetail : Local {
     }
     else {
         $authorized = 0;
-        $msg
-            = _loc( "User "
-                . $c->username
-                . " is not authorized to query user details" );
+        $msg = _loc( "User %1 is not authorized to query user details", $c->username );
     }
 
     if ($authorized) {
