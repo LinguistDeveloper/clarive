@@ -59,7 +59,7 @@ icon: user.svg
 * El sistema notificará con un mensaje de confirmación antes de proceder al borrado.
 
 
-#### <img src="/static/images/icons/copy.gif" /> Duplicar
+#### <img src="/static/images/icons/copy.svg" /> Duplicar
 
 * Permite duplicar el usuario seleccionado.
 * Se creará un nuevo usuario con los mismos valores que el original así como los mismos roles. El nombre de usuario es el mismo pero con la cadena 'Duplicado de' al principio del nombre.

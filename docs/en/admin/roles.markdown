@@ -124,7 +124,7 @@ Allows editing the selected Role. Once changes have been made, select the “Acc
 any changes, select the “Close” button instead.
 
 
-### <img src="/static/images/icons/copy.gif" /> Duplicate the selected Role
+### <img src="/static/images/icons/copy.svg" /> Duplicate the selected Role
 
 Allows duplication of the selected Role. A new Role is created with the same values as the
 original Role. Its initial name will be the name of the original Role with a number concatenated.

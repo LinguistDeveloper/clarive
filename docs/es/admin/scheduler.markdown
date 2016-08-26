@@ -46,7 +46,7 @@ icon: calendar.svg
 #### <img src="/static/images/icons/delete_.png" /> Borrar
 * Permite borrar la tarea seleccionada.
 
-#### <img src="/static/images/icons/copy.gif" /> Duplicar
+#### <img src="/static/images/icons/copy.svg" /> Duplicar
 * Permite duplicar con los mismos datos la tarea seleccionada.
 
 ### <img src="/static/images/icons/start.png" />  Activar
