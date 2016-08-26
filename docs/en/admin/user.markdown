@@ -82,7 +82,7 @@ Allows the Administrator can modify existing data of the selected user.
 The selected user will be deleted. The system will provide a confirmation message before deleting the user.
 
 
-### <img src="/static/images/icons/copy.gif" /> Duplicating a User
+### <img src="/static/images/icons/copy.svg" /> Duplicating a User
 
 Allows duplication of the selected user. A new User is created with the same values as the original.
 

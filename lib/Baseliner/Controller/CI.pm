@@ -14,7 +14,7 @@ register 'action.ci.admin' => { name => 'Admin CIs' };
 #     label    => 'CI Viewer',
 #     url_comp => '/comp/ci-viewer-tree.js',
 #     title    => 'CI Viewer',
-#     icon     => '/static/images/ci/ci.png',
+#     icon     => '/static/images/ci/ci.svg',
 #     actions  => ['action.ci.admin']
 # };
 

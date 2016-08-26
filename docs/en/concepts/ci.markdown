@@ -1,6 +1,6 @@
 ---
 title: CI
-icon: class.gif
+icon: class.svg
 ---
 
 To paraphrase Wikipedia, the term configuration item (CI) refers to the fundamental structural 

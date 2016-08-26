@@ -87,7 +87,7 @@ icon: topic.svg
 * Las categorías no se puede eliminar si hay instancias de ésta en la base de datos. Estos casos deben ser revisados primero y eliminados despues antes de borrar la categoría. De esta manera se garantiza la integridad de la base de datos
 
 
-### <img src = "/static/images/icons/copy.gif" alt='Duplicar categoría' /> Duplicar
+### <img src = "/static/images/icons/copy.svg" alt='Duplicar categoría' /> Duplicar
 * Permite duplicar la categoría seleccionada.
 * Esta nueva categoría tendrá las mismas propiedades que la original, nombre, color, formulario, estados disponibles, flujos de trabajo etc..
 * Solo va a tener diferente el nombre que será el nombre de la categoría original seguido del ID generado para esta nueva categoría.
