@@ -5,12 +5,20 @@
     $licenses => []
     $tlc => ''
     $third_party => ''
+    $about_logo => ''
 </%args>
 <div id="boot" class="container_24" style="margin: 30px 10px 10px 30px">
-    <div class=    <div class="grid_24">
-        <img class="logo" src="<% $c->config->{about_log} || '/static/images/about.png' %>"></img>
-        <hr />
+% if ($about_logo) {
+    <div class="div-about-file">
+        <div class="div-about-file-custom"><img src="<% $about_logo %>" class="img-custom-about-file"/></div>
+        <div class="div-about-powered"><img src="/static/images/powered_by_clarive_login.png" class="img-main-about-powered"/></div>
     </div>
+% }
+% else {
+    <div class="div-about-file"><img src="/static/images/about.png"/></div>
+% }
+    <hr />
+
     <div class=    <div class="grid_24">
         <h1><% _loc('Info') %></h1>
     </div>
