@@ -882,7 +882,6 @@ sub promotes_and_demotes {
     for my $status ( @statics ) {
         for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
-                $statics->{ $bl } = \1;
                 $statics->{'s'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {
                     id             => 's'.$bl.$status->{id_status},
@@ -925,7 +924,6 @@ sub promotes_and_demotes {
         for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
 
             if ( !@project_bls || $bl ~~ @project_bls ){
-                $promotable->{ $bl } = \1;
                 $promotable->{'p'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {
                     id             => 'p'.$bl.$status->{id_status},
@@ -968,7 +966,6 @@ sub promotes_and_demotes {
         my @bl_to = _array $statuses{ $status->{id_status} }{bls};
         for my $bl ( map { $bls{$_} } @bl_from ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
-                $demotable->{ $bl } = \1;
                 $demotable->{ 'd'.$bl.$status->{id_status} } = \1;
                 if ( $config->{demote_to_bl} ) {
                     for my $bl_to ( map { $bls{$_} } @bl_to ) {
