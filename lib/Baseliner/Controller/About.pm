@@ -93,6 +93,9 @@ sub show : Local {
         grep { -e }
         glob( 'COPYRIGHT* features/*/COPYRIGHT' )
     ];
+    if ($c->config->{logo_file}){
+        $c->stash->{about_logo} = $c->config->{logo_file};
+    }
     $c->stash->{third_party} = try { scalar $c->path_to('THIRD-PARTY-NOTICES')->slurp };
     $c->stash->{template} = '/site/about.html';
 }

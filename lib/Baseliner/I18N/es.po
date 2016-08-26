@@ -106,22 +106,15 @@ msgstr "Hora del Servidor"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Exec"
-msgstr ""
+msgstr "Ejecución del Servidor"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Bin"
-msgstr ""
+msgstr "Binarios Servidor"
 
 #: lib/Baseliner/Controller/About.pm
 msgid "Server Parent ID"
-msgstr ""
-
-#: lib/Baseliner/Controller/About.pm root/ci/item.js
-#: root/comp/catalog/item_deploy.js root/comp/feature_grid.mas
-#: root/forms/file_foreach.js root/forms/script_local.js root/forms/sed.js
-#: root/forms/write_file.js
-msgid "Path"
-msgstr "Ruta"
+msgstr "ID Padre Servidor"
 
 #: lib/Baseliner/Controller/About.pm root/ci/generic_server.js
 msgid "OS"
@@ -130,10 +123,6 @@ msgstr "SO"
 #: lib/Baseliner/Controller/About.pm
 msgid "Active users count"
 msgstr "Cuenta de usuarios activos"
-
-#: lib/Baseliner/Controller/About.pm
-msgid "Library Path"
-msgstr "Ruta de las librerías"
 
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Authentication required"
@@ -6538,6 +6527,12 @@ msgstr "Sí"
 #: root/comp/git/repository.js
 msgid "Directory"
 msgstr "Directorio"
+
+#: root/ci/item.js root/comp/catalog/item_deploy.js root/comp/feature_grid.mas
+#: root/forms/file_foreach.js root/forms/script_local.js root/forms/sed.js
+#: root/forms/write_file.js
+msgid "Path"
+msgstr "Ruta"
 
 #: root/ci/job.js root/comp/dashboard_job.html root/comp/monitor_grid.js
 #: root/forms/create_job.js
@@ -14335,6 +14330,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Library Path"
+#~ msgstr "Ruta de las librerías"
 
 #~ msgid "Job sleeping %1 seconds"
 #~ msgstr "Job esperando %1 segundos"

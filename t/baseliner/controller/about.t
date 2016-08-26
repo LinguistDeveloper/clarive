@@ -24,6 +24,22 @@ subtest 'show: returns a license with updated current year' => sub {
     like $c->stash->{licenses}[0]->{text}, qr/2010-$current_year/;
 };
 
+subtest 'show: returns customized icon' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c( config => { logo_file => 'logo.svg' } );
+    $controller->show($c);
+    is $c->stash->{about_logo}, 'logo.svg';
+};
+
+subtest 'show: uses default logo' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+    $controller->show($c);
+    is $c->stash->{about_logo}, undef;
+};
+
 done_testing;
 
 sub _build_c {
