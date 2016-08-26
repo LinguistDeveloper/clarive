@@ -8390,6 +8390,10 @@ msgid "blame"
 msgstr "blame"
 
 #: root/comp/lifecycle/report_edit.js
+msgid "Create a report"
+msgstr "Crear un informe"
+
+#: root/comp/lifecycle/report_edit.js
 msgid "New Search"
 msgstr "Nueva Búsqueda"
 

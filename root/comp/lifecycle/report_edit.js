@@ -1,4 +1,5 @@
 (function(d) {
+    Cla.help_push({ title:_('Create a report'), path:'how-to/create-reports' });
     var win;
     var lc_node = d.node;
     var is_new = d.is_new;
@@ -653,18 +654,91 @@
         });
         return flag;
     });
-    
+
+    var name = {
+        fieldLabel: _('Name'),
+        name: 'name',
+        xtype: 'textfield',
+        width: 300,
+        allowBlank: false,
+        value: is_new ? _('New search') : lc_node.text
+    };
+
+    var rows = {
+        fieldLabel: _('Rows'),
+        name: 'rows',
+        xtype: 'numberfield',
+        minValue: '1',
+        maxValue: '500',
+        width: 300,
+        allowBlank: false,
+        value: lc_node.attributes.rows || 50
+    };
+
+    var recursivelevel = {
+        fieldLabel: _('Recursive level'),
+        name: 'recursivelevel',
+        xtype: 'textfield',
+        width: 300,
+        emptyText: _('Default: 2 - No limit: -1'),
+        allowBlank: false,
+        value: lc_node.attributes.recursivelevel || "2"
+    };
+
+    var permissions = new Ext.form.RadioGroup({
+       name: 'permissions',
+       anchor: '50%',
+       defaults: {
+           xtype: "radio",
+           name: "permissions",
+       },
+       fieldLabel: _('Permissions'),
+       items: [{
+           boxLabel: _('Private'),
+           inputValue: 'private',
+           checked: !lc_node.attributes.permissions || lc_node.attributes.permissions == 'private' ? true : false,
+       }, {
+           boxLabel: _('Public'),
+           inputValue: 'public',
+           checked: lc_node.attributes.permissions == 'public' ? true : false
+       }],
+       listeners: {
+           change: function(radiogroup, radio) {
+               if (radio.inputValue == 'private') {
+                    userandroles.hide();
+               } else {
+                    userandroles.show();
+               }
+           }
+       }
+    });
+
+    var userandroles = new Baseliner.UserAndRoleBox({
+        denyEmail: true,
+        fieldLabel: _('Users and roles'),
+        name: 'usersandroles',
+        width: 300,
+        hidden: true,
+        value: lc_node.attributes.permissions == 'public' ? lc_node.attributes.usersandroles : ''
+    });
+
+    if (lc_node.attributes.permissions == 'private') {
+        userandroles.hide();
+    }else if (lc_node.attributes.permissions == 'public'){
+        userandroles.show();
+    }
+
     var options = new Baseliner.FormPanel({
         title: _('Options'),
-        bodyStyle: { 'padding':'10px 10px 10px 10px' },
-        items : [
-            { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New search') : lc_node.text },
-            { fieldLabel: _('Rows'), name: 'rows', xtype: 'numberfield', minValue:'1', maxValue:'500', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 50 },
-            { fieldLabel: _('Recursive level'), name: 'recursivelevel', xtype: 'textfield', anchor:'50%', emptyText: _('Default: 2 - No limit: -1'), allowBlank: false, value: lc_node.attributes.recursivelevel || "2" },
-            new Baseliner.ComboDouble({
-                value: lc_node.attributes.permissions || 'private', name:'permissions', 
-                fieldLabel: _('Permissions'), data: [ ['private',_('Private')],['public',_('Public')] ] }),
-            new Baseliner.UserAndRoleBox({ fieldLabel: _('Users and roles'), name:'usersandroles', allowBlank: true, value: lc_node.attributes.usersandroles })
+        bodyStyle: {
+            'padding': '10px 10px 10px 10px'
+        },
+        items: [
+            name,
+            rows,
+            recursivelevel,
+            permissions,
+            userandroles
         ]
     });
     
