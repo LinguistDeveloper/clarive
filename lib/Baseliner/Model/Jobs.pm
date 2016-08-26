@@ -66,6 +66,9 @@ sub monitor {
     my ( $self, $p ) = @_;
 
     my $username = $p->{username};
+    my @filter_bls = _array $p->{filter_bl};
+    my $where_filter = {};
+    my $permissions = Baseliner::Model::Permissions->new;
 
     my ( $start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt )
         = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
@@ -74,116 +77,12 @@ sub monitor {
     $groupby //= '';
     $groupdir //= '';
 
-    $sort ||= 'starttime';
-    $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1;
-
-    my @order_by;
-    if ( length($groupby) ) {
-        $groupdir = $groupdir eq 'ASC' ? 1 : -1;
-        @order_by = (
-            $group_keys->{$groupby} => ( $groupby eq 'when' ? -1 : $groupdir ),
-            $group_keys->{$sort} => $dir
-        );
+    if ($p->{next_start} && $start && $query) {
+       $start = $p->{next_start};
     }
-    else {
-        @order_by = ( $group_keys->{$sort} => $dir );
-    }
-
-    $start = $p->{next_start} if $p->{next_start} && $start && $query;
-
-    my $page = to_pages( start => $start, limit => $limit );
-
-    my $where = {};
-    my @mid_filters;
-    if ( length($query) ) {
-        _debug "Job QUERY=$query";
-        my @mids_query;
-        if ( $query !~ /\+|\-|\"|\:/ ) {
-            $query =~ s{(\w+)\*}{job "$1"}g;
-            $query =~ s{([\w\-\.]+)}{"$1"}g;
-            $query =~ s{\+(\S+)}{"$1"}g;
-            $query =~ s{""+}{"}g;
-            @mids_query = map { $_->{obj}{mid} } _array(
-                mdb->master_doc->search(
-                    query   => $query,
-                    limit   => 1000,
-                    project => { mid => 1 },
-                    filter  => { collection => 'job' }
-                )->{results}
-            );
-        }
-        if ( !@mids_query ) {
-            mdb->query_build( where => $where, query => $query, fields => [ keys %$group_keys ] );
-        }
-        else {
-            push @mid_filters, { mid => mdb->in(@mids_query) };
-        }
-    }
-
-    my $permissions = Baseliner::Model::Permissions->new;
-
-    if ( !$permissions->is_root($username) ) {
-        my $user  = ci->user->find_one( { name => $username } );
-        my @roles = keys $user->{project_security};
-        my @bl    = map {
-            map { $_->{bl} }
-                grep { $_->{bl} if ( $_->{action} eq 'action.job.viewall' ) }
-                _array( $_->{actions} )
-        } mdb->role->find( { id => { '$in' => \@roles } } )->fields( { actions => 1, _id => 0 } )->all if (@roles);
-        my @ids_project = $permissions->user_projects_with_action(
-            username => $username,
-            action   => 'action.job.viewall',
-            level    => 1,
-            bl       => \@bl
-        );
-
-        $where->{bl} = mdb->in(@bl) if ( @bl && !( '*' ~~ @bl ) );
-        $where->{projects} = mdb->in( sort @ids_project );
-    }
-
-    if ( length $p->{job_state_filter} ) {
-        my @job_state_filters = do {
-            my $job_state_filter = Util->_decode_json( $p->{job_state_filter} );
-            _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
-        };
-        $where->{status} = mdb->in( \@job_state_filters );
-    }
-
-    if ( length $p->{filter_nature} ) {
-        $where->{natures} = mdb->in( _array( $p->{filter_nature} ) );
-    }
-
-    if ( length $p->{filter_bl} ) {
-        $where->{bl} = $p->{filter_bl};
-    }
-
-    if ( length $p->{filter_type} ) {
-        $where->{job_type} = $p->{filter_type};
-    }
-
-    if ( length $p->{filter_project} ) {
-        if ( !$permissions->is_root($username) ) {
-            my @projects = _array $where->{projects}->{'$in'};
-            if ( $p->{filter_project} ~~ @projects ) {
-                $where->{projects} = $p->{filter_project};
-            }
-        }
-        else {
-            $where->{projects} = $p->{filter_project};
-        }
-    }
-
-    $query_id ||= '';
-    if ( $query_id ne '-1' ) {
-        my @jobs = split( ",", $query_id );
-        $where->{'mid'} = mdb->in( \@jobs );
-    }
-
-    $where->{'$and'} = \@mid_filters if @mid_filters;
 
     if ($filter) {
         $filter = Util->_decode_json($filter);
-        my $where_filter = {};
         for my $fi ( _array($filter) ) {
             my $val = $fi->{value};
             if ( $fi->{type} eq 'date' ) {
@@ -201,12 +100,30 @@ sub monitor {
                 $where_filter->{ $fi->{field} } = qr/$val/i;
             }
         }
-        $where = { %$where, %$where_filter };
     }
 
-    my $rs = mdb->master_doc->find( { collection => 'job', %$where } )->sort( mdb->ixhash(@order_by) );
+    my $rs = Baseliner::DataView::Job->new->find(
+        groupby      => $groupby,
+        groupdir     => $groupdir,
+        dir          => $dir,
+        sort         => $sort,
+        start        => $start,
+        limit        => $limit,
+        where_filter => $where_filter,
+        username     => $username,
+        query        => $query,
+        group_keys   => $group_keys,
+        query_id     => $query_id,
+        filter       => {
+            bls              => \@filter_bls,
+            filter_nature    => $p->{filter_nature},
+            filter_type      => $p->{filter_type},
+            filter_project   => $p->{filter_project},
+            job_state_filter => $p->{job_state_filter}
+        }
+    );
 
-    if ( $p->{list_only} ) {
+   if ( $p->{list_only} ) {
         return ( 0, $rs->fields( { mid => 1 } )->next );
     }
 

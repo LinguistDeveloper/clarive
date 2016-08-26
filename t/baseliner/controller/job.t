@@ -8,7 +8,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
-use TestUtils ':catalyst';
+use TestUtils ':catalyst', 'mock_time';
 
 use Capture::Tiny qw(capture);
 
@@ -159,7 +159,7 @@ subtest 'monitor_json: returns the jobs filtered by bl' => sub {
         );
     };
 
-    my $c = mock_catalyst_c( username => 'developer', req => { params => { query_id => '-1', filter_bl => 'QA' } } );
+    my $c = mock_catalyst_c( username => 'developer', req => { params => { query_id => '-1', filter_bl => 'PROD' } } );
 
     my $controller = _build_controller();
 
@@ -766,6 +766,155 @@ subtest 'steps: returns job steps' => sub {
 
     is_deeply $c->stash->{json},
       { data => [ { name => 'CHECK' }, { name => 'INIT' }, { name => 'PRE' }, { name => 'RUN' }, { name => 'POST' } ] };
+};
+
+subtest 'by_status: returns the amount of jobs user has permissions to view and the status of the jobs' => sub {
+    _setup();
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.job.viewall',
+                bl     => 'PROD'
+            },
+        ]
+    );
+    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+
+    my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
+
+    capture {
+        TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+            bl           => 'DEV'
+        );
+    };
+
+    capture {
+        TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+            bl           => 'PROD'
+        );
+    };
+
+    my $c = mock_catalyst_c( username => 'user' );
+
+    my $controller = _build_controller();
+
+    $controller->by_status($c);
+
+    is $c->stash->{json}->{data}[0][0], 'FINISHED';
+    is $c->stash->{json}->{data}[0][1], 1;
+};
+
+subtest 'by_status: returns the amount of jobs and the status of the jobs filtering by bl' => sub {
+    _setup();
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.job.viewall',
+                bl     => '*'
+            },
+        ]
+    );
+    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+
+    my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
+
+    capture {
+        TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+            bl           => 'DEV'
+        );
+    };
+
+    capture {
+        TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+            bl           => 'PROD'
+        );
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => { params => { bls => 'DEV' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->by_status($c);
+
+    is $c->stash->{json}->{data}[0][0], 'FINISHED';
+    is $c->stash->{json}->{data}[0][1], 1;
+};
+
+subtest 'by_status: returns the amount of jobs and the status of the jobs filtering by period' => sub {
+    _setup();
+
+    my $id_changeset_rule = _create_changeset_form();
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.job.viewall',
+                bl     => '*'
+            },
+        ]
+    );
+    TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+
+    my $id_rule = TestSetup->create_rule( rule_when => 'promote' );
+
+    capture {
+        mock_time '2016-01-01 00:05:00' => sub {
+            TestSetup->create_job(
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+            );
+        };
+    };
+    capture {
+        TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$changeset_mid],
+        );
+    };
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => { params => { period => '1D' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->by_status($c);
+
+    is $c->stash->{json}->{data}[0][0], 'FINISHED';
+    is $c->stash->{json}->{data}[0][1], 1;
 };
 
 done_testing;

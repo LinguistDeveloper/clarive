@@ -633,8 +633,8 @@ sub roles : Local : Does('Ajax') {
 #   (used in ci forms)
 
 sub store : Local : Does('Ajax') {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
+    my ( $self, $c ) = @_;
+    my $p        = $c->req->params;
 
     if(ref $p->{role} ne 'ARRAY' && $p->{role}){
         my @a = split(',', $p->{role});
@@ -720,8 +720,6 @@ sub store : Local : Does('Ajax') {
         }
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
-
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -731,15 +729,22 @@ sub store : Local : Does('Ajax') {
             }
             push @roles, $r;
         }
-        my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
-    }
-    else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
-        #_fail( 'No class or role supplied' );
+        $class = [ packages_that_do(@roles) ];
     }
 
-    #_debug \@data if $mids;
+    ( $total, @data ) = $self->tree_objects(
+        class    => $class,
+        parent   => 0,
+        start    => $p->{start},
+        limit    => $p->{limit},
+        order_by => $p->{order_by},
+        query    => $query,
+        where    => $where,
+        mids     => $mids,
+        pretty   => $p->{pretty},
+        filter   => $p->{filter},
+        no_yaml  => $p->{with_data} ? 0 : 1
+    );
 
     # variables
     if( $p->{with_vars} ) {  # $p->{no_vars} ) {  # show variables always, with_vars deprecated

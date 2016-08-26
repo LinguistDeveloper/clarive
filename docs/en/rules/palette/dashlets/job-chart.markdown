@@ -19,7 +19,6 @@ Can personalize the size of the dashlet modifying the number of columns and rows
 Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
 
-
 ### Period to be shown. Last..
 
 Use to configure the period view of the chart.
@@ -35,10 +34,6 @@ Allows to select one o more environments
 Can show a different views of the chart
 
 
-- **Pie*
-
-
-- **Donut*
-
-
-- **Bar**
+- *Pie*
+- *Donut*
+- *Bar*

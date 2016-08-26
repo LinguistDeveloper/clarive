@@ -25,6 +25,7 @@ icon: chart_pie
 
 ### El gráfico se mostrará como...
 * Permite cambiar el tipo de gráfico para mostrar en el dashboard
-    **Circular**
-    **Donut**
-    **Barras**
+
+- *Circular*
+- *Donut*
+- *Barras*
