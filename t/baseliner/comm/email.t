@@ -66,8 +66,7 @@ subtest 'send: does not fail when message send fails' => sub {
     $msg->mock( send   => sub { die 'error' } );
     $msg->mock( attach => sub { } );
 
-    my $comm = Baseliner::Comm::Email->new(@_);
-    $comm = Test::MonkeyMock->new($comm);
+    my $comm = _build_comm(msg => $msg);
     $comm->mock( _build_msg => sub { $msg } );
 
     ok $comm->send(
@@ -495,7 +494,9 @@ sub _mock_c {
 }
 
 sub _build_comm {
-    my $comm = Baseliner::Comm::Email->new(@_);
+    my (%params) = @_;
+
+    my $comm = Baseliner::Comm::Email->new(%params);
 
     $comm = Test::MonkeyMock->new($comm);
     $comm->mock( _init_connection    => sub { } );
