@@ -4,18 +4,17 @@
 	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 16 16"
 	 style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#3FA9F5;}
+	.st0{fill:#F7A808;}
+	.st1{fill:none;stroke:#F7A808;stroke-width:0.5;stroke-linejoin:round;stroke-miterlimit:10;}
 </style>
 <g>
 	<path class="st0" d="M1.9,1.9h9.7l2.5,2.4V14H2L1.9,1.9 M1.1,1L1,14.9L15,15V4l-3-3H1.1L1.1,1z"/>
 </g>
 <polygon class="st0" points="15,5 11,5 11,1 "/>
-<rect x="8" y="4" class="st0" width="1.9" height="0.9"/>
-<rect x="6" y="5" class="st0" width="1.9" height="1"/>
-<rect x="8" y="6" class="st0" width="2" height="0.9"/>
-<rect x="6" y="7" class="st0" width="2" height="1"/>
-<rect x="8" y="8.1" class="st0" width="2" height="0.8"/>
-<rect x="6" y="9" class="st0" width="2" height="0.9"/>
-<rect x="8" y="10" class="st0" width="2" height="1"/>
-<path class="st0" d="M6,11v3h5v-3H6z M10,13H7v-1h3V13z"/>
+<rect x="4" y="7" transform="matrix(-1 -4.486867e-11 4.486867e-11 -1 14 20)" class="st0" width="6" height="6"/>
+<g>
+	<path class="st0" d="M11,9v2H8V9H11 M11,8H8C7.4,8,7,8.4,7,9v2c0,0.6,0.4,1,1,1h3c0.6,0,1-0.4,1-1V9C12,8.4,11.6,8,11,8L11,8z"/>
+</g>
+<line class="st1" x1="5.6" y1="5" x2="5.6" y2="6"/>
+<line class="st1" x1="7.5" y1="4.1" x2="7.5" y2="6.1"/>
 </svg>

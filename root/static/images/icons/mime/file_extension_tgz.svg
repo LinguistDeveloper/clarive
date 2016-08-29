@@ -4,12 +4,9 @@
 	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 16 16"
 	 style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#3FA9F5;}
+	.st0{fill:#AD9366;}
 </style>
-<g>
-	<path class="st0" d="M1.9,1.9h9.7l2.5,2.4V14H2L1.9,1.9 M1.1,1L1,14.9L15,15V4l-3-3H1.1L1.1,1z"/>
-</g>
-<polygon class="st0" points="15,5 11,5 11,1 "/>
+<path class="st0" d="M12,1H1.1L1,14.9L15,15V4L12,1z M14.1,14H2L1.9,1.9H11V5h3.1V14z"/>
 <rect x="8" y="4" class="st0" width="1.9" height="0.9"/>
 <rect x="6" y="5" class="st0" width="1.9" height="1"/>
 <rect x="8" y="6" class="st0" width="2" height="0.9"/>

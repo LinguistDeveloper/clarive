@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 20.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FF6F6F;}
+	.st1{fill:#4FBC78;}
+	.st2{fill:#404040;}
+	.st3{fill:#F7A808;}
+	.st4{fill:#3FA9F5;}
+	.st5{fill:#FFFFFF;}
+</style>
+<polygon class="st0" points="14,7.5 8,7.5 8,1.5 13,1.5 14,2.8 "/>
+<g id="Layer_1_1_">
+</g>
+<rect x="2" y="1.5" class="st1" width="6" height="6"/>
+<path class="st2" d="M13,0.5c-7.1,0-11.4,0-12,0v14h14L14.9,3.7L13,0.5z M2,13.5v-12h10v3h2v9H2z"/>
+<rect x="2" y="7.5" class="st3" width="6" height="6"/>
+<rect x="8" y="7.5" class="st4" width="6" height="6"/>
+<g>
+	<polygon class="st2" points="5.1,12.9 5.1,10.1 8.1,10.1 8.1,5.1 11.9,5.1 11.9,6.9 8.9,6.9 8.9,12.9 	"/>
+	<path class="st5" d="M11.8,5.2v1.5H9H8.8V7v5.8H5.2v-2.5H8h0.2V10V5.2H11.8 M12,5H8v5H5v3h4V7h3V5L12,5z"/>
+</g>
+</svg>
