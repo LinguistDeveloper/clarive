@@ -375,7 +375,7 @@ Baseliner.render_extensions = function(value,metadata,rec,rowIndex,colIndex,stor
     value = value.toLowerCase();
     var extension = extensions_available[ value ];
     if( extension == undefined ) value = 'bin'; // no icon available
-    return _("<img src='%1' alt='%2'>", "/static/images/icons/mime/file_extension_" + value + ".png", value );
+    return _("<img src='%1' alt='%2'>", "/static/images/icons/mime/file_extension_" + value + ".svg", value );
 }
 
 // JsonStore with Error Handling
