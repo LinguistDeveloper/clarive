@@ -236,7 +236,7 @@ sub send {
 
     _log "Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
 
-    my $msg = MIME::Lite->new(
+    my $msg = $self->_build_msg(
         To        => "@to",
         Cc        => "@cc",
         From      => $from,
@@ -292,7 +292,10 @@ sub send {
             Encoding => 'base64',
         );
     }
+
     $self->_send($msg);
+
+    return $self;
 }
 
 sub filter_queue {
@@ -344,8 +347,20 @@ sub _send {
     my $self = shift;
     my ( $msg ) = @_;
 
-    eval { $msg->send('smtp'); };
-    _throw "send failed: $@\n" if $@;
+    try {
+        $msg->send('smtp');
+    }
+    catch {
+        my $e = shift;
+
+        _error "send failed: $e\n";
+    };
+}
+
+sub _build_msg {
+    my $self = shift;
+
+    return MIME::Lite->new(@_);
 }
 
 no Moose;
