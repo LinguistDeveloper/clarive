@@ -1,48 +1,72 @@
 ---
-title: Crear Reporte
+title: Crear Informe
 index: 1
 icon: report.svg
 ---
 
-Allow users to create a personalized topic grids. Users set the columns to show, categories and filters that makes possible to have in a topic grid the relevant information. This grid, can be configured with the following options:
+Permite a los usuarios crear grids de tópicos personalizados. El usuario selecciona las columnas a mostrar, categorías y filtros. Este grid, puede configurarse de la siguiente manera:
 
-### Creating a report ###
+### Crear Informe ###
 
-Click on <img src="/static/images/icons/report.svg" />  in the **lifecycle panel**. Right click on  <img
-src="/static/images/icons/magnifier.svg" /> **New search**.
+Existen dos formas:
 
-#### Options ####
+La primera, consiste en ir a **Administración**->**Reglas** y pulsar el botón <img src="/static/images/icons/add.svg" /> Crear.
 
-- **Name** - Set the report name.
+Nos aparecerá una ventana con las siguientes opciones:
 
-- **Rows** - Set the number of rows per page in the grid.
+- **Nombre**: Asigna un nombre al informe. Este campo es obligatorio..
 
-- **Recursive level** - Ajust the depth of the relations between topics.
+- **Tipo**: Define el tipo de regla. Para nuestro caso, seleccionamos informe.
 
-- **Permissions** - We can set the privacity of our report.
-    - **Private**: Only the owner of the report can view it.
+- **Modo de compilación**
 
-    - **Public**: Shows a combo box **Users and roles** where we can set who can see the report.
+Para crear el informe, hacemos click en el botón **Finalizado**.
+
+Por defecto, nos aparecerán tres elementos:
+
+- **Seguridad**: Definimos los usuarios que tienen acceso al informe.
+
+- **Meta**: Definimos los campos que se van a mostrar.
+
+- **Datos**: Tratamos los datos a mostrar.
+
+La segunda forma para crear un informe es la siguiente:
+
+Hacemos click en <img src="/static/images/icons/report.svg" />  dentro del panel principal. Click derecho en  <img
+src="/static/images/icons/magnifier.svg" /> **Nueva Búsqueda**.
+
+#### Opciones ####
+
+- **Nombre** - Nombre del reporte.
+
+- **Filas** - Define el numero de filas por página en el grid.
+
+- **Recursive level** - Ajusta la profundiad de la relaciones entre tópicos.
+
+- **Permisos** - Podemos seleccionar la privacidad de nuestro informe.
+    - **Privado**: Únicamente el propietario del informe puede verlo.
+
+    - **Público**: Muestra un combo **Users and roles** donde podemos seleccionar quién puede ver el informe.
 
 ### Query ###
 
-In this tab we can select the setting of our report. At the left side we can see all categories and their fieldlets.
+En esta pestaña, podemos definir la configuración de nuestro informe. En la izquierdam aparecen todas las categorías
+y sus fieldlets
 
-At the right side, the tree with added data into the report:
+A la derecha, aparece el árbol con los datos añadidos en nuestro informe:
 
- - **Categories** - Drag and drop the category which we want to see in the report from left side to here.
+ - **Categorías** - Arrastrar y soltar la categoría que queremos ver en el informe.
 
- - **Fields** - Drag here the fieldlets we want to see in the report. Clicking in each field we can see some options:
-     - Header: Set the title of the column.
-     - Width: Set the width of the column.
+ - **Campos** - Arrastrar los fieldlets que queremos ver en el informe. Haciendo click en cada campo podemos ver las siguientes opciones:
+     - Cabecera: Título de la columna.
+     - Ancho: Ancho de la columna.
 
- - **Filter** - In addition, we can filter data dragging the fieldlets here. Clicking on each fieldlet we can set some options, for example: 
-    - String: We can filter a fieldlet by text.
-    - CI: Can filter with some conditions like IN, NOT IN, etc.. in CI items
-    - Date: Also we can filter data by date.
+ - **Filtros** - Además, podemos añadir filtros arrastrando los fieldlets aquí. Haciendo click en cada fieldlet, podemos ver las siguientes opciones:
+    - String: Podemos filtrar por texto.
+    - CI: Podemos filtrar por alguna condición.
+    - Fecha: Podemos filtrar por fecha
 
- - **Order**: Finally, we can set the default order to show the report. Drag a fieldlet here, and click on it. This will show a menu to set the order type: ASC or DESC.
+ - **Ordenar**: Podemos definir el orden. Arrastrar un fieldlet aquí y hacer click en él. Aparecerá un menú en el que definiremos el orden ascendente o descendente.
 
-
-To finish, just click on <img src="/static/images/icons/action_save.svg"/> Save.
+Para terminar hacer click en <img src="/static/images/icons/action_save.svg"/> Guardar.
 

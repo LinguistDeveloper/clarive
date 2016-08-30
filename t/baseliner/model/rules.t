@@ -8,6 +8,7 @@ use Test::Fatal;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils qw(mock_time);
+use TestSetup;
 
 use Class::Date;
 use Time::HiRes qw(usleep);
@@ -1092,11 +1093,135 @@ subtest 'compile_wsdl: throws an error if wsdl has incorrect format' => sub {
     }, qr/Error compiling WSDL:<br \/><pre>error: don't known how to interpret XML data/;
 };
 
+subtest 'init_report_tasks: fails if not rule name is sent' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule( rule_type => "report" );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    my $model = _build_model();
+
+    like exception {
+        $model->init_report_tasks();
+    }, qr/Rule not found/;
+};
+
+subtest 'init_report_tasks: fails if not rule owner is sent' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_type => "report",
+        rule_name => 'My Rule'
+    );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    my $model = _build_model();
+
+    like exception {
+        $model->init_report_tasks( $rule->{rule_name} );
+    }, qr/User not found/;
+};
+
+subtest 'init_report_tasks: security code returns 1 when user is the owner' => sub {
+    _setup();
+
+    my $rule_owner = "Owner";
+    my $rule_name  = "My Rule";
+    my $id_rule    = TestSetup->create_rule(
+        rule_type => "report",
+        rule_name => $rule_name,
+        username  => $rule_owner
+    );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    my $model = _build_model();
+    my @tree
+        = $model->init_report_tasks( $rule->{rule_name}, $rule->{username} );
+    my $code1 = eval 'my $stash = {};' . $tree[0]->{data}{code};
+
+    ok( $code1->( username => $rule_owner ) );
+};
+
+subtest 'init_report_tasks: security code returns 0 when user is not the owner' => sub {
+    _setup();
+
+    my $rule_owner = "Owner";
+    my $rule_name  = "My Rule";
+    my $id_rule    = TestSetup->create_rule(
+        rule_type => "report",
+        rule_name => $rule_name,
+        username  => $rule_owner
+    );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    my $model = _build_model();
+    my @tree = $model->init_report_tasks( $rule->{rule_name}, $rule->{username} );
+    my $code = eval 'my $stash = {};' . $tree[0]->{data}{code};
+
+    ok( !$code->( username => "Other User" ) );
+};
+
+subtest 'init_report_tasks: returns correct codes when rule is a report with a correct rule name and correct owner' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_type => "report",
+        rule_name => 'My Rule',
+        username  => "Owner"
+    );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    my $model = _build_model();
+    my @tree = $model->init_report_tasks( $rule->{rule_name}, $rule->{username} );
+
+    is $tree[0]->{key}, 'statement.perl.code';
+    ok( eval $tree[0]->{data}{code} =~ qr/Owner/ );
+    ok( eval $tree[1]->{data}{code} =~ qr/My Rule/ );
+    is scalar @tree, 3;
+};
+
+subtest 'build_tree: returns fieldlets by default when rule is a form' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule( rule_type => "form", );
+    my $model   = _build_model();
+    my @tree    = $model->build_tree($id_rule);
+
+    is $tree[0]->{data}->{fieldletType}, 'fieldlet.system.status_new';
+    is $tree[1]->{data}->{fieldletType}, 'fieldlet.system.title';
+};
+
+subtest 'build_tree: returns correct codes when rule is a report' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_type => "report",
+        rule_name => "My Rule",
+        username  => "My User"
+    );
+    my $model = _build_model();
+    my @tree  = $model->build_tree($id_rule);
+
+    is $tree[0]->{key}, 'statement.perl.code';
+    is scalar @tree, 3;
+};
+
+subtest 'build_tree: returns steps when rule is a pipeline' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule( rule_type => "pipeline" );
+    my $model   = _build_model();
+    my @tree    = $model->build_tree($id_rule);
+
+    is scalar @tree, 5;
+    is $tree[0]->{text}, 'CHECK';
+    is $tree[1]->{text}, 'INIT';
+    is $tree[2]->{text}, 'PRE';
+    is $tree[3]->{text}, 'RUN';
+    is $tree[4]->{text}, 'POST';
+};
+
+
 sub _setup {
     my (%params) = @_;
 
     TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Events',
-        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules' );
+        'BaselinerX::Type::Statement', 'Baseliner::Model::Rules', 'BaselinerX::Type::Fieldlet', 'BaselinerX::Fieldlets');
 
     my $code = $params{code} || q%return 'hi there';%;
     my $ts   = $params{ts}   || '' . Class::Date->now();

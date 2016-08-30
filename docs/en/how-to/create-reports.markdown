@@ -8,6 +8,31 @@ Allow users to create a personalized topic grids. Users set the columns to show,
 
 ### Creating a report ###
 
+There are two ways:
+
+The first way, is clicking on **Admin**->**Rules** and then, select the <img src="/static/images/icons/add.svg" /> Create
+button.
+
+In the next window there are the following options:
+
+- **Name**: Assign a name to the report. This field is required.
+
+- **Type**: Define the type of rule. In this case, we have to select report.
+
+- **Compile Mode**
+
+To create the report, click **Done** button.
+
+By default, we will have three items in the rule:
+
+- **Security**: We define the users that can see the report.
+
+- **Meta**: Here, we can define the fields we want to see.
+
+- **Data**: We treat the data.
+
+The second way to create a report is:
+
 Click on <img src="/static/images/icons/report.svg" />  in the **lifecycle panel**. Right click on  <img
 src="/static/images/icons/magnifier.svg" /> **New search**.
 

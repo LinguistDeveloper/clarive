@@ -2246,7 +2246,7 @@ msgstr ""
 msgid "Error adding User: %1"
 msgstr ""
 
-#: lib/Baseliner/Controller/User.pm
+#: lib/Baseliner/Controller/User.pm lib/Baseliner/Model/Rules.pm
 msgid "User not found"
 msgstr ""
 
@@ -2535,6 +2535,21 @@ msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Webservice rule call"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Rule not found"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Security"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm root/ci/DBDest.js root/comp/ci-editor.js
+#: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
+#: root/comp/ci-viewer.js root/comp/log_grid.js root/comp/project_grid.mas
+#: root/forms/web_request.js root/site/common.js
+msgid "Data"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -6080,13 +6095,6 @@ msgstr ""
 
 #: root/ci/DBDest.js root/comp/dashboard_job.html root/forms/sed.js
 msgid "Job Items"
-msgstr ""
-
-#: root/ci/DBDest.js root/comp/ci-editor.js root/comp/ci-grid.js
-#: root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
-#: root/comp/log_grid.js root/comp/project_grid.mas root/forms/web_request.js
-#: root/site/common.js
-msgid "Data"
 msgstr ""
 
 #: root/ci/DBDest.js root/ci/balix_agent.js root/ci/clax_agent.js

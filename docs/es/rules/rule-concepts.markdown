@@ -58,7 +58,7 @@ Existen seis tipos de reglas:
 
 ### Otras reglas
 
-**Report** - Crea un informe con código PER
+**Report** - Crea un informe con código PERL. Para más información, puede ver un how-to llamado [Crear un informe](how-to/create-reports).
 
 **Servicio web** - Permite integrar servicios web en reglas.
 

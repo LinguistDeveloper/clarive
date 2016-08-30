@@ -1,6 +1,6 @@
 
 ---
-title: Hacer publico un informe
+title: Hacer publico un informe estático
 index: 1
 icon: report.svg
 ---
