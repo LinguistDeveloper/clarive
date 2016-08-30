@@ -11421,6 +11421,10 @@ msgid "Totals"
 msgstr ""
 
 #: root/dashlets/list_topics_config.js
+msgid "List topics (Dashboard)"
+msgstr ""
+
+#: root/dashlets/list_topics_config.js
 #: root/dashlets/number_of_topics_chart_config.js
 #: root/dashlets/swarm_config.js root/dashlets/topics_by_date_line_config.js
 #: root/dashlets/topics_gauge_config.js
@@ -11450,7 +11454,7 @@ msgid "List of fields to view in grid"
 msgstr ""
 
 #: root/dashlets/list_topics_config.js
-msgid "Maximum number of topics to list"
+msgid "Maximum number of topics to list (0 Unlimited)"
 msgstr ""
 
 #: root/dashlets/list_topics_config.js

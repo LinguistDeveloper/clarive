@@ -1277,6 +1277,8 @@ sub list_topics : Local {
         }
     }
 
+    $main_conditions->{limit} = "-1" unless $limit;
+
     my ( $cnt, @topics ) = Baseliner::Model::Topic->new->topics_for_user($main_conditions);
 
     my @topic_cis = map { $_->{mid} } @topics;

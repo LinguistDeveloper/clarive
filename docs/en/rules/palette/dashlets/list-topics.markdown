@@ -107,6 +107,8 @@ Indicate ASC or DESC order.
 Include a last row showing total if we have a number type in the table.
 
 ### Maximum number of topics to list
+* Default: 100
+* Unlimited: 0
 
 Set the maximum number of topics.
 
