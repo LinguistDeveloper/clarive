@@ -69,7 +69,7 @@
         disabled: true,
         allowBlank: true,
         baseParams: { name_format: 'short' },
-        value: params.rec.var_ci_role || 'CI',
+        value: params.rec.var_ci_role || 'Baseliner::Role::CI',
         displayField: 'name',
         valueField: 'role',
         fields: [ 'role', 'name' ],

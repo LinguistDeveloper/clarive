@@ -2706,4 +2706,18 @@ sub _retry {
     return $last_val;
 }
 
+sub slice_page {
+    my (%params) = @_;
+
+    my $start = $params{start} // 0;
+    my $limit = $params{limit} // 0;
+
+    my @data   = _array $params{data};
+    my $start  = $start =~ /^[0-9]+$/ ? $start : 0;
+    my $limit  = $limit =~ /^[0-9]+$/ ? $limit : 0;
+    my $finish = $start + $limit > scalar(@data) ? scalar(@data) - 1 : $start + $limit - 1;
+
+    return @data[ $start .. $finish ];
+}
+
 1;

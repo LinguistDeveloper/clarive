@@ -1036,4 +1036,60 @@ subtest '_retry: returns on the first success' => sub {
     is $attempts, 1;
 };
 
+subtest 'slice_page: returns slice page' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '0', limit => '3', data => \@data);
+
+    is scalar(@info),3;
+    is $info[0], 1;
+    is $info[1], 2;
+    is $info[2], 3;
+};
+
+subtest 'slice_page: returns slice page with offset' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '4', limit => '3', data => \@data );
+
+    is scalar(@info),3;
+    is $info[0], 5;
+    is $info[1], 6;
+    is $info[2], 7;
+};
+
+subtest 'slice_page: returns slice page with start + limit  bigger than number elements ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '7', limit => '3', data => \@data );
+
+    is scalar(@info),2;
+    is $info[0], 8;
+    is $info[1], 9;
+};
+
+subtest 'slice_page: returns slice page with start biger than number elements ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '9', limit => '3', data => \@data );
+
+    is scalar(@info),0;
+};
+
+subtest 'slice_page: returns slice page with bad input params ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => 'r', limit => undef, data => \@data );
+
+    is scalar(@info),0;
+};
+
+subtest 'slice_page: returns slice page with limit bigger than number elements ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '0', limit => '100', data => \@data );
+
+    is scalar(@info),9;
+};
+
 done_testing;

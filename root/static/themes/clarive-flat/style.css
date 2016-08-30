@@ -859,6 +859,10 @@ body {
 .x-combo-list .x-combo-selected { border:none !important;}
 .x-combo-list-item { border:none; }
 
+.search-item.x-combo-list-ci.x-combo-list-item{
+    border-bottom: 1px solid #eeeeee !important;
+}
+
 .x-panel-mc {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -1868,3 +1872,11 @@ div.x-panel-body .job-calendar {
 .job-calendar-slots-table {
     height: 300px;
 }
+
+.x-combo-list-item.x-combo-list-ci img {
+    height: 16px;
+    width: 16px;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
