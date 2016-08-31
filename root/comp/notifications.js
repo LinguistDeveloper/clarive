@@ -796,7 +796,7 @@
 
             var store_type_recipients = new Baseliner.JsonStore({
                 url: '/notification/list_type_recipients',
-                fields: ['type_recipient']
+                fields: ['id', 'type_recipient']
             });
 
             var cb_type_recipient = new Ext.ux.form.SuperBoxSelect({
@@ -807,10 +807,12 @@
                 name: 'type_recipient',
                 hiddenName: 'type_recipient',
                 displayField: 'type_recipient',
-                valueField: 'type_recipient',
+                valueField: 'id',
                 store: store_type_recipients,
                 singleMode: true,
-                tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{[_(values.type_recipient)]}</strong> {description}</span></div></tpl>'
+                tpl: '<tpl for="."><div class="x-combo-list-item">' +
+                    '<span id="boot" style="background: transparent">' +
+                    '<strong>{type_recipient}</strong> {description}</span></div></tpl>'
             });
 
             cb_type_recipient.on('additem', function(combo, value, record) {
@@ -826,7 +828,7 @@
                     if (res.success) {
                         if (res.data.length > 0) {
                             var obj_recipient;
-                            switch (res.obj) {
+                            switch (res.field_type) {
                                 case 'combo':
                                     var store_recipients1 = new Ext.data.JsonStore({
                                         fields: ['id', 'name', 'description'],
@@ -882,7 +884,7 @@
                                     form_recipients.add({
                                         id: 'obj_recipient',
                                         xtype: 'textfield',
-                                        emptyText: 'field1, field2, ...'
+                                        emptyText: 'email1, email2, ...'
                                     })
                                     break;
                                 case 'none':

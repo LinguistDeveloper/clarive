@@ -106,10 +106,12 @@ sub get_recipients{
             }
             when ('Actions') {
                 @recipients = map {+{id => $_, name => $_, description => ''  }}
-                            Baseliner->registry->starts_with('action.');
+                            Baseliner::Core::Registry->starts_with('action.');
             }
             when ('Fields') {
-                @recipients = ({id => 'Fields', name => 'Fields'});
+                my @fields = Baseliner::Model::Topic->new->get_fieldlet_nodes();
+                my @name_fields = _unique map { $$_{id_field}; } grep { $$_{key} eq 'fieldlet.system.users' } @fields;
+                @recipients = map { +{ id => $_, name => $_ } } @name_fields;
             }
             when ('Default') {
                 @recipients = ({id => 'Default', name => 'Default'});
