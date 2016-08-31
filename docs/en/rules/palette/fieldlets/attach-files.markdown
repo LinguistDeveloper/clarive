@@ -6,6 +6,20 @@ icon: file
 
 Allows to attach files in the form.
 
+## Supported features
+
+### Multiple file upload:
+
+Allows to select multiple files at once and upload them simultaneously.
+
+### Drag & Drop support:
+
+Allows to upload files by dragging them from your desktop or filemanager and dropping them on your fieldlet.
+
+It is possible to drag&drop a complete folder structure, though this is currently only supported by Google Chrome.
+
+## Configuration
+
 There are a list of elements can be configured in the fieldlet:
 
 ### Section to view

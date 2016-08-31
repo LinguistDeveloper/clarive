@@ -840,18 +840,24 @@ sub _topic_setup {
     mdb->category->insert(
         { id => "$cat_id", name => 'Category', statuses => [$status_id], default_form => "$id_rule" } );
 
+
+    my $id_role = TestSetup->create_role();
+
     my $project = ci->project->new( name => 'Project' );
     my $project_mid = $project->save;
 
+    my $username = TestSetup->create_user( id_role => $id_role, project => $project );
+
     return {
-        'project'         => $project_mid,
-        'category'        => "$cat_id",
-        'status_new'      => "$status_id",
-        'status'          => "$status_id",
-        id_rule           => "$id_rule",
-        'category_status' => { id => "$status_id" },
-        'title'           => 'Topic',
-        'username'        => 'test',
+        'project'                => $project_mid,
+            'category'           => "$cat_id",
+            'status_new'         => "$status_id",
+            'status'             => "$status_id",
+            'id_rule'            => "$id_rule",
+            'category_status'    => { id => "$status_id" },
+            'id_category_status' => "$status_id",
+            'title'              => 'Topic',
+            'username'           => $username->{name}
     };
 }
 
@@ -975,6 +981,64 @@ sub _build_stmt {
         },
         children => []
     };
+
 }
+sub _create_topic {
+    my $class = shift;
+    my (%params) = @_;
+
+    #TO-DO improve: pass params into _topic_setup
+
+    my $default_base_params = TestSetup->_topic_setup();
+    my $custom_base_params = {};
+
+    my $id_form = delete $params{form} || delete $params{id_rule};
+    if ($id_form) {
+        $custom_base_params->{id_rule} = $id_form;
+    }
+
+    my $status = delete $params{status};
+    my $id_status;
+    if ($status) {
+        $id_status = ((ref $status) =~ /^BaselinerX::CI::/) ? $status->{mid} : $status;
+        $custom_base_params->{status} = $id_status;
+        $custom_base_params->{status_new} = $id_status;
+        $custom_base_params->{category_status} = { id => $status->mid };
+        $custom_base_params->{id_category_status} = $id_status;
+    }
+
+    my $username = delete $params{username};
+    if ($username) {
+        $username = ((ref $username) =~ /^BaselinerX::CI::/) ? $username->{name} : $username;
+        $custom_base_params->{username} = $username;
+    }
+
+    ## TO-DO: Support ci category
+    my $id_category = delete $params{id_category};
+    $custom_base_params->{category} = $id_category if ($id_category);
+
+    my $project = delete $params{project};
+    my $id_project;
+    if ($project){
+        $id_project = ref $project eq 'ARRAY'
+                            ? [ map { (ref $_->mid) =~ /^BaselinerX::CI::/ ? $_->mid : $_ } @$project ]
+                            : (ref $project) =~ /^BaselinerX::CI::/ ? $project->{mid} : $project;
+        $custom_base_params->{project} = $id_project;
+    }
+
+    my %base_params = (%$default_base_params, %$custom_base_params);
+
+    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update(
+        {
+            %base_params,
+            action   => 'add',
+            title    => 'New Topic',
+            created_on => mdb->ts
+        }
+    );
+
+    return $topic_mid;
+}
+
 
 1;

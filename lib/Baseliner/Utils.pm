@@ -45,6 +45,7 @@ use Exporter::Tidy default => [
     _decode_json_safe
     _encode_json
     _check_parameters
+    _validate_empty_parameters
     _bool
     _mkpath
     _rmpath
@@ -115,6 +116,7 @@ use Exporter::Tidy default => [
     _capture_pipe
     zip_dir
     _retry
+    _get_extension_file
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2769,6 +2771,22 @@ sub slice_page {
     my $finish = $start + $limit > scalar(@data) ? scalar(@data) - 1 : $start + $limit - 1;
 
     return @data[ $start .. $finish ];
+}
+
+sub _validate_empty_parameters {
+    my $p = shift;
+    for my $param ( @_ ) {
+        exists($p->{$param}) && $p->{$param} ne '' or _fail _loc('Missing parameter %1', $param);
+    }
+}
+
+sub _get_extension_file {
+    my ( $filename ) = @_;
+
+    my ($extension) = $filename =~ /\.(\S+)$/;
+    $extension //= '';
+
+    return $extension;
 }
 
 1;

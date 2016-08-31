@@ -3,33 +3,128 @@
     $data
 </%args>
 
+<%perl>
+    use Baseliner::Utils;
+    my $id = _nowstamp;
+</%perl>
 % if( _array( $data->{$meta->{id_field}} ) && !($meta->{hidden}+0)) {
     <tr>
-        <td colspan=2>
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                    <% _loc( $meta->{name_field} || $meta->{id_field} ) %>
-                </li>
-            </ul>
-            <ul class="" style="margin-left: 20px">
-% foreach my $file ( _array( $data->{ $meta->{id_field} } ) ) {
-%   my $fii = $data->{ii} . '_' . $file->{mid};
-%   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FrameDownload';  # download or try to show on next tab?
-%   my ($size,$units) = Util->_size_unit( $file->{filesize} );
-                <li id="<% $fii %>">
-                    <table>
-                        <tr>
-                            <td style="border:0;"><i class="icon-file"></i></td>
-                            <td class="bl-text-over"  style="border:0"><div class="bl-text-over" style="100%" title="<% Util->_html_escape( $file->{filename} ) %>"><a href="/topic/download_file/<% $file->{mid} %>/<% $file->{filename} %>" target="<% $target %>">
-                            <% Util->_html_escape( $file->{filename} ) %>
-                            </a></div></td>
-                            <td  style="border:0;">(<% $size %> <% $units %>) v.<% $file->{versionid} %></td>
-                        </tr>
-                     </table>
-                </li>
-% }
-            </ul>
+        <td colspan=2 id='td-tree-<%$id%>'>
+                <b><% _loc( $meta->{name_field} || $meta->{id_field} ) %>:</b>
+                <br>
+                <br>
+                <div id='div-tree-<%$id%>' style='padding-bottom: 10px; padding-left: 10px'></div>
         </td>
     </tr>
 % }
+
+<script>
+
+Ext.onReady(function(){
+    if ($('#td-tree-<%$id%>').length) {
+        var record = Ext.data.Record.create([{
+            name: 'filename'
+        }, {
+            name: 'versionid'
+        }, {
+            name: 'filesize'
+        }, {
+            name: 'size'
+        }, {
+            name: 'md5'
+        }, {
+            name: 'mid'
+        }, {
+            name: '_id',
+            type: 'int'
+        }, {
+            name: '_parent',
+            type: 'auto'
+        }, {
+            name: '_level',
+            type: 'int'
+        }, {
+            name: '_is_leaf',
+            type: 'bool'
+        }]);
+
+        var fileStore = new Ext.ux.maximgb.tg.AdjacencyListStore({
+            autoLoad: true,
+            url: '/topic/file_tree',
+            baseParams: {
+                topic_mid: '<%$data->{mid}%>',
+                filter: '<%$meta->{id_field}%>'
+            },
+            reader: new Ext.data.JsonReader({
+                id: '_id',
+                root: 'data',
+                totalProperty: 'total',
+                successProperty: 'success'
+            }, record)
+        });
+
+        fileStore.on('load', function(obj) {
+            filelist.setWidth($('#td-tree-<%$id%>').width() - 20);
+        });
+
+        var fileRender = function(value, metadata, rec, rowIndex, colIndex, store) {
+            var midAsset = rec.data.mid;
+            if (midAsset != undefined) {
+                value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, midAsset, '/topic/download_file');
+            } else {
+                var icon = IC('catalog-folder.png');
+                value = String.format('<span style="margin-left: 4px;"></span><img  style="margin-left: 50;vertical-align:middle" src="{0}" alt="edit" /><span style="margin-left: 4px;"><b>{1}</span>', icon, value);
+            }
+            value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' + value + '</div>';
+            return value;
+        };
+
+        var filelist = new Ext.ux.maximgb.tg.GridPanel({
+            renderTo: 'div-tree-<%$id%>',
+            autoScroll: true,
+            sortable: false,
+            header: true,
+            autoWidth: true,
+            height: 200,
+            hideHeaders: false,
+            loadMask: true,
+            store: fileStore,
+            viewConfig: {
+                headersDisabled: true,
+                scrollOffset: 2,
+                forceFit: true,
+                headerTpl: new Ext.Template(
+                    '<table border="0" cellspacing="0" cellpadding="0" style="background-color:#F5F5F5;">',
+                    '<thead>',
+                    '<tr class="x-grid3-hd-row">{cells}</tr>',
+                    '</thead>',
+                    '</table>'
+                ),
+            },
+            master_column_id: 'filename',
+            autoExpandColumn: 'filename',
+            columns: [{
+                id: "filename",
+                header: _('Name'),
+                width: 250,
+                dataIndex: 'filename',
+                renderer: fileRender
+            }, {
+                header: _('Id'),
+                hidden: true,
+                dataIndex: '_id'
+            }, {
+                header: _('Size'),
+                width: 50,
+                dataIndex: 'size'
+            }, {
+                header: _('Version'),
+                width: 50,
+                dataIndex: 'versionid'
+            }]
+        });
+    }
+});
+
+</script>
 

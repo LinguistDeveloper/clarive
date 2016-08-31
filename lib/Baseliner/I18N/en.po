@@ -579,7 +579,7 @@ msgstr ""
 #: lib/Baseliner/Controller/Doc.pm root/comp/ci-editor.js root/comp/ci-grid.js
 #: root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
 #: root/comp/feature.js root/comp/feature_grid.mas root/comp/job_new.js
-#: root/site/common.js
+#: root/fields/templates/html/upload_files.html root/site/common.js
 msgid "Version"
 msgstr ""
 
@@ -1862,7 +1862,8 @@ msgstr ""
 #: root/fields/system/js/list_revisions.js
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/projects.js root/forms/ci_invoke.js
+#: root/fields/templates/config/projects.js
+#: root/fields/templates/html/upload_files.html root/forms/ci_invoke.js
 #: root/site/common.js root/site/explorer.js root/site/model.js
 msgid "Name"
 msgstr ""
@@ -2019,11 +2020,15 @@ msgid "Status not found: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "The file you want to upload do not have extension"
+msgid "qqfile is not a file"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "This type of file is not allowed: %1 "
+msgid "Uploaded file %1, file_uploaded_mid: %2"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "This type of file is not allowed, only (%1)"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
@@ -2804,11 +2809,11 @@ msgid "User mentioned another user in a comment"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "%1 posted a file: %3"
+msgid "%1 posted %2 files"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "User created a file"
+msgid "User created file(s)"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -2820,11 +2825,11 @@ msgid "User attached a file"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "%1 removed %2"
+msgid "%1 removed %2 files"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "User removed a file"
+msgid "User removed file(s)"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -2841,6 +2846,14 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "User removed labels"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "%1 removed %2"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "User removed a file"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3170,19 +3183,27 @@ msgid "Created"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "param file is not a Path::Class::File - Object"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "The file %1 does not exist"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "topic_mid (%1) is not a topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "The related field does not exist for the topic: %1"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "File is already the latest version"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Created file %1 to topic [%2] %3"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Uploaded file %1"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Error uploading file: %1"
+msgid "Created %1 files to topic [%2]"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3190,11 +3211,7 @@ msgid "File id %1 not found"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Deleting file %1"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Deleted file %1"
+msgid "Deleted %1 file(s)"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3203,10 +3220,6 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Missing field"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "The related field does not exist for the topic: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/TopicExporter/Csv.pm root/comp/topic/topic_lib_grid.js
@@ -4960,7 +4973,7 @@ msgid "Job"
 msgstr ""
 
 #: lib/BaselinerX/Job.pm root/comp/message_grid.js root/comp/user_grid.js
-#: root/site/common.js
+#: root/fields/templates/html/upload_files.html root/site/common.js
 msgid "Id"
 msgstr ""
 
@@ -7134,7 +7147,7 @@ msgstr ""
 msgid "<Enter your search string>"
 msgstr ""
 
-#: root/comp/catalog_grid.js root/forms/catalog_task.js
+#: root/comp/catalog_grid.js root/forms/catalog_task.js root/site/common.js
 msgid "Catalog"
 msgstr ""
 
@@ -12477,6 +12490,10 @@ msgstr ""
 msgid "Extension"
 msgstr ""
 
+#: root/fields/templates/html/upload_files.html root/site/common.js
+msgid "Size"
+msgstr ""
+
 #: root/fields/templates/js/env_planner.js
 #: root/fields/templates/js/milestones.js
 msgid "Start date is after end date"
@@ -13628,10 +13645,6 @@ msgid "Installed"
 msgstr ""
 
 #: root/site/common.js
-msgid "Size"
-msgstr ""
-
-#: root/site/common.js
 msgid "CPAN"
 msgstr ""
 
@@ -13725,6 +13738,18 @@ msgstr ""
 
 #: root/site/common.js
 msgid "Are you sure you want to delete these artifacts?"
+msgstr ""
+
+#: root/site/common.js
+msgid "Error uploading file"
+msgstr ""
+
+#: root/site/common.js
+msgid "Uploaded Files"
+msgstr ""
+
+#: root/site/common.js
+msgid "Error uploading files"
 msgstr ""
 
 #: root/site/common.js

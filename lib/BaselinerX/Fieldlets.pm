@@ -17,16 +17,16 @@ register 'fieldlet.include_into' => {
 };
 
 register 'fieldlet.attach_file' => {
-    name        => _locl('Attach Files'),
-    html        => '/fields/templates/html/upload_files.html',
-    js          => '/fields/templates/js/upload_files.js',
-    form        => '/fields/templates/config/upload_files.js',
-    icon        => '/static/images/icons/file.svg',
-    get_method  => 'get_files',
-    type        => 'upload_files',
-    relation    => 'system',
-    section_default => 'details',
-    section_allowed => ['details','between']
+    name            => _locl('Attach Files'),
+    html            => '/fields/templates/html/upload_files.html',
+    js              => '/fields/templates/js/upload_files.js',
+    form            => '/fields/templates/config/upload_files.js',
+    icon            => '/static/images/icons/file.svg',
+    get_method      => 'get_files',
+    type            => 'upload_files',
+    relation        => 'system',
+    section_default => 'head',
+    section_allowed => [ 'head', 'details', 'between' ]
 };
 
 register 'fieldlet.progressbar' => {

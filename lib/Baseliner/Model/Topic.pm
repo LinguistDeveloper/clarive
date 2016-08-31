@@ -73,9 +73,14 @@ register 'event.post.mention' => {
 };
 
 register 'event.file.create' => {
-    text => _locl('%1 posted a file: %3'),
-    description => _locl('User created a file'),
-    vars => ['username', 'ts', 'filename'],
+    text        => _locl('%1 posted %2 files'),
+    description => _locl('User created file(s)'),
+    vars        => [ 'username', 'total_files', 'ts' ],
+    filter      => sub {
+        my ( $txt, @vars ) = @_;
+        $vars[1] = '<code>' . $vars[1] . '</code>' if $vars[1];
+        return ( $txt, @vars );
+    }
 };
 
 register 'event.file.attach' => {
@@ -85,9 +90,14 @@ register 'event.file.attach' => {
 };
 
 register 'event.file.remove' => {
-    text => _locl('%1 removed %2'),
-    description => _locl('User removed a file'),
-    vars => ['username', 'filename', 'ts'],
+    text        => _locl('%1 removed %2 files'),
+    description => _locl('User removed file(s)'),
+    vars        => [ 'username', 'total_files', 'ts' ],
+    filter      => sub {
+        my ( $txt, @vars ) = @_;
+        $vars[1] = '<code>' . $vars[1] . '</code>' if $vars[1];
+        return ( $txt, @vars );
+    }
 };
 
 register 'event.file.labels' => {
@@ -1446,8 +1456,6 @@ our %meta_types = (
 
 sub get_meta {
     my ($self, $topic_mid, $id_category, $username) = @_;
-    # my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
-    # return $cached if $cached;
 
     my $id_cat =  $id_category // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
 
@@ -1458,6 +1466,7 @@ sub get_meta {
     if($id_category){
         my $cat = mdb->category->find_one({ id=>"$id_category" });
         my $default_form = $cat->{default_form} // $cat->{default_field}; ## FIXME default_field is legacy
+
         _warn _loc('Topic category has no form rule associated with it. Please contact your administrator.')
             unless length $default_form;
         return [] unless length $default_form;
@@ -1491,8 +1500,6 @@ sub get_meta {
         sort { $a->{field_order} <=> $b->{field_order} }
         $self->rule_node_to_fieldlet( @custom_fieldlets );
 
-    # cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
-    # _log _dump \@meta;
     return \@meta;
 }
 
@@ -3773,128 +3780,128 @@ sub get_status_history_topics{
 }
 
 sub upload {
-    my ($self, %c) = @_;
+    my ( $self, %params ) = @_;
 
-    my $f = $c{f} or _fail 'f required';;
-    my $username = $c{username} or _fail 'username required';
+    _validate_empty_parameters( \%params,
+        qw/file topic_mid filename filter username/ );
 
-    my $p = $c{p};
-    my $filename = $p->{qqfile} or _fail 'filename required';
-    my ($extension) =  $filename =~ /\.(\S+)$/;
-    $extension //= '';
+    _fail _loc('param file is not a Path::Class::File - Object')
+        if ref $params{file} ne 'Path::Class::File';
+    _fail _loc( 'The file %1 does not exist', $params{file} )
+        if ( !-e $params{file} );
+    _fail _loc( 'topic_mid (%1) is not a topic', $params{topic_mid} )
+        if ( !mdb->topic->find_one( { mid => $params{topic_mid} } ) );
 
-    my $file_field = $p->{filter} or _fail 'filter required';
+    my $found = 0;
+    my $meta  = $self->get_meta( $params{topic_mid} );
 
-    my $msg;
-    my $success;
-    my $status;
-    try {
-        if((length $p->{topic_mid}) && (my $topic = mdb->topic->find_one({mid=>$p->{topic_mid}},{ mid=>1, category=>1, category_status=>1 }))) {
-            my ($topic_mid, $file_mid);
-            $topic_mid = $topic->{mid};
-            #Comprobamos que el campo introducido es correcto
-            my $found = 0;
-            my $meta = $self->get_meta($topic_mid);
-            for my $field ( _array $meta ) {
-                if (( $field->{id_field} eq $file_field ) and ( $field->{type} eq 'upload_files' )) {
-                    $found = 1;
-                }
-            }
-            if (!$found){
-                $msg = "The related field does not exist for the topic: " .  $topic_mid;
-                $success = "false";
-                $status = 404;
-                return (success=>$success, msg=>$msg, status=>$status);
-            }
-            #Comprobamos que existe el fichero
-            if (!-e $f){
-                $msg = "The file " . $f . " does not exis: " .  $topic_mid;
-                $success = "false";
-                $status = 404;
-                return (success=>$success, msg=>$msg, status=>$status);
-            }
-
-            #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
-
-            my @users = $self->get_users_friend(
-                mid         => $p->{topic_mid},
-                id_category => $topic->{category}{id},
-                id_status   => $topic->{category_status}{id},
-                #  projects    => \@projects  # get_users_friend ignores this
-            );
-
-            my $versionid = 1;
-            #Comprobamos que non existe un fichero con el mismo md5 y el mismo título $filename
-            my $md5 = _md5 ($f);
-
-            my @files_mid = map{$_->{to_mid}}mdb->master_rel->find({ from_mid=>$topic_mid, rel_type=> 'topic_asset'})->all;
-            my $highest_version;
-
-            for my $file_mid (@files_mid){
-                my $asset = ci->asset->find_one({mid=>$file_mid});
-                $asset->{md5} = mdb->grid->files->find_one({ _id=>mdb->oid($asset->{id_data})})->{md5};
-                if ( $asset->{name} eq $filename ) {
-                    # asset is already up
-                    if( !$highest_version->{versionid} ||  $asset->{versionid} > $highest_version->{versionid} ) {
-                        $highest_version = $asset;
-                    }
-                }
-            }
-
-            if( $highest_version ) {
-                _fail( _loc('File is already the latest version') ) if $highest_version->{md5} eq $md5;
-                $versionid = $highest_version->{versionid} + 1;
-            }
-
-            my $new_asset = ci->asset->new(
-                name=>$filename,
-                versionid=>$versionid,
-                extension=>$extension,
-                created_by => $username,
-                created_on => mdb->ts,
-            );
-            $new_asset->save;
-            $new_asset->put_data( $f->openr );
-            $file_mid = $new_asset->{mid};
-
-            if ($p->{topic_mid}){
-                my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->{mid}, $topic->{title});
-                event_new 'event.file.create' => {
-                    username        => $username,
-                    mid             => $topic_mid,
-                    id_file         => $new_asset->mid,
-                    id_field_asset  => $file_field,
-                    filename        => $filename,
-                    notify_default  => \@users,
-                    subject         => $subject
-                };
-
-                # tie file to topic
-                my $doc = { from_mid=>$topic_mid, to_mid=>$new_asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter}, from_cl=>'topic', to_cl=>'asset' };
-                mdb->master_rel->update($doc,$doc,{ upsert=>1 });
-            }
-            cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
-            $msg = _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid;
-            $success = "true";
-            $status = 200;
-        } else {
-            if(!length $p->{topic_mid}){
-                $msg = "You must save the topic before add new files";
-                $success = "false";
-                $status = 404;
-            } else {
-                $msg = "The Topic with mid: " . $p->{topic_mid} . " does not exist";
-                $success = "false";
-                $status = 500;
-            }
+    for my $field ( _array $meta ) {
+        if (    ( $field->{id_field} eq $params{filter} )
+            and ( $field->{type} eq 'upload_files' ) )
+        {
+            $found = 1;
         }
-        return (success=>$success, msg=>$msg, status=>$status);
-    } catch {
-        my $err = shift;
-        my $msg = _loc('Error uploading file: %1', $err );
-        _error( $msg );
-        my $status = 500;
-        return (success=>$success, msg=>$msg, status=>$status);
+    }
+
+    _fail _loc( 'The related field does not exist for the topic: %1',
+        $params{topic_mid} )
+        if ( !$found );
+
+    my $fullpath = $params{fullpath} || "\/$params{filename}";
+    my $extension = Util->_get_extension_file( $params{filename} );
+
+    my $versionid = 1;
+    my $highest_version;
+    my $md5 = _md5( $params{file} );
+
+    my @files_mid
+        = map { $_->{to_mid} }
+        mdb->master_rel->find(
+        { from_mid => $params{topic_mid}, rel_type => 'topic_asset' } )->all;
+
+    for my $file_mid (@files_mid) {
+        my $asset = ci->asset->find_one( { mid => $file_mid } );
+        $asset->{md5} = mdb->grid->files->find_one(
+            { _id => mdb->oid( $asset->{id_data} ) } )->{md5};
+        if ( $asset->{fullpath} eq $fullpath ) {
+
+            # asset is already up
+            $highest_version = $asset
+                if ( !$highest_version->{versionid}
+                || $asset->{versionid} > $highest_version->{versionid} );
+        }
+    }
+
+    if ($highest_version) {
+        _fail _loc('File is already the latest version')
+            if $highest_version->{md5} eq $md5;
+        $versionid = $highest_version->{versionid} + 1;
+    }
+
+    my $new_asset = ci->asset->new(
+        name       => $params{filename},
+        fullpath   => $fullpath,
+        versionid  => $versionid,
+        extension  => $extension,
+        created_by => $params{username},
+        created_on => mdb->ts,
+    );
+
+    $new_asset->save;
+    $new_asset->put_data( $params{file}->openr );
+    my $file_mid = $new_asset->{mid};
+
+    my $doc = {
+        from_mid  => $params{topic_mid},
+        to_mid    => $new_asset->mid,
+        rel_type  => 'topic_asset',
+        rel_field => $params{filter},
+        from_cl   => 'topic',
+        to_cl     => 'asset'
+    };
+    mdb->master_rel->update( $doc, $doc, { upsert => 1 } );
+    cache->remove( { mid => "$params{topic_mid}" } );
+
+    return (
+        upload_file => {
+            mid      => $file_mid,
+            name     => $params{filename},
+            fullpath => $fullpath
+        }
+    );
+}
+
+sub upload_complete {
+    my ( $self, %params ) = @_;
+
+    my $username     = $params{username};
+    my $topic_mid    = $params{topic_mid};
+    my @upload_files = _array $params{upload_files};
+    my $id_field     = $params{idField};
+
+    my $subject = _loc(
+        "Created %1 files to topic [%2]",
+        scalar @upload_files,
+        $topic_mid
+    );
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid },
+        { mid => 1, category => 1, category_status => 1 } );
+
+    my @users = $self->get_users_friend(
+        mid         => $topic->{mid},
+        id_category => $topic->{category}{id},
+        id_status   => $topic->{category_status}{id},
+    );
+
+    event_new 'event.file.create' => {
+        username       => $username,
+        mid            => $topic->{mid},
+        id_files       => \@upload_files,
+        id_field_asset => $id_field,
+        total_files      => scalar @upload_files,
+        notify_default => \@users,
+        subject        => $subject
     };
 }
 
@@ -3902,7 +3909,7 @@ sub remove_file {
     my ( $self, %params ) = @_;
 
     my $topic_mid = $params{topic_mid} or _fail _loc('topic mid required');
-    my @asset_mid = _array_or_commas $params{asset_mid};
+    my @asset_mid = _array_or_commas  delete $params{asset_mid};
     my $username  = $params{username};
     my @fields    = _array $params{fields};
 
@@ -3911,31 +3918,37 @@ sub remove_file {
             @asset_mid = $self->_get_mid_files_from_fields(%params);
         }
 
+        my @asset_remove;
         for my $mid ( @asset_mid ) {
             my $asset = ci->find($mid);
-            _fail _loc( "File id %1 not found", $mid ) unless ref $asset;
 
-            my $topic = mdb->topic->find_one( { mid => $topic_mid } );
-            my @projects
-                = mdb->master_rel->find_values( to_mid => { from_mid => "$topic_mid", rel_type => 'topic_project' } );
-            my @users = $self->get_users_friend(
-                id_category => $topic->{category}{id},
-                id_status   => $topic->{category_status}{id},
-                mid         => "$topic_mid",
-                projects    => \@projects
-            );
-            _log _loc( "Deleting file %1", $asset->mid );
-            my $subject = _loc( "Deleted file %1", $asset->filename );
-            event_new 'event.file.remove' => {
-                username       => $username,
-                mid            => $topic_mid,
-                id_file        => $asset->mid,
-                filename       => $asset->filename,
-                notify_default => \@users,
-                subject        => $subject
-            };
+            _fail _loc( "File id %1 not found", $mid ) unless $asset;
             $asset->delete;
+            push @asset_remove, { id => $mid, name => $asset->name };
         }
+
+        my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+        my @projects
+            = mdb->master_rel->find_values( to_mid => { from_mid => "$topic_mid", rel_type => 'topic_project' } );
+        my @users = $self->get_users_friend(
+            id_category => $topic->{category}{id},
+            id_status   => $topic->{category_status}{id},
+            mid         => "$topic_mid",
+            projects    => \@projects
+        );
+
+        my $subject = _loc( "Deleted %1 file(s)", scalar @asset_remove );
+
+
+        event_new 'event.file.remove' => {
+            username        => $username,
+            mid             => $topic_mid,
+            files           => \@asset_remove,
+            total_files       => scalar @asset_remove,
+            notify_default  => \@users,
+            subject         => $subject
+        };
+
         cache->remove( { mid => "$topic_mid" } );
     }
     catch {

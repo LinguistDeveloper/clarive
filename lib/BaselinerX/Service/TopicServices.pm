@@ -111,6 +111,7 @@ sub load {
     return $topic;
 
 }
+
 sub web_request {
     my ( $self, $c, $config ) = @_;
 
@@ -276,33 +277,48 @@ sub update {
 
 sub upload {
     my ( $self, $c, $config ) = @_;
-    my $stash = $c->stash;
+    my $stash    = $c->stash;
     my $filepath = $config->{path};
     my $username = $config->{username} // 'clarive';
-    if ($username eq ''){$username = 'clarive'}
+    if ( $username eq '' ) { $username = 'clarive' }
 
     my $p;
-    $p->{filter} = $config->{field};
-    $p->{topic_mid} = "$config->{mid}";
+    my $id_field = $config->{field};
+    my $topic_mid = "$config->{mid}";
     $filepath =~ m{^(.*)\/ (.*)$}x;
-    $p->{qqfile} = $2; #El nombre del fichero sin la ruta
-    my $f =  _file( ''. $filepath );
+    my $filename = $2;
 
-    my %response = Baseliner->model("Topic")->upload(
-                f           => $f,
-                p           => $p,
-                username    => $username,
-        );
-    if ($response{status} ne '200') {
-        _fail _loc("Error asseting the file %1 to the topic %2. Error: %3",
-            $p->{qqfile}, $p->{topic_mid}, $response{msg});
+    my $file = _file( '' . $filepath );
+
+    my $model_topic = Baseliner::Model::Topic->new;
+    my %response = $model_topic->upload( file => $file, topic_mid => $topic_mid, filename => $filename, filter => $id_field, username => $username, );
+
+    if ( $response{upload_file} ) {
+        my $p              = {};
+        $p->{topic_mid}    = $topic_mid;
+        $p->{username}     = $username;
+        $p->{upload_files} = $response{upload_file};
+        $p->{id_field}     = $id_field;
+
+        try {
+            $model_topic->upload_complete(%$p);
+            return '200';
+        }
+        catch {
+            my $err = shift;
+            _fail _loc( $err );
+        };
+    }
+    else {
+        _fail _loc( "Error asseting the file %1 to the topic %2. Error: %3",
+            $filename, $topic_mid, $response{msg} );
     }
 }
 
 sub remove_file {
     my ( $self, $c, $config ) = @_;
 
-    my $username = $config->{username} && $config->{username} ne '' ? $config->{username} : 'clarive';
+    my $username  = $config->{username} && $config->{username} ne '' ? $config->{username} : 'clarive';
     my $topic_mid = $config->{topic_mid} // _fail('Missing or invalid parameter topic_mid');
     my $asset_mid = $config->{remove} eq 'asset_mid' ? $config->{asset_mid} : [];
     my $fields    = $config->{remove} eq 'fields'    ? $config->{fields}    : [];
@@ -348,7 +364,6 @@ sub related {
     my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
 
     return \@related;
-
 }
 
 sub get_with_condition {
@@ -407,7 +422,6 @@ sub get_with_condition {
     } $rs->all;
 
     return \@topics;
-
 }
 
 no Moose;

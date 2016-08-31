@@ -4,12 +4,14 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
-
+use Test::TempDir::Tiny;
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 use TestSetup;
 use TestUtils ':catalyst';
+
+use Baseliner::Utils qw(_load _file);
 
 use_ok 'BaselinerX::Service::TopicServices';
 
@@ -472,6 +474,33 @@ subtest 'change_status: throws when unknown topic' => sub {
     like exception { $topic_services->change_status( $c, $config ) }, qr/Topic 123 does not exist in the system/;
 };
 
+subtest 'upload: uploads file' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $username = ci->user->find_one()->{username};
+
+    my $doc_topic = mdb->topic->find_one({mid => $topic_mid});
+
+    my $filename = 'my-file.txt';
+
+    my $file   = TestUtils->create_temp_file( filename => $filename );
+    my $fullpath = $file->stringify;
+    my $config   = {
+        mid      => $topic_mid,
+        path     => $fullpath,
+        username => $username,
+        field    => 'test_file',
+    };
+
+    my $c = mock_catalyst_c( stash => { username => $username } );
+    my $service = _build_topic_services();
+
+    my $status = $service->upload( $c, $config );
+
+    is $status, '200';
+};
+
 done_testing();
 
 sub _build_topic_services {
@@ -510,6 +539,8 @@ sub _setup {
         'BaselinerX::Service::TopicServices',
         'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
         'Baseliner::Model::Rules'
     );
 

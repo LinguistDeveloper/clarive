@@ -3,10 +3,10 @@
 .qq-upload-button {
     display:block; /* or inline-block */
     width: 105px; padding: 7px 0; text-align:center;    
-    background:#808080; border-bottom:1px solid #ddd;color:#fff;
+    background: #fff; border:1px solid #F5F5F5;
 }
-.qq-upload-button-hover {background:#909090;}
-.qq-upload-button-focus {outline:1px dotted black;}
+.qq-upload-button-hover {border:1px solid #bbb;}
+.qq-upload-button-focus {border:1px solid #bbb;}
 
 .qq-upload-drop-area {
     position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;
