@@ -11,7 +11,7 @@ use Test::TempDir::Tiny;
 use TestEnv;
 use File::Basename qw(basename);
 BEGIN { TestEnv->setup }
-use TestUtils;
+use TestUtils qw(mock_time);
 
 use_ok 'Baseliner::Comm::Email';
 
@@ -69,12 +69,13 @@ subtest 'send: does not fail when message send fails' => sub {
     my $comm = _build_comm(msg => $msg);
     $comm->mock( _build_msg => sub { $msg } );
 
-    ok $comm->send(
+    my $result = $comm->send(
         from    => 'me@localhost',
         to      => 'you@localhost',
         subject => 'hi',
         body    => 'body',
     );
+    is $result, undef;
 };
 
 subtest 'group_queue: groups queue' => sub {
@@ -305,6 +306,72 @@ subtest 'process_queue: builds emails without attachment if not exist' => sub {
     $msg = $msg->as_string;
 
     unlike $msg, qr/filename="file"/;
+};
+
+subtest 'process_queue: message is marked as received when send is successful' => sub {
+    _setup();
+
+    mdb->message->insert(
+        {   active  => '1',
+            sender  => 'from@me.com',
+            subject => 'Subject',
+            body    => "hi there!",
+            queue   => [
+                {   active        => '1',
+                    attempts      => '0',
+                    carrier       => 'email',
+                    carrier_param => 'to',
+                    id            => 356247,
+                    username      => 'clarive@bar.com',
+                }
+            ],
+        }
+    );
+
+    my $c = _mock_c();
+
+    my $comm = _build_comm();
+    $comm = Test::MonkeyMock->new($comm);
+    $comm->mock( _send => sub { return '1' } );
+
+    mock_time '2016-01-01 00:00:00', sub {
+        $comm->process_queue( $c, { max_message_size => 1024 } );
+    };
+    my $msg = mdb->message->find_one;
+
+    is $msg->{queue}[0]->{received}, '2016-01-01 00:00:00';
+};
+
+subtest 'process_queue: message is not marked as received when send failed' => sub {
+    _setup();
+
+    mdb->message->insert(
+        {   active  => '1',
+            sender  => 'from@me.com',
+            subject => 'Subject',
+            body    => "hi there!",
+            queue   => [
+                {   active        => '1',
+                    attempts      => '0',
+                    carrier       => 'email',
+                    carrier_param => 'to',
+                    id            => 356247,
+                    username      => 'clarive@bar.com',
+                }
+            ],
+        }
+    );
+    my $c = _mock_c();
+
+    my $comm = _build_comm();
+    $comm = Test::MonkeyMock->new($comm);
+    $comm->mock( _send => sub { } );
+
+    $comm->process_queue( $c, { max_message_size => 1024 } );
+
+    my $msg = mdb->message->find_one;
+
+    is $msg->{queue}[0]->{received}, undef;
 };
 
 subtest 'send: sends attachments if the path is a file' => sub {
