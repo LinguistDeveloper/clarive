@@ -148,7 +148,7 @@
                 };
                 break;
             case 'status':
-                field = new Baseliner.SuperBox({
+                field = new Baseliner.StatusBox({
                     fieldLabel: _('Status'),
                     name: 'value',
                     pageSize: 10,

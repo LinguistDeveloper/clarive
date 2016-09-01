@@ -287,7 +287,7 @@
                                         }
                                     });
 
-                                    var cb_category_status = new Ext.ux.form.SuperBoxSelect({
+                                    var cb_category_status = new Baseliner.StatusBox({
                                         mode: 'local',
                                         triggerAction: 'all',
                                         forceSelection: true,
@@ -298,7 +298,6 @@
                                         displayField: 'name',
                                         valueField: 'id',
                                         store: store_category_status,
-                                        tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {[values.description || ""]}</span></div></tpl>'
                                     });
 
                                     cb_category_status.on('additem', function(combo, value, record) {
