@@ -1788,7 +1788,7 @@ sub list_users : Local {
         }
 
         if ( $roles && $roles ne 'none' ) {
-            my @roles = _array $roles;
+            my @roles = _array_or_commas $roles;
 
             if (@roles) {
                 $users_friends = Baseliner::Model::Users->new->get_users_from_mid_roles(

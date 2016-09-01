@@ -63,7 +63,7 @@ sub build_where {
         if ($filter) {
             delete $filter->{start};
             delete $filter->{limit};
-
+            delete $filter->{typeApplication};
             if ( my $categories = delete $filter->{categories} ) {
                 push @categories, _array $categories;
             }
