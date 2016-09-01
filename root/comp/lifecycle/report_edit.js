@@ -493,7 +493,7 @@
             its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.svg' });
             its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.svg' });
         }
-        if( !/^(categories|select|sort)$/.test(type) )
+        if( !/^(categories|select|sort|where)$/.test(type) )
             its.push({  text: _('Delete'), 
                         handler: function(item){ 
                             var root = tree_selected.getRootNode();
@@ -520,7 +520,9 @@
             var stmts_menu = new Ext.menu.Menu({
             items: its 
         });
-        stmts_menu.showAt(event.xy);
+        if(its && its.length > 0 ){
+            stmts_menu.showAt(event.xy);
+        }
     };
     var tree_selected = new Ext.tree.TreePanel({
         flex: 1,
