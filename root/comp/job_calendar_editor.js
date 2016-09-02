@@ -24,130 +24,76 @@
     var cal_form = new Ext.FormPanel({
         url: '/job/calendar_update',
         frame: true,
-        title: _('Calendar Info'),
+        labelWidth: 80,
+        autoHeight: true,
+        layout: 'column',
+        split: true,
+        cls: 'job-slots-panel',
+        headerCssClass: 'job-slots-panel-header',
+        bwrapCssClass:'job-slots-panel-bwrap',
+        defaults: {
+            columnWidth: .5,
+            msgTarget: 'under',
+            layout: 'form',
+            cls: 'job_slots_form_column_body'
+        },
         items: [{
-            itemId: 'text',
-            layout: 'column',
-            anchor: '90%',
+            defaults: {
+                xtype: 'textfield',
+                anchor: '90%'
+            },
             items: [{
-                layout: 'form',
-                columnWidth: 0.5,
-                defaults: {
-                    anchor: '90%'
-                },
-                items: [{
-                    xtype: 'textfield',
-                    fieldLabel: _loc('Name'),
-                    name: 'name',
-                    value: '<% $cal->{name} %>'
-                }, {
-                    xtype: 'textfield',
-                    fieldLabel: _loc('Priority'),
-                    name: 'seq',
-                    value: '<% $cal->{seq} %>'
-                }, {
-                    xtype: 'textarea',
-                    fieldLabel: _('Description'),
-                    name: 'description',
-                    value: '<% $cal->{description} %>'
-                }]
+                name: 'name',
+                fieldLabel: _('Name'),
+                value: '<% $cal->{name} %>'
             }, {
-                itemId: 'form',
-                layout: 'form',
-                columnWidth: 0.5,
-                defaults: {
-                    anchor: '90%'
-                },
-                items: [{
-                        xtype: 'combo',
-                        name: 'bl',
-                        hiddenName: 'bl',
-                        fieldLabel: _('Baseline'),
-                        mode: 'local',
-                        editable: false,
-                        forceSelection: true,
-                        triggerAction: 'all',
-                        store: bl_store,
-                        valueField: 'value',
-                        value: '<% $cal->{bl}  %>',
-                        displayField: 'name',
-                        allowBlank: false
-                    },
-                    Baseliner.ci_box({
-                        name: 'ns',
-                        role: ['Infrastructure', 'Project'],
-                        fieldLabel: _('Scope'),
-                        value: cal_ns != '/' ? cal_ns : '/',
-                        emptyText: _('Global'),
-                        force_set_value: cal_ns && cal_ns != '/' ? true : false
-                    }),
-                ],
-                buttons: [{
-                    icon: '/static/images/icons/action_save.svg',
-                    text: _loc('Save'),
-                    handler: function() {
-                        var ff = cal_form.getForm();
-                        ff.submit({
-                            params: {
-                                id_cal: id_cal
-                            },
-                            success: function(form, action) {
-                                Baseliner.message(_('Calendar'), action.result.msg);
-                                if (!id_cal || id_cal == '' || id_cal == -1) {
-                                    id_cal = action.result.id_cal;
-                                    cal_slots.load({
-                                        url: '/job/calendar_slots',
-                                        params: {
-                                            panel: id,
-                                            id_cal: id_cal,
-                                            scripts: true
-                                        }
-                                    });
-                                    cal_windows.show();
-                                }
-                            },
-                            failure: function(form, action) {
-                                Baseliner.message(_('Failure'), action.result.msg);
-                            }
-                        });
-                    }
-                }, {
-                    icon: '/static/images/icons/delete.svg',
-                    text: _loc('Delete'),
-                    handler: function() {
-                        var ff = cal_form.getForm();
-                        ff.submit({
-                            params: {
-                                action: 'delete',
-                                id_cal: id_cal
-                            },
-                            success: function(form, action) {
-                                Baseliner.message(_('Calendar'), action.result.msg);
-                                id_cal = '';
-                                cal_windows.hide();
-                                Baseliner.closeCurrentTab();
-                            },
-                            failure: function(form, action) {
-                                Baseliner.message(_('Failure'), action.result.msg);
-                            }
-                        });
-                    }
-                }]
+                fieldLabel: _('Priority'),
+                name: 'seq',
+                value: '<% $cal->{seq} %>'
+            }, {
+                xtype: 'textarea',
+                name: 'description',
+                height: 60,
+                fieldLabel: _('Description'),
+                value: '<% $cal->{description} %>'
             }]
+        }, {
+            defaults: {
+                anchor: '90%'
+            },
+            items: [
+                Baseliner.ci_box({
+                    name: 'bl',
+                    "class": 'BaselinerX::CI::bl',
+                    fieldLabel: _('Baseline'),
+                    value: '<% $cal->{bl}  %>',
+                    valueField: 'moniker',
+                    force_set_value: true
+                }),
+                Baseliner.ci_box({
+                    name: 'ns',
+                    role: ['Infrastructure', 'Project'],
+                    fieldLabel: _('Scope'),
+                    value: cal_ns != '/' ? cal_ns : '/',
+                    emptyText: _('Global'),
+                    force_set_value: cal_ns && cal_ns != '/' ? true : false
+                }),
+            ]
         }]
     });
 
-    var cal_slots = new Ext.Panel({    
+    var cal_slots = new Ext.Panel({
         id: id,
-        //region:'center',
         frame: true,
-        autoHeight: true,
-        autoWidth: true,
-        defaults: { height: 20, width: 300 },
-        maxWidth: 400,
-        //width: 720,             
-        autoLoad: { url: '/job/calendar_slots', params: { panel: id, id_cal: id_cal, scripts: true  } },
-        split: true,
+        autoLoad: {
+            url: '/job/calendar_slots',
+            params: {
+                panel: id,
+                id_cal: id_cal,
+                scripts: true
+            }
+        },
+        split: true
     });
 
     var _CurrentDate = new Date(<% $c->stash->{fecha_anyo} %>,<% $c->stash->{fecha_mes} - 1 %>, <% $c->stash->{fecha_dia} %>);
@@ -188,7 +134,10 @@
         frame: true,
         title: _('Calendar Windows'),
         hidden: (id_cal == -1 ? true : false),
-        cls:'job_calendar_edit_cal_windows',
+        cls:'job-slots-panel',
+        headerCssClass: 'job-slots-panel-header',
+        bodyCssClass:'job-slots-panel-body',
+        bwrapCssClass:'job-slots-panel-bwrap',
         autoHeight: true,
         autoWidth: true,
         defaults: {
@@ -197,29 +146,28 @@
         height: 450,
         items: [{
             itemId: 'week',
+            cls:'job-slots-panel-item',
+            bodyCssClass:'job-slots-panel-item-body',
             layout: 'column',
             columnWidth: 0.7,
-            anchor: '90%',
+            minWidth: 70,
+            autoWidth: false,
             items: [
                 cal_slots,
             ]
         }, {
             layout: 'column',
             columnWidth: 0.3,
-            anchor: '90%',
             cls:'job_calendar_edit_cal_windows_column',
             frame: true,
             autoHeight: true,
             autoWidth: true,
             maxWidth: 150,
-            defaults: {
-                height: 300,
-                width: 100
-            },
             items: [{
                     itemId: 'date',
                     xtype: 'datepickerplus',
                     value: _CurrentDate,
+                    cls:'job_calendar_edit_cal_windows',
                     noOfMonth: 1,
                     multiSelection: true,
                     allowMouseWheel: false,
@@ -227,6 +175,8 @@
                     weekendText: '',
                     showActiveDate: false,
                     summarizeHeader: true,
+                    height: 300,
+                    width: 100,
                     listeners: {
                         'beforedateclick': function(picker, t) {
                             this.currentDateRef = t;
@@ -276,8 +226,68 @@
 
     var panel = new Ext.Panel({
         id: id2,
-        style: 'padding: 5px',
         autoScroll: true,
+         tbar: [
+            '->', {
+                    icon: '/static/images/icons/action_save.svg',
+                    text: _('Save'),
+                    handler: function() {
+                        var ff = cal_form.getForm();
+                        ff.submit({
+                            params: {
+                                id_cal: id_cal
+                            },
+                            success: function(form, action) {
+                                Baseliner.message(_('Calendar'), action.result.msg);
+                                if (!id_cal || id_cal == '' || id_cal == -1) {
+                                    id_cal = action.result.id_cal;
+                                    cal_slots.load({
+                                        url: '/job/calendar_slots',
+                                        params: {
+                                            panel: id,
+                                            id_cal: id_cal,
+                                            scripts: true
+                                        }
+                                    });
+                                    cal_windows.show();
+                                }
+                            },
+                            failure: function(form, action) {
+                                Baseliner.message(_('Failure'), action.result.msg);
+                            }
+                        });
+                    }
+                },{
+                   icon: '/static/images/icons/delete.svg',
+                   text: _('Delete'),
+                    handler: function() {
+                        var ff = cal_form.getForm();
+                        ff.submit({
+                           params: {
+                              action: 'delete',
+                                id_cal: id_cal
+                           },
+                           success: function(form, action) {
+                               Baseliner.message(_('Calendar'), action.result.msg);
+                                id_cal = '';
+                               cal_windows.hide();
+                                Baseliner.closeCurrentTab();
+                            },
+
+                           failure: function(form, action) {
+                               Baseliner.message(_('Failure'), action.result.msg);
+                            }
+                        });
+                   }
+               }, {
+                text: _('Close'),
+                cls: 'ui-comp-role-edit-close',
+                icon: IC('close.svg'),
+                handler: function() {
+                    panel.destroy()
+                }
+            }
+        ],
         items: [ cal_form, cal_windows ]
     });
     return panel;

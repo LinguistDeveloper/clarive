@@ -115,13 +115,13 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
             ns_desc     => $r->{ns},
             }
     }
-    my @prjs = map { $_->{ns} } grep { is_number( $_->{ns} ) } grep { length } @rows;
     my %mids;
-    my @projects = ci->project->find({ mid=> mdb->in(@prjs)})->fields({_id=>0})->all;
-    foreach my $project (@projects){
-        $mids{$project->{mid}} = $project;
+    my @infrastructure_cis = map { $_->{ns} } grep { $_->{ns} && $_->{ns} ne '/' } grep { length } @rows;
+    foreach my $infrastructure_mid (@infrastructure_cis){
+        try{
+            $mids{$infrastructure_mid} = ci->new($infrastructure_mid);
+        } catch {}
     }
-
     foreach my $row (@rows) {
         if ( $row->{ns} && $mids{ $row->{ns} } ) {
             $row->{ns} = $mids{ $row->{ns} }->{name};
