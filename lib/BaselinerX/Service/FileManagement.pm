@@ -411,6 +411,7 @@ sub run_ship {
     my $recursive = $config->{recursive} // 0;
     $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
+    my $max_transfer_chunk_size = $config->{max_transfer_chunk_size} // 0;
 
     _fail _loc("Server not configured") unless length $config->{server};
 
@@ -552,10 +553,68 @@ sub run_ship {
                 $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
                 # send file remotely
                 if(!$is_rollback_no_backup){
-                    $agent->put_file(
-                        local  => "$local",
-                        remote => "$remote",
-                    );
+                    my $size = -s $local;
+
+                    if ($max_transfer_chunk_size && $size > $max_transfer_chunk_size) {
+                        $log->info( _loc( 'Sending files by parts') );
+
+                        open my $fh, '<', $local or die "Can't open local file: $!";
+
+                        my $part_no = 1;
+                        while ($size > 0) {
+                            my $part_size = $max_transfer_chunk_size < $size ? $max_transfer_chunk_size : $size;
+
+                            my $fh_part = File::Temp->new;
+                            while ($part_size > 0) {
+                                my $buf_size = $part_size > 8132 ? 8132 : $part_size;
+
+                                my $rcount = read $fh, my ($buf), $buf_size;
+                                die "Can't read local file part: $!" unless $rcount == $buf_size;
+
+                                syswrite $fh_part, $buf;
+
+                                $part_size -= $buf_size;
+                            }
+
+                            $agent->put_file(
+                                local  => $fh_part->filename,
+                                remote => sprintf("$remote.part%06d", $part_no),
+                            );
+
+                            close $fh_part;
+
+                            $size -= $max_transfer_chunk_size;
+                            $part_no++;
+                        }
+
+                        close $fh;
+
+                        my $cmd;
+
+                        if ($server->is_win) {
+                            my $remote_win = $remote;
+                            $remote_win =~ s{/}{\\}g;
+
+                            $cmd = qq{copy /b /y "$remote_win.part*" "$remote_win" & del /q "$remote_win.part*"};
+                        }
+                        else {
+                            my $remote_escaped = $remote;
+
+                            $remote_escaped =~ s{([^\w!%\+,\-\./:=\@\^])}{\\$1}g;
+
+                            $cmd = qq{cat -- $remote_escaped.part* > $remote_escaped && rm -- $remote_escaped.part*};
+                        }
+
+                        $log->info( _loc( 'Concatenating files: %1', $cmd ) );
+
+                        $agent->execute($cmd);
+                    }
+                    else {
+                        $agent->put_file(
+                            local  => "$local",
+                            remote => "$remote",
+                        );
+                    }
                 }else{ #El fichero no existía previamente
                     $agent->delete_file(
                         server => $server_str,

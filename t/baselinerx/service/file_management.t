@@ -189,6 +189,47 @@ subtest 'run_ship: copies file with special symbols' => sub {
       };
 };
 
+subtest 'run_ship: copies file to remote with parts' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $service = _build_service();
+
+    my $c = _mock_c( stash => { job => $job, job_mode => 'forward', current_task_name => 'ship' } );
+
+    my $tmp = tempdir();
+    TestUtils->write_file( "foobarba", "$tmp/foo" );
+
+    my $agent = _mock_agent();
+
+    my $server = TestUtils->create_ci( 'generic_server', hostname => 'localhost' );
+    $server = Test::MonkeyMock->new($server);
+    $server->mock( connect => sub { $agent } );
+
+    $agent->mock( server => sub { $server } );
+
+    $service->run_ship(
+        $c,
+        {
+            local_path              => "$tmp/foo",
+            remote_path             => 'remote/',
+            backup_mode             => 'none',
+            server                  => $server,
+            max_transfer_chunk_size => 3
+        }
+    );
+
+    my $chksum = ( keys %{ $c->stash->{sent_files}->{localhost} } )[0];
+
+    is $agent->mocked_called('put_file'), 3;
+    is { $agent->mocked_call_args('put_file', 0) }->{remote}, 'remote/foo.part000001';
+    is { $agent->mocked_call_args('put_file', 1) }->{remote}, 'remote/foo.part000002';
+    is { $agent->mocked_call_args('put_file', 2) }->{remote}, 'remote/foo.part000003';
+
+    is $agent->mocked_called('execute'), 1;
+};
+
 subtest 'run_sync_remote: runs sync_dir on agent' => sub {
     _setup();
 
@@ -535,6 +576,7 @@ sub _mock_agent {
     $agent->mock( file_exists => sub { 0 } );
     $agent->mock( mkpath      => $params{mkpath} || sub { } );
     $agent->mock( put_file    => sub { } );
+    $agent->mock( execute     => sub { } );
 
     return $agent;
 }

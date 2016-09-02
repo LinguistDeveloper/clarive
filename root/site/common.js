@@ -4538,7 +4538,16 @@ Ext.apply(Ext.form.VTypes, {
         return false;
     },
     'labelSeqMask': /^\d+$/,
-    'labelSeqText': _('Invalid sequence')
+    'labelSeqText': _('Invalid sequence'),
+
+    'natural': function(v) {
+        if (typeof v === 'undefined') {
+            return false;
+        }
+        return /^\d*/i.test(v);
+    },
+    'naturalMask': /[0-9]/,
+    'naturalText': _('Invalid natural number')
 });
 
 Ext.ux.form.XDateField = Ext.extend(Ext.form.DateField, {

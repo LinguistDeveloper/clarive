@@ -272,7 +272,7 @@ subtest 'put_file: sends correct request' => sub {
     is $url, 'http://bar:8888/tree/?crc=3610a686';
     cmp_deeply $headers,
       {
-        'Content-Length' => '159',
+        'Content-Length' => '160',
         'Content-Type'   => re(qr{multipart/form-data; boundary=------------clax[0-9a-zA-Z]+})
       };
     like $sent, qr/hello/;
