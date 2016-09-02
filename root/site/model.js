@@ -1199,7 +1199,9 @@ Baseliner.StatusBox = function(c) {
         mode: 'remote',
         fieldLabel: _('To'),
         typeAhead: true,
-        tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
+        tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
+        + '<div style="float:left; margin-right: 5px"><img src={[ IC("state.svg") ]} />'
+        + '</div>{name}</div></tpl>',
         displayFieldTpl: tpl,
         extraItemCls: 'x-tag'
     }, c));
