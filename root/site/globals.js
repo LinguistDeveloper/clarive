@@ -105,4 +105,9 @@ Cla.js_date_to_moment_hash = {
     'm/d/Y' : 'MM/DD/YYYY',
     'd/m/y' : 'DD/MM/YY',
     'd/m/Y' : 'DD/MM/YYYY'
+};
+
+Cla.constants = {
+    'DASHLET_ROW_SIZE': 1,
+    'DASHLET_COLUMN_SIZE': 6
 }
