@@ -1650,6 +1650,56 @@ subtest 'list_users: returns users by roles' => sub {
       };
 };
 
+subtest 'list_users: returns users by roles if roles are comma separated' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $project    = TestUtils->create_ci_project;
+    my $id_role    = TestSetup->create_role( role => 'TestRole' );
+    my $id_role2   = TestSetup->create_role( role => 'TestRole2' );
+
+    my $user = TestSetup->create_user(
+        username => 'test_user',
+        realname => 'Test User',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user2 = TestSetup->create_user(
+        username => 'test_user2',
+        realname => 'Test User2',
+        id_role  => $id_role,
+        project  => $project
+    );
+    my $user3 = TestSetup->create_user(
+        username => 'test_user3',
+        realname => 'Test User3',
+        id_role  => $id_role2,
+        project  => $project
+    );
+    my $c = _build_c(
+        username => 'test_user',
+        req      => {
+            params => {
+                roles => "$id_role,$id_role2"
+            }
+        }
+    );
+
+    $controller->list_users($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            totalCount => 3,
+            data       => [
+                { id => ignore(), realname => 'Test User',  username => 'test_user' },
+                { id => ignore(), realname => 'Test User2', username => 'test_user2' },
+                { id => ignore(), realname => 'Test User3', username => 'test_user3' },
+            ]
+        }
+      };
+};
+
 subtest 'list_users: returns users by roles and topic projects' => sub {
     _setup();
 

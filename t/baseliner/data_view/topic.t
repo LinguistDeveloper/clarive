@@ -133,7 +133,7 @@ subtest 'build_where: builds correct where categories from filter' => sub {
     is_deeply $where->{'category.id'}, { '$in' => [$id_category1] };
 };
 
-subtest 'build_where: builds correct where category_name from filter' => sub {
+subtest 'build_where: builds correct where category_name and typeApplication from filter' => sub {
     _setup();
 
     my $name_category1 = 'Category1';
@@ -162,9 +162,10 @@ subtest 'build_where: builds correct where category_name from filter' => sub {
 
     my $view = _build_view();
 
-    my $where = $view->build_where( username => $developer->username, filter => { category_name => [$name_category1] } );
+    my $where = $view->build_where( username => $developer->username, filter => { category_name => [$name_category1],  typeApplication=>""} );
 
     is_deeply $where->{'category_name'}, { '$in' => [$name_category1] };
+    ok ! exists $where->{'typeApplication'};
 };
 
 
