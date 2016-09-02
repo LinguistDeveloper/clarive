@@ -1,11 +1,11 @@
 (function(params){
     return [
-        Baseliner.ci_box({ name:'server', fieldLabel:_('Server'), allowBlank: true,
+        Baseliner.ci_box({ name:'server', fieldLabel:_('Server'), allowBlank: false,
                role:'Server', value: params.rec.server, force_set_value: true, singleMode: true }),
         { xtype: 'textfield', fieldLabel: _('User'), name:'user', anchor:'50%' },
         { xtype: 'textfield', fieldLabel: _('Auth Username'), name:'auth_username', anchor:'50%' },
         { xtype: 'textfield', fieldLabel: _('Auth Password'), name:'auth_password', anchor:'50%' },
-        { xtype: 'textfield', fieldLabel: _('Port'), name:'port', anchor:'15%', allowBlank: false, vtype: 'port', maxLength: 5 }
+        { xtype: 'textfield', fieldLabel: _('Port'), name:'port', anchor:'15%', vtype: 'port', maxLength: 5 }
     ]
 })
 
