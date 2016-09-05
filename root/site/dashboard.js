@@ -141,25 +141,26 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     '/></td></tr></table>'
                 );
                 var id_div = Ext.id();
-                var dashlet_columns = dashlet.data.columns ? parseInt(dashlet.data.columns): 6;
-                if ( rows[cont] + dashlet_columns > 12 ){
+                dashlet.data.columns = dashlet.data.columns ? parseInt(dashlet.data.columns) : Cla.constants.DASHLET_COLUMN_SIZE;
+                dashlet.data.rows = dashlet.data.rows ? dashlet.data.rows : Cla.constants.DASHLET_ROW_SIZE;
+                if ( rows[cont] + dashlet.data.columns > 12 ){
                     html +="</tr><tr style='padding:10px;width:100%;'>";
                     if ( !rows[cont+1] ) {
-                        rows.push(dashlet_columns);
+                        rows.push(dashlet.data.columns);
                     } else {
-                        rows[cont+1] += dashlet_columns;
+                        rows[cont+1] += dashlet.data.columns;
                     }
                     cont++;
                 } else {
-                    rows[cont] = rows[cont] + dashlet_columns;
+                    rows[cont] = rows[cont] + dashlet.data.columns;
                 }
 
                 if ( parseInt(dashlet.data.rows) > 1 ) {
                     for (var i = 1; i < parseInt(dashlet.data.rows); i++) {
                         if ( !rows[cont+i] ) {
-                            rows.push(dashlet_columns);
+                            rows.push(dashlet.data.columns);
                         } else {
-                            rows[cont+i] += dashlet_columns;
+                            rows[cont+i] += dashlet.data.columns;
                         }
                     };
                 }
@@ -327,8 +328,20 @@ Cla.dashlet_common = (function(params){
                  columnWidth: .48, 
                  bodyStyle: 'background:transparent;',
                  items: [
-                    new Cla.ComboSingle({ anchor: '100%',fieldLabel: _('Height in canvas rows'), name: 'rows', value:data.rows?data.rows:'1', data:[1,2,3,4] }),
-                    new Cla.ComboSingle({ anchor: '100%',fieldLabel: _('Width in canvas columns'), name: 'columns', value:data.columns?data.columns:'6', data:[2,3,4,6,8,10,12] })
+                    new Cla.ComboSingle({
+                        anchor: '100%',
+                        fieldLabel: _('Height in canvas rows'),
+                        name: 'rows',
+                        value: data.rows ? data.rows : Cla.constants.DASHLET_ROW_SIZE,
+                        data: [1, 2, 3, 4]
+                    }),
+                    new Cla.ComboSingle({
+                        anchor: '100%',
+                        fieldLabel: _('Width in canvas columns'),
+                        name: 'columns',
+                        value: data.columns ? data.columns : Cla.constants.DASHLET_COLUMN_SIZE,
+                        data: [2, 3, 4, 6, 8, 10, 12]
+                    })
                   ]
                 },
                 {layout:'form', 
