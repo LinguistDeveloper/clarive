@@ -4513,7 +4513,27 @@ Ext.apply(Ext.form.VTypes, {
         return /^[-+]?\d*/i.test(v);
     },
     'integerMask': /[\-\+0-9]/,
-    'integerText': _('Invalid integer number')
+    'integerText': _('Invalid integer number'),
+
+    'labelName': function(v) {
+        if (/^[a-zA-Z0-9\u00C0-\u017F_\.^*$\s]+$/.test(v) && v.trim() != '') {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    'labelNameMask': /^[a-zA-Z0-9\u00C0-\u017F_\.^*$\s]+$/,
+    'labelNameText': _('Invalid label name'),
+
+    'labelSeq': function(v) {
+        if(/^\d+$/.test(v) && v < 100){
+            return true;
+        }
+
+        return false;
+    },
+    'labelSeqMask': /^\d+$/,
+    'labelSeqText': _('Invalid sequence')
 });
 
 Ext.ux.form.XDateField = Ext.extend(Ext.form.DateField, {

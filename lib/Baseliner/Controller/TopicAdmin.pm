@@ -12,22 +12,20 @@ BEGIN {  extends 'Catalyst::Controller' }
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
 
 register 'menu.admin.topic' => {
-    label    => 'Topics',
-    title    => _loc('Admin Topics'),
+    label    => _locl('Categories'),
+    title    => _locl('Categories'),
     action   => 'action.admin.topics',
     url_comp => '/topicadmin/grid',
     icon     => '/static/images/icons/topic.svg',
     tab_icon => '/static/images/icons/topic.svg'
 };
 
-register 'action.admin.topics' => { name=>'View and Admin topics' };
-
+register 'action.admin.topics' => { name=>_locl('Admin topics') };
 
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     $c->stash->{query_id} = $p->{query};
-    $c->stash->{can_admin_labels} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.labels.admin' );
     $c->stash->{template} = '/comp/topic/topic_admin.js';
 }
 
@@ -268,65 +266,6 @@ sub update_status : Local {
             }
             catch{
                 $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Statuses: %1', shift()) };
-            }
-        }
-    }
-
-    $c->forward('View::JSON');
-}
-
-sub update_label : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-
-    my $action = $p->{action};
-    my $label = $p->{label};
-    my $color = $p->{color};
-    my @projects = split ",", $p->{projects};
-    my $username = $c->username;
-
-    cache->remove_like( qr/^topic:/ );
-    Baseliner::Core::Registry->reload_all;
-    given ($action) {
-        when ('add') {
-            try{
-                my $row = mdb->label->find_one({name => $p->{label}});
-                if(!$row){
-                    my $label = { name => $label, color => $color, id=>mdb->seq('label') };
-                    $label->{sw_allprojects} = 1;
-                    mdb->label->insert($label);
-                    $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=>$label->{id} };
-                }
-                else{
-                    $c->stash->{json} = { msg=>_loc('Label name already exists, introduce another label name'), failure=>\1 };
-                }
-            }
-            catch{
-                $c->stash->{json} = { msg=>_loc('Error adding Label: %1', shift()), failure=>\1 }
-            }
-        }
-        when ('update') {  }
-        when ('delete') {
-            my $ids_label = $p->{idslabel};
-
-            try{
-                my @ids_label;
-                foreach my $id_label (_array $ids_label){
-                    push @ids_label, $id_label;
-                }
-
-                mdb->label->remove({ id=>mdb->in(@ids_label) },{ multiple=>1 });
-
-                if( @ids_label ) {
-                    # errors like "cannot $pull/pullAll..." is due to labels=>N
-                    mdb->topic->update({}, { '$pull'=>{ labels=>mdb->in(@ids_label) } },{ multiple=>1 }); # mongo rocks!
-                }
-
-                $c->stash->{json} = { success => \1, msg=>_loc('Labels deleted') };
-            } catch{
-                my $err = shift;
-                _error( $err );
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Labels').': '. $err };
             }
         }
     }

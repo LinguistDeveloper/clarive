@@ -576,11 +576,12 @@ Baseliner.Topic.StoreLabel = Ext.extend( Baseliner.JsonStore, {
             root: 'data' ,
             remoteSort: true,
             totalProperty:"totalCount",
-            url: '/topic/list_label',
+            url: '/label/list',
             fields: [
                 {  name: 'id' },
                 {  name: 'name' },
-                {  name: 'color' }
+                {  name: 'color' },
+                {  name: 'seq' }
             ]
         },config);
         Baseliner.Topic.StoreLabel.superclass.constructor.call(this, config);

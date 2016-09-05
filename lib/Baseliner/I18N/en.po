@@ -1001,6 +1001,72 @@ msgstr ""
 msgid "Error grouping jobs: %1"
 msgstr ""
 
+#: lib/Baseliner/Controller/Label.pm
+msgid "Admin labels"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Topic.pm
+#: lib/BaselinerX/Fieldlets.pm root/comp/label_admin.js root/site/model.js
+msgid "Labels"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "User (%1) does not have permissions to attach a label"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Labels assigned"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Topic.pm
+msgid "Topic not found: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Error assigning Labels: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "User (%1) does not have permissions to detach a label"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Labels deleted"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Label deleted"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Error deleting label: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Label added"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Role.pm
+#: lib/Baseliner/Role/ControllerValidator.pm
+msgid "Validation failed"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Label name already exists"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Label does not exist"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Label modified"
+msgstr ""
+
+#: lib/Baseliner/Controller/Label.pm
+msgid "Error deleting Labels"
+msgstr ""
+
 #: lib/Baseliner/Controller/Log.pm
 msgid "The log does not exist"
 msgstr ""
@@ -1197,10 +1263,6 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Review.pm
 msgid "@%1 created a review for %2"
-msgstr ""
-
-#: lib/Baseliner/Controller/Role.pm lib/Baseliner/Role/ControllerValidator.pm
-msgid "Validation failed"
 msgstr ""
 
 #: lib/Baseliner/Controller/Role.pm
@@ -1726,13 +1788,14 @@ msgstr ""
 #: root/comp/catalog/item_deploy.js root/comp/catalog_grid.js
 #: root/comp/ci-editor.js root/comp/configlist/grid.mas
 #: root/comp/git/tag_commit.js root/comp/job_calendar_editor.js
-#: root/comp/job_new.js root/comp/lifecycle/report_edit.js
-#: root/comp/role_grid.js root/comp/rule_new.js root/comp/rules.js
-#: root/comp/scheduler_grid.js root/comp/topic/form_editor.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/comp/user_info.mas
-#: root/dashlets/filtered_topics.html root/dashlets/my_topics.html
-#: root/dashlets/status_changes.html root/fields/system/js/list_revisions.js
+#: root/comp/job_new.js root/comp/label_admin.js
+#: root/comp/lifecycle/report_edit.js root/comp/role_grid.js
+#: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
+#: root/comp/topic/form_editor.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: root/comp/user_info.mas root/dashlets/filtered_topics.html
+#: root/dashlets/my_topics.html root/dashlets/status_changes.html
+#: root/fields/system/js/list_revisions.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/forms/ci_invoke.js
 #: root/site/common.js root/site/explorer.js root/site/model.js
@@ -1807,30 +1870,6 @@ msgid "Error viewing comment: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "Labels assigned"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Topic not found: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Error assigning Labels: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Labels deleted"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Label deleted"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
-msgid "Error deleting label: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm
 msgid "No metadata found for this topic (%1)"
 msgstr ""
 
@@ -1877,15 +1916,11 @@ msgstr ""
 msgid "Filters"
 msgstr ""
 
-#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/CI/report.pm
-#: root/comp/lifecycle/report_edit.js root/comp/notifications.js
-#: root/comp/topic/topic_admin.js root/reports/trending.js
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Controller/TopicAdmin.pm
+#: lib/BaselinerX/CI/report.pm root/comp/lifecycle/report_edit.js
+#: root/comp/notifications.js root/comp/topic/topic_admin.js
+#: root/reports/trending.js
 msgid "Categories"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Fieldlets.pm
-#: root/comp/topic/topic_admin.js root/site/model.js
-msgid "Labels"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm root/comp/topic/topic_admin.js
@@ -1999,7 +2034,7 @@ msgid "Error adding topic #%1 to #%2: %3"
 msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Admin Topics"
+msgid "Admin topics"
 msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
@@ -2060,22 +2095,6 @@ msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "Error deleting Statuses: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Label added"
-msgstr ""
-
-#: lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Label name already exists, introduce another label name"
-msgstr ""
-
-#: lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Error adding Label: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Error deleting Labels"
 msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
@@ -2436,6 +2455,14 @@ msgstr ""
 
 #: lib/Baseliner/Model/Jobs.pm lib/Baseliner/Model/Scheduler.pm
 msgid "Rule: %1 (%2)"
+msgstr ""
+
+#: lib/Baseliner/Model/Label.pm
+msgid "Attach labels to a topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Label.pm
+msgid "Remove labels from a topic"
 msgstr ""
 
 #: lib/Baseliner/Model/Messaging.pm
@@ -4211,8 +4238,9 @@ msgstr ""
 
 #: lib/BaselinerX/CI/report.pm root/comp/ci-editor.js
 #: root/comp/configlist/grid.mas root/comp/daemon_grid.js
-#: root/comp/job_calendar_grid.js root/comp/lifecycle/report_edit.js
-#: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
+#: root/comp/job_calendar_grid.js root/comp/label_admin.js
+#: root/comp/lifecycle/report_edit.js root/comp/role_grid.js
+#: root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/user_grid.js root/site/common.js root/site/model.js
 msgid "Edit"
@@ -4223,11 +4251,12 @@ msgstr ""
 #: root/comp/config/config_grid.mas root/comp/configlist/grid.mas
 #: root/comp/daemon_grid.js root/comp/events.js
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
-#: root/comp/job_calendar_slot_edit.js root/comp/lifecycle/report_edit.js
-#: root/comp/lifecycle/tasks.js root/comp/message_grid.js
-#: root/comp/monitor_grid.js root/comp/project_grid.mas root/comp/repl.js
-#: root/comp/revision/grid.mas root/comp/role_grid.js root/comp/rules.js
-#: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/topic_admin.js
+#: root/comp/job_calendar_slot_edit.js root/comp/label_admin.js
+#: root/comp/lifecycle/report_edit.js root/comp/lifecycle/tasks.js
+#: root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/project_grid.mas root/comp/repl.js root/comp/revision/grid.mas
+#: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
+#: root/comp/sms.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/user_grid.js root/site/common.js
 #: root/site/model.js
 msgid "Delete"
@@ -6255,7 +6284,7 @@ msgstr ""
 msgid "Baseline ID"
 msgstr "Entorno ID"
 
-#: root/ci/bl.js root/ci/status.js root/comp/sem.js
+#: root/ci/bl.js root/ci/status.js root/comp/label_admin.js root/comp/sem.js
 msgid "Sequence"
 msgstr ""
 
@@ -6595,7 +6624,7 @@ msgstr ""
 msgid "Final"
 msgstr ""
 
-#: root/ci/status.js root/comp/topic/topic_admin.js
+#: root/ci/status.js root/comp/label_admin.js
 #: root/fields/templates/config/pills.js
 msgid "Color"
 msgstr ""
@@ -6806,14 +6835,14 @@ msgstr ""
 #: root/comp/config/config_main.mas root/comp/config/config_panel.mas
 #: root/comp/configlist/edit_value.mas root/comp/daemon_grid.js
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
-#: root/comp/job_stash.js root/comp/lifecycle/report_edit.js
-#: root/comp/lifecycle/view_file.js root/comp/log_grid.js
-#: root/comp/notifications.js root/comp/repl.js root/comp/role_detail.js
-#: root/comp/rules.js root/comp/scheduler_grid.js root/comp/sequences.js
-#: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/user_grid.js root/forms/shortcut.js
-#: root/site/dashboard.js root/site/explorer.js root/site/model.js
-#: root/site/prefs.js
+#: root/comp/job_stash.js root/comp/label_admin.js
+#: root/comp/lifecycle/report_edit.js root/comp/lifecycle/view_file.js
+#: root/comp/log_grid.js root/comp/notifications.js root/comp/repl.js
+#: root/comp/role_detail.js root/comp/rules.js root/comp/scheduler_grid.js
+#: root/comp/sequences.js root/comp/topic/form_editor.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
+#: root/comp/user_grid.js root/forms/shortcut.js root/site/dashboard.js
+#: root/site/explorer.js root/site/model.js root/site/prefs.js
 msgid "Save"
 msgstr ""
 
@@ -6837,12 +6866,12 @@ msgstr ""
 #: root/comp/ci-editor.js root/comp/code_editor.js
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/daemon_grid.js root/comp/job_calendar_grid.js
-#: root/comp/job_calendar_slot_edit.js root/comp/lifecycle/report_edit.js
-#: root/comp/notifications.js root/comp/role_detail.js
-#: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/comp/user_info.mas root/site/common.js
-#: root/site/explorer.js
+#: root/comp/job_calendar_slot_edit.js root/comp/label_admin.js
+#: root/comp/lifecycle/report_edit.js root/comp/notifications.js
+#: root/comp/role_detail.js root/comp/scheduler_grid.js root/comp/sms.js
+#: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: root/comp/user_info.mas root/site/common.js root/site/explorer.js
 msgid "Close"
 msgstr ""
 
@@ -7122,13 +7151,13 @@ msgstr ""
 #: root/comp/ci-gridtree.js root/comp/config/config_grid.mas
 #: root/comp/configlist/grid.mas root/comp/daemon_grid.js
 #: root/comp/feature_grid.mas root/comp/job_calendar_grid.js
-#: root/comp/job_new.js root/comp/lifecycle/tasks.js root/comp/message_grid.js
-#: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/project_grid.mas root/comp/repl.js root/comp/revision/grid.mas
-#: root/comp/role_grid.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/site/common.js root/site/kanban.js
-#: root/site/tabfu.js
+#: root/comp/job_new.js root/comp/label_admin.js root/comp/lifecycle/tasks.js
+#: root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
+#: root/comp/revision/grid.mas root/comp/role_grid.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: root/site/common.js root/site/kanban.js root/site/tabfu.js
 msgid "Confirmation"
 msgstr ""
 
@@ -7406,9 +7435,9 @@ msgstr ""
 msgid "Activate"
 msgstr ""
 
-#: root/comp/daemon_grid.js root/comp/lifecycle/report_edit.js
-#: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/role_detail.js root/comp/sequences.js
+#: root/comp/daemon_grid.js root/comp/label_admin.js
+#: root/comp/lifecycle/report_edit.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/role_detail.js root/comp/sequences.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
 #: root/comp/user_grid.js root/fields/system/html/field_title.html
@@ -7416,7 +7445,7 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: root/comp/daemon_grid.js root/comp/monitor_grid.js
+#: root/comp/daemon_grid.js root/comp/label_admin.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
@@ -8244,6 +8273,27 @@ msgstr ""
 
 #: root/comp/job_stash.js
 msgid "Stash Log"
+msgstr ""
+
+#: root/comp/label_admin.js
+msgid "Create Label"
+msgstr ""
+
+#: root/comp/label_admin.js
+msgid "Edit Label"
+msgstr ""
+
+#: root/comp/label_admin.js
+msgid "Are you sure you want to delete the labels selected?"
+msgstr ""
+
+#: root/comp/label_admin.js root/fields/templates/config/generic_fields.js
+msgid "Label"
+msgstr ""
+
+#: root/comp/label_admin.js root/comp/topic/topic_admin.js
+#: root/fields/templates/config/separator.js
+msgid "Pick a Color"
 msgstr ""
 
 #: root/comp/lifecycle/add_to_fav_folder.js
@@ -10398,10 +10448,6 @@ msgstr ""
 msgid "Sample"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js root/fields/templates/config/separator.js
-msgid "Pick a Color"
-msgstr ""
-
 #: root/comp/topic/topic_admin.js
 msgid "Edit category"
 msgstr ""
@@ -10455,24 +10501,11 @@ msgid "Select at least one role and status to"
 msgstr ""
 
 #: root/comp/topic/topic_admin.js
-msgid "There are not projects selected"
-msgstr ""
-
-#: root/comp/topic/topic_admin.js
-msgid "Are you sure you want to delete the labels selected?"
-msgstr ""
-
-#: root/comp/topic/topic_admin.js
 msgid "By project"
 msgstr ""
 
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
 msgid "Available Projects"
-msgstr ""
-
-#: root/comp/topic/topic_admin.js
-#: root/fields/templates/config/generic_fields.js
-msgid "Label"
 msgstr ""
 
 #: root/comp/topic/topic_drop.js
@@ -13520,7 +13553,7 @@ msgstr ""
 
 #: root/site/common.js
 msgid "Invalid Port"
-msgstr "Puerto Inválido"
+msgstr ""
 
 #: root/site/common.js
 msgid "Invalid number"
@@ -13528,6 +13561,14 @@ msgstr ""
 
 #: root/site/common.js
 msgid "Invalid integer number"
+msgstr ""
+
+#: root/site/common.js
+msgid "Invalid label name"
+msgstr ""
+
+#: root/site/common.js
+msgid "Invalid sequence"
 msgstr ""
 
 #: root/site/dashboard.js

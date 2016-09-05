@@ -3,7 +3,7 @@ title: Topics Administration
 icon: topic
 ---
 
-Topic administration is performed by selecting Admin-Topics from the menu bar. This will display all the
+Topic administration is performed by selecting Categories from the menu bar. This will display all the
 currently available topics in a list view:
 
 ### <a id="general-interface" href="#general-interface">General interface</a>

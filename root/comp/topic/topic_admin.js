@@ -1,4 +1,4 @@
-(function(){
+(function(params){
     var store_status = new Baseliner.Topic.StoreStatus({ baseParams: { sort : 'name' } });
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
 
@@ -17,8 +17,6 @@
         ],
         baseParams: { limit: 1000 }
     });
-
-    var store_label = new Baseliner.Topic.StoreLabel();
 
     var init_buttons_category = function(action) {
         eval('btn_edit_category.' + action + '()');
@@ -190,7 +188,6 @@
                                 Baseliner.message( _('Success'), response.msg );
                                 init_buttons_status('disable');
                                 store_status.load();
-                                var labels_checked = getLabels();
                                 var categories_checked = getCategories();
                                 //filtrar_topics(labels_checked, categories_checked);
                             } else {
@@ -305,7 +302,6 @@
         if(columnIndex == 1){
             var statuses_checked = getStatuses();
             var categories_checked = getCategories();
-            var labels_checked = getLabels();
             //filtrar_topics(labels_checked, categories_checked);
             if (statuses_checked.length == 1){
                 init_buttons_status('enable');
@@ -324,7 +320,6 @@
         if(columnIndex == 1){
             var statuses_checked = getStatuses();
             var categories_checked = getCategories();
-            var labels_checked = getLabels();
             //filtrar_topics(labels_checked, categories_checked);
             if(statuses_checked.length == 0){
                 init_buttons_status('disable');
@@ -739,8 +734,6 @@
                                 Baseliner.message( _('Success'), response.msg );
                                 init_buttons_category('disable');
                                 store_category.load();
-                                var labels_checked = getLabels();
-                                //filtrar_topics(labels_checked, null);
                             } else {
                                 Baseliner.message( _('ERROR'), response.msg );
                             }
@@ -1217,7 +1210,7 @@
     var grid_categories = new Ext.grid.GridPanel({
         title : _('Categories'),
         sm: check_categories_sm,
-        height: 400,
+        height : 800,
         header: true,
         cls:'topic_admin_grids',
         stripeRows: true,
@@ -1288,128 +1281,9 @@
         }
     });
 
-    var btn_add_label = new Baseliner.Grid.Buttons.Add({
-        handler: function() {
-            if(label_box.getValue() != ''){
-                if ( btn_by_project.pressed ) {
-                    if (!projects_box.getValue()){
-                        Ext.Msg.show({
-                                title: _('Information'),
-                                msg: _('There are not projects selected'),
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.INFO
-                            });
-                        return
-                    }
-                }
-
-                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
-                    function(response) {
-                        if ( response.success ) {
-                            store_label.load();
-                            Baseliner.message( _('Success'), response.msg );
-                        } else {
-                            //Baseliner.message( _('ERROR'), response.msg );
-                            Ext.Msg.show({
-                                title: _('Information'),
-                                msg: response.msg ,
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.INFO
-                            });
-                        }
-                    }
-                );
-            }
-        }
-    });
-
-    var btn_edit_label = new Ext.Toolbar.Button({
-        text: _('Edit'),
-        icon:'/static/images/icons/edit.svg',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-        var sm = grid_labels.getSelectionModel();
-            if (sm.hasSelection()) {
-                var sel = sm.getSelected();
-                add_edit_label(sel);
-            } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));
-            };
-        }
-    });
-
-    var btn_delete_label = new Ext.Toolbar.Button({
-        text: _('Delete'),
-        icon:'/static/images/icons/delete.svg',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var labels_checked = getLabels();
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the labels selected?'),
-            function(btn){
-                if(btn=='yes') {
-                    Baseliner.ajaxEval( '/topicadmin/update_label?action=delete',{ idslabel: labels_checked },
-                        function(response) {
-                            if ( response.success ) {
-                                Baseliner.message( _('Success'), response.msg );
-                                init_buttons_label('disable');
-                                store_label.load();
-                                var categories_checked = getCategories();
-                                //filtrar_topics(null, categories_checked);
-                            } else {
-                                Baseliner.message( _('ERROR'), response.msg );
-                            }
-                        }
-
-                    );
-                }
-            } );
-        }
-    });
-
-    var color_lbl = '000000';
-    var color_label = new Ext.form.TextField({
-        width: 25,
-        readOnly: true,
-        style:'background:#' + color_lbl
-    });
-
-    var colorMenu = new Ext.menu.ColorMenu({
-        handler: function(cm, color) {
-            color_label.el.setStyle('background','#' + color );
-            color_lbl = color ;
-        }
-    });
-
     var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}});
 
-    var label_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true });
-
     var projects_box = new Ext.form.TextField({ hidden:true });
-
-    label_box.on('specialkey', function(f, e){
-        if(e.getKey() == e.ENTER){
-            if(f.getValue() != ''){
-                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
-                    function(response) {
-                        if ( response.success ) {
-                            store_label.load();
-                            Baseliner.message( _('Success'), response.msg );
-                        } else {
-                            Ext.Msg.show({
-                                title: _('Information'),
-                                msg: response.msg ,
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.INFO
-                            });
-                        }
-                    }
-
-                );
-            }
-        }
-    });
 
     var btn_by_project = new Ext.Toolbar.Button({
         text: _('By project'),
@@ -1502,69 +1376,14 @@
                         }
                     }
                 });
-
                 projects_box.setValue( projects_checked );
                 w.close();
             });
-
         }
     });
-
-    var tb = new Ext.Toolbar({
-        items: [
-                {
-                    text:   _('Pick a Color'),
-                    menu:   colorMenu
-                },
-                color_label,
-                blank_image,
-                label_box,
-                projects_box,
-                btn_add_label,
-                btn_delete_label,
-                '->'//,
-% #if ($c->stash->{can_admin_labels}) {
-                //btn_by_project,
-                //btn_choose_projects
-% #}
-        ]
-    });
-
     var render_color = function(value,meta,rec,rowIndex,colIndex,store) {
         return "<div width='15' style='border:1px solid #cccccc;background-color:" + value + "'>&nbsp;</div>" ;
     };
-
-    var check_labels_sm = new Ext.grid.CheckboxSelectionModel({
-        singleSelect: false,
-        sortable: false,
-        checkOnly: true
-    });
-
-    var grid_labels = new Ext.grid.GridPanel({
-        title : _('Labels'),
-        sm: check_labels_sm,
-        height: 250,
-        autoScroll: true,
-        header: true,
-        stripeRows: true,
-        enableHdMenu: false,
-        store: store_label,
-        cls:'topic_admin_grids',
-        viewConfig: {forceFit: true, scrollOffset: 2},
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        loadMask: true,
-        columns: [
-            { hidden: true, dataIndex:'id' },
-            check_labels_sm,
-            { header: _('Color'), dataIndex: 'color', width: 5, sortable: false, renderer: render_color },
-            { header: _('Label'), dataIndex: 'name', sortable: true },
-            { hidden: true, dataIndex:'active' }
-        ],
-        autoSizeColumns: true,
-        deferredRender:true,
-        tbar: tb
-    });
-
     function getStatuses(){
         var statuses_checked = new Array();
         check_status_sm.each(function(rec){
@@ -1580,33 +1399,6 @@
         });
         return categories_checked
     }
-
-    function getLabels(){
-        var labels_checked = new Array();
-        check_labels_sm.each(function(rec){
-            labels_checked.push(rec.get('id'));
-        });
-        return labels_checked
-    }
-
-    grid_labels.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if(columnIndex == 1){
-            var labels_checked = getLabels();
-            var categories_checked = getCategories();
-            //filtrar_topics(labels_checked, categories_checked);
-            init_buttons_label('enable');
-        }
-    });
-
-    grid_labels.on('headerclick', function(grid, columnIndex, e) {
-        if(columnIndex == 1){
-            var labels_checked = getLabels();
-            var categories_checked = getCategories();
-            //filtrar_topics(labels_checked, categories_checked);
-            init_buttons_label('enable');
-        }
-    });
-
 
     function load_cbx(form, rec){
         var expr = rec.data.expr_response_time.split(':');
@@ -1666,74 +1458,6 @@
         return str_expr;
     };
 
-    var panel = new Ext.FormPanel({
-        labelWidth: 75, // label settings here cascade unless overridden
-        url:'save-form.php',
-        frame:true,
-        title: 'Simple Form with FieldSets',
-        bodyCssClass: 'topic-admin-panel',
-        width: 400,
-        items: [
-
-        {
-        // column layout with 2 columns
-        layout:'column'
-        ,defaults:{
-            layout:'form'
-            ,border:false
-            ,xtype:'panel'
-            ,bodyCssClass: 'topic_admin_paddings'
-        }
-        ,items:[
-
-            ////////////{
-            ////////////// left column
-            ////////////columnWidth:0.50,
-            ////////////defaults:{anchor:'100%'}
-            ////////////,items:[
-            ////////////    grid_status
-            ////////////]
-            ////////////},
-            {
-            // right column
-            columnWidth:1,
-            defaults:{anchor:'100%'},
-            items:[
-                grid_categories
-            ]
-            }
-        ]
-        },
-        {
-        // column layout with 2 columns
-        layout:'column'
-        ,defaults:{
-            layout:'form'
-            ,border:false
-            ,xtype:'panel'
-             ,bodyCssClass: 'topic_admin_paddings'
-        }
-        ,items:[{
-            // left column
-            columnWidth:1,
-            defaults:{anchor:'100%'}
-            ,items:[
-                grid_labels
-            ]
-            },
-            {
-            // right column
-            columnWidth:0.50,
-            defaults:{anchor:'100%'},
-            items:[
-                //grid_status
-            ]
-            }
-        ]
-        }
-        ]
-    });
-
     var category_export = function(sel){
         var sel = check_categories_sm.getSelections();
         var ids = [];
@@ -1792,7 +1516,5 @@
     store_status.load();
     store_category.load();
 
-    store_label.load();
-
-    return panel;
+    return grid_categories;
 })
