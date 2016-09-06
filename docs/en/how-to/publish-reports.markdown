@@ -1,6 +1,6 @@
 
 ---
-title: Publish a report
+title: Publish a static report
 index: 1
 icon: report.svg
 ---

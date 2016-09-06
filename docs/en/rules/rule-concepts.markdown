@@ -97,7 +97,7 @@ General type.
 
 **Report**
 
-Create a report with Perl code.
+Create a report with Perl code. For more information, there is a how-to called [Create a report](how-to/create-reports).
 
 **Webservice**
 

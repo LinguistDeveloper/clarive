@@ -89,6 +89,99 @@ sub init_fieldlets_tasks {
     Baseliner::Core::Registry->get('fieldlet.system.title')->registry_node->raw;
 }
 
+sub init_report_tasks {
+    my ( $self, $rule_name, $rule_owner ) = @_;
+
+    _fail _loc('Rule not found') unless $rule_name;
+    _fail _loc('User not found') unless $rule_owner;
+
+    $rule_name = "'" . $rule_name . "'";
+    my @node;
+    my @initial_elements;
+
+    push @initial_elements, {
+        title => _loc('Security'),
+        code  => <<"END_MSG"
+\$stash->{report_security} = sub {
+    my (\%p) = \@_;
+    ## For instance: Only visible for owner
+    if ( \$p{username} eq '$rule_owner' ) {
+      return 1;
+    }
+    return 0;
+};
+END_MSG
+    };
+
+    push @initial_elements, {
+        title => 'Meta',
+        code  => <<"END_MSG"
+#For instance: Showing Mid and Title of topics
+\$stash->{report_meta} = sub {
+    {
+        fields => {
+            ids => [ 'id', 'title'],
+            columns => [
+                {id => 'id',  text => 'Mid'},
+                {id => 'title',     text => 'Title'}
+            ],
+        },
+        report_name => _loc($rule_name),
+        report_type => 'custom',
+        hide_tree => \\1,
+    }
+};
+END_MSG
+    };
+
+    push @initial_elements, {
+        title => _loc('Data'),
+        code  => <<'END_MSG'
+#Continue Same example
+
+#In $stash->{report_params} params that come are:   $start,$limit,$sort,$dir,$query
+# You can treat them as you need
+
+$stash->{report_data} = sub{
+    my $p = $stash->{report_params};
+    my ( $start, $limit, $sort, $dir, $query ) = @{$p}{qw(start limit sort dir query)};
+
+    my $where = {};
+    my $rs = mdb->topic->find( $where );
+    my $cnt = $rs->count;
+
+    my @rows;
+    while ( my $row = $rs->next() ) {
+        push @rows,
+            {
+                id        => $row->{mid},
+                title     => $row->{title}
+            };
+    }
+    return { data => \@rows, cnt => $cnt };
+};
+END_MSG
+    };
+
+    foreach my $element (@initial_elements) {
+        push @node, map {
+            {
+                leaf           => \1,
+                text           => $element->{title},
+                key            => $_->{key},
+                icon           => $_->{icon},
+                palette        => \0,
+                run_sub        => \1,
+                data           => { code => $element->{code} },
+                holds_children => \0,
+                nested         => \0
+            }
+            } Baseliner::Core::Registry->get('statement.perl.code')
+            ->registry_node->raw;
+    }
+    return @node;
+}
+
 sub tree_format {
     my ($self, @tree_in)=@_;
     my @tree_out;
@@ -154,7 +247,9 @@ sub build_tree {
         _fail _loc('Could not find rule %1', $id_rule) unless $rule;
     }
 
+    my $rule_name = $rule->{rule_name};
     my $rule_tree_json = $rule->{rule_tree};
+    my $rule_owner = $rule->{username};
 
     if( $rule_tree_json ) {
         my $rule_tree = Util->_decode_json( $rule_tree_json );
@@ -168,6 +263,9 @@ sub build_tree {
         }
         if ( $rule->{rule_type} eq 'form') {
             @tf = $self->init_fieldlets_tasks;
+        }
+        if ( $rule->{rule_type} eq 'report') {
+            @tf = $self->init_report_tasks($rule_name, $rule_owner);
         }
         $self->write_rule(
             id_rule    => $id_rule,

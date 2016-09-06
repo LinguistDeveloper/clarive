@@ -2274,7 +2274,7 @@ msgstr "El usuario ya existe, intoduce otro usuario"
 msgid "Error adding User: %1"
 msgstr "Error grabando usuario: %1"
 
-#: lib/Baseliner/Controller/User.pm
+#: lib/Baseliner/Controller/User.pm lib/Baseliner/Model/Rules.pm
 msgid "User not found"
 msgstr "Usuario no encontrado"
 
@@ -2566,6 +2566,21 @@ msgstr "Error WSDL Ejecutando la Regla desde un WS"
 #: lib/Baseliner/Model/Rules.pm
 msgid "Webservice rule call"
 msgstr "Llamada a una regla Webservice"
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Rule not found"
+msgstr "Regla no encontrada"
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Security"
+msgstr "Seguridad"
+
+#: lib/Baseliner/Model/Rules.pm root/ci/DBDest.js root/comp/ci-editor.js
+#: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
+#: root/comp/ci-viewer.js root/comp/log_grid.js root/comp/project_grid.mas
+#: root/forms/web_request.js root/site/common.js
+msgid "Data"
+msgstr "Datos"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Could not find rule %1"
@@ -6156,13 +6171,6 @@ msgstr "Todos los ficheros"
 #: root/ci/DBDest.js root/comp/dashboard_job.html root/forms/sed.js
 msgid "Job Items"
 msgstr "Elementos del pase"
-
-#: root/ci/DBDest.js root/comp/ci-editor.js root/comp/ci-grid.js
-#: root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
-#: root/comp/log_grid.js root/comp/project_grid.mas root/forms/web_request.js
-#: root/site/common.js
-msgid "Data"
-msgstr "Datos"
 
 #: root/ci/DBDest.js root/ci/balix_agent.js root/ci/clax_agent.js
 #: root/ci/dbi_connection.js root/ci/ftp_agent.js root/ci/oracle_connection.js
@@ -14456,9 +14464,6 @@ msgstr "destino"
 
 #~ msgid "Migration source not found: %1. Rolling back..."
 #~ msgstr "Fuente de la migración no encontrada: %1. Marcha atrás..."
-
-#~ msgid "Rule not found"
-#~ msgstr "Regla no encontrada"
 
 #~ msgid "Rows {0} - {1} de {2}"
 #~ msgstr "Filas {0} - {1} de {2}"
