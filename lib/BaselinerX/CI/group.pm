@@ -1,6 +1,8 @@
 package BaselinerX::CI::group;
 use Baseliner::Moose;
 with 'Baseliner::Role::CI::Group';
+with 'Baseliner::Role::CI::Project';
+with 'Baseliner::Role::CI::Infrastructure';
 
 sub icon { '/static/images/icons/group.svg' }
 
@@ -12,6 +14,8 @@ sub rel_type {
         contents => [ from_mid => 'group_contents' ] ,
     };
 }
+
+sub ping {}
 
 our $AUTOLOAD;
 sub AUTOLOAD {
