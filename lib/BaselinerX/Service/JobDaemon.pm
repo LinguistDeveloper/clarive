@@ -49,7 +49,7 @@ register 'config.job.daemon' => {
 
 # daemon - listens for new jobs
 sub job_daemon {
-    my ($self,$c,$config)=@_;
+    my ( $self, $c, $config ) = @_;
     my $freq = $config->{frequency};
     my %discrepancies;  # keep a count on these
 
@@ -86,69 +86,98 @@ sub job_daemon {
                 ],
 
             },
-        # Scheduled chain (RUN and now<>0 )
-            {
-                schedtime        => { '$lte', "$now" },
-                maxstarttime     => { '$gt',  "$now" },
-                status           => 'READY',
-                step             => 'RUN',
-                now              => { '$ne' => 1 }
+
+            # Scheduled chain (RUN and now<>0 )
+            {   schedtime    => { '$lte', "$now" },
+                maxstarttime => { '$gt',  "$now" },
+                status       => 'READY',
+                step         => 'RUN',
+                now => { '$ne' => 1 }
             }
         );
-        for my $roll ( @query_roll ) {
-            $roll->{host} = mdb->in([$hostname,'',undef]) if $config->{job_host_affinity};
+        for my $roll (@query_roll) {
+            $roll->{host} = mdb->in( [ $hostname, '', undef ] ) if $config->{job_host_affinity};
             my $more_jobs = 1;
             my $job_doc;
-    #        my @docs = ci->job->find( $roll )->all;
-            while ( $more_jobs ) {
-                my $sem = Baseliner::Sem->new( key=>'job_daemon', who=>"job_daemon", internal=>1, disp_id => $config->{id} );
+            while ($more_jobs) {
+                my $sem = Baseliner::Sem->new(
+                    key      => 'job_daemon',
+                    who      => "job_daemon",
+                    internal => 1,
+                    disp_id  => $config->{id}
+                );
                 $sem->take;
-                ($job_doc) = ci->job->find( $roll )->limit(1)->all;
-                if ( $job_doc ) {
-                    local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI
+                ($job_doc) = ci->job->find($roll)->limit(1)->all;
+                if ($job_doc) {
+                    local $Baseliner::_no_cache = 1;    # make sure we get a fresh CI
                     my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
-                    if( $job->status ne $job_doc->{status} ) {
-                        _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
-                        if( $discrepancies{ $job->mid } > 10 ) {
+                    if ( $job->status ne $job_doc->{status} ) {
+                        _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3",
+                            $job->name, $job->status, $job_doc->{status} );
+                        if ( $discrepancies{ $job->mid } > 10 ) {
+
                             #$job->save; # fixes the discrepancy
                             delete $discrepancies{ $job->mid };
-                        } else {
+                        }
+                        else {
                             $discrepancies{ $job->mid }++;
                         }
-                    } else {
+                    }
+                    else {
                         _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
+
                         # set job pid to 0 to avoid checking until it sets it's own pid
-                        $job->update( status=>'RUNNING', pid=>0, host => $hostname );
+                        $job->update( status => 'RUNNING', pid => 0, host => $hostname );
 
                         # get proc mode from job bl
-                        my $mode = $^O eq 'Win32'
+                        my $mode
+                            = $^O eq 'Win32'
                             ? 'spawn'
-                            : Baseliner->model('ConfigStore')->get('config.job.daemon', bl=>$job->bl || '*' )->{mode} || 'spawn';
-                        my $step = $job->step;
+                            : BaselinerX::Type::Model::ConfigStore->new->get( 'config.job.daemon',
+                            bl => $job->bl || '*' )->{mode}
+                            || 'spawn';
+                        my $step    = $job->step;
                         my $loghome = $ENV{BASELINER_LOGHOME};
                         $loghome ||= $ENV{BASELINER_HOME} . './logs';
                         _mkpath $loghome;
-                        my $logfile = File::Spec->catfile( $ENV{BASELINER_LOGHOME} || $ENV{BASELINER_HOME} || '.', $job->name . '.log' );
+                        my $logfile = File::Spec->catfile( $ENV{BASELINER_LOGHOME} || $ENV{BASELINER_HOME} || '.',
+                            $job->name . '.log' );
 
                         # launch the job proc
-                        if( $mode eq 'spawn' ) {
+                        if ( $mode eq 'spawn' ) {
                             _log "Spawning job (mode=$mode)";
-                            my $pid = $self->runner_spawn( mid=>$job->mid, runner=>$job->runner, step=>$step, jobid=>$job->mid, logfile=>$logfile );
-                        } elsif( $mode =~ /fork|detach/i ) {
-                            _log "Forking job " . $job->mid . " (mode=$mode), logfile=$logfile";
-                            _log _loc('Precompile check for job %1 rule %2', $job->name, $job->id_rule);
-                            $self->precompile_rule( $job->id_rule );
-                            $self->runner_fork( mid=>$job->mid, runner=>'Core', step=>$step, jobid=>$job->jobid, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
-                        } else {
-                            _throw _loc("Unrecognized mode '%1'", $mode );
+                            my $pid = $self->runner_spawn(
+                                mid     => $job->mid,
+                                runner  => $job->runner,
+                                step    => $step,
+                                jobid   => $job->mid,
+                                logfile => $logfile
+                            );
                         }
-                        ;
+                        elsif ( $mode =~ /fork|detach/i ) {
+                            _log "Forking job " . $job->mid . " (mode=$mode), logfile=$logfile";
+                            _log _loc( 'Precompile check for job %1 rule %2', $job->name, $job->id_rule );
+                            $self->precompile_rule( $job->id_rule );
+                            $self->runner_fork(
+                                mid         => $job->mid,
+                                runner      => 'Core',
+                                step        => $step,
+                                jobid       => $job->jobid,
+                                logfile     => $logfile,
+                                mode        => $mode,
+                                unified_log => $config->{unified_log}
+                            );
+                        }
+                        else {
+                            _throw _loc( "Unrecognized mode '%1'", $mode );
+                        }
                         _log("Reaping children..."), $self->reap_children if $mode =~ /fork|detach/;
                     }
-                } else {
+                }
+                else {
                     $more_jobs = 0;
                 }
-                if ( $sem ) {
+                if ($sem) {
                     $sem->release;
                 }
             }
@@ -161,6 +190,7 @@ sub job_daemon {
     }
     _log "Job daemon stopped.";
 }
+
 
 sub runner_spawn {
     my ($self, %p ) =@_;
