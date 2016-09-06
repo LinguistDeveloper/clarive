@@ -177,7 +177,7 @@ sub process_queue {
             );
             # need to deactivate the message before sending it
             for my $id ( _array $msg->{id_list} ) {
-                Baseliner::Model::Messaging->new->delivered( id=>$id, result=>$result );
+                Baseliner::Model::Messaging->new->delivered( id=>$id, result=>$result ) if $result;
             }
 
         } catch {
@@ -293,9 +293,7 @@ sub send {
         );
     }
 
-    $self->_send($msg);
-
-    return $self;
+    return $self->_send($msg);
 }
 
 sub filter_queue {
@@ -345,16 +343,20 @@ sub _init_connection {
 
 sub _send {
     my $self = shift;
-    my ( $msg ) = @_;
+    my ($msg) = @_;
+
+    my $result;
 
     try {
-        $msg->send('smtp');
+        $result = $msg->send('smtp');
     }
     catch {
         my $e = shift;
 
         _error "send failed: $e\n";
     };
+
+    return $result;
 }
 
 sub _build_msg {
