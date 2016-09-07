@@ -3,10 +3,18 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#F7A808;}
+	.st0{fill:#3FA9F5;}
 	.st1{fill:#FFFFFF;}
 </style>
-<circle class="st0" cx="8" cy="8" r="8"/>
-<rect x="7" y="3" class="st1" width="2" height="7"/>
-<rect x="7" y="11" class="st1" width="2" height="2"/>
+<g id="Layer_2">
+	<circle class="st0" cx="8" cy="8" r="8"/>
+</g>
+<g>
+	<path class="st1" d="M11,4l1,1v5h-2V5H7V4H11 M12,3H6v3h3v5h4V5L12,3L12,3z"/>
+</g>
+<polygon class="st1" points="11,3 11,6 13,6 "/>
+<g>
+	<path class="st1" d="M8,6l1,1v5H4V6H8 M8.3,5H3v8h7V6L8.3,5z"/>
+</g>
+<polygon class="st1" points="8,5 8,8 10,8 "/>
 </svg>

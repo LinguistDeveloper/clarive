@@ -6,7 +6,12 @@
 	.st0{fill:#F7A808;}
 	.st1{fill:#FFFFFF;}
 </style>
-<circle class="st0" cx="8" cy="8" r="8"/>
-<rect x="7" y="3" class="st1" width="2" height="7"/>
-<rect x="7" y="11" class="st1" width="2" height="2"/>
+<g id="Layer_2">
+	<circle class="st0" cx="8" cy="8" r="8"/>
+</g>
+<g id="Layer_1_1_">
+	<g>
+		<path class="st1" d="M8.4,8.6c-0.8,0-4,0-4.2,0l2.2-5h4l-1,3c0.8,0,3,0,3,0l-5.2,7.2C7.2,13.8,8.2,8.9,8.4,8.6z"/>
+	</g>
+</g>
 </svg>

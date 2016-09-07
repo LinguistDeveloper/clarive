@@ -3,10 +3,15 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#F7A808;}
-	.st1{fill:#FFFFFF;}
+	.st0{fill:#3FA9F5;}
+	.st1{fill:#F7F8F9;}
+	.st2{fill:none;}
+	.st3{fill:none;stroke:#F7F8F9;stroke-width:0.8706;stroke-miterlimit:10;}
 </style>
 <circle class="st0" cx="8" cy="8" r="8"/>
-<rect x="7" y="3" class="st1" width="2" height="7"/>
-<rect x="7" y="11" class="st1" width="2" height="2"/>
+<rect x="2" y="6" class="st1" width="2" height="5"/>
+<polyline class="st1" points="5,9 5,11.2 9,13 9,4.2 5,6 5,9 "/>
+<line class="st2" x1="10" y1="8.5" x2="10" y2="6"/>
+<path class="st3" d="M11.4,5c2,2.1,2,5.4-0.1,7.4"/>
+<path class="st3" d="M9.8,6c1.5,1.6,1.5,4.1-0.1,5.6"/>
 </svg>

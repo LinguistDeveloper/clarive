@@ -7,6 +7,5 @@
 	.st1{fill:#FFFFFF;}
 </style>
 <circle class="st0" cx="8" cy="8" r="8"/>
-<rect x="7" y="3" class="st1" width="2" height="7"/>
-<rect x="7" y="11" class="st1" width="2" height="2"/>
+<polygon class="st1" points="9.7,6.3 13.3,6.8 10.6,9.4 11.3,13.1 8,11.3 4.7,13 5.3,9.4 2.7,6.8 6.4,6.2 8,2.9 "/>
 </svg>
