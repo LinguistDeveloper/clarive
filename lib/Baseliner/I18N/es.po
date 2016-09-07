@@ -6991,13 +6991,14 @@ msgstr "Error de escritura al catálogo"
 #: root/comp/catalog/item_deploy.js root/comp/catalog/manual_deploy.js
 #: root/comp/ci-editor.js root/comp/code_editor.js
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
-#: root/comp/daemon_grid.js root/comp/job_calendar_grid.js
-#: root/comp/job_calendar_slot_edit.js root/comp/label_admin.js
-#: root/comp/lifecycle/report_edit.js root/comp/notifications.js
-#: root/comp/role_detail.js root/comp/scheduler_grid.js root/comp/sms.js
-#: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/user_info.mas root/site/common.js root/site/explorer.js
+#: root/comp/daemon_grid.js root/comp/job_calendar_editor.js
+#: root/comp/job_calendar_grid.js root/comp/job_calendar_slot_edit.js
+#: root/comp/label_admin.js root/comp/lifecycle/report_edit.js
+#: root/comp/notifications.js root/comp/role_detail.js
+#: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
+#: root/comp/user_grid.js root/comp/user_info.mas root/site/common.js
+#: root/site/explorer.js
 msgid "Close"
 msgstr "Cerrar"
 
@@ -7969,10 +7970,6 @@ msgstr "Ficheros JES"
 #: root/comp/jes_viewer.mas
 msgid "JES Spool"
 msgstr "Spool JES"
-
-#: root/comp/job_calendar_editor.js
-msgid "Calendar Info"
-msgstr "Datos del Calendario"
 
 #: root/comp/job_calendar_editor.js root/comp/notifications.js
 #: root/fields/system/html/field_priority.html
@@ -14450,6 +14447,12 @@ msgstr "destino"
 
 #~ msgid "Missing 'Categories' in search configuration"
 #~ msgstr "No está 'Categorías' en la configuración de búsqueda"
+
+#~ msgid "Calendar Info"
+#~ msgstr "Datos del Calendario"
+
+#~ msgid "Maximum number of topics to list"
+#~ msgstr "Número máximo de tópicos a listar"
 
 #~ msgid "Detach Files"
 #~ msgstr "Desligar Ficheros"
