@@ -264,7 +264,7 @@
             }, {
                 id: 'btn_save',
                 text: _('Save'),
-                icon: '/static/images/icons/save.png',
+                icon: '/static/images/icons/action_save.svg',
                 handler: function() {
                     var form = Ext.getCmp('labelForm').getForm();
 

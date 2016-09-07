@@ -57,7 +57,7 @@ ok $json->{success}, 'Rule added!';
 
 ## Change the rule during edition process_
 simulate_statements_change();
-my $stmts = '[{"attributes":{"icon":"/static/images/icons/cog.png","palette":false,"text":"DO","holds_children":true,"nested":0,"key":"statement.perl.do","leaf":false,"loader":{"baseParams":{},"dataUrl":"/rule/palette","events":{"loadexception":true,"load":true,"beforeload":true},"transId":false},"id":"xnode-3846","name":"DO","expanded":false},"children":[]}]';
+my $stmts = '[{"attributes":{"icon":"/static/images/icons/cog.svg","palette":false,"text":"DO","holds_children":true,"nested":0,"key":"statement.perl.do","leaf":false,"loader":{"baseParams":{},"dataUrl":"/rule/palette","events":{"loadexception":true,"load":true,"beforeload":true},"transId":false},"id":"xnode-3846","name":"DO","expanded":false},"children":[]}]';
 $url = '/rule/stmts_save';
 %data = ('id_rule' => $id_rule, 'ignore_dsl_errors' => '0', 'old_ts' => '2014-03-14 13:00:00', 'stmts' => $stmts);
 $ag->post( URL($url), \%data );

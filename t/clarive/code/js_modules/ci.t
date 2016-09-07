@@ -278,7 +278,7 @@ subtest 'ci.createClass: creates a new class with custom icon' => sub {
         qq{
         var ci = require('cla/ci');
         ci.createClass("$class_name", {
-            icon: 'my-icon.png'
+            icon: 'my-icon.svg'
         });
 
         var obj = ci.build("$class_name");
@@ -286,7 +286,7 @@ subtest 'ci.createClass: creates a new class with custom icon' => sub {
     }
     );
 
-    is $ret, 'my-icon.png';
+    is $ret, 'my-icon.svg';
 };
 
 subtest 'ci.createClass: creates a new class with superclass' => sub {

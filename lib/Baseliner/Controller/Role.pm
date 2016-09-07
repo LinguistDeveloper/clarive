@@ -14,10 +14,16 @@ use BaselinerX::Type::Model::Actions;
 
 with 'Baseliner::Role::ControllerValidator';
 
-register 'action.admin.role' => { name=>'Admin Roles' };
-register 'menu.admin.role' => { label => 'Roles', url_comp=>'/role/grid', actions=>['action.admin.role'], title=>'Roles', index=>81,
-    icon=>Util->icon_path('role.svg') };
-register 'menu.admin.user_role_separator' => { separator=>1, index=>85 };
+register 'action.admin.role' => { name => 'Admin Roles' };
+register 'menu.admin.role' => {
+    label    => 'Roles',
+    url_comp => '/role/grid',
+    actions  => ['action.admin.role'],
+    title    => 'Roles',
+    index    => 81,
+    icon     => Util->icon_path('role')
+};
+register 'menu.admin.user_role_separator' => { separator => 1, index => 85 };
 
 sub role_detail_json : Local {
     my ($self,$c) = @_;

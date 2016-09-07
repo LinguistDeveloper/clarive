@@ -280,7 +280,7 @@ subtest 'get_where: builds correct string equals where' => sub {
                             'type'     => 'value',
                             'children' => [],
                             'field'    => 'string',
-                            'icon'     => '/static/images/icons/where.png',
+                            'icon'     => '/static/images/icons/where.svg',
                             'value'    => 'foo',
                             'text'     => '= foo'
                         }
@@ -314,7 +314,7 @@ subtest 'get_where: builds correct string not equals where' => sub {
                             'type'     => 'value',
                             'children' => [],
                             'field'    => 'string',
-                            'icon'     => '/static/images/icons/where.png',
+                            'icon'     => '/static/images/icons/where.svg',
                             'value'    => 'foo',
                             'text'     => '<> foo'
                         }
@@ -348,7 +348,7 @@ subtest 'get_where: builds correct string like where' => sub {
                             'type'     => 'value',
                             'children' => [],
                             'field'    => 'string',
-                            'icon'     => '/static/images/icons/where.png',
+                            'icon'     => '/static/images/icons/where.svg',
                             'value'    => 'foo',
                             'text'     => 'LIKE foo'
                         }
@@ -382,7 +382,7 @@ subtest 'get_where: builds correct string not like where' => sub {
                             'type'     => 'value',
                             'children' => [],
                             'field'    => 'string',
-                            'icon'     => '/static/images/icons/where.png',
+                            'icon'     => '/static/images/icons/where.svg',
                             'value'    => 'foo',
                             'text'     => 'NOT LIKE foo'
                         }
@@ -416,7 +416,7 @@ subtest 'get_where: builds correct string in where' => sub {
                             'type'     => 'value',
                             'children' => [],
                             'field'    => 'string',
-                            'icon'     => '/static/images/icons/where.png',
+                            'icon'     => '/static/images/icons/where.svg',
                             'value'    => 'foo,bar,baz',
                             'text'     => 'IN foo'
                         }
@@ -450,7 +450,7 @@ subtest 'get_where: builds correct string not in where' => sub {
                             'type'     => 'value',
                             'children' => [],
                             'field'    => 'string',
-                            'icon'     => '/static/images/icons/where.png',
+                            'icon'     => '/static/images/icons/where.svg',
                             'value'    => 'foo,bar,baz',
                             'text'     => 'NOT IN foo'
                         }
