@@ -356,11 +356,23 @@ sub index : Private {
         $c->stash->{show_js_reload} = $perms->user_has_action( username => $c->username, action => 'action.development' );
         $c->stash->{can_change_password} = $perms->user_has_action( username => $c->username, action => 'action.change_password' ) && $c->config->{authentication}{default_realm} eq 'none';
         #$c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
+
         # TLC
         if( my $ccc = $Baseliner::TLC_MSG ) {
-            my $tlc_msg = $ccc->( scalar ci->user->find({active => mdb->true, username => {'$ne' => 'root'}})->all);
-            if( $tlc_msg  ) {
-                unshift @{ $c->stash->{menus} }, '"<span style=\'font-weight: bold;color: #f34\'>'.$tlc_msg. '</span>"';
+            my $tlc = $ccc->();
+            if( ref $tlc eq 'HASH' ) {
+                if( exists $tlc->{lic} ) {
+                    unshift @{ $c->stash->{menus} },
+                        '"<span style=\'font-weight: bold;color: #f34\'>'
+                        . sprintf( '%s (%d &gt; %d)', $tlc->{msg}, $tlc->{cnt}, $tlc->{lic} )
+                        . '</span>"';
+                }
+                elsif( exists $tlc->{msg} ) {
+                    unshift @{ $c->stash->{menus} },
+                        '"<span style=\'font-weight: bold;color: #f34\'>'
+                        . $tlc->{msg}
+                        . '</span>"';
+                }
             }
         }
         my @features_list = Baseliner->features->list;
