@@ -1,5 +1,6 @@
 (function(params){
     var data = params.data || {};
+    Cla.help_push({ title:_('List topics (Dashboard)'), path:'rules/palette/dashlets/list-topics' });
     var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
     var common = params.common_options || Cla.dashlet_common(params);
@@ -46,7 +47,15 @@
               bodyStyle: 'background:transparent;',
               items: [
                 { xtype:'textarea', anchor:'100%', fieldLabel: _('List of fields to view in grid'), name: 'fields', value: data.fields },
-                { xtype:'numberfield', fieldLabel: _('Maximum number of topics to list'), allowBlank: false, name: 'limit', value: data.limit || 100},
+                {
+                    xtype: 'spinnerfield',
+                    fieldLabel: _('Maximum number of topics to list (0 Unlimited)'),
+                    name: 'limit',
+                    minValue: 0,
+                    allowDecimals: false,
+                    incrementValue: 1,
+                    value: data.limit || 100
+                },
                 { xtype:'textfield', fieldLabel: _('Sort By'), name: 'sort', value: data.sort },
                 new Baseliner.ComboDouble({ forceSelection: true, allowBlank: false, fieldLabel: _('Sort Order'), editable: false, name: 'dir', value: data.dir || '', data: [
                     ['desc', _('DESC')],

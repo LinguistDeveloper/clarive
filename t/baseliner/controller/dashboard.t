@@ -535,6 +535,72 @@ subtest 'list_topics: filters topics by project' => sub {
     is $data->[0]->{title}, 'My Topic';
 };
 
+subtest 'list_topics: returns all topics without limit' => sub {
+    _setup();
+
+    my $project1 = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => [$project1, $project2]);
+
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+    my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category, title => 'My Topic' );
+    my $topic_mid2 = TestSetup->create_topic( project => $project2, id_category => $id_category, title => 'My Topic2' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => { limit => 0 } } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is @$data, 2;
+};
+
+subtest 'list_topics: returns limited topics' => sub {
+    _setup();
+
+    my $project1 = TestUtils->create_ci_project;
+    my $project2 = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.category.view',
+            }
+        ]
+    );
+
+    my $developer = TestSetup->create_user(id_role => $id_role, project => [$project1, $project2]);
+
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+    my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category, title => 'My Topic' );
+    my $topic_mid2 = TestSetup->create_topic( project => $project2, id_category => $id_category, title => 'My Topic2' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $developer->username, req => { params => { limit => 1 } } );
+
+    $controller->list_topics($c);
+
+    my $stash = $c->stash;
+
+    my $data = $stash->{json}->{data};
+
+    is @$data, 1;
+};
+
 subtest 'topics_by_field: counts topics by status' => sub {
     _setup();
 

@@ -66,6 +66,8 @@ icon: report_default
 
 ### Número máximo de tópicos a listar
 * Establece el número máximo de tópicos que se van a mostrar en la tabla.
+* Por defecto: 100
+* Ilimitado: 0
 
 ### Ordenar por
 

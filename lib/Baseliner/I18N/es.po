@@ -11550,6 +11550,10 @@ msgid "Totals"
 msgstr ""
 
 #: root/dashlets/list_topics_config.js
+msgid "List topics (Dashboard)"
+msgstr "Listar topicos (Dashboard)"
+
+#: root/dashlets/list_topics_config.js
 #: root/dashlets/number_of_topics_chart_config.js
 #: root/dashlets/swarm_config.js root/dashlets/topics_by_date_line_config.js
 #: root/dashlets/topics_gauge_config.js
@@ -11579,8 +11583,8 @@ msgid "List of fields to view in grid"
 msgstr "Lista de campos a visualizar en el grid"
 
 #: root/dashlets/list_topics_config.js
-msgid "Maximum number of topics to list"
-msgstr "Número máximo de tópicos a listar"
+msgid "Maximum number of topics to list (0 Unlimited)"
+msgstr "Número máximo de tópicos a listar (0 Ilimitado)"
 
 #: root/dashlets/list_topics_config.js
 #: root/fields/templates/config/list_topics.js
@@ -14383,6 +14387,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Maximum number of topics to list"
+#~ msgstr "Número máximo de tópicos a listar"
 
 #~ msgid "Detach Files"
 #~ msgstr "Desligar Ficheros"
