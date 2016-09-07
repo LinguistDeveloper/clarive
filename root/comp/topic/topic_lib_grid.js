@@ -1065,13 +1065,11 @@ Cla.topic_grid = function(params){
         if ( !value || value == undefined ) return '';
         //if( !value  ) return '';
 
-        //#################################################Ñapa
         if ( value[0] && !value[0].mid ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
         };
-        //#####################################################
 
         Ext.each( value, function(topic){
             arr.push( Baseliner.topic_name({
