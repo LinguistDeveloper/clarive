@@ -3340,17 +3340,17 @@ subtest 'category_list: returns all categories' => sub {
     is $c->stash->{json}->{totalCount}, 3;
 };
 
-subtest 'filters_list: returns labels ordered by seq' => sub {
+subtest 'filters_list: returns labels ordered by priority' => sub {
     _setup();
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role();
     my $user
         = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $label_id  = TestSetup->create_label( name => "MyLabel",  seq => 5 );
-    my $label_id2 = TestSetup->create_label( name => "MyLabel2", seq => 4 );
-    my $label_id3 = TestSetup->create_label( name => "MyLabel3", seq => 3 );
-    my $label_id4 = TestSetup->create_label( name => "MyLabel4", seq => 2 );
-    my $label_id5 = TestSetup->create_label( name => "MyLabel5", seq => 1 );
+    my $label_id  = TestSetup->create_label( name => "MyLabel",  priority => 4 );
+    my $label_id2 = TestSetup->create_label( name => "MyLabel2", priority => 3 );
+    my $label_id3 = TestSetup->create_label( name => "MyLabel3", priority => 5 );
+    my $label_id4 = TestSetup->create_label( name => "MyLabel4", priority => 1 );
+    my $label_id5 = TestSetup->create_label( name => "MyLabel5", priority => 2 );
 
     my $controller = _build_controller();
 
@@ -3361,13 +3361,37 @@ subtest 'filters_list: returns labels ordered by seq' => sub {
     $controller->filters_list($c);
 
     my ($labels) = grep { $_->{text} eq 'Labels' } @{ $c->stash->{json} };
-    my $seqs = $labels->{children};
+    my $priority = $labels->{children};
 
-    is $seqs->[0]->{seq}, 1;
-    is $seqs->[1]->{seq}, 2;
-    is $seqs->[2]->{seq}, 3;
-    is $seqs->[3]->{seq}, 4;
-    is $seqs->[4]->{seq}, 5;
+    is $priority->[0]->{priority}, 5;
+    is $priority->[1]->{priority}, 4;
+    is $priority->[2]->{priority}, 3;
+    is $priority->[3]->{priority}, 2;
+    is $priority->[4]->{priority}, 1;
+};
+
+subtest 'report_csv: returns label name without id and color' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $data = {
+        rows    => [ { labels => '12;MyLabel;#FFFFF'}],
+        columns => [
+            {   id   => "labels",
+                name => "labels",
+            }
+        ]
+    };
+    $data = _encode_json($data);
+
+    my $c = _build_c( req => { params => { data_json => $data } } );
+
+    $controller->report_csv($c);
+    my $serve_body = $c->stash->{serve_body};
+
+    like $serve_body, qr/MyLabel/;
+    unlike $serve_body, qr/12;MyLabel;#FFFFF/;
 };
 
 subtest 'generate_menus: generates empty menu' => sub {

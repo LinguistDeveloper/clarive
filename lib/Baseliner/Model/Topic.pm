@@ -455,6 +455,9 @@ sub build_sort {
     elsif ( $sort eq 'topic_mid' ) {
         $order_by = { _id => $dir };
     }
+    elsif ( $sort eq 'labels' ) {
+        $order_by = { '_sort.labels_max_priority' => $dir };
+    }
     else {
         $order_by = { '_sort.' . $sort => $dir };
     }

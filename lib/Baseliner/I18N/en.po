@@ -1045,7 +1045,8 @@ msgid "Admin labels"
 msgstr ""
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Topic.pm
-#: lib/BaselinerX/Fieldlets.pm root/comp/label_admin.js root/site/model.js
+#: lib/BaselinerX/Fieldlets.pm root/comp/label_admin.js
+#: root/comp/topic/topic_lib_grid.js root/site/model.js
 msgid "Labels"
 msgstr ""
 
@@ -1054,7 +1055,7 @@ msgid "User (%1) does not have permissions to attach a label"
 msgstr ""
 
 #: lib/Baseliner/Controller/Label.pm
-msgid "Labels assigned"
+msgid "Label assigned"
 msgstr ""
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Topic.pm
@@ -6420,7 +6421,7 @@ msgstr ""
 msgid "Baseline ID"
 msgstr "Entorno ID"
 
-#: root/ci/bl.js root/ci/status.js root/comp/label_admin.js root/comp/sem.js
+#: root/ci/bl.js root/ci/status.js root/comp/sem.js
 msgid "Sequence"
 msgstr ""
 
@@ -7970,8 +7971,8 @@ msgstr ""
 msgid "JES Spool"
 msgstr ""
 
-#: root/comp/job_calendar_editor.js root/comp/notifications.js
-#: root/fields/system/html/field_priority.html
+#: root/comp/job_calendar_editor.js root/comp/label_admin.js
+#: root/comp/notifications.js root/fields/system/html/field_priority.html
 #: root/fields/system/js/field_priority.js
 msgid "Priority"
 msgstr ""
@@ -13741,7 +13742,7 @@ msgid "Invalid label name"
 msgstr ""
 
 #: root/site/common.js
-msgid "Invalid sequence"
+msgid "Invalid priority"
 msgstr ""
 
 #: root/site/common.js

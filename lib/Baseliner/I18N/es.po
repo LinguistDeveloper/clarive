@@ -1059,7 +1059,8 @@ msgid "Admin labels"
 msgstr "Administración de etiquetas"
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Topic.pm
-#: lib/BaselinerX/Fieldlets.pm root/comp/label_admin.js root/site/model.js
+#: lib/BaselinerX/Fieldlets.pm root/comp/label_admin.js
+#: root/comp/topic/topic_lib_grid.js root/site/model.js
 msgid "Labels"
 msgstr "Etiquetas"
 
@@ -1068,8 +1069,8 @@ msgid "User (%1) does not have permissions to attach a label"
 msgstr "El usuario (%1) no tiene permisos para adjuntar etiquetas"
 
 #: lib/Baseliner/Controller/Label.pm
-msgid "Labels assigned"
-msgstr "Etiquetas asignadas"
+msgid "Label assigned"
+msgstr "Etiqueta asignada"
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Topic.pm
 msgid "Topic not found: %1"
@@ -6494,7 +6495,7 @@ msgstr "Tamaño de los trozos"
 msgid "Baseline ID"
 msgstr "Entorno ID"
 
-#: root/ci/bl.js root/ci/status.js root/comp/label_admin.js root/comp/sem.js
+#: root/ci/bl.js root/ci/status.js root/comp/sem.js
 msgid "Sequence"
 msgstr "Secuencia"
 
@@ -8069,8 +8070,8 @@ msgstr "Ficheros JES"
 msgid "JES Spool"
 msgstr "Spool JES"
 
-#: root/comp/job_calendar_editor.js root/comp/notifications.js
-#: root/fields/system/html/field_priority.html
+#: root/comp/job_calendar_editor.js root/comp/label_admin.js
+#: root/comp/notifications.js root/fields/system/html/field_priority.html
 #: root/fields/system/js/field_priority.js
 msgid "Priority"
 msgstr "Prioridad"
@@ -13885,8 +13886,8 @@ msgid "Invalid label name"
 msgstr "Nombre de etiqueta no válido"
 
 #: root/site/common.js
-msgid "Invalid sequence"
-msgstr "Secuencia no válida"
+msgid "Invalid priority"
+msgstr "Prioridad no válida"
 
 #: root/site/common.js
 msgid "Invalid natural number"
@@ -14552,14 +14553,17 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "Calendar Info"
+#~ msgstr "Datos del Calendario"
+
+#~ msgid "Invalid sequence"
+#~ msgstr "Secuencia no válida"
+
 #~ msgid "Max retries reached"
 #~ msgstr "Alcanzado el número máximo de reintentos"
 
 #~ msgid "Missing 'Categories' in search configuration"
 #~ msgstr "No está 'Categorías' en la configuración de búsqueda"
-
-#~ msgid "Calendar Info"
-#~ msgstr "Datos del Calendario"
 
 #~ msgid "Maximum number of topics to list"
 #~ msgstr "Número máximo de tópicos a listar"

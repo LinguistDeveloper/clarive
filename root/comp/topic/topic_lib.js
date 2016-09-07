@@ -521,7 +521,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             {  name: 'category_name' },
             {  name: 'calevent' },
             {  name: 'projects' },
-            {  name: 'labels' },
+            {  name: 'labels', sortDir: 'DESC' },
             {  name: 'status' },
             {  name: 'progress' },
             {  name: 'revisions' },
@@ -581,7 +581,7 @@ Baseliner.Topic.StoreLabel = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'id' },
                 {  name: 'name' },
                 {  name: 'color' },
-                {  name: 'seq' }
+                {  name: 'priority' }
             ]
         },config);
         Baseliner.Topic.StoreLabel.superclass.constructor.call(this, config);

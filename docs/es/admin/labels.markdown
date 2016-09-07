@@ -9,4 +9,4 @@ Podremos definir las siguientes características:
 
 - `Nombre de la etiqueta` : Texto con el que se definirá la etiqueta.
 
-- `Secuencia`  :  Orden en el que se muestran las etiquetas en la ventana de tópicos.
+- `Prioridad`  :  Prioridad de la etiqueta. Cuanto mayor sea el valor, más prioridad tendrá la etiqueta.

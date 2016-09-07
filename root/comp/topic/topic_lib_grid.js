@@ -551,7 +551,18 @@ Cla.topic_grid = function(params){
                     if (cfg[col].hidden || cfg[col]._checker) continue;
                     var cell = gv.getCell(row, col);
                     if (!cell) break;
-                    var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
+                    var text = '';
+                    if (cfg[col].dataIndex == "labels" && !/html/.test(args.url)) {
+                        for (var child = 0; child < cell.childNodes[0].childNodes.length; child++) {
+                            text += (cell.childNodes[0].childNodes[child].innerHTML) + ";";
+                        }
+                        text = text.substring(0, (text.length - 1));
+                        if (text === undefined) {
+                            text = '';
+                        }
+                    } else {
+                        text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
+                    }
                     text = text.replace(/^\s+/, '');
                     text = text.replace(/\s+$/, '');
                     d[cfg[col].dataIndex] = text;
@@ -846,10 +857,7 @@ Cla.topic_grid = function(params){
                     var label = rec.data.labels[i].split(';');
                     var label_name = label[1];
                     var label_color = label[2];
-                    tag_color_html = tag_color_html
-                        //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
-                        + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;"
-                        + "color: #fff;background-color:" + label_color + "'>" + _(label_name) + "</span>";
+                    tag_color_html = tag_color_html + '<span class="grid-label" style="background:' + label_color + '">' + _(label_name) + "</span>";
                 }
             }
         }
@@ -1115,6 +1123,12 @@ Cla.topic_grid = function(params){
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
         }
+        if (rec.data) {
+            swGo = true;
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.svg' style='height:16px;width:16px;'/> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
+            actions_html.push("</span>");
+        }
         if(rec.data.num_file){
             swGo = true;
             actions_html.push("<span style='float: left; color: #808080'><img border=0 src='/static/images/icons/paperclip.svg' style='height:16px;width:16px;'/> ");
@@ -1125,6 +1139,22 @@ Cla.topic_grid = function(params){
         actions_html.push("</span>");
         var str = swGo ? actions_html.join(""):'';
         return str;
+    };
+
+    var labelsRenderer = function(value, metadata, rec, rowIndex, colIndex, store) {
+        var tagColorHtml = '';
+        if (rec.data.labels) {
+            var orderLabels = rec.data.labels.sort();
+            for (i = 0; i < rec.data.labels.length; i++) {
+                if (rec.data.labels[i] != " ") {
+                    var label = rec.data.labels[i].split(';');
+                    var labelName = label[1];
+                    var labelColor = label[2];
+                    tagColorHtml = tagColorHtml + '<span class="grid-label" style="background:' + labelColor + '">' + _(labelName) + "</span>";
+                }
+            }
+        }
+        return tagColorHtml;
     };
 
     var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
@@ -1278,6 +1308,7 @@ Cla.topic_grid = function(params){
         //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
 		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name, hidden: report_type != 'topics'?true:false },
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
+        label : { header: _('Labels'), sortable: true, dataIndex: 'labels', hidden: true, width: 80, renderer: labelsRenderer },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
         progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, hidden: true, renderer: render_progress },
@@ -1423,7 +1454,7 @@ Cla.topic_grid = function(params){
     } else {
 
          columns = [ check_sm ];
-         var cols = ['topic_name', 'category_name', 'category_status_name', 'ago', 'title', 'progress',
+         var cols = ['topic_name', 'category_name', 'label', 'category_status_name', 'ago', 'title', 'progress',
             'numcomment', 'projects', 'topic_mid', 'moniker', 'cis_out', 'cis_in', 'references_out',
             'references_in', 'assignee', 'modified_by', 'modified_on', 'created_on', 'created_by', 'current_job'];
          Ext.each( cols, function(col){
@@ -1917,6 +1948,8 @@ Cla.topic_grid = function(params){
             //delete filter_final['query'];
         //}
         //console.dir(filter_final);
+
+        filter_final.query = bp.query;
 
         if (statuses_checked.length == 0) filter_final.clear_filter = 1
 

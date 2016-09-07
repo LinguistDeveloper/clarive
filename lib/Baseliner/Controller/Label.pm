@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Try::Tiny;
 use v5.10;
 
+use List::Util qw(max);
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils qw(_loc _error _array _fail _locl );
 use Baseliner::Sugar;
@@ -45,13 +46,12 @@ sub list : Local {
     while ( my $r = $rs->next ) {
         push @rows,
             {
-            id    => $r->{id},
-            name => _loc( $r->{name} ),
-            color => $r->{color},
-            seq   => $r->{seq}
+            id       => $r->{id},
+            name     => _loc( $r->{name} ),
+            color    => $r->{color},
+            priority => $r->{priority} // 0
             };
     }
-
     $c->stash->{json} = { data => \@rows, totalCount => scalar @rows };
     $c->forward('View::JSON');
 }
@@ -76,9 +76,19 @@ sub attach : Local {
             )
             )
         {
-            mdb->topic->update( { mid => "$topic_mid" },
-                { '$set' => { labels => \@ids } } );
-            my $subject = _loc('Labels assigned');
+            my @labels_ids = _array $doc->{labels};
+            my @labels = mdb->label->find( { id => mdb->in(@labels_ids, @ids) } )->all;
+
+            mdb->topic->update(
+                { mid => "$topic_mid" },
+                {   '$set' => {
+                        labels => \@ids,
+                    }
+                }
+            );
+            $self->_update_topic_priority($topic_mid);
+
+            my $subject = _loc('Label assigned');
             my $event   = 'event.file.labels';
             $self->_notify_topic_friends( $c, $topic_mid, $subject,
                 $doc, $event );
@@ -87,7 +97,7 @@ sub attach : Local {
             _fail _loc( 'Topic not found: %1', $topic_mid );
         }
         $c->stash->{json}
-            = { msg => _loc('Labels assigned'), success => \1 };
+            = { msg => _loc('Label assigned'), success => \1 };
         cache->remove( { mid => "$topic_mid" } )
             if length $topic_mid;
     }
@@ -120,6 +130,7 @@ sub detach : Local {
             { '$pull'  => { labels => $id } },
             { multiple => 1 }
         );
+        $self->_update_topic_priority($topic_mid);
         my $subject = _loc('Labels deleted');
         my $event   = 'event.file.labels_remove';
         $self->_notify_topic_friends( $c, $topic_mid, $subject,
@@ -150,13 +161,12 @@ sub update : Local {
     my $action = $c->req->param('action');
     if ( $action eq 'add' ) {
         return
-          unless my $p = $self->validate_params(
+            unless my $p = $self->validate_params(
             $c,
-            name  => { isa => 'Str' },
-            seq   => { isa => 'Num', default => 0 },
-            color => { isa => 'Str', default => '#000000' },
-          );
-
+            name     => { isa => 'Str' },
+            priority => { isa => 'Num', default => 1 },
+            color    => { isa => 'Str', default => '#000000' },
+            );
         my $row = mdb->label->find_one( { name => $p->{name} } );
 
         if ( !$row ) {
@@ -166,37 +176,34 @@ sub update : Local {
         }
         else {
             $c->stash->{json} = {
-                msg    => _loc('Validation failed'),
-                errors => {
-                    name => _loc( 'Label name already exists' )
-                },
+                msg     => _loc('Validation failed'),
+                errors  => { name => _loc('Label name already exists') },
                 success => \0
             };
         }
     }
     elsif ( $action eq 'update' ) {
         return
-          unless my $p = $self->validate_params(
-            $c,
-            id    => { isa => 'Str' },
-            name  => { isa => 'Str' },
-            color => { isa => 'Str' },
-            seq   => { isa => 'Num' },
-          );
-
+            unless my $p = $self->validate_params(
+                $c,
+                id       => { isa => 'Str' },
+                name     => { isa => 'Str' },
+                color    => { isa => 'Str' },
+                priority => { isa => 'Num' }
+            );
         my $id = delete $p->{id};
 
         my $row = mdb->label->find_one( { id => $id } );
         if ( !$row ) {
             $c->stash->{json} = {
-                msg     => _loc( 'Label does not exist' ),
+                msg     => _loc('Label does not exist'),
                 success => \0
             };
         }
         else {
             my $label_with_same_name = mdb->label->find_one( { name => $p->{name} } );
 
-            if ($label_with_same_name && $label_with_same_name->{id} ne $id) {
+            if ( $label_with_same_name && $label_with_same_name->{id} ne $id ) {
                 $c->stash->{json} = {
                     msg     => _loc('Validation failed'),
                     errors  => { name => _loc('Label name already exists') },
@@ -205,6 +212,7 @@ sub update : Local {
             }
             else {
                 mdb->label->update( { id => $id }, { '$set' => $p } );
+                $self->_update_all_topics_priority($id);
 
                 $c->stash->{json} = { success => \1, msg => _loc('Label modified') };
             }
@@ -219,20 +227,33 @@ sub delete : Local {
 
     my $p = $c->req->params;
 
-    cache->remove_like(qr/^topic:/);
+    cache->remove({ d=>qr/^topic:/ });
     my $ids = $p->{ids};
 
     try {
         my @ids = _array $ids;
         if (@ids) {
+            my @topics = mdb->topic->find( { labels => mdb->in( @ids) } )->all;
             mdb->label->remove( { id => mdb->in(@ids) }, { multiple => 1 } );
-
-            # errors like "cannot $pull/pullAll..." is due to labels=>N
             mdb->topic->update(
                 {},
                 { '$pull'  => { labels => mdb->in(@ids) } },
                 { multiple => 1 }
             );    # mongo rocks!
+            foreach my $topic (@topics) {
+                my @labels_ids = $topic->{labels};
+                my @labels = mdb->label->find( { id => mdb->in(@labels_ids) } )->all;
+                if ( !@labels ) {
+                    mdb->topic->update( { mid => $topic->{mid} },
+                        { '$unset' => { "_sort.labels_max_priority" => "" } } );
+                }
+                else {
+                    my $max_priority = max( map { $_->{priority} } @labels );
+                    mdb->topic->update( { mid => $topic->{mid} },
+                        { '$set' => { "_sort.labels_max_priority" => $max_priority } } );
+                }
+            }
+            # errors like "cannot $pull/pullAll..." is due to labels=>N
         }
 
         $c->stash->{json}
@@ -267,6 +288,39 @@ sub _notify_topic_friends : Local {
         notify_default => \@users,
         subject        => $subject
     };
+}
+
+sub _update_topic_priority {
+    my ( $self, $topic_mid ) = @_;
+
+    my $doc        = mdb->topic->find_one( { mid => $topic_mid } );
+    my @labels_ids = _array $doc->{labels};
+    my @labels     = mdb->label->find( { id => mdb->in(@labels_ids) } )->all;
+    if ( !@labels ) {
+        mdb->topic->update( { mid => "$topic_mid" }, { '$unset' => { "_sort.labels_max_priority" => "" } } );
+    }
+    else {
+        my $max_priority = max( map { $_->{priority} } @labels ) // 0;
+        mdb->topic->update( { mid => "$topic_mid" }, { '$set' => { "_sort.labels_max_priority" => $max_priority } } );
+    }
+}
+
+sub _update_all_topics_priority {
+    my ( $self, $ids ) = @_;
+
+    my @topics = mdb->topic->find( { labels => mdb->in( _array $ids) } )->all;
+    foreach my $topic (@topics) {
+        my @labels_ids = $topic->{labels};
+        my @labels = mdb->label->find( { id => mdb->in(@labels_ids) } )->all;
+        if ( !@labels ) {
+            mdb->topic->update( { mid => $topic->{mid} }, { '$unset' => { "_sort.labels_max_priority" => "" } } );
+        }
+        else {
+            my $max_priority = max( map { $_->{priority} } @labels ) // 0;
+            mdb->topic->update( { mid => $topic->{mid} },
+                { '$set' => { "_sort.labels_max_priority" => $max_priority } } );
+        }
+    }
 }
 
 no Moose;

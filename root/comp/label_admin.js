@@ -142,8 +142,8 @@
                 dataIndex: 'name',
                 sortable: true
             }, {
-                header: _('Sequence'),
-                dataIndex: 'seq',
+                header: _('Priority'),
+                dataIndex: 'priority',
                 sortable: true
             }, {
                 hidden: true,
@@ -209,13 +209,13 @@
             vtype: 'labelName',
             allowBlank: false
         });
-        var sequenceBox = new Ext.form.TextField({
-            fieldLabel: _('Sequence'),
-            name: 'seq',
+        var priorityBox = new Ext.form.TextField({
+            fieldLabel: _('Priority'),
+            name: 'priority',
             width: '120',
-            value: row.seq || 0,
+            value: row.priority || 0,
             allowBlank: false,
-            vtype: 'labelSeq'
+            vtype: 'labelPriority'
         });
 
         var win = new Baseliner.Window({
@@ -252,7 +252,7 @@
                         colspan: 3
 
                     },
-                    sequenceBox
+                    priorityBox
                 ]
             }],
             buttons: [{

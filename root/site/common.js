@@ -4530,15 +4530,15 @@ Ext.apply(Ext.form.VTypes, {
     'labelNameMask': /^[a-zA-Z0-9\u00C0-\u017F_\.^*$\s]+$/,
     'labelNameText': _('Invalid label name'),
 
-    'labelSeq': function(v) {
-        if(/^\d+$/.test(v) && v < 100){
+    'labelPriority': function(v) {
+        if(/^\d+$/.test(v)){
             return true;
         }
 
         return false;
     },
-    'labelSeqMask': /^\d+$/,
-    'labelSeqText': _('Invalid sequence'),
+    'labelPriorityMask': /^\d+$/,
+    'llabelPriorityText': _('Invalid priority'),
 
     'natural': function(v) {
         if (typeof v === 'undefined') {

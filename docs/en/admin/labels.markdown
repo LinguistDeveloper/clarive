@@ -7,4 +7,4 @@ You can define the following parameters:
 
 - `Color` : Choose the color that identifies the label
 - `Name` : Text with which the label will be defined
-- `Sequence` : Order in which the labels are shown
+- `Priority` : Priority of the label. When the value is higher, the label has more priority.
