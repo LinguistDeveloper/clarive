@@ -4,9 +4,16 @@
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#F7A808;}
-	.st1{fill:#FFFFFF;}
+	.st1{fill:#404040;}
+	.st2{fill:#FF6F6F;}
 </style>
-<circle class="st0" cx="8" cy="8" r="8"/>
-<rect x="7" y="3" class="st1" width="2" height="7"/>
-<rect x="7" y="11" class="st1" width="2" height="2"/>
+<g>
+	<circle class="st0" cx="8" cy="8" r="8"/>
+</g>
+<circle class="st1" cx="4.7" cy="6" r="1.2"/>
+<circle class="st1" cx="11.8" cy="6.1" r="1.2"/>
+<rect x="4" y="10" class="st1" width="8.9" height="1"/>
+<g>
+	<path class="st2" d="M12.9,10v1.5c0,1.1-0.9,2-2,2h0c-1.1,0-2-0.9-2-2V10H12.9z"/>
+</g>
 </svg>

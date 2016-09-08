@@ -3,10 +3,11 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#F7A808;}
-	.st1{fill:#FFFFFF;}
+	.st0{display:none;}
+	.st1{fill:#3FA9F5;}
 </style>
-<circle class="st0" cx="8" cy="8" r="8"/>
-<rect x="7" y="3" class="st1" width="2" height="7"/>
-<rect x="7" y="11" class="st1" width="2" height="2"/>
+<g id="Layer_1_1_" class="st0">
+</g>
+<title>arrow_down</title>
+<path class="st1" d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,12.8L4.4,6.8h2.4V4.4h2.4v2.4h2.4L8,12.8z"/>
 </svg>
