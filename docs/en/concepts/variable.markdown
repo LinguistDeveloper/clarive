@@ -1,5 +1,6 @@
 ---
 title: Variable
+icon: element_copy
 ---
 
 A variable in Clarive is a globally defined CI belonging to the class Variable.

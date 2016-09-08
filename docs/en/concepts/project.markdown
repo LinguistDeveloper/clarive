@@ -1,6 +1,6 @@
 ---
 title: Project
-icon: project.svg
+icon: project
 ---
 
 A Project is the most common Clarive security [scope](concepts/scope).

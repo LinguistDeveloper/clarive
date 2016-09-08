@@ -1,6 +1,6 @@
 ---
 title: Monitor
-icon: television.gif
+icon: television
 ---
 
 The monitor show the list of [jobs](concepts/job) that have been created and the status of the jobs.

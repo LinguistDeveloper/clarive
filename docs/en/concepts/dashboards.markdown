@@ -1,6 +1,6 @@
 ---
 title: Dashboards
-icon: dashboard.png
+icon: dashboard
 ---
 
 Dashboards represent a fundamental role in the proper use of Clarive.

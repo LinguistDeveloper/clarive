@@ -1,19 +1,15 @@
 ---
 title: Login
 index: 100
-icon: user.gif
+icon: user
 ---
 
-Before you can log in to Clarive, your Clarive Administrator must add you as a User of Clarive.
-Your Clarive Administrator will then notify you of your login information consisting of:
+Before you can log in to Clarive, your [Clarive Administrator](admin/user) must
+add you as a User of Clarive. Your Clarive Administrator will then notify you of
+your login information consisting of:
 
-- **Username**
-
-The username is not case-sensitive.
-
-- **Password**
-
-The password is always case-sensitive.
+- **Username**: The username is not case-sensitive.
+- **Password**: The password is always case-sensitive.
 
 You can easily change your password from your user preferences page.
 

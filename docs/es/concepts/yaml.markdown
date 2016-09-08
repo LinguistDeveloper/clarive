@@ -2,11 +2,11 @@
 title: YAML
 ---
 
-YAML is a human-readable markup format used for data serialization.
+YAML es un formato tipado legible por personas usado para la serialización de datos
 
-YAML is a recursive acronym for "YAML Ain't Markup Language".
+YAML es el acrónimo recursivo para "Ain't Markup Language".
 
-The following is an example of a YAML from Clarive (from a Project CI):
+El siguiente es un ejemplo de YAML para Clarive (de un CI Proyecto):
 
 ```yaml
     ---
@@ -72,26 +72,26 @@ The following is an example of a YAML from Clarive (from a Project CI):
     versionid: '1'
 ```
 
-YAML is used extensively in Clarive because it allows for expressing data
-contents in a human-readable format that is familiar to the technical user.
+YAML se usa de forma extensiva en Clarive porque permite expresar el
+contenido de los datos en formato legible para usuarios técnicos.
 
-YAML is also used because it allows the system to version data contents,
-specially CIs, in a file system.
+YAML también se usa porque permite al sistema el versionado del contenido
+de los datos, especialmente CIs, en un fichero del sistema.
 
-Read more about the format here:
+Lee más acerca del formato en:
 
 - https://en.wikipedia.org/wiki/YAML
 - http://yaml.org/
 
-Also, you can play with YAML in Clarive's (REPL)[devel/repl] or at this
-online tool:
+También, puedes jugar con YAML en el (REPL)[devel/repl] de Clarive o en
+esta herramienta online:
 
 http://yaml-online-parser.appspot.com/
 
-### Indentation
+### Indentación
 
-In YAML indentation is important, YAML uses a fixed indentation scheme which
-represents different relationship between elements.
+En YAML la indentación es importante, YAML usa un esquema de indentación fijada
+que representa las diferentes relaciones entre elementos.
 
 ```yaml
 parent:
@@ -99,25 +99,25 @@ parent:
       grandchild: 10
 ```
 
-In JavaScript, the above maps to the following Object:
+En JavaScript, los mapas de debajdo se usan pra el siguiente objeto:
 
 ```json
 { parent: { child: { grandchild: 10 } } }
 ```
 
-In Clarive, indentation requires at least 1 space.
+En Clarive, la indentación requiere al menos 1 espacio.
 
-### Colons
+### Dos Puntos
 
-Colons represent key-value pairs, which are used to define Objects
-(Hashes or Dictionaries in other languages).
+Los Dos Puntos representa pares cd clave-valor, que son usados para definir objetos
+(Hashes o diccionarios en otros lenguajes).
 
 ```yaml
 key1: value1
 key2: value2
 ```
 
-Which in JavaScript translates to:
+Lo que en JavaScript se traduce a:
 
 ```js
 { key1: 'value1', key2: 'value2' }
@@ -125,7 +125,7 @@ Which in JavaScript translates to:
 
 ### Dashes
 
-Dashes are used for creating lists, or Arrays in Javascript.
+Los Dashes son usados para crear listas, o Arrays en Javascript.
 
 ```yaml
 parent:
@@ -133,16 +133,16 @@ parent:
    - child2
 ```
 
-In JavaScript, the above maps to the following Object:
+En JavaScript, el mapa de debajo muestra el objecto:
 
 ```json
 { parent: [ 'child1', 'child2' ] }
 ```
 
-### Multi-line data
+### Datos Multi-línea
 
-Multi-line strings can be written using the `|` (pipe) YAML operator. Indentation
-is necessary, so use leading spaces.
+Las cadenas multi-línea se pueden escribir usando la `|` (barra vertical) YAML
+operator. Indentation is necessary, so use leading spaces.
 
 ```yaml
 ---
