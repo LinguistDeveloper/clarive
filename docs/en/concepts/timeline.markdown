@@ -1,6 +1,6 @@
 ---
 title: Timeline graph
-icon: timeline.png
+icon: timeline
 ---
 
 Displays a timeline on the topic.

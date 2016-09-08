@@ -1,49 +1,62 @@
 ---
 title: Busquedas avanzadas
-index: 1000
+index: 500
 icon: search-small
 ---
-* Existen dos vias para buscar elementos dentro de la herramienta Clarive. La primera es a través del búscador general, situado en la parte superior derecha el cual sirve para buscar (Pases)[ ], Tópicos o CIs.
-* Existe otro cuadro de búsqueda situado en algunas de las pestañas de Clarive como pueden ser informes o listas (listas de tópicos, de usuarios, de roles, etc...). La finalidad de estos cuadros es realizar una búsqueda dentro de la pestaña en la que se encuentra.
-* En ambos cuadros el funcionamiento es el mismo, la búsqueda no hace distinciones entre mayúscula y minúscula.
-* En caso de buscar dos términos, el motor de búsqueda hará una búsqueda excluyente (búsqueda OR) devolviendo los resultados donde aparezca el primer término y los resultados donde aparece el segundo término. Por ejemplo:
 
-        gui seguridad
+La mayoría de las listas y reportes en Clarive tienen cajas de búsqueda. Las
+cadenas introducidas en dichas cajas ignoran mayúsculas y minúsculas y de
+tipo OR.
 
-Devuelve todos los documentos que tengan gui **o** seguridad en uno de los campos de los documentos.
+Por ejemplo la siguiente búsqueda:
 
-* Sin embargo:
+    gui security
 
-        +gui +security
-En este caso el resultado de la búsqueda son los documentos donde aparecen las dos palabras en el documento.
+Encontrará coincidencias con todos los documentos que tengan la cadena gui O
+la cadena security en uno de los campos del documento, en un [CI](concepts/ci)
+o en [Topic](concepts/topic)
 
-### Mayúsculas y minúsculas
-* Como se ha indicado anteriormente, todas las búsquedas no hacen distinción entre caracteres en mayúscula y en minúscula. Sin embargo si es posible realizar una búsqueda que filtre entre las dos formas. Para ello, es necesario poner la palabra a buscar entre comillas dobles.
+Por otro lado, la siguiente búsqueda:
 
-        "GUI"
+    +gui +security
 
-Se muestran solo los resultados donde el término GUI está en mayúsculas.
+Encontrará coincidencias con todos los documentos que tengan AMBAS cadenas, gui
+o security en cualquiera de los campos del documento. Un campo, por ejemplo, "titulo"
+puede contener la palabra "gui", y el otro, por ejemplo, "departamento" puede
+contener la palabra "security"
 
-* Las búsquedas que se pueden realizar dentro de Clarive pueden ser avanzadas utilizando la sintaxis permitida. Además de los ejemplos anteriormente descritos, el motor de búsqueda soporta incluye los siguientes ejemplos:
+### Mayusculas y Minúsculas
 
-        desarroll?  - Reemplaza ? por un único caracter. Los resultados serán documentos donde aparezcan alguna de estas palabras: desarrollo, desarrolla, desarrolle, etc...
+Todas las búsquedas no tienen en cuenta mayúsculas y minúsculas. Para que sean
+distinguidas, utiliza comillas dobles alrededor de la cadena:
 
-        desarroll*  - Reemplaza * por cualquier cadena de caracteres. Los resultados serán documentos donde aparezcan alguna de estas palabras: desarrollo, desarrollos, desarrollando, etc..
+    "GUI"
 
-        +termino1 -termino2  - Busca documentos donde aparezca el primer termino pero no el segundo.
+Sólo buscará para documentos con la palabra "GUI" completamente en mayúsculas.
 
-        /termino regex.*/  - Tambien adminte busquedas con expresiones regulares.
+En resumen, los siguientes tipos de sintaxis de búsqueda:
 
+    term
+    "term"  - no distingue mayusculas y minúsculas
+    Term  - distingue mayúsculas y minúsculas
+    T?rm  - busca 1 caracter en ?
+    T*rm  - busca 0 de muchos caracteres en *
+    +term1 +term2  - tiene que tener ambas term1 y term2
+    +term1 -term2  - tiene term1 pero no term2
+    /term regex.*/  - expresión regular
 
+### Busqueda de campos
 
+Clarive soporta también y conjunto limitado de búsquedas en campos. Las búsquedas
+por campo, sólo buscan en esos campos:
 
-### Busqueda en un campo concreto
-* Clarive tambien soporta buscar por una o varias palabras que estén en un campo del documento en concreto, por ejemplo:
+    status:"QA Done"
 
-        status:"QA Finalizado"
+Busca sólo el estado "QA Done".
 
-* El resultado solo muestra documentos donde el estado sea 'QA Finalizado'. Esto es muy útil a la hora de buscar un tópico en un determinado estado.
+La herramienta también permite usar la almohadilla para acceder directamente a un
+tópico específico
 
-* También se puede acceder a un tópico en concreto desde el cuadro de búsqueda utilizando la # y el número identificador:
+    #123456
 
-        #123456
+Va directamente al tópico especificado.

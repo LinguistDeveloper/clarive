@@ -7,7 +7,6 @@ icon: kanban
 Clarive has a Kanban board generator utility that is available from two places:
 
 - The topic grid
-
 - From withing a topic that holds other topics.
 
 The Kanban board can be opened by clicking on the following icon:
@@ -32,8 +31,10 @@ the topic new status.
 
 Statuses that are tied to environments have the environment name(s) on top.
 
-If a topic gets dragged into a promotable environment, a new job window will popup. Schedule the job accordingly. When the job runs, the pipeline will take
-care of deploying the changeset contents and promoting the topics into (or demoting them out of) the destination evnironment and corresponding status.
+If a topic gets dragged into a promotable environment, a new job window will popup.
+Schedule the job accordingly. When the job runs, the pipeline will take care of deploying
+the changeset contents and promoting the topics into (or demoting them out of) the
+destination evnironment and corresponding status.
 
 ### Customizing the Kanban Board
 

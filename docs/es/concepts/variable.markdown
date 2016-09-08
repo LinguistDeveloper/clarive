@@ -1,5 +1,6 @@
 ---
 title: Variable
+icon: element_copy
 ---
 
 Una variable en Clarive se define de manera global usando la clase de CI Variable.
@@ -8,12 +9,16 @@ Cada variable puede contener valores como cadenas de texto, número, listas, has
 
 Las varibles pueden ser referenciadas en las reglas usando la notación `${nombre-variable}`.
 
-Cuando se ejecuta una regla, su [stash](concepts/stash) se carga con los valores por defecto de las variables globales. Entonces, al continuar con la ejecución, cada valor de las variables cambia o se introducen nuevas variables en el stash.
+Cuando se ejecuta una regla, su [stash](concepts/stash) se carga con los valores por defecto
+de las variables globales. Entonces, al continuar con la ejecución, cada valor de las variables
+cambia o se introducen nuevas variables en el stash.
 
 ## Variables Obligatorias
 
-Cada variable puede ser marcada como obligatoria. Esto afecta a las variables de proyecto (ver [Proyecto](concepts/project) para más información).
+Cada variable puede ser marcada como obligatoria. Esto afecta a las variables de proyecto
+ (ver [Proyecto](concepts/project) para más información).
 
 ## Copiar variables
 
-Cuando copias variables entre entornos (ver [Proyecto](concepts/project) para más información), si está marcada con el flag copiar hace que el valor sea copiado también.
+Cuando copias variables entre entornos (ver [Proyecto](concepts/project) para más información), si está
+marcada con el flag copiar hace que el valor sea copiado también.

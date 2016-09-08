@@ -1,5 +1,6 @@
 ---
 title: Environment
+icon: baseline
 ---
 
 In DevOps, an environment typically is defined as a place
@@ -16,10 +17,9 @@ and you are creating an environment.
 
 This is mostly done 2 ways:
 
-1) For each CI we create we can set to what environment it belongs. Some
+- For each CI we create we can set to what environment it belongs. Some
 CIs don't support this, like the Project CI; others like GenericServer do.
-
-2) For every scope, or project, we can define which CIs belong
+- For every scope, or project, we can define which CIs belong
 to a given environment for that scope in particular.
 
 ### Environment Naming
@@ -41,7 +41,6 @@ For example, these CIs:
 
 - a GenericServer class CI may be available to all environments or to
 just a few. So here the common environment means **ALL**.
-
 - a GitRepository CI may be assigned to the Common environment, but
 actually means **NONE**, since a source code repository does not have the
 concept of environment itself (ie. you don't create one Git repository
@@ -55,5 +54,3 @@ but actually its meaning is environment.
 
 Internally, environment is stored with the name `bl`, and
 so it's visible that way in YAML files and others places.
-
-
