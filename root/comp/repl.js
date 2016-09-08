@@ -542,7 +542,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     var btn_lang = new Ext.Button({  
                 text: _('Lang'),
-                icon:'/static/images/scm/debug/register_view.svg',
+                icon:'/static/images/icons/register_view.svg',
                 cls: 'x-btn-text-icon',
                 menu: menu_lang 
             });
@@ -587,7 +587,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     var btn_out = new Ext.Button({  
                 text: _('Output'),
-                icon:'/static/images/scm/debug/register_view.svg',
+                icon:'/static/images/icons/register_view.svg',
                 cls: 'x-btn-text-icon',
                 menu: menu_out
             });
