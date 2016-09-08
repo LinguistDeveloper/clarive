@@ -182,7 +182,7 @@ subtest 'icon_path: builds absolute icon path' => sub {
     is( Util->icon_path('foo/'),    'foo/' );
     is( Util->icon_path('/foo'),    '/foo' );
     is( Util->icon_path('foo.bar'), '/static/images/icons/foo.bar' );
-    is( Util->icon_path('foo'),     '/static/images/icons/foo.png' );
+    is( Util->icon_path('foo'),     '/static/images/icons/foo.svg' );
 };
 
 subtest '_replace_tags: change < and >' => sub {

@@ -201,7 +201,7 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
                 "children" => [
                     {
                         "attributes" => {
-                            'icon'                => '/static/images/icons/script-local.png',
+                            'icon'                => '/static/images/icons/script-local.svg',
                             'palette'             => 0,
                             'disabled'            => 0,
                             'who'                 => 'root',
@@ -246,7 +246,7 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
             },
             {
                 attributes => {
-                    icon     => "/static/images/icons/time.png",
+                    icon     => "/static/images/icons/time.svg",
                     key      => "statement.parallel.wait",
                     active   => 1,
                     name     => "WAIT for children",
@@ -1250,7 +1250,7 @@ sub _setup {
             "subtype"         => "-",
             "detected_errors" => "",
             "rule_tree" =>
-qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.png","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.png","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.png","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.png","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.png","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"$iso_ts","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.png","id":"xnode-1027"},"children":[]}]%
+qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.svg","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.svg","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.svg","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.svg","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.svg","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"$iso_ts","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.svg","id":"xnode-1027"},"children":[]}]%
         }
     );
 }

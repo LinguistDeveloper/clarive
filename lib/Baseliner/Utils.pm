@@ -365,7 +365,7 @@ sub icon_path {
     my $home = '/static/images/icons/';
     return $path =~ /\// ? $path
         : ( $path =~ /\./ ? $home . $path
-                          : $home . $path . '.png' );
+                          : $home . $path . '.svg' );
 }
 
 sub job_icon {

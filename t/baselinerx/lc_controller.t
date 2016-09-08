@@ -30,7 +30,7 @@ subtest 'favorite_add: sets correct params to stash' => sub {
         req      => {
             params => {
                 text => 'Some Title',
-                icon => '/path/to/icon.png',
+                icon => '/path/to/icon.svg',
                 data => JSON::encode_json(
                     {
                         title => 'foo'
@@ -63,7 +63,7 @@ subtest 'favorite_add: sets correct params to stash with id_folder' => sub {
             params => {
                 id_folder => '123',
                 text      => 'Some Title',
-                icon      => '/path/to/icon.png',
+                icon      => '/path/to/icon.svg',
                 data      => JSON::encode_json(
                     {
                         title => 'foo'
@@ -95,7 +95,7 @@ subtest 'favorite_add: saves favorites to user' => sub {
         req      => {
             params => {
                 text => 'Some Title',
-                icon => '/path/to/icon.png',
+                icon => '/path/to/icon.svg',
                 data => JSON::encode_json(
                     {
                         title => 'foo'
@@ -116,7 +116,7 @@ subtest 'favorite_add: saves favorites to user' => sub {
     cmp_deeply $user_ci->favorites,
       {
         $id => {
-            'icon'        => re(qr/\.png$/),
+            'icon'        => re(qr/\.svg$/),
             'text'        => 'Some Title',
             'menu'        => {},
             'id_favorite' => $id,
@@ -143,7 +143,7 @@ subtest 'favorite_add: saves favorites to user when folder' => sub {
             params => {
                 id_folder => '123',
                 text      => 'Some Title',
-                icon      => '/path/to/icon.png',
+                icon      => '/path/to/icon.svg',
                 data      => JSON::encode_json(
                     {
                         title => 'foo'
