@@ -1200,28 +1200,6 @@ sub delete : Local {
 
                 $c->stash->{json} = { success => \1, info => \@data , needs_confirmation => $needs_confirmation};
             }
-            else {
-                my @all_users = grep { values %{ $_->{project_security} } }
-                    ci->user->find->fields( { mid => 1, name => 1, project_security => 1, _id => 0 } )->all;
-
-                foreach my $user (@all_users) {
-                    my $security_level = $user->{project_security};
-                    foreach my $user_role ( keys $security_level ) {
-                        my $role_ci_mids = $security_level->{$user_role}->{$ci_collection};
-                        foreach my $ci_mid_delete ( _array $mids) {
-                            if ( $ci_mid_delete ~~ $role_ci_mids ) {
-                                my @new_proj = grep { $_ ne $ci_mid_delete } _array($role_ci_mids);
-
-                                my $ci_update = ci->new( $user->{mid} );
-                                $ci_update->{project_security}->{$user_role}->{project} = \@new_proj;
-                                $ci_update->update;
-
-                                $role_ci_mids = \@new_proj;
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         if ( $delete_confirm || !$needs_confirmation ) {

@@ -2259,6 +2259,10 @@ msgid "User Preferences"
 msgstr "Preferencias de Usuario"
 
 #: lib/Baseliner/Controller/User.pm
+msgid "User %1 is not authorized to query user details"
+msgstr "El usuario %1 no esta autorizado a ver los detalles del usuario"
+
+#: lib/Baseliner/Controller/User.pm
 msgid "Missing parameter username"
 msgstr "Falta el parámetro username"
 

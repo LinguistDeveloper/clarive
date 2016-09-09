@@ -137,15 +137,13 @@ sub infodetail : Local {
             @roles = keys $user->{project_security};
             @roles = map {$_} @roles;
         }
-        my $roles_from_user
-            = mdb->role->find( { id => { '$in' => \@roles } } )->fields(
+        my $roles_from_user = mdb->role->find( { id => { '$in' => \@roles } } )->fields(
             {   role        => 1,
                 description => 1,
                 id          => 1,
                 _id         => 0
             }
-            )->sort( $sort ? { $sort => $dir } : { role => 1 } );
-
+        )->sort( $sort ? { $sort => $dir } : { role => 1 } );
         while ( my $r = $roles_from_user->next ) {
             my $rs_user = ci->user->find(
                 {   username                    => $username,
@@ -155,15 +153,10 @@ sub infodetail : Local {
             my @roles = keys $rs_user->{project_security};
 
             my @user_projects;
-            my @colls = map { Util->to_base_class($_) }
-                Util->packages_that_do('Baseliner::Role::CI::Project');
+            my @colls = map { Util->to_base_class($_) } Util->packages_that_do('Baseliner::Role::CI::Project');
             foreach my $col (@colls) {
-                @user_projects = (
-                    @user_projects,
-                    _array $rs_user->{project_security}->{ $r->{id} }->{$col}
-                );
+                @user_projects = ( @user_projects, _array $rs_user->{project_security}->{ $r->{id} }->{$col} );
             }
-
             my @projects;
             foreach my $prjid (@user_projects) {
                 my $str;
@@ -172,19 +165,15 @@ sub infodetail : Local {
                 my $nature;
                 my $project = ci->find($prjid);
 
-                if ( $project and $project->{name} ) {
+                if ( $project && $project->{name} && $project->{active} ) {
                     if ( $project->{nature} ) {
-                        $str = $project->{name} . ' ('
-                            . $project->{nature} . ')';
+                        $str = $project->{name} . ' (' . $project->{nature} . ')';
                     }
                     else {
                         $str = $project->{name};
                     }
+                    push @projects, $str;
                 }
-                else {
-                    $str = '';
-                }
-                push @projects, $str;
             }
             @projects = sort(@projects);
 
@@ -195,22 +184,21 @@ sub infodetail : Local {
             }
             my $projects_txt = \@jsonprojects;
 
-            push @rows,
-                {
-                id          => $r->{id},
-                id_role     => $r->{id},
-                role        => $r->{role},
-                description => $r->{description},
-                projects    => $projects_txt
-                };
+            if (@jsonprojects) {
+                push @rows,
+                    {
+                    id          => $r->{id},
+                    id_role     => $r->{id},
+                    role        => $r->{role},
+                    description => $r->{description},
+                    projects    => $projects_txt
+                    };
+            }
         }
     }
     else {
         $authorized = 0;
-        $msg
-            = _loc( "User "
-                . $c->username
-                . " is not authorized to query user details" );
+        $msg = _loc( "User %1 is not authorized to query user details", $c->username );
     }
 
     if ($authorized) {
@@ -853,7 +841,7 @@ sub projects_list : Local {
     my @colls = map { Util->to_base_class($_) }
         Util->packages_that_do('Baseliner::Role::CI::Project');
     my @datas
-        = mdb->master_doc->find( { collection => mdb->in(@colls) } )
+        = mdb->master_doc->find( { collection => mdb->in(@colls), active => '1' } )
         ->fields( { name => 1, description => 1, mid => 1 } )
         ->sort( { name => 1 } )->all;
     my @tree;
