@@ -51,38 +51,28 @@ register 'config.job.daemon' => {
 sub job_daemon {
     my ( $self, $c, $config ) = @_;
     my $freq = $config->{frequency};
-    my %discrepancies;  # keep a count on these
+    my %discrepancies;    # keep a count on these
 
-    my $startup = { cwd=>Cwd::cwd, proc=>$^X, script=>$0, argv=>[ @ARGV ] };
-    # enable signal handler before sleep
-    $SIG{USR1} = sub { _log "Exitting job daemon via restart signal"; $EXIT_NOW=1 };
-    $SIG{USR2} = sub { _log "Restarting job daemon via restart signal...";
-        chdir $startup->{cwd};
-        _log "Changed dir to $startup->{cwd}";
-        my $cmd;
-        # $0 maybe set by parent on fork
-        $startup->{script} =~ /service.job.daemon/
-            ? $cmd = $startup->{script}
-            : $cmd = "'". join("' '", $startup->{proc}, $startup->{script}, 'service.job.daemon', @{ $startup->{argv} || [] } ). "'";
-        _log "Restart command: $cmd";
-        exec $cmd;
-    };
-    _log "Job daemon started with frequency ${freq}s for dispatcher instance $config->{id}";
+    $ENV{"BASELINER_HOME"} //= Clarive->app->home;
+
+    $self->_enable_signals( $c, $config );
+
     require Baseliner::Sem;
     my $hostname = $config->{id};
+    my $iterations = $config->{iterations} // 1000;
+
     # set job query order
-    for( 1..1000 ) {
-        #sleep 20;
+    for ( 1 .. $iterations ) {
         my $now = mdb->now;
 
-        # Immediate chain (PRE, POST or now=1 )
+        # Immediate chain (PRE, RUN and rollback, POST or now=1 )
         my @query_roll = (
-            {
-                '$or' => [
-                    { step => 'PRE', status=>'READY' },
-                    { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') },
-                    { step => mdb->in('PRE','RUN','POST'), status=>'REJECTED' },
-                    { now=>1 },
+            {   '$or' => [
+                    { step => 'PRE',  status => 'READY' },
+                    { step => 'POST', status => mdb->in( 'READY', 'ERROR', 'KILLED', 'EXPIRED', 'REJECTED' ) },
+                    { step => 'RUN', status => 'READY', rollback => '1' },
+                    { step => mdb->in( 'PRE', 'RUN', 'POST' ), status => 'REJECTED' },
+                    { now  => 1 },
                 ],
 
             },
@@ -415,6 +405,36 @@ sub check_cancelled {
     }
     return;
 }
+
+sub _enable_signals {
+    my ( $self, $c, $config ) = @_;
+    my @args = @_;
+
+    my $startup = { cwd => Cwd::cwd, proc => $^X, script => $0, argv => [@ARGV] };
+
+    # enable signal handler before sleep
+    $SIG{USR1} = sub { _log "Exitting job daemon via restart signal"; $EXIT_NOW = 1 };
+    $SIG{USR2} = sub {
+        _log "Restarting job daemon via restart signal...";
+        chdir $startup->{cwd};
+        _log "Changed dir to $startup->{cwd}";
+        my $cmd;
+
+        # $0 maybe set by parent on fork
+        $startup->{script} =~ /service.job.daemon/
+            ? $cmd
+            = $startup->{script}
+            : $cmd
+            = "'"
+            . join( "' '", $startup->{proc}, $startup->{script}, 'service.job.daemon', @{ $startup->{argv} || [] } )
+            . "'";
+        _log "Restart command: $cmd";
+        exec $cmd;
+    };
+    _log "Job daemon started with frequency $config->{frequency}s for dispatcher instance $config->{id}";
+
+}
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
