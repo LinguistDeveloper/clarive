@@ -963,6 +963,12 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
  }
 }
 
+.gritter-image{
+    width:48px !important;
+    height:48px !important;
+    float:left
+}
+
  #boot div.x-combo-name-list, #boot div.project-item-list {
     margin-right: 5px !important;
     float: left;
