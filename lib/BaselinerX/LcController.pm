@@ -950,7 +950,7 @@ sub promotes_and_demotes {
                         status_to_name => _loc($status->{name}),
                     },
                     id_status_from => $id_status_from_lc,
-                    icon => '/static/images/silk/arrow_down.svg'
+                    icon => '/static/images/icons/arrow_down_short.svg'
                 };
             }
         }
@@ -994,7 +994,7 @@ sub promotes_and_demotes {
                                 status_to_name => _loc( $status->{name} ),
                             },
                             id_status_from => $id_status_from_lc,
-                            icon => '/static/images/silk/arrow_up.svg'
+                            icon => '/static/images/icons/arrow_up_short.svg'
                         };
                     }
                 } else {
@@ -1023,7 +1023,7 @@ sub promotes_and_demotes {
                             status_to_name => _loc( $status->{name} ),
                         },
                         id_status_from => $id_status_from_lc,
-                        icon => '/static/images/silk/arrow_up.svg'
+                        icon => '/static/images/icons/arrow_up_short.svg'
                     };
 
                 }

@@ -340,7 +340,7 @@
                    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/moredata.svg'/></a> " + datalen ;
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
-                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.svg'></a> "
+                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/icons/page_new.svg'></a> "
                    ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
                } 
            }
