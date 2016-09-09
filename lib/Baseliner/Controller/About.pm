@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
+
 BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.help.server_info' => { name => _locl('View server info in about window')};
@@ -38,7 +39,8 @@ sub show : Local {
         push @about, { name=>_loc('Server Bin'), value=>$FindBin::Bin };
         push @about, { name=>_loc('Server Parent ID'), value=>$ENV{BASELINER_PARENT_PID} };
         push @about, { name=>_loc('OS'), value=>$^O };
-        push @about, { name => _loc('Active users count'), value => ci->user->find({ active => '1', name => { '$ne' => 'root' }})->count };
+        push @about, { name => _loc('Active users count'), value => Clarive::Util::TLC->user_count };
+        push @about, { name => _loc('Active nodes count'), value => Clarive::Util::TLC->node_count };
         $c->stash->{environment_vars} = [
             map {
                 +{ name=>$_, value=>$ENV{$_} }

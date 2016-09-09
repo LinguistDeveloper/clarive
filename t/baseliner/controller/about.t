@@ -24,6 +24,26 @@ subtest 'show: returns a license with updated current year' => sub {
     like $c->stash->{licenses}[0]->{text}, qr/2010-$current_year/;
 };
 
+subtest 'show: returns a license info' => sub {
+    _setup();
+
+    TestUtils->create_ci('user');
+    TestUtils->create_ci('generic_server', hostname => 'localhost');
+    TestUtils->create_ci('generic_server', hostname => 'remotehost');
+
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    $controller->show($c);
+
+    my ($active_users_count) = grep { $_->{name} =~ m/active users/i } @{ $c->stash->{about} };
+    is $active_users_count->{value}, 1;
+
+    my ($active_nodes_count) = grep { $_->{name} =~ m/active nodes/i } @{ $c->stash->{about} };
+    is $active_nodes_count->{value}, 2;
+};
+
 subtest 'show: returns customized icon' => sub {
     my $controller = _build_controller();
 
@@ -41,6 +61,12 @@ subtest 'show: uses default logo' => sub {
 };
 
 done_testing;
+
+sub _setup {
+    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI' );
+
+    TestUtils->cleanup_cis;
+}
 
 sub _build_c {
     mock_catalyst_c( username => 'root', @_ );

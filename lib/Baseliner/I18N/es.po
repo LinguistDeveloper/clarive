@@ -124,6 +124,10 @@ msgstr "SO"
 msgid "Active users count"
 msgstr "Cuenta de usuarios activos"
 
+#: lib/Baseliner/Controller/About.pm
+msgid "Active nodes count"
+msgstr "Cuenta de nodos activos"
+
 #: lib/Baseliner/Controller/Auth.pm
 msgid "Authentication required"
 msgstr "Autenticación requerida"
