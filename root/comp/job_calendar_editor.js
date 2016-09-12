@@ -24,61 +24,62 @@
     var cal_form = new Ext.FormPanel({
         url: '/job/calendar_update',
         frame: true,
-        labelWidth: 80,
-        autoHeight: true,
-        layout: 'column',
-        split: true,
-        cls: 'job-slots-panel',
         headerCssClass: 'job-slots-panel-header',
-        bwrapCssClass:'job-slots-panel-bwrap',
-        defaults: {
-            columnWidth: .5,
-            msgTarget: 'under',
-            layout: 'form',
-            cls: 'job_slots_form_column_body'
-        },
+        bwrapCssClass: 'job-slots-panel-bwrap',
         items: [{
-            defaults: {
-                xtype: 'textfield',
-                anchor: '90%'
-            },
+            itemId: 'text',
+            layout: 'column',
+            anchor: '90%',
             items: [{
-                name: 'name',
-                fieldLabel: _('Name'),
-                value: '<% $cal->{name} %>'
+                layout: 'form',
+                columnWidth: 0.5,
+                cls: 'job_slots_form_column_body',
+                defaults: {
+                    xtype: 'textfield',
+                    anchor: '90%'
+                },
+                items: [{
+                    name: 'name',
+                    fieldLabel: _('Name'),
+                    value: '<% $cal->{name} %>'
+                }, {
+                    fieldLabel: _('Priority'),
+                    name: 'seq',
+                    value: '<% $cal->{seq} %>'
+                }, {
+                    xtype: 'textarea',
+                    name: 'description',
+                    height: 60,
+                    fieldLabel: _('Description'),
+                    value: '<% $cal->{description} %>'
+                }]
             }, {
-                fieldLabel: _('Priority'),
-                name: 'seq',
-                value: '<% $cal->{seq} %>'
-            }, {
-                xtype: 'textarea',
-                name: 'description',
-                height: 60,
-                fieldLabel: _('Description'),
-                value: '<% $cal->{description} %>'
+                itemId: 'form',
+                layout: 'form',
+                columnWidth: 0.5,
+                cls: 'job_slots_form_column_body',
+                defaults: {
+                    anchor: '90%'
+                },
+                items: [
+                    Baseliner.ci_box({
+                        name: 'bl',
+                        "class": 'BaselinerX::CI::bl',
+                        fieldLabel: _('Baseline'),
+                        value: '<% $cal->{bl}  %>',
+                        valueField: 'moniker',
+                        force_set_value: true
+                    }),
+                    Baseliner.ci_box({
+                        name: 'ns',
+                        role: ['Infrastructure', 'Project'],
+                        fieldLabel: _('Scope'),
+                        value: cal_ns != '/' ? cal_ns : '/',
+                        emptyText: _('Global'),
+                        force_set_value: cal_ns && cal_ns != '/' ? true : false
+                    }),
+                ]
             }]
-        }, {
-            defaults: {
-                anchor: '90%'
-            },
-            items: [
-                Baseliner.ci_box({
-                    name: 'bl',
-                    "class": 'BaselinerX::CI::bl',
-                    fieldLabel: _('Baseline'),
-                    value: '<% $cal->{bl}  %>',
-                    valueField: 'moniker',
-                    force_set_value: true
-                }),
-                Baseliner.ci_box({
-                    name: 'ns',
-                    role: ['Infrastructure', 'Project'],
-                    fieldLabel: _('Scope'),
-                    value: cal_ns != '/' ? cal_ns : '/',
-                    emptyText: _('Global'),
-                    force_set_value: cal_ns && cal_ns != '/' ? true : false
-                }),
-            ]
         }]
     });
 
@@ -217,79 +218,87 @@
 
     });
 
-    if (!can_edit && !can_admin) {
-        cal_form.getComponent('text').getComponent('form').buttons[0].hide();
-        cal_form.getComponent('text').getComponent('form').buttons[1].hide();
-        cal_form.getComponent('text').disable();
-        cal_windows.getComponent('week').disable();
-    }
+    var btnSave = new Ext.Button({
+        icon: '/static/images/icons/action_save.svg',
+        text: _('Save'),
+        handler: function() {
+            var ff = cal_form.getForm();
+            ff.submit({
+                params: {
+                    id_cal: id_cal
+                },
+                success: function(form, action) {
+                    Baseliner.message(_('Calendar'), action.result.msg);
+                    if (!id_cal || id_cal == '' || id_cal == -1) {
+                        id_cal = action.result.id_cal;
+                        cal_slots.load({
+                            url: '/job/calendar_slots',
+                            params: {
+                                panel: id,
+                                id_cal: id_cal,
+                                scripts: true
+                            }
+                        });
+                        cal_windows.show();
+                    }
+                },
+                failure: function(form, action) {
+                    Baseliner.message(_('Failure'), action.result.msg);
+                }
+            });
+        }
+    });
+
+    var btnDelete = new Ext.Button({
+        icon: '/static/images/icons/delete.svg',
+        text: _('Delete'),
+        handler: function() {
+            var ff = cal_form.getForm();
+            ff.submit({
+                params: {
+                    action: 'delete',
+                    id_cal: id_cal
+                },
+                success: function(form, action) {
+                    Baseliner.message(_('Calendar'), action.result.msg);
+                    id_cal = '';
+                    cal_windows.hide();
+                    Baseliner.closeCurrentTab();
+                },
+
+                failure: function(form, action) {
+                    Baseliner.message(_('Failure'), action.result.msg);
+                }
+            });
+        }
+    });
+
+    var btnClose = new Ext.Button({
+        icon: '/static/images/icons/delete.svg',
+        text: _('Close'),
+        cls: 'ui-comp-role-edit-close',
+        icon: IC('close.svg'),
+        handler: function() {
+            panel.destroy()
+        }
+    });
 
     var panel = new Ext.Panel({
         id: id2,
         autoScroll: true,
-         tbar: [
-            '->', {
-                    icon: '/static/images/icons/action_save.svg',
-                    text: _('Save'),
-                    handler: function() {
-                        var ff = cal_form.getForm();
-                        ff.submit({
-                            params: {
-                                id_cal: id_cal
-                            },
-                            success: function(form, action) {
-                                Baseliner.message(_('Calendar'), action.result.msg);
-                                if (!id_cal || id_cal == '' || id_cal == -1) {
-                                    id_cal = action.result.id_cal;
-                                    cal_slots.load({
-                                        url: '/job/calendar_slots',
-                                        params: {
-                                            panel: id,
-                                            id_cal: id_cal,
-                                            scripts: true
-                                        }
-                                    });
-                                    cal_windows.show();
-                                }
-                            },
-                            failure: function(form, action) {
-                                Baseliner.message(_('Failure'), action.result.msg);
-                            }
-                        });
-                    }
-                },{
-                   icon: '/static/images/icons/delete.svg',
-                   text: _('Delete'),
-                    handler: function() {
-                        var ff = cal_form.getForm();
-                        ff.submit({
-                           params: {
-                              action: 'delete',
-                                id_cal: id_cal
-                           },
-                           success: function(form, action) {
-                               Baseliner.message(_('Calendar'), action.result.msg);
-                                id_cal = '';
-                               cal_windows.hide();
-                                Baseliner.closeCurrentTab();
-                            },
-
-                           failure: function(form, action) {
-                               Baseliner.message(_('Failure'), action.result.msg);
-                            }
-                        });
-                   }
-               }, {
-                text: _('Close'),
-                cls: 'ui-comp-role-edit-close',
-                icon: IC('close.svg'),
-                handler: function() {
-                    panel.destroy()
-                }
-            }
+        tbar: [
+            '->', btnSave, btnDelete, btnClose
         ],
         items: [ cal_form, cal_windows ]
     });
+
+    if (!can_edit && !can_admin) {
+        btnSave.hide();
+        btnDelete.hide();
+        cal_form.getComponent('text').disable();
+        cal_windows.getComponent('week').disable();
+    }
+
     return panel;
 })
 
