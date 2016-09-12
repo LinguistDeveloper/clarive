@@ -3,11 +3,14 @@ use warnings;
 
 use Test::More;
 use Test::Deep;
+use Test::MonkeyMock;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
 use TestSetup;
+
+use Baseliner::Utils qw(_encode_json);
 
 use_ok 'Baseliner::Controller::Slot';
 
@@ -569,13 +572,211 @@ subtest 'permissions_calendar: returns an error when the user does not have perm
     cmp_deeply $c->stash->{json}, { success => \0, msg => 'You do not have permissions to open this calendar' };
 };
 
+subtest 'build_job_window: new job gets the correct calendar related if the project belongs to a group' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $group = TestUtils->create_ci( 'group', { contents => [ $project->mid ] } );
+
+    my $id_cal = TestSetup->create_calendar( name => 'Group', seq => '200', ns => '' . $group->mid );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $date = DateTime->now;
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success => \1,
+            cals    => [
+                {
+                    name   => 'Group',
+                    _id    => ignore(),
+                    active => ignore(),
+                    bl     => ignore(),
+                    id     => ignore(),
+                    ns     => ignore(),
+                    seq    => ignore()
+                }
+            ],
+            cis   => ignore(),
+            data  => ignore(),
+            stats => ignore()
+        }
+      };
+};
+
+subtest 'build_job_window: new job gets the correct first slot if the project belongs to a group' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $group = TestUtils->create_ci( 'group', { contents => [ $project->mid ] } );
+
+    my $id_cal = TestSetup->create_calendar( name => 'Group', seq => '200', ns => '' . $group->mid );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $date = DateTime->now;
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'Group (N)', 'N', ignore(), ];
+};
+
+subtest 'build_job_window: no calendar available' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $id_cal = TestSetup->create_calendar( name => 'Prod', seq => '100', bl => 'PROD' );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $date = DateTime->now;
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    is @{ $c->stash->{json}->{data} }, 0;
+};
+
+subtest 'build_job_window: get first slot from higher priority calendar' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $date = DateTime->now;
+
+    my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => '*' );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow ] );
+
+    my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '200', bl => 'TEST' );
+    my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'U' );
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'TEST (U)', 'U', ignore(), ];
+};
+
+subtest 'build_job_window: no slot available if higher priority is blocking' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $date = DateTime->now;
+
+    my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => '*' );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow ] );
+
+    my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '200', bl => 'TEST' );
+    my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B', days => [ $date->dow ] );
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    is @{ $c->stash->{json}->{data}[0] }, 0;
+};
+
+TODO: {
+    local $TODO = "Fix priority check in slots";
+
+    subtest 'build_job_window: slot available if higher priority is allowing' => sub {
+        _setup();
+
+        my $project = TestUtils->create_ci_project();
+
+        my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+        my $date = DateTime->now;
+
+        my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '200', bl => '*' );
+        my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow ] );
+
+        my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '100', bl => 'TEST' );
+        my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B', days => [ $date->dow ] );
+
+        my $params = {
+            bl           => 'TEST',
+            date_format  => '%Y-%m-%d',
+            job_contents => '[{"mid": "' . $changeset_mid . '"}]',
+            job_date     => $date
+        };
+
+        my $c = _build_c( req => { params => $params }, username => 'root' );
+
+        my $controller = _build_controller();
+        $controller->build_job_window($c);
+
+        cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'Common (N)', 'N', ignore(), ];
+    };
+}
+
 done_testing;
 
 sub _create_initial_slots {
     my (%params) = @_;
 
+    my @days = $params{days} ? @{$params{days}} : (0 .. 6);
+
     my @id_win;
-    for my $day ( 0 .. 6 ) {
+    for my $day ( @days ) {
         my $id_win = mdb->seq('calendar_window');
         push @id_win, $id_win;
         mdb->calendar_window->insert(
@@ -601,13 +802,13 @@ sub _build_controller {
 }
 
 sub _setup {
-    TestUtils->setup_registry();
+    TestUtils->setup_registry( 'Baseliner::Model::Topic', 'BaselinerX::Fieldlets', 'BaselinerX::Type::Fieldlet' );
     TestUtils->register_ci_events();
     TestUtils->cleanup_cis;
+
     mdb->calendar->drop;
     mdb->calendar_window->drop;
     mdb->role->drop;
-
 }
 
 sub _build_c {

@@ -102,6 +102,7 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
 
     my @rows;
     while ( my $r = $rs->next ) {
+        next if $query && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r ] );
         push @rows,
             {
             id          => $r->{id},
@@ -140,6 +141,7 @@ sub calendar_grid : Path('/job/calendar_grid') {
 
     $c->stash->{ns_query}
         = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
+
     $c->stash->{namespaces} = [];
 
     #$c->forward( '/namespace/load_namespaces' );
@@ -168,7 +170,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
             }
         }
 
-        if( $p->{action} eq 'create' || $p->{newAction} eq 'create')  {
+        if( ($p->{action} && $p->{action} eq 'create') || ($p->{newAction} && $p->{newAction} eq 'create') )  {
             @msgs = ( 'created', 'creating' );
 
             $p->{ns} = '/' unless length $p->{ns};
@@ -208,7 +210,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 }
             }
         }
-        elsif ( $p->{ action } eq 'delete' ) {
+        elsif ( $p->{action} && $p->{ action } eq 'delete' ) {
             @msgs = ( 'deleted', 'deleting' );
             mdb->calendar->remove({ id => ''.$p->{ id_cal } });
             #borramos las ventanas asociadas a ese calendario
@@ -420,6 +422,7 @@ that apply to a list of NS.
 sub build_job_window : Path('/job/build_job_window') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+
     $Baseliner::CI::_edge = 1;
     try {
         my $date = $p->{job_date};
@@ -448,7 +451,12 @@ sub build_job_window : Path('/job/build_job_window') {
             # recurse into ci relations up to depth
             my @related;
             push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }, docs_only => 1 ) ;
-            my @projects = $ci->children( depth => 1, where => { collection => 'project'}, docs_only => 1 ) ;
+            my @projects = $ci->children( depth => 1, where => { collection => 'project'} ) ;
+
+            for my $project ( @projects ) {
+                push @related, $project->parents( depth => 1, where => { collection => 'group'}, docs_only => 1 ) ;
+            }
+
             push @all_projects, @projects;
             push @related, @projects;
 

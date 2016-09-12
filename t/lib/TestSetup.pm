@@ -391,6 +391,67 @@ sub create_category {
     return "$id_cat";
 }
 
+sub create_changeset {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $project = $params{project} || TestUtils->create_ci_project();
+
+    my $rule_options = $params{rule_options} || {};
+    my $category_options = $params{category_options} || {};
+    my $user_options = $params{user_options} || {};
+    my $changeset_options = $params{changeset_options} || {};
+
+    my $id_changeset_rule = $self->create_rule_form(
+        rule_tree => [
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "id_category_status",
+                        "name_field"   => "Status",
+                        "fieldletType" => "fieldlet.system.status_new",
+                        "id_field"     => "status_new",
+                        "name_field"   => "status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "fieldletType" => "fieldlet.system.revisions",
+                        "id_field"     => "revisions",
+                        "bd_field"     => "revisions",
+                        "name_field"   => "Revisions",
+                    },
+                    "key" => "fieldlet.system.revisions",
+                }
+            }
+        ],
+        %$rule_options
+    );
+    my $id_changeset_category = $self->create_category( name => 'Changeset', id_rule => $id_changeset_rule, %$category_options );
+
+    my $user = $self->create_user( %$user_options );
+
+    my $changeset_mid = $self->create_topic(
+        id_category  => $id_changeset_category,
+        is_changeset => 1,
+        project     => [ $project ],
+        %$changeset_options
+    );
+}
+
 sub create_topic {
     my $class = shift;
     my (%params) = @_;
@@ -510,8 +571,10 @@ sub create_calendar {
     my $class = shift;
     my (%params) = @_;
 
+    my $ns = $params{ns} ? delete($params{ns}) : '/';
+
     my $id_cal = mdb->seq('calendar');
-    mdb->calendar->insert( { id => "$id_cal", active => 1, bl => '*', name => 'Calendar', %params } );
+    mdb->calendar->insert( { id => "$id_cal", active => 1, bl => '*', name => 'Calendar', ns => $ns, %params } );
 
     return "$id_cal";
 }
