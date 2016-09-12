@@ -13,7 +13,7 @@
     var can_admin = Cla.eval_boolean(<% $c->stash->{can_admin} %>);
     var can_edit = Cla.eval_boolean(<% $c->stash->{can_edit} %>);
 
-    var calendar_type_help = '<b>'+_('Job Slots')+':</b><br>';    
+    var calendar_type_help = '<b>'+_('Job Slots')+':</b><br>';
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
     calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
     calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
@@ -98,15 +98,15 @@
     });
 
     var _CurrentDate = new Date(<% $c->stash->{fecha_anyo} %>,<% $c->stash->{fecha_mes} - 1 %>, <% $c->stash->{fecha_dia} %>);
-    
+
     function _selectWeek(picker,t){
         var dd = new Date(t.dateValue);
         var startweekdate = new Date( t.dateValue).getFirstDateOfWeek();
-        var daycell = t.dayCell - dd.getDay() + 1;                          
+        var daycell = t.dayCell - dd.getDay() + 1;
         var amount = 7;
         var reverseAdd = false;
         var monthcell = t.monthCell;
-        
+
         for (var i=0,ni;i<amount;++i) {
             curmonth = startweekdate.getMonth();
             ni = (reverseAdd ? amount-1-i : i);
@@ -114,19 +114,19 @@
                 picker.markDateAsSelected(startweekdate.clearTime().getTime(),true,monthcell,daycell+ni,false);
             }
             startweekdate = startweekdate.add(Date.DAY,1);
-        }   
+        }
     }
-    
+
     function _setSelectedWeek(picker, date){
         var _dates = [];
         var startweekdate = date.getFirstDateOfWeek();
-        var amount = 7;     
+        var amount = 7;
         for (var i=0,ni;i<amount;++i) {
             _dates.push(startweekdate);
             startweekdate = startweekdate.add(Date.DAY,1);
-        }   
+        }
         picker.clearSelectedDates();
-        picker.setSelectedDates(_dates);        
+        picker.setSelectedDates(_dates);
     }
 
     var cal_windows = new Ext.Panel({
@@ -135,10 +135,10 @@
         frame: true,
         title: _('Calendar Windows'),
         hidden: (id_cal == -1 ? true : false),
-        cls:'job-slots-panel',
+        cls: 'job-slots-panel',
         headerCssClass: 'job-slots-panel-header',
-        bodyCssClass:'job-slots-panel-body',
-        bwrapCssClass:'job-slots-panel-bwrap',
+        bodyCssClass: 'job-slots-panel-body',
+        bwrapCssClass: 'job-slots-panel-bwrap',
         autoHeight: true,
         autoWidth: true,
         defaults: {
@@ -147,8 +147,8 @@
         height: 450,
         items: [{
             itemId: 'week',
-            cls:'job-slots-panel-item',
-            bodyCssClass:'job-slots-panel-item-body',
+            cls: 'job-slots-panel-item',
+            bodyCssClass: 'job-slots-panel-item-body',
             layout: 'column',
             columnWidth: 0.7,
             minWidth: 70,
@@ -159,7 +159,7 @@
         }, {
             layout: 'column',
             columnWidth: 0.3,
-            cls:'job_calendar_edit_cal_windows_column',
+            cls: 'job_calendar_edit_cal_windows_column',
             frame: true,
             autoHeight: true,
             autoWidth: true,
@@ -168,7 +168,7 @@
                     itemId: 'date',
                     xtype: 'datepickerplus',
                     value: _CurrentDate,
-                    cls:'job_calendar_edit_cal_windows',
+                    cls: 'job_calendar_edit_cal_windows',
                     noOfMonth: 1,
                     multiSelection: true,
                     allowMouseWheel: false,
@@ -289,7 +289,7 @@
         tbar: [
             '->', btnSave, btnDelete, btnClose
         ],
-        items: [ cal_form, cal_windows ]
+        items: [cal_form, cal_windows]
     });
 
     if (!can_edit && !can_admin) {
@@ -301,6 +301,3 @@
 
     return panel;
 })
-
-
-
