@@ -796,10 +796,11 @@ sub by_status : Local {
         foreach my $status_name ( keys %statuses_map ) {
             push @data, [ $status_name, $statuses_map{$status_name} ];
         }
-        $c->stash->{json} = { success => \1, data=>\@data };
-    } catch {
+        $c->stash->{json} = { success => \1, data => \@data };
+    }
+    catch {
         my $err = shift;
-        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+        $c->stash->{json} = { success => \0, msg => _loc( "Error grouping jobs: %1", $err ) };
     };
     $c->forward('View::JSON');
 }

@@ -9569,7 +9569,7 @@ msgstr "Refresco Auto"
 #: root/dashlets/topics_by_date_line_config.js
 #: root/dashlets/topics_period_burndown_config.js
 msgid "Week"
-msgstr ""
+msgstr "Semana"
 
 #: root/comp/role_detail.js
 msgid "Role Name"
@@ -11058,14 +11058,6 @@ msgstr ""
 msgid "Running jobs"
 msgstr "Pases en Ejecución"
 
-#: root/dashlets/baselines.js
-msgid "[%=bl%] - [%=totOk%]/[%=total%] OK"
-msgstr ""
-
-#: root/dashlets/baselines.js
-msgid "[%=bl%] - [%=totError%]/[%=total%] ERROR"
-msgstr ""
-
 #: root/dashlets/baselines_config.js
 msgid "Number of days before today to list jobs"
 msgstr ""
@@ -11386,23 +11378,27 @@ msgstr ""
 
 #: root/dashlets/job_chart.js
 msgid "Last day"
-msgstr ""
+msgstr "Último día"
 
 #: root/dashlets/job_chart.js
 msgid "Last week"
-msgstr ""
+msgstr "Última semana"
 
 #: root/dashlets/job_chart.js
 msgid "Last month"
-msgstr ""
+msgstr "Último mes"
 
 #: root/dashlets/job_chart.js
 msgid "Last quarter"
-msgstr ""
+msgstr "Último cuatrimestre"
 
 #: root/dashlets/job_chart.js
 msgid "Last year"
-msgstr ""
+msgstr "Último año"
+
+#: root/dashlets/job_chart_config.js
+msgid "Job chart"
+msgstr "Gráfica de pases"
 
 #: root/dashlets/job_chart_config.js
 #: root/dashlets/job_distribution_day_config.js
@@ -11422,7 +11418,7 @@ msgstr "Día"
 #: root/dashlets/topics_by_date_line_config.js
 #: root/dashlets/topics_period_burndown_config.js
 msgid "Quarter"
-msgstr ""
+msgstr "Cuatrimestre"
 
 #: root/dashlets/job_chart_config.js
 #: root/dashlets/job_distribution_day_config.js
@@ -14395,9 +14391,6 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
-
-#~ msgid "Maximum number of topics to list"
-#~ msgstr "Número máximo de tópicos a listar"
 
 #~ msgid "Detach Files"
 #~ msgstr "Desligar Ficheros"
