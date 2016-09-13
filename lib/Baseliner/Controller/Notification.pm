@@ -157,39 +157,37 @@ sub list_type_recipients : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
-    my @type_recipients;
-    if ($p->{action} eq 'SEND'){
-        @type_recipients = grep {$_ ne 'Default'} $c->model('Notification')->get_type_recipients;
-    }else {
-        @type_recipients = $c->model('Notification')->get_type_recipients;
+    my @type_recipients = Baseliner::Model::Notification->new->get_type_recipients;
+    if ( $p->{action} && $p->{action} eq 'SEND' ) {
+        @type_recipients = grep { $_ ne 'Default' } @type_recipients;
     }
-    my @recipients = map {+{type_recipient => $_}} @type_recipients;
+
+    my @recipients = map { +{ id => $_, type_recipient => _loc($_) } } @type_recipients;
 
     $c->stash->{json} = \@recipients;
     $c->forward('View::JSON');
 }
 
-sub get_type_obj_recipients{
-    my ( $self, $type ) = @_;
-    my $obj;
-
-    given ($type) {
-        when ('Default')    { $obj = 'none'; }
-        when ('Emails')     { $obj = 'textfield'; }
-        when ('Fields')     { $obj = 'textfield'; }
-        default             { $obj = 'combo'; }
-    };
-    return $obj;
-}
-
 sub get_recipients : Local {
     my ( $self, $c, $type ) = @_;
 
-    try{
-        my $recipients = $c->model('Notification')->get_recipients($type);
-        my $obj = $self->get_type_obj_recipients($type);
-        $c->stash->{json} = { data => $recipients, obj => $obj ,success => \1 };
-    }catch{
+    try {
+        my $recipients = Baseliner::Model::Notification->new->get_recipients($type);
+        my $field_type;
+
+        if ( $type && $type eq 'Default' ) {
+            $field_type = 'none';
+        }
+        elsif ( $type && $type eq 'Emails' ) {
+            $field_type = 'textfield';
+        }
+        else {
+            $field_type = 'combo';
+        }
+
+        $c->stash->{json} = { data => $recipients, field_type => $field_type, success => \1 };
+    }
+    catch {
         $c->stash->{json} = { msg => _loc('Se ha producido un error'), success => \0 };
     };
     $c->forward('View::JSON');

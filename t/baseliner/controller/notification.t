@@ -6,6 +6,7 @@ use Test::More;
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils ':catalyst';
+use TestSetup;
 
 use_ok 'Baseliner::Controller::Notification';
 
@@ -212,6 +213,75 @@ subtest 'save_notification: saves the step in the scope of event.job.start_step'
     is $notification->{data}->{scopes}->{step}[0]->{name}, 'RUN';
 };
 
+subtest 'list_type_recipients: gets the list of type recipients' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c();
+    $controller->list_type_recipients($c);
+
+    is_deeply $c->stash->{json},
+        [
+        { type_recipient => 'Default', id => 'Default' },
+        { type_recipient => 'Users',   id => 'Users' },
+        { type_recipient => 'Roles',   id => 'Roles' },
+        { type_recipient => 'Actions', id => 'Actions' },
+        { type_recipient => 'Fields',  id => 'Fields' },
+        { type_recipient => 'Owner',   id => 'Owner' },
+        { type_recipient => 'Emails',  id => 'Emails' },
+        ];
+};
+
+subtest 'get_recipients: gets recipients type Default' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c();
+    $controller->get_recipients( $c, 'Default' );
+
+    is_deeply $c->stash->{json},
+        {
+        success    => \1,
+        data       => [ { name => 'Default', id => 'Default' } ],
+        field_type => 'none'
+        };
+};
+
+subtest 'get_recipients: gets recipients type Emails' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c();
+    $controller->get_recipients( $c, 'Emails' );
+
+    is_deeply $c->stash->{json},
+        {
+        success    => \1,
+        data       => [ { name => 'Emails', id => 'Emails' } ],
+        field_type => 'textfield'
+        };
+};
+
+subtest 'get_recipients: gets recipients type Users' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c();
+    $controller->get_recipients( $c, 'Users' );
+
+    is_deeply $c->stash->{json},
+        {
+        success    => \1,
+        data       => [ { name => 'user', id => $user->mid, description => '' } ],
+        field_type => 'combo'
+        };
+};
+
 done_testing;
 
 sub _setup {
@@ -221,8 +291,12 @@ sub _setup {
 
     mdb->notification->drop;
     mdb->index_all('notification');
+    mdb->role->drop;
 
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Auth', 'BaselinerX::Job', 'Baseliner::Model::Jobs' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event', 'BaselinerX::Auth', 'BaselinerX::Job', 'Baseliner::Model::Jobs',
+        'BaselinerX::CI'
+    );
 }
 
 sub _build_controller {
