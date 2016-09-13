@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 20.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<!-- Generator: Adobe Illustrator 20.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
-	.st0{display:none;}
-	.st1{fill:#3FA9F5;}
+	.st0{fill:#3FA9F5;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="81" height="90" xlink:href="../../../../../../Desktop/Screen Shot 2016-08-12 at 10.27.17.png"  transform="matrix(0.1778 0 0 0.1778 1.75 1.75)">
-	</image>
-</g>
-<g id="Layer_2">
-	<path class="st1" d="M15,3.5l-3-2l-11,0v14h14V3.5z M14,14.5H2v-12h9v2h3V14.5z"/>
-</g>
-<g id="Layer_3">
-	<polygon class="st1" points="1,14.5 9.6,9 15,14.5 	"/>
-	<polygon class="st1" points="2,6 7.2,9.4 2,12.5 	"/>
-	<circle class="st1" cx="8.5" cy="6" r="1.5"/>
-</g>
+<path class="st0" d="M12,1H1v4.5V12v3h14V3L12,1z M9.6,8.5L2.3,14H2v-2.5l5.2-2.6L2,6V2h9v2h3v9.8L9.6,8.5z"/>
+<circle class="st0" cx="8.5" cy="6" r="1.5"/>
 </svg>

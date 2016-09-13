@@ -6,12 +6,7 @@
 	.st0{display:none;}
 	.st1{fill:#404040;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="16" height="16" xlink:href="../../../../../../opt/clarive/clarive/root/static/images/icons/undo.png" >
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<path class="st1" d="M8,1C6.1,1,4.3,1.8,3,3.1L1.3,2.4L2,8l4.5-3.4L5,4c0.9-0.6,1.9-1,3-1c2.7,0,5,2.3,5,5c0,2.7-2.3,5-5,5l0,2
 		c3.9,0,7-3.1,7-7C15,4.2,11.9,1,8,1z"/>
 </g>

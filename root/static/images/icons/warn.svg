@@ -7,12 +7,7 @@
 	.st1{fill:none;stroke:#F7A808;stroke-width:1.4;stroke-miterlimit:10;}
 	.st2{fill:#F7A808;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="72" height="72" xlink:href="../../../../../../opt/clarive/clarive/root/static/images/warnmsg.png"  transform="matrix(1 0 0 1 -28 -28)">
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<polygon class="st1" points="8.2,1.9 1.5,14.1 14.5,14.1 	"/>
 	<rect x="7.6" y="10.9" class="st2" width="1.5" height="1.4"/>
 	<polygon class="st2" points="8.9,10.5 7.7,10.5 7.5,8.1 7.5,5.9 9.1,5.9 9.1,8.1 	"/>

@@ -9,12 +9,7 @@
 	.st3{fill:none;stroke:#F7A808;stroke-miterlimit:10;}
 	.st4{fill:#F7A808;}
 </style>
-<g id="Layer_1_1_" class="st0">
-	
-		<image style="display:inline;overflow:visible;enable-background:new    ;" width="16" height="16" xlink:href="../../../../../../../../opt/clarive/clarive/root/static/images/icons/eclipse/filterfolder.gif"  transform="matrix(1 0 0 1 5.500000e-02 -0.36)">
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<rect x="9.1" y="11.6" class="st1" width="1" height="4"/>
 	<line class="st2" x1="9.6" y1="0.6" x2="9.6" y2="5.1"/>
 	<line class="st2" x1="9.6" y1="11.1" x2="9.6" y2="15.6"/>
