@@ -1,4 +1,8 @@
 (function(params){
+    Cla.help_push({
+        title: _('Job chart'),
+        path: 'rules/palette/dashlets/job-chart'
+    });
     var common = params.common_options || Cla.dashlet_common(params);
 
     var data = params.data;
@@ -42,7 +46,7 @@
               bodyStyle: 'background:transparent;',
               items: [
                     Baseliner.ci_box({ name:'bls', fieldLabel:_('Which bls do you want to see'), allowBlank: true,
-                        'class':'bl', value: data.bls, force_set_value: true, singleMode: false })
+                        'class':'BaselinerX::CI::bl', valueField: 'name', value: data.bls, force_set_value: true, singleMode: false })
               ]
             }
           ]

@@ -633,162 +633,172 @@ sub roles : Local : Does('Ajax') {
 #   (used in ci forms)
 
 sub store : Local : Does('Ajax') {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
+    my ( $self, $c ) = @_;
+    my $p        = $c->req->params;
 
-    if(ref $p->{role} ne 'ARRAY' && $p->{role}){
-        my @a = split(',', $p->{role});
+    if ( ref $p->{role} ne 'ARRAY' && $p->{role} ) {
+        my @a = split( ',', $p->{role} );
         $p->{role} = \@a;
     }
-    elsif(ref $p->{class} ne 'ARRAY' && $p->{class}){
-        my @a = split(',', $p->{class});
+    elsif ( ref $p->{class} ne 'ARRAY' && $p->{class} ) {
+        my @a = split( ',', $p->{class} );
         $p->{class} = \@a;
     }
 
-    my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
+    my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : '';    # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
 
     # in cache ?
-    my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
+    my $mid_param = $p->{mid} || $p->{from_mid} || $p->{to_mid};
     my $cache_key;
-    if( defined $mid_param ) {
-        $cache_key = { d=>'ci:store', mid=>"$mid_param", p=>$p }; # ["ci:store:$mid_param:", $p ];
-        if( my $cc = cache->get( $cache_key ) ) {   # not good during testing mode
-            #$c->stash->{json} = $cc;
-            #return $c->forward('View::JSON');
+    if ( defined $mid_param ) {
+        $cache_key = { d => 'ci:store', mid => "$mid_param", p => $p };     # ["ci:store:$mid_param:", $p ];
+        if ( my $cc = cache->get($cache_key) ) {                            # not good during testing mode
+                                                                            #$c->stash->{json} = $cc;
+                                                                            #return $c->forward('View::JSON');
         }
     }
 
-    my $bl = delete $p->{bl};
-    my $name = delete $p->{name};
+    my $bl         = delete $p->{bl};
+    my $name       = delete $p->{name};
     my $collection = delete $p->{collection};
-    my $action = delete $p->{action};
-    my $nin = delete $p->{nin};
-    my $where = {};
+    my $action     = delete $p->{action};
+    my $nin        = delete $p->{nin};
+    my $where      = {};
+    my $class      = delete $p->{class};
     $where->{active} = '1';
-    if( ref $nin eq 'HASH') {
-        push @{ $where->{ '$and' } }, { $_ => mdb->nin($nin->{$_}) } for keys %$nin;
-    } elsif( length $nin ) {
+    if ( ref $nin eq 'HASH' ) {
+        push @{ $where->{'$and'} }, { $_ => mdb->nin( $nin->{$_} ) } for keys %$nin;
+    }
+    elsif ( length $nin ) {
         _fail "CI store: invalid parameter value: `nin`: $nin";
     }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
     if ( defined $mid_param ) {
         my $w = {};
-        $w->{from_mid} = $p->{mid} if $p->{mid};
+        $w->{from_mid} = $p->{mid}      if $p->{mid};
         $w->{from_mid} = $p->{from_mid} if $p->{from_mid};
-        $w->{to_mid}   = $p->{to_mid} if $p->{to_mid};
-        $w->{rel_type} = $p->{rel_type}  if defined $p->{rel_type};
+        $w->{to_mid}   = $p->{to_mid}   if $p->{to_mid};
+        $w->{rel_type} = $p->{rel_type} if defined $p->{rel_type};
 
         my $dir;
         $dir = 'to_mid' if $p->{mid} || $p->{from_mid};
         $dir = 'from_mid' if $p->{to_mid};
 
         my @rels = map { $$_{$dir} } mdb->master_rel->find($w)->all;
-        $where->{mid} = mdb->in( @rels );
+        $where->{mid} = mdb->in(@rels);
     }
 
-    if( length $bl && $bl ne '*' ) {
-        $where->{bl} = qr/($bl|\*)/;  # XXX XXX XXX  use rels from master_rel?
+    if ( length $bl && $bl ne '*' ) {
+        $where->{bl} = qr/($bl|\*)/;    # XXX XXX XXX  use rels from master_rel?
     }
 
     # used by value in a CIGrid
     my $mids;
-    if( exists $p->{mids} ) {
+    if ( exists $p->{mids} ) {
         $mids = delete $p->{mids};
-        if( length $mids && $mids ne 'default' ) {
-            $mids = [ grep { defined } split /[\s,]+/, $mids ] unless ref $mids eq 'ARRAY';
-        } else {  # no value sent, but key exists
-            $mids = [];  # otherwise, it will return all cis
+        if ( length $mids && $mids ne 'default' ) {
+            $mids = [ grep {defined} split /[\s,]+/, $mids ] unless ref $mids eq 'ARRAY';
+        }
+        else {                          # no value sent, but key exists
+            $mids = [];                 # otherwise, it will return all cis
         }
     }
 
     my @data;
     my $total = 0;
 
-    if( my $class = $p->{class} // $p->{classname} // $p->{isa} // ($collection ? 'BaselinerX::CI::'.$collection : '') ) {
+    if ( $class // $p->{classname} // $p->{isa}
+        // ( $collection ? 'BaselinerX::CI::' . $collection : '' ) )
+    {
 
-        if( $p->{security} ){  #Parámetro desde informes
+        if ( $p->{security} ) {         #Parámetro desde informes
             my @security;
-            my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
-            for my $collections ( @cols_roles ) {
-                if(exists $collections->{$class}){
+            my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username => $c->username );
+            for my $collections (@cols_roles) {
+                if ( exists $collections->{$class} ) {
                     push @security, keys $collections->{$class};
                 }
             }
-            $mids = [ _array($mids), _unique @security];
+            $mids = [ _array($mids), _unique @security ];
         }
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/ && ref $class ne 'ARRAY';
-
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
     }
-    elsif( my $role = $p->{role} ) {
+    elsif ( my $role = $p->{role} ) {
         my @roles;
         for my $r ( _array $role ) {
-            if( $r !~ /^Baseliner/ ) {
-                $r = uc($r) eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
+            if ( $r !~ /^Baseliner/ ) {
+                $r = uc($r) eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r";
             }
             push @roles, $r;
         }
-        my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
-    }
-    else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , filter=>$p->{filter}, no_yaml=>$p->{with_data}?0:1);
-        #_fail( 'No class or role supplied' );
+        $class = [ packages_that_do(@roles) ];
     }
 
-    #_debug \@data if $mids;
+    ( $total, @data ) = $self->tree_objects(
+        class    => $class,
+        parent   => 0,
+        start    => $p->{start},
+        limit    => $p->{limit},
+        order_by => $p->{order_by},
+        query    => $query,
+        where    => $where,
+        mids     => $mids,
+        pretty   => $p->{pretty},
+        filter   => $p->{filter},
+        no_yaml  => $p->{with_data} ? 0 : 1
+    );
 
     # variables
-    if( $p->{with_vars} ) {  # $p->{no_vars} ) {  # show variables always, with_vars deprecated
+    if ( $p->{with_vars} ) {    # $p->{no_vars} ) {  # show variables always, with_vars deprecated
         my %vp = (
-            $p->{role}
-            ? (role=>$p->{role})
-            : ($p->{classname} || $p->{class} || $p->{isa})
-                ? (classname=>$p->{class}||$p->{classname})
-                : ()
-            );
+              $p->{role} ? ( role => $p->{role} )
+            : ( $p->{classname} || $p->{class} || $p->{isa} ) ? ( classname => $p->{class} || $p->{classname} )
+            :                                                   ()
+        );
 
-        my @vars = Baseliner::Role::CI->variables_like_me( %vp );
-        push @data, grep { defined } map {
-            my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
+        my @vars = Baseliner::Role::CI->variables_like_me(%vp);
+        push @data, grep {defined} map {
+            my $cn = $_->var_ci_class ? 'BaselinerX::CI::' . $_->var_ci_class : $_->description;
             length $query && $_->name !~ /$query/i ? undef : +{
-                  _id=> 'var-'. $_->mid,
-                  _is_leaf=> \1,
-                  _parent=> undef,
-                  active=> \1,
-                  bl=> $_->bl,
-                  class=> $cn,
-                  classname => $cn,
-                  collection=> 'variable',
-                  data=> {},
-                  description=> '',
-                  icon=> $_->icon,
-                  #item: wtscm1,
-                  mid=> '${'.$_->name.'}',
-                  moniker=> $_->moniker,
-                  name => 'variable: ${' . $_->name . '}',
-                  pretty_properties=> '',
-                  properties=> undef,
-                  ts=>$_->ts,
-                  type=>  'object',
-                  versionid=> $_->versionid,
-             };
+                _id         => 'var-' . $_->mid,
+                _is_leaf    => \1,
+                _parent     => undef,
+                active      => \1,
+                bl          => $_->bl,
+                class       => $cn,
+                classname   => $cn,
+                collection  => 'variable',
+                data        => {},
+                description => '',
+                icon        => $_->icon,
+
+                #item: wtscm1,
+                mid               => '${' . $_->name . '}',
+                moniker           => $_->moniker,
+                name              => 'variable: ${' . $_->name . '}',
+                pretty_properties => '',
+                properties        => undef,
+                ts                => $_->ts,
+                type              => 'object',
+                versionid         => $_->versionid,
+            };
         } @vars;
     }
 
-    if( ref $mids ) {
+    if ( ref $mids ) {
+
         # return data ordered like the mids
         my @data_ordered;
         my %h = map { $_->{mid} => $_ } @data;
-        exists $h{$_} and push @data_ordered, delete $h{ $_ } for @$mids;
-        push @data_ordered, grep { defined } values %h; # the rest of them at the bottom
+        exists $h{$_} and push @data_ordered, delete $h{$_} for @$mids;
+        push @data_ordered, grep {defined} values %h;    # the rest of them at the bottom
         @data = @data_ordered;
     }
 
-    $c->stash->{json} = { data=>\@data, totalCount=>$total };
+    $c->stash->{json} = { data => \@data, totalCount => $total };
     cache->set( $cache_key, $c->stash->{json} ) if $cache_key;
     $c->forward('View::JSON');
 }

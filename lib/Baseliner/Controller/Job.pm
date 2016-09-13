@@ -15,6 +15,7 @@ use Baseliner::Model::Permissions;
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils;
 use BaselinerX::CI::job;
+use Baseliner::DataView::Job;
 
 BEGIN {
     ## Oracle needs this
@@ -774,36 +775,32 @@ sub jc_store : Local  {
 #
 sub by_status : Local {
     my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
+    my $p          = $c->request->parameters;
+    my $username   = $c->username;
+    my @filter_bls = _array $p->{bls};
+    my $period     = $p->{period} // '1D';
+    my @data;
+    my %statuses_map;
 
-    my $project_id = $p->{project_id};
-    my $topic_mid = $p->{topic_mid};
-
-    my $period = $p->{period} // '1D';
     try {
-        my %st;
-        my $d = substr(Class::Date->now - $period,0,10);
+        my $rs = Baseliner::DataView::Job->new->find(
+            username => $username,
+            filter   => { bls => \@filter_bls, period => $period }
+        );
 
-        my $wh = { endtime=>{'$gt'=>"$d"} };  # TODO params control time range
-        if ( $project_id ) {
-            $wh->{projects} = $project_id;
+        my $statuses = $rs->fields( { status => 1, _id => 0 } );
+        foreach my $status ( $statuses->all ) {
+            $statuses_map{ $status->{status} }++;
         }
 
-        if ( $topic_mid ) {
-            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
-            $wh->{changesets} = mdb->in(@related_topics);
+        foreach my $status_name ( keys %statuses_map ) {
+            push @data, [ $status_name, $statuses_map{$status_name} ];
         }
-
-
-        map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
-        my @data = ();
-        for ( keys %st ) {
-            push @data, [$_,$st{$_}];
-        }
-        $c->stash->{json} = { success => \1, data=>\@data };
-    } catch {
+        $c->stash->{json} = { success => \1, data => \@data };
+    }
+    catch {
         my $err = shift;
-        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+        $c->stash->{json} = { success => \0, msg => _loc( "Error grouping jobs: %1", $err ) };
     };
     $c->forward('View::JSON');
 }

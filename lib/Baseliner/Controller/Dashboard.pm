@@ -14,6 +14,7 @@ use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Dashboard::TopicsBurndown;
 use Baseliner::RuleRunner;
+use Baseliner::DataView::Job;
 use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line parse_dt);
 
 with 'Baseliner::Role::ControllerValidator';
@@ -1721,41 +1722,32 @@ sub list_baseline : Local {
         );
 
         @jobs = ( @jobs_ok, @jobs_ko );
-
         foreach my $entorno (@filter_bls) {
-            my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl )
-                = ( 0, 0, 0, 0, 0 );
+            my $data = {};
             @temps = grep { $_->{_id} eq $entorno } @jobs;
             foreach my $temp (@temps) {
-                $bl = $temp->{_id};
+                $data->{bl} = $temp->{_id};
                 if ( $temp->{result} eq 'OK' ) {
-                    $totOk = $temp->{tot};
+                    $data->{totOk} = $temp->{tot};
                 }
                 else {
-                    $totError = $temp->{tot};
+                    $data->{totError} = $temp->{tot};
                 }
             } ## end foreach my $temp ( @temps )
-            $total = $totOk + $totError;
-            if ($total) {
-                $porcentOk    = $totOk * 100 / $total;
-                $porcentError = $totError * 100 / $total;
+            $data->{total} = $data->{totOk} + $data->{totError};
+            if ($data->{total}) {
+                $data->{percentOk}   = $data->{totOk} * 100 / $data->{total};
+                $data->{percentError} = $data->{totError} * 100 / $data->{total};
             }
             else {
-                $bl           = $entorno;
-                $totOk        = '';
-                $totError     = '';
-                $porcentOk    = 0;
-                $porcentError = 0;
+                $data->{bl}           = $entorno;
+                $data->{totOk}        = '';
+                $data->{totError}     = '';
+                $data->{percentOk}    = 0;
+                $data->{percentError} = 0;
             } ## end else [ if ( $total ) ]
-            push @datas,
-                {
-                bl           => $bl,
-                porcentOk    => $porcentOk,
-                totOk        => $totOk,
-                total        => $total,
-                totError     => $totError,
-                porcentError => $porcentError
-                };
+            push @datas, $data;
+
         }
     }
     $c->stash->{json} = {
@@ -1766,45 +1758,39 @@ sub list_baseline : Local {
 }
 
 sub viewjobs : Local {
-    my ( $self, $c, $days, $type, $bl, $id_project ) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
 
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_with_action(username => $c->username,
-                                                                            action => 'action.job.viewall',
-                                                                            level => 1);
-    if ( $id_project ) {
-        @ids_project = ($id_project);
-    }
-    #Filtramos por la parametrización cuando no son todos
-    # if($config->{projects} ne 'ALL'){
-    #     @ids_project = grep {$_ =~ $config->{projects}} @ids_project;
-    # }
-
+    my $period     = $p->{period};
+    my $status     = $p->{status};
+    my @filter_bls = _array $p->{bl};
+    my $username   = $c->username;
     my @jobs;
+    my $where = {};
+    my @bl_permissions;
 
-    if($type){
-        my @status;
-        given ($type) {
-            when ('ok') {
-                @status = ('FINISHED');
-            }
-            when ('nook'){
-                @status = ('ERROR','CANCELLED','KILLED','REJECTED');
-            }
+    if ($status) {
+        if ( $status eq 'ok' ) {
+            $where->{status} = 'FINISHED';
         }
-
-        my $days = $days . 'D';
-        my $start = mdb->now - $days;
-        $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
-
-        @jobs = ci->job->find({ projects => mdb->in(@ids_project), endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
-
-    }else{
-        @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(($bl)) })->all;
+        elsif ( $status eq 'nook' ) {
+            $where->{status} = mdb->in( 'ERROR', 'CANCELLED', 'KILLED', 'REJECTED' );
+        }
+        else {
+            $where->{status} = $status;
+        }
     }
 
-    $c->stash->{jobs} = @jobs ? join(',', map {$_->{mid}} @jobs) : -1;
+    my $rs = Baseliner::DataView::Job->new->find(
+        username => $username,
+        where    => $where,
+        filter   => { bls => \@filter_bls, period => $period }
+    );
+
+    @jobs = $rs->all;
+
+    $c->stash->{jobs} = @jobs ? join( ',', map { $_->{mid} } @jobs ) : 0;
     $c->forward('/job/monitor/Dashboard');
 }
 

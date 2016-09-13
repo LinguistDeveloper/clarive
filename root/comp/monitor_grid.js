@@ -1427,11 +1427,6 @@
             Baseliner.hideLoadingMaskFade(grid.getEl());
         });
 
-
-        grid.on("activate", function(){
-            grid.setTitle(_('Monitor'));
-        });
-
     var first_load = true;
 
     // Yellow row selection

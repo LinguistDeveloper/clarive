@@ -10929,14 +10929,6 @@ msgstr ""
 msgid "Running jobs"
 msgstr ""
 
-#: root/dashlets/baselines.js
-msgid "[%=bl%] - [%=totOk%]/[%=total%] OK"
-msgstr ""
-
-#: root/dashlets/baselines.js
-msgid "[%=bl%] - [%=totError%]/[%=total%] ERROR"
-msgstr ""
-
 #: root/dashlets/baselines_config.js
 msgid "Number of days before today to list jobs"
 msgstr ""
@@ -11273,6 +11265,10 @@ msgstr ""
 
 #: root/dashlets/job_chart.js
 msgid "Last year"
+msgstr ""
+
+#: root/dashlets/job_chart_config.js
+msgid "Job chart"
 msgstr ""
 
 #: root/dashlets/job_chart_config.js

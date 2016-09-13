@@ -1,13 +1,11 @@
 (function(params){ 
     var id = params.id_div;
 
-    var project_id = params.project_id;
     var graph;
     var graph_type = params.data.type || 'donut';
     var graph_period = params.data.period || '1M';
     var graph_title;
-    var topic_mid = params.topic_mid;
-
+    var bls = params.data.bls;
 
     if ( graph_period == '1D') {
       graph_title = _('Last day');
@@ -27,13 +25,41 @@
         graph_period = period;
         if (graph) graph.unload();
 
-        Cla.ajax_json('/job/by_status', { topic_mid: topic_mid, project_id: project_id, period: period, _ignore_conn_errors: true  }, function(res){
-                c3.generate({
-                     bindto: '#'+id,
-                     data: {
-                         columns: res.data,
-                         type : graph_type,
-                         colors: {'FINISHED':'#5cb85c','ERROR':'#d9534f'}
+        Cla.ajax_json('/job/by_status', {
+                period: period,
+                bls: bls,
+                _ignore_conn_errors: true
+            }, function(res) {
+            var colors = {
+                'FINISHED': '#5cb85c',
+                'ERROR': '#d9534f'
+            };
+            for (key in colors) {
+                colors[_(key)] = colors[key];
+            }
+
+            var labelNames = {};
+            for (var i = 0; i < res.data.length; i++) {
+                var nameLabel = res.data[i][0];
+                var label = _(nameLabel);
+                labelNames[nameLabel] = label;
+            }
+
+            c3.generate({
+                    bindto: '#' + id,
+                    data: {
+                        columns: res.data,
+                        type: graph_type,
+                        colors: colors,
+                        names: labelNames,
+                        onclick: function(data, index) {
+                            Baseliner.add_tabcomp('/dashboard/viewjobs', _(data.id), {
+                                period: period,
+                                status: data.id,
+                                bl: bls,
+                                clear_filter: 1
+                            });
+                        },
                      },
                      axis: {
                        x : {
@@ -76,7 +102,7 @@
 
                                 if (! text) {
                                     title = titleFormat ? titleFormat(d[i].x) : d[i].x;
-                                    text = "<table class='" + $$.CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + title + "</th></tr>" : "");
+                                    text = "<table class='" + $$.CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + _(title) + "</th></tr>" : "");
                                 }
 
                                 name = nameFormat(d[i].name);
@@ -84,7 +110,7 @@
                                 bgcolor = $$.levelColor ? $$.levelColor(d[i].value) : color(d[i].id);
 
                                 text += "<tr class='" + $$.CLASS.tooltipName + "-" + d[i].id + "'>";
-                                text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>&nbsp;" + name + "</td>";
+                                text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>&nbsp;" + _(name) + "</td>";
                                 if ( isNaN(d[i].ratio) ) {
                                  text += "<td class='value'>&nbsp;" + d[i].value + "</td>";
                                 } else {

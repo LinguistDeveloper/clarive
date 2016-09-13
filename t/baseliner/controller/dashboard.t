@@ -14,6 +14,7 @@ use Test::MonkeyMock;
 use Clarive::ci;
 use Clarive::mdb;
 use Class::Date;
+use Capture::Tiny qw(capture);
 use Baseliner::Controller::Dashboard;
 
 our $SECS_IN_DAY = 3600 * 24;
@@ -957,6 +958,144 @@ subtest 'topics_burndown_ng: sends correct args to dashboard when topic and fiel
       };
 };
 
+subtest 'viewjobs: returns mid jobs filtered by status' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+
+    my $project           = TestUtils->create_ci_project;
+    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $user              = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+    my $topic_mid         = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
+    my $id_rule           = TestSetup->create_rule( rule_when => 'promote' );
+    my $job_ci;
+    my $job_ci2;
+    my $job_ci3;
+
+    capture {
+        $job_ci = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+            bl           => 'PROD'
+        );
+    };
+    capture {
+        $job_ci2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+            bl           => '*'
+        );
+    };
+    capture {
+        $job_ci3 = TestSetup->create_job(
+            final_status => 'CANCELLED',
+            changesets   => [$topic_mid],
+            bl           => '*'
+        );
+    };
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { status => 'FINISHED' } } );
+
+    $controller->viewjobs($c);
+
+    is $c->{stash}->{jobs}, $job_ci->{mid} . ',' . $job_ci2->{mid};
+};
+
+subtest 'viewjobs: returns mid jobs filtered by period' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+
+    my $project   = TestUtils->create_ci_project;
+    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
+    my $id_rule   = TestSetup->create_rule( rule_when => 'promote' );
+    my $job_ci;
+    my $job_ci2;
+    my $job_ci3;
+
+    capture {
+        mock_time '2016-01-01 00:05:00' => sub {
+            $job_ci = TestSetup->create_job(
+                final_status => 'FINISHED',
+                changesets   => [$topic_mid],
+            );
+        };
+    };
+    capture {
+        $job_ci2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+        );
+    };
+    capture {
+        $job_ci3 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+        );
+    };
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { period => '7D' } } );
+
+    $controller->viewjobs($c);
+
+    is $c->{stash}->{jobs}, $job_ci2->{mid} . ',' . $job_ci3->{mid};
+};
+
+subtest 'viewjobs: returns mid jobs filtered by bl' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+
+    my $project   = TestUtils->create_ci_project;
+    my $bl        = TestUtils->create_ci( 'bl', name => 'PROD', bl => 'PROD' );
+    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
+    my $id_rule   = TestSetup->create_rule( rule_when => 'promote' );
+    my $job_ci;
+    my $job_ci2;
+    my $job_ci3;
+
+    capture {
+        $job_ci = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+            bl           => 'PROD'
+        );
+    };
+    capture {
+        $job_ci2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+            bl           => 'PROD'
+        );
+    };
+    capture {
+        $job_ci3 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid],
+            bl           => 'DEV'
+        );
+    };
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { bl => $bl->name } } );
+
+    $controller->viewjobs($c);
+
+    is $c->{stash}->{jobs}, $job_ci->{mid} . ',' . $job_ci2->{mid};
+};
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }
@@ -968,8 +1107,11 @@ sub _setup {
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules'
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Jobs',
+        'BaselinerX::Type::Statement'
     );
+    TestUtils->cleanup_cis;
 
     mdb->master->drop;
     mdb->master_rel->drop;
@@ -979,6 +1121,7 @@ sub _setup {
     mdb->topic->drop;
     mdb->role->drop;
     mdb->rule->drop;
+    mdb->job_log->drop;
 
     my $user = ci->user->new( name => 'test' );
     $user->save;
@@ -1019,6 +1162,18 @@ sub _create_topic_form {
                     },
                     "key" => "fieldlet.datetime",
                     name  => 'To',
+                }
+            },
+            {   "attributes" => {
+                    "data" => {
+                        "bd_field"     => "project",
+                        "fieldletType" => "fieldlet.system.projects",
+                        "id_field"     => "project",
+                        "name_field"   => "project",
+                        meta_type      => 'project',
+                        collection     => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
                 }
             },
         ],

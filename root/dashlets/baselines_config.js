@@ -26,10 +26,19 @@
             { layout:'form', 
               columnWidth: 1, 
               bodyStyle: 'background:transparent;',
-              items: [
-                  Baseliner.ci_box({ name:'bls', fieldLabel:_('Which bls do you want to see'), allowBlank: true,'class':'bl', valueField: 'name', value: data.bls, force_set_value: true, singleMode: false }),
-                  days
-              ]
+            items: [
+                Baseliner.ci_box({
+                    name: 'bls',
+                    fieldLabel: _('Which bls do you want to see'),
+                    allowBlank: true,
+                    'class': 'BaselinerX::CI::bl',
+                    valueField: 'name',
+                    value: data.bls,
+                    force_set_value: true,
+                    singleMode: false
+                }),
+                days
+            ]
             }
           ]
         }
