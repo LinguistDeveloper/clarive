@@ -367,6 +367,7 @@
             autoLoad: true
         });
         var combo_grid = Cla.ci_box({
+            class: 'BaselinerX::CI::report',
             name: 'default_grid',
             isa: 'report',
             fieldLabel: _('Default Grid'),

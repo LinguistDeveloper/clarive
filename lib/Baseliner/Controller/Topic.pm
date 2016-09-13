@@ -116,7 +116,7 @@ register 'registor.menu.topics' => {
 };
 
 sub grid : Local {
-    my ($self, $c, $typeApplication) = @_;
+    my ( $self, $c, $typeApplication ) = @_;
 
     my $p = $c->req->params;
 
@@ -128,8 +128,29 @@ sub grid : Local {
     $c->stash->{query_id}   = $p->{query};
     if ( $p->{category_id} ) {
         $c->stash->{category_id} = $p->{category_id};
-    }
 
+        my $category = mdb->category->find_one( { id => $p->{category_id} } );
+        if ( $category->{default_grid} ) {
+            try {
+                my $report = ci->new( $category->{default_grid} );
+
+                if ($report) {
+                    my $selected_fields = $report->selected_fields( { username => $c->username } );
+                    my $data_fields = { fields => $selected_fields };
+                    $c->stash->{id_report}   = $category->{default_grid};
+                    $c->stash->{data_fields} = Util->_encode_json($data_fields);
+                }
+            }
+            catch {
+                $c->stash->{id_report}   = '';
+                $c->stash->{no_report_category} = 1;
+            }
+
+        }else {
+            $c->stash->{id_report}   = '';
+            $c->stash->{no_report_category}   = 1;
+        }
+    }
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
 
@@ -137,7 +158,6 @@ sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
-
     my $data = $self->get_items($p);
 
     if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
@@ -160,10 +180,8 @@ sub list : Local {
 }
 
 sub get_items {
-
     my ($self, $p ) = @_;
     my $data;
-
     if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
         my $report = Baseliner->registry->get( $p->{id_report} );
         my $config = undef; # TODO get config from custom forms
@@ -176,7 +194,6 @@ sub get_items {
             totalCount=>$rep_data->{total},
             config=>$rep_data->{config}
         };
-        _log "total "._dump $rep_data->{total};
     } elsif( $p->{id_report} ) {
         my $filter = $p->{filter} ? _decode_json($p->{filter}) : undef;
         my $start = $p->{start} // 0;
@@ -186,7 +203,18 @@ sub get_items {
             $f->{category} = $temp[$#temp];
         }
         my $dir = $p->{dir} && uc($p->{dir}) eq 'DESC' ? -1 : 1;
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$p->{username}, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query}, sort=>$p->{sort}, sortdir=>$dir );
+        my ( $cnt, @rows ) = ci->new( $p->{id_report} )->run(
+            id_category_report => $p->{id_category_report},
+            start              => $start,
+            username           => $p->{username},
+            limit              => $p->{limit},
+            query              => $p->{topic_list},
+            filter             => $filter,
+            query_search       => $p->{query},
+            sort               => $p->{sort},
+            sortdir            => $dir
+        );
+
         $data = {
             data=>\@rows,
             totalCount=>$cnt

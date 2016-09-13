@@ -4325,10 +4325,6 @@ msgstr ""
 msgid "Undefined"
 msgstr ""
 
-#: lib/BaselinerX/CI/report.pm
-msgid "Missing 'Categories' in search configuration"
-msgstr ""
-
 #: lib/BaselinerX/CI/script.pm
 msgid "Run Script"
 msgstr ""

@@ -24,10 +24,199 @@ use BaselinerX::Type::Event;
 use BaselinerX::Fieldlets;
 use Baseliner::Queue;
 use Baseliner::Model::Topic;
-use Baseliner::Utils qw(_encode_json);
+use Baseliner::Utils qw(_encode_json _decode_json);
 use Clarive::mdb;
 
 use_ok 'Baseliner::Controller::Topic';
+
+subtest 'grid: check that customized fields is set correctly into stash' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $report      = TestUtils->create_ci('report');
+    my $id_rule     = TestSetup->create_rule();
+    my $id_category = TestSetup->create_category(
+        name         => 'Category',
+        id_rule      => $id_rule,
+        default_grid => $report->{mid}
+    );
+
+    $report->report_update(
+        {   action   => 'update',
+            username => $user->{username},
+            data     => {
+                name           => 'Test',
+                permissions    => 'private',
+                recursivelevel => '2',
+                rows           => 50,
+                selected       => [
+                    {   type     => 'categories',
+                        query    => { $id_category => { id_category => [$id_category] } },
+                        text     => 'Categories',
+                        children => [
+                            {   name => 'Category',
+                                type => 'categories_field',
+                                text => 'Category',
+                                data => {
+                                    name_category => 'Category',
+                                    fields        => [ [ 'field1', 'field1' ], [ 'field2', 'field2' ] ],
+                                    id_category   => $id_category
+                                },
+                                text => 'Category'
+                            }
+                        ]
+                    },
+                    {   'text'     => 'Fields',
+                        'type'     => 'select',
+                        'children' => [
+                            {   meta_type => '',
+                                children  => [],
+                                id_field  => 'field1',
+                                text      => 'Category: field1',
+                                category  => 'Category',
+                                type      => 'select_field'
+                            },
+                            {   meta_type => '',
+                                children  => [],
+                                id_field  => 'field2',
+                                text      => 'Category: field2',
+                                category  => 'Category',
+                                type      => 'select_field'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->{username}, req => { params => { category_id => $id_category } } );
+
+    $controller->grid($c);
+
+    is $c->stash->{template}, '/comp/topic/topic_grid.js';
+
+    cmp_deeply(
+        _decode_json( $c->stash->{data_fields} ),
+        {   'fields' => {
+                'columns' => [
+                    {   'as'        => undef,
+                        'id'        => 'field1',
+                        'filter'    => undef,
+                        'id_field'  => 'field1',
+                        'type'      => 'select_field',
+                        'meta_type' => '',
+                        'children'  => [],
+                        'text'      => 'Category: field1',
+                        'category'  => 'Category'
+                    },
+                    {   'meta_type' => '',
+                        'filter'    => undef,
+                        'as'        => undef,
+                        'id'        => 'field2',
+                        'type'      => 'select_field',
+                        'id_field'  => 'field2',
+                        'category'  => 'Category',
+                        'text'      => 'Category: field2',
+                        'children'  => []
+                    }
+                ],
+                'ids' => [
+                    'mid',         'topic_mid',       'category_name', 'category_color',
+                    'modified_on', 'field1_Category', 'field2_Category'
+                ]
+            }
+        }
+    );
+};
+
+subtest 'grid: set default params when default_grid is not exists' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user(
+        id_role  => $id_role,
+        project  => $project,
+        username => 'root'
+    );
+
+    my $report      = TestUtils->create_ci('report');
+    my $id_rule     = TestSetup->create_rule();
+    my $id_category = TestSetup->create_category(
+        name         => 'Category',
+        id_rule      => $id_rule,
+        default_grid => '1'
+    );
+
+    $report->report_update(
+        {   action   => 'update',
+            username => $user->{username},
+            data     => {
+                name           => 'Test',
+                permissions    => 'private',
+                recursivelevel => '2',
+                rows           => 50,
+                selected       => [
+                    {   type     => 'categories',
+                        query    => { $id_category => { id_category => [$id_category] } },
+                        text     => 'Categories',
+                        children => [
+                            {   name => 'Category',
+                                type => 'categories_field',
+                                text => 'Category',
+                                data => {
+                                    name_category => 'Category',
+                                    fields        => [ [ 'field1', 'field1' ], [ 'field2', 'field2' ] ],
+                                    id_category   => $id_category
+                                },
+                                text => 'Category'
+                            }
+                        ]
+                    },
+                    {   'text'     => 'Fields',
+                        'type'     => 'select',
+                        'children' => [
+                            {   meta_type => '',
+                                children  => [],
+                                id_field  => 'field1',
+                                text      => 'Category: field1',
+                                category  => 'Category',
+                                type      => 'select_field'
+                            },
+                            {   meta_type => '',
+                                children  => [],
+                                id_field  => 'field2',
+                                text      => 'Category: field2',
+                                category  => 'Category',
+                                type      => 'select_field'
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->{username}, req => { params => { category_id => $id_category } } );
+
+    $controller->grid($c);
+
+    is $c->stash->{template},           '/comp/topic/topic_grid.js';
+    is $c->stash->{no_report_category}, 1;
+    is $c->stash->{id_report},          '';
+};
 
 subtest 'category_list: returns categories when filter on category name' => sub {
     _setup();
@@ -3212,7 +3401,8 @@ sub _setup {
         'BaselinerX::CI',                     'BaselinerX::Fieldlets',
         'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',            'BaselinerX::LcController',
-        'BaselinerX::Type::Model::ConfigStore', 'Baseliner::Model::TopicExporter'
+        'BaselinerX::Type::Model::ConfigStore', 'Baseliner::Model::TopicExporter',
+        'Baseliner::Controller::TopicAdmin'
     );
     TestUtils->cleanup_cis;
 
@@ -3223,4 +3413,5 @@ sub _setup {
     mdb->topic->drop;
     mdb->event->drop;
     mdb->label->drop;
+    mdb->user->drop;
 }

@@ -847,6 +847,7 @@ if( Prefs.routing ) {
     Baseliner.addNewTabComp = function( comp_url, ptitle, params, json_key ){
         var req_params = params != undefined ? params : {};
         var info_args = arguments;
+        if (comp_url.search("category_id")) delete req_params.category_id ;
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
             var found = false;
             json_key = json_key || Ext.util.JSON.encode( { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' } );

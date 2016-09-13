@@ -31,33 +31,20 @@ icon: topic.svg
 * Permite crear una nueva categoría. 
 * Al pulsar en `Crear` se abre una nueva ventana con todas las opciones para crear una categoría a medida.
 
-	• `Categoría`: Especifica el nombre de la nueva categoría.
-
-	• `Acrónimo`: Indica el sobrenombre de la categoría nueva.
-
-	• `Descripción`: Permite describir con más detalle la categoría, finalidad de la misma, uso, etc...
-
-	• `Tipo`: Indica el tipo de categoría. Los tipos disponibles son:
-
-	- *Normal*: Se trata de una categoría estandar, utilizado para las colaboraciones en un proceso de entrega continua. Por ejemplo, son categorías de tipo normal Requerimientos, Incidencia, Tarea, Consulta, etc...
-
-	- *Cambio*: Un tópico de esta categoría se utiliza para realizar un seguimiento de los cambios a nivel de código que forman parte del proceso.
-
-	- *Release*: Esta categoría se utiliza para poder desplegar a otros entornos. Generalmente a los tópicos de tipo Release se asignan tópicos de una categoría de tipo Cambio para desplegar los nuevos cambios en el código en otros entornos.
-
-	• `Elije color`: Selecciona el color con el que se identificará a los tópicos.
-
-	• `Grid por defecto`
-
-	• `Formulario`: Selecciona el [formulario](rules/rule-concepts) con el que se completará la información de un tópico.
-
-	• `Dashboard`
-
-	• `Proveedores`: Especifica el proveedor de la categoría. Éste puede ser creado de manera interna o se puede utilizar cualquiera de las integraciones permitidas por Clarive como Bugzilla, Basecamp, Trac, Redmine, BMC Remedy, Jira, etc...
-
-	• `Opciones`: Permite crear tópicos de solo lectura. Usado en las integraciones para evitar sobreescribir información.
-
-	• `Lista de estados`: Permite seleccionar los [estados](admin/status) que estarán disponibles en los tópicos de la categoría. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorías tengan al menos un estado inicial y otro final.
+- `Categoría`: Especifica el nombre de la nueva categoría.
+- `Acrónimo`: Indica el sobrenombre de la categoría nueva.
+- `Descripción`: Permite describir con más detalle la categoría, finalidad de la misma, uso, etc...
+- `Tipo`: Indica el tipo de categoría. Los tipos disponibles son:
+- *Normal*: Se trata de una categoría estandar, utilizado para las colaboraciones en un proceso de entrega continua. Por ejemplo, son categorías de tipo normal Requerimientos, Incidencia, Tarea, Consulta, etc...
+- *Cambio*: Un tópico de esta categoría se utiliza para realizar un seguimiento de los cambios a nivel de código que forman parte del proceso.
+- *Release*: Esta categoría se utiliza para poder desplegar a otros entornos. Generalmente a los tópicos de tipo Release se asignan tópicos de una categoría de tipo Cambio para desplegar los nuevos cambios en el código en otros entornos.
+- `Elije color`: Selecciona el color con el que se identificará a los tópicos.
+- `Grid por defecto` : permite utilizar un reporte como un grid personalizado.
+- `Formulario`: Selecciona el [formulario](rules/rule-concepts) con el que se completará la información de un tópico.
+- `Dashboard` : permite seleccionar un dashboard para ver la informacion en el tópico.
+- `Proveedores`: Especifica el proveedor de la categoría. Éste puede ser creado de manera interna o se puede utilizar cualquiera de las integraciones permitidas por Clarive como Bugzilla, Basecamp, Trac, Redmine, BMC Remedy, Jira, etc...
+- `Opciones`: Permite crear tópicos de solo lectura. Usado en las integraciones para evitar sobreescribir información.
+- `Lista de estados`: Permite seleccionar los [estados](admin/status) que estarán disponibles en los tópicos de la categoría. Este grid muestra todos los estados disponibles y creados como elementos CI y su descripción. Es importante que las categorías tengan al menos un estado inicial y otro final.
 
 * Una vez guardado, la categoría aparecerá en la lista de categorías
 
@@ -66,18 +53,18 @@ icon: topic.svg
 * Permite editar la categoría seleccionada.
 * En modo Editar, aparece una nueva pestaña `Flujo de trabajo`. En ella se especifica el flujo de estados que el tópico podrá transitar siempre en función de los roles.
 
-	• **Flujo de trabajo** - En esta pestaña aparecen los roles disponibles y los estados disponibles.
+	- **Flujo de trabajo** - En esta pestaña aparecen los roles disponibles y los estados disponibles.
 
-	• Para crear una transición en función de un rol, primero se selecciona el rol y a continuación, en el menú desplegable, el estado desde el cual comenzará la transición.
+	- Para crear una transición en función de un rol, primero se selecciona el rol y a continuación, en el menú desplegable, el estado desde el cual comenzará la transición.
 
-	• Tras ello, aparecerá en la lista los estados de la categoría disponibles y donde se elegirán los destinos de la transición.
+	- Tras ello, aparecerá en la lista los estados de la categoría disponibles y donde se elegirán los destinos de la transición.
 
 	 Para confirmar el flujo, pulsar <img src = "/static/images/icons/down.png"/>.
 
-	• En caso de desear eliminar una de las transiciones, se puede realizar de dos maneras diferentes:
-	- • Para eliminar una transición, se selecciona la transición a borrar y se pulsa en <img src = "/static/images/icons/delete_.png"/> Borrar fila.
+	- En caso de desear eliminar una de las transiciones, se puede realizar de dos maneras diferentes:
+	- Para eliminar una transición, se selecciona la transición a borrar y se pulsa en <img src = "/static/images/icons/delete_.png"/> Borrar fila.
 
-	- • Para eliminar más de una transición de un rol especifico, se selecciona el rol en la lista de la izquierda y las transiciones a la derecha. A continuación pulsar el botón de desasignar <img src = "/static/images/icons/remove.png"/>.
+	- Para eliminar más de una transición de un rol especifico, se selecciona el rol en la lista de la izquierda y las transiciones a la derecha. A continuación pulsar el botón de desasignar <img src = "/static/images/icons/remove.png"/>.
 
 
 ### <img src = "/static/images/icons/delete_.png" alt='Borrar categoría' /> Borrar
