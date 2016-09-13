@@ -771,7 +771,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_i
     }
 
     win_comment = new Cla.Window({
-        title: _('Add Comment: %1', title),
+        title: _('Comment: %1', title),
         layout: 'fit',
         height: 450,
         width: 700,
