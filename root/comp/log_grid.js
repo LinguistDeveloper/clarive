@@ -330,7 +330,7 @@
                if( value.more=='zip' ) {
                   img = '/static/images/icons/mime/file_extension_zip.svg';
                } else {
-                  img = '/static/images/download.gif';
+                  img = '/static/images/icons/save.svg';
            } 
                ret += "<a href='/job/log/download_data?id=" + rec.data.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
            } else {
@@ -343,7 +343,7 @@
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
                    ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/icons/page_new.svg'></a> "
-                   ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
+                   ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/icons/save.svg'/></a> " + datalen ;
                } 
            }
            return ret;

@@ -255,7 +255,7 @@ Cla.topic_grid = function(params){
     });
 
     //var button_create_view = new Ext.Button({
-    //    icon:'/static/images/icons/add.gif',
+    //    icon:'/static/images/icons/add.svg',
     //    tooltip: _('Create view'),
     //    cls: 'x-btn-icon',
     //    disabled: false,

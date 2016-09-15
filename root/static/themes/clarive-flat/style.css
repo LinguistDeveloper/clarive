@@ -460,7 +460,7 @@ div.x-menu.x-menu-floating.x-layer {
 }
 
 .x-accordion-hd {
-    background-image:url("/static/images/row-check-sprite.gif");
+    background-image:url("/static/images/icons/row-check-sprite.gif");
 }
 
 .x-layout-collapsed{
@@ -926,7 +926,7 @@ td.x-btn.x-btn-noicon.x-btn-over {
 
 */
 .x-date-middle.x-date-pickerplus-middle.x-date-firstMonth .x-btn.x-btn-noicon.x-btn-over .x-btn-arrow {
-    background-image: url("/static/images/btn-arrow-gray.png");
+    background-image: url("/static/images/icons/btn-arrow-gray.svg");
 }
 
 table.x-date-pickerplus .x-date-middle.x-date-pickerplus-middle.x-date-firstMonth  .x-btn.x-btn-noicon.x-btn-over button {

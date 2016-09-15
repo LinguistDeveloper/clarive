@@ -65,7 +65,7 @@
                 {
                     xtype: 'button',
                     text: _('Surrogate'),
-                    icon:'/static/images/project.gif',
+                    icon:'/static/images/icons/surrogate.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -89,7 +89,7 @@
                 },
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/drop-add.gif',
+                    icon:'/static/images/icons/add_green.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

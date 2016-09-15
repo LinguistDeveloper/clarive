@@ -29,5 +29,5 @@ Los siguientes botones se encuentran disponibles arriba de la lista de pases:
 
 <img src="/static/images/icons/restart.svg" /> **Reiniciar**: Comienza el pase de nuevo desde el paso que el usuario desee.
 
-<img src="/static/images/date_field.png" /> **Replanificar**: Modifica la planificación del pase. Esta acción sólo esta disponible cuando el estado del
+<img src="/static/images/icons/datefield.svg"  /> **Replanificar**: Modifica la planificación del pase. Esta acción sólo esta disponible cuando el estado del
 job es "Listo" o "Esperando Aprobación"

@@ -143,7 +143,7 @@
 
     //var btn_add_status = new Ext.Toolbar.Button({
     //    text: _('New'),
-    //    icon:'/static/images/icons/add.gif',
+    //    icon:'/static/images/icons/add.svg',
     //    cls: 'x-btn-text-icon',
     //    handler: function() {
     //                add_edit_status();
@@ -658,7 +658,7 @@
 
     //var btn_add_category = new Ext.Toolbar.Button({
     //    text: _('New'),
-    //    icon:'/static/images/icons/add.gif',
+    //    icon:'/static/images/icons/add.svg',
     //    cls: 'x-btn-text-icon',
     //    handler: function() {
     //                add_edit_category();

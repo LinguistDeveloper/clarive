@@ -206,7 +206,7 @@ sub job_items_json : Path('/job/items/json') {
         }
 
         my $packages_text;
-        my $package_join = "<img src=\"static/images/package.gif\"/>";
+        my $package_join = "<img src=\"static/images/icons/revision.svg\"/>";
         $packages_text = $package_join
                        . join("<br>${package_join}", @{$n->{packages}})
                        . '<br>' if exists $n->{packages};

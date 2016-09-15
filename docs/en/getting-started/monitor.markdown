@@ -29,5 +29,5 @@ The following actions buttons are available above the list of Jobs:
 
 <img src="/static/images/icons/restart.svg" /> **Rerun**: Start the job again from the step user wants.
 
-<img src="/static/images/date_field.png" /> **Reschedule**: Modify the schedule of the job. This action is only available when the status of the job is Ready or Waiting for Approval.
+<img src="/static/images/icons/datefield.svg"  /> **Reschedule**: Modify the schedule of the job. This action is only available when the status of the job is Ready or Waiting for Approval.
 

@@ -58,7 +58,7 @@
         stripeRows: true,
         tbar: [{
             text: '<% $c->stash->{$componentId}{newLabel} %>',
-            icon: '/static/ext/resources/images/default/dd/drop-add.gif',
+            icon: '/static/images/icons/add_green.svg',
                cls: 'x-btn-text-icon',
             handler : function(){
                 var p = new record<% $c->stash->{$componentId}{id} %>({

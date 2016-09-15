@@ -1225,7 +1225,7 @@ if( Prefs.routing ) {
 
                         Baseliner.error_win(url,params,xhr, msg);
                     }
-                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/disconnected.png' });
+                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/icons/disconnected.svg' });
                     return;
                 }
                 try {

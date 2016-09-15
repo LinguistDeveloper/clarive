@@ -108,7 +108,7 @@ body {
 }
 
 .x-grid3-row-checker, .x-grid3-hd-checker {
-    background-image: url("/static/images/row-check-sprite.gif");
+    background-image: url("/static/images/icons/row-check-sprite.gif");
 }
 
 .bali-main-menu button {
@@ -346,7 +346,7 @@ body {
 .styledCheckboxWrap {
     padding: 1px;
     position: relative;
-    background: url('/static/images/row-check-sprite.png') no-repeat;
+    background: url('/static/images/icons/row-check-sprite.png') no-repeat;
     height: 18px;
     width: 100%;
 }
@@ -575,7 +575,7 @@ a {
 
 .x-tree-node .x-tree-node-inline-icon  {
     background-image: none;
-
+    vertical-align: middle;
 
 }
 

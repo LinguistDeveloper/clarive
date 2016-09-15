@@ -55,10 +55,10 @@
 
     var render_running = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    var img =
-		    value == '1' ? 'icons/green.svg' 
+		    value == '1' ? 'green.svg' 
 		    : ( value == -1 ? 'indicator.gif'
-		    : 'icons/gray.svg' );
-		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
+		    : 'gray.svg' );
+		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
     };
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -123,7 +123,7 @@
 
 //        var btn_add = new Ext.Toolbar.Button({
 //			text: _('New'),
-//			icon:'/static/images/icons/add.gif',
+//			icon:'/static/images/icons/add.svg',
 //			cls: 'x-btn-text-icon',
 //            handler: function() {
 //				add_edit()

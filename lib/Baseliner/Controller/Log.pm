@@ -253,9 +253,9 @@ sub jobList : Path('/job/log/jobList') {
 
     _debug $p;
     my $pkgIcon   = '/static/images/icons/package_green.svg';
-    my $siteIcon  = '/static/images/site.gif';
-    my $jobIcon   = '/static/images/book.gif';
-    my $spoolIcon = '/static/images/page.svg';
+    my $siteIcon  = '/static/images/icons/siteicon.svg';
+    my $jobIcon   = '/static/images/icons/book.svg';
+    my $spoolIcon = '/static/images/icons/open-book.svg';
     my $infoIcon  = '/static/images/icons/active.svg';
 
     if ( $p->{logId} ) {

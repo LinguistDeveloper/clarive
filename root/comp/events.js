@@ -55,7 +55,7 @@
         var icon = value == 'ok' ? '/static/images/icons/active.svg' :
                    value == 'ko' ? '/static/images/icons/error_red.svg' :
                    value == 'new' ? '/static/images/icons/busy.svg' :
-                   '/static/images/unknown.gif' ;
+                   '/static/images/icons/unknown.svg' ;
 
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );
     };

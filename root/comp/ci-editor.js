@@ -190,7 +190,7 @@
 
         var btn_depends = new Ext.Button({
             text: _('Dependencies'),
-            icon:'/static/images/expand.gif',
+            icon:'/static/images/icons/expand.svg',
             cls: 'x-btn-icon-text',
             pressed: false, toggleGroup: 'ci-editor-panel'+cardpanel.id,allowDepress: false,
             handler: show_depends

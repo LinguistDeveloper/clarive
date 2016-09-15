@@ -404,11 +404,11 @@
            a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\",\""+Baseliner.quote(urla[1])+"\")' >"+ value+"</a>";
            //a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\")' >"+ value+"</a>";
         }
-        var icon = rec.data.icon || 'package.gif';
+        var icon = rec.data.icon || 'package.svg';
         return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + a + "</b>" ;
     };
     var itemTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = rec.data.icon || 'package.gif';
+        var icon = rec.data.icon || 'package.svg';
         return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + value + "</b>" ;
     };
     

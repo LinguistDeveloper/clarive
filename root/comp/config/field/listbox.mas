@@ -39,7 +39,7 @@
         ,clicksToEdit:1,			
         tbar: [{
             text: '<% $row->{newLabel} %>',
-            icon: '/static/images/drop-add.gif',
+            icon: '/static/images/icons/add_green.svg',
             cls: 'x-btn-text-icon',
             handler : function(){
                 var ___record = Ext.data.Record.create([
