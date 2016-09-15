@@ -7,12 +7,7 @@
 	.st1{fill:#404040;}
 	.st2{fill:none;stroke:#404040;stroke-miterlimit:10;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="16" height="16" xlink:href="file_extension_tmp.png"  transform="matrix(1 0 0 1 0 -0.5)">
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<path class="st1" d="M12,0.5H1v15h14V4L12,0.5z M14,14.5H2v-13h9v3h3V14.5z"/>
 	<rect x="4" y="4.5" class="st1" width="7" height="1"/>
 	<rect x="4" y="11.5" class="st1" width="7" height="1"/>

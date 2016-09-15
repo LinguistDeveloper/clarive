@@ -6,12 +6,7 @@
 	.st0{display:none;}
 	.st1{fill:#3FA9F5;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="16" height="16" xlink:href="file_extension_ifo.png"  transform="matrix(1 0 0 1 0 -0.5)">
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<g>
 		<path class="st1" d="M11,1.5l3,3v9H2v-12H11z M1,0.5v14h14V4l-3-3.5H1z"/>
 	</g>

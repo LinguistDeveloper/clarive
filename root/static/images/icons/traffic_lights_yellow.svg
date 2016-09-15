@@ -8,11 +8,6 @@
 	.st2{fill:#404040;}
 	.st3{fill:#F7A808;}
 </style>
-<g id="Layer_1_1_" class="st0">
-	
-		<image style="display:inline;overflow:visible;enable-background:new    ;" width="16" height="16" xlink:href="traffic_lights_green.png" >
-	</image>
-</g>
 <rect x="4.1" y="1.1" class="st1" width="7.8" height="13.8"/>
 <circle class="st2" cx="8" cy="4.1" r="1.6"/>
 <circle class="st3" cx="8" cy="8.1" r="1.6"/>

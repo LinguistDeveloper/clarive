@@ -7,12 +7,7 @@
 	.st1{fill:#404040;}
 	.st2{fill:#F7A808;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="16" height="16" xlink:href="../../../../../../../../opt/clarive/clarive/root/static/images/icons/eclipse/changelog_obj.gif" >
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<g>
 		<path class="st1" d="M15,1v13H6.1V1H15 M16,0H5.1v15H16V0L16,0z"/>
 	</g>

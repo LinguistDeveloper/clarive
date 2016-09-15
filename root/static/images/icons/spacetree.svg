@@ -7,12 +7,7 @@
 	.st1{fill:#404040;}
 	.st2{fill:none;stroke:#404040;stroke-miterlimit:10;}
 </style>
-<g id="Layer_1" class="st0">
-	
-		<image style="display:inline;overflow:visible;" width="16" height="16" xlink:href="../../../../../../opt/clarive/clarive/root/static/images/icons/spacetree.png" >
-	</image>
-</g>
-<g id="Layer_2">
+<g id="Layer_1">
 	<circle class="st1" cx="4.6" cy="7.4" r="1.6"/>
 	<circle class="st1" cx="11.3" cy="7.2" r="1.6"/>
 	<line class="st2" x1="8" y1="2.7" x2="4.6" y2="7.4"/>
