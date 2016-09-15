@@ -325,7 +325,7 @@ sub filter_queue {
 sub _path_to_about_icon {
     my $self = shift;
 
-    return '' . Clarive->path_to( 'root', 'static/images/about_email.jpg' );
+    return '' . Clarive->path_to( 'root', 'static/images/logo/about_email.jpg' );
 }
 
 sub _init_connection {

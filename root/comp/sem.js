@@ -131,7 +131,7 @@
         });
      };
      var button_add = new Ext.Button({
-        icon:'/static/images/icons/add_green.svg',
+        icon:'/static/images/icons/add-green.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {

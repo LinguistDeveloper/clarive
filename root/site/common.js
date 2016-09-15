@@ -724,7 +724,7 @@ Baseliner.array_field = function( args ) {
             })(),
             tbar: [{
                 text: _('Add'),
-                icon: '/static/images/icons/add_green.svg',
+                icon: '/static/images/icons/add-green.svg',
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     var ___record = Ext.data.Record.create([{

@@ -58,7 +58,7 @@
 		    tbar: [ _('Search')+': ', ' ', searchField,
 			    new Ext.Toolbar.Button({
 				    text: _('Add'),
-				    icon:'/static/images/icons/add_green.svg',
+				    icon:'/static/images/icons/add-green.svg',
 				    cls: 'x-btn-text-icon',
 				    handler: function(){ alert('add') }				}),
 			    new Ext.Toolbar.Button({
