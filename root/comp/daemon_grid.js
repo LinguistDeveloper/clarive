@@ -55,10 +55,10 @@
 
     var render_running = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    var img =
-		    value == '1' ? 'green.svg' 
-		    : ( value == -1 ? 'indicator.gif'
-		    : 'gray.svg' );
-		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
+		    value == '1' ? 'icons/green.svg' 
+		    : ( value == -1 ? 'loading/indicator.gif'
+		    : 'icons/gray.svg' );
+		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
     };
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {

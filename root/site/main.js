@@ -145,7 +145,7 @@ Ext.onReady(function(){
         */}.heredoc()
     ];
     if( Prefs.logo_file ) {
-            tbar_items.push( '<div class="div-logo-file"><div class="div-logo-file-custom"><img src="'+Prefs.logo_file +'" class="img-custom-logo-file"/></div><div class="div-logo-powered"><img src="/static/images/powered_by_clarive.svg" class="img-main-logo-powered"/></div></div>' );
+            tbar_items.push( '<div class="div-logo-file"><div class="div-logo-file-custom"><img src="'+Prefs.logo_file +'" class="img-custom-logo-file"/></div><div class="div-logo-powered"><img src="/static/images/logo/powered_by_clarive.svg" class="img-main-logo-powered"/></div></div>' );
     } else {
             tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" class="img-main-logo-file"/>' );
     }

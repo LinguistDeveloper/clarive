@@ -1261,7 +1261,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 var i = "no activo";
                 if(self.colores_usuarios.length == 0){
 
-                    d.color= "/static/images/USER_"+0+".png";
+                    d.color= "/static/images/swarm/USER_"+0+".png";
                     self.color=0;
                     self.usuarios_colores.push(row.who);
                     self.colores_usuarios.push(d.color);
@@ -1281,7 +1281,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     if(i != "activo"){
 
                             self.color++;
-                            d.color= "/static/images/USER_"+(self.color)+".png";
+                            d.color= "/static/images/swarm/USER_"+(self.color)+".png";
                             self.pintar=self.color;
                             self.usuarios_colores.push(row.who);
                             self.colores_usuarios.push(d.color);

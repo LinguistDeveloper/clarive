@@ -209,7 +209,7 @@
         else if( value == 'granted' )
             img = '<img src="/static/images/icons/start.svg" alt="'+value+'"/>';
         else if( value == 'busy' ) 
-            img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
+            img = '<img src="/static/images/loading/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 
             img = '<img src="/static/images/icons/write.svg" alt="'+value+'"/>';
         else if( value == 'done' ) 

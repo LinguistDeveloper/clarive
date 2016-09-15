@@ -479,7 +479,7 @@ if( Prefs.routing ) {
         if( title == undefined || title=='' ) {
             title = comp.title;
             if( title == undefined || title == '' ) { // probably a slow load and deferred title
-                tabpanel.changeTabIcon( tab, "/static/images/loading-fast.gif" );
+                tabpanel.changeTabIcon( tab, "/static/images/loading/loading-fast.gif" );
                 title = '';
             }
         }

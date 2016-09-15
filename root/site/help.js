@@ -263,7 +263,7 @@ Cla.help_button_flash = function(params) {
     Cla.help_button.show();
     Cla.help_on();
     // there's new content, show the bulb on
-    Cla.help_button.setIcon(IC('loading-fast.gif'));
+    Cla.help_button.setIcon('static/images/loading/loading-fast.gif');
     setTimeout(function(){
         Cla.help_button.setIcon(IC('lightbulb.svg'));
     },400);

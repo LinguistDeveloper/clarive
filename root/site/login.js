@@ -16,7 +16,7 @@ Ext.onReady(function() {
                 tab_params = Ext.urlDecode(getParams[1]);
             }
         */
-        login_button.setText('<img src="/static/images/loading-fast.gif" />');
+        login_button.setText('<img src="/static/images/loading/loading-fast.gif" />');
         login_button.disable();
 
         var ff = login_form.getForm();

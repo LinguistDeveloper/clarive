@@ -397,7 +397,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor'; }
 
         if( lang == 'perl' || lang == 'js-server' || lang == 'sql' ) {
-            Cla.tabpanel().changeTabIcon(panel, "/static/images/loading-fast.gif");
+            Cla.tabpanel().changeTabIcon(panel, "/static/images/loading/loading-fast.gif");
 
             output.setValue('');
 
