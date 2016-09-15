@@ -3374,16 +3374,20 @@ msgid "Trap timeout expired.  Action configured: %1"
 msgstr "Timeout de trap ha expirado.  Acción configurada: %1"
 
 #: lib/Baseliner/RuleFuncs.pm
-msgid "Retrying task"
-msgstr ""
+msgid "Retrying task: %1"
+msgstr "Reintentando tarea: %1"
 
 #: lib/Baseliner/RuleFuncs.pm
-msgid "Skipping task"
-msgstr ""
+msgid "Cannot retry. Max retries reached: %1"
+msgstr "No se puede reintentar. Alcanzado el número máximo de reintentos: %1"
 
 #: lib/Baseliner/RuleFuncs.pm
-msgid "Aborting task"
-msgstr ""
+msgid "Skipping task: %1"
+msgstr "Omitiendo tarea: %1"
+
+#: lib/Baseliner/RuleFuncs.pm
+msgid "Aborting task: %1"
+msgstr "Abortando tarea: %1"
 
 #: lib/Baseliner/RuleFuncs.pm
 msgid "Semaphore queued for %1"
@@ -8916,7 +8920,8 @@ msgstr ""
 msgid "Error trapped"
 msgstr "Error de excepción"
 
-#: root/comp/monitor_grid.js root/comp/rules.js root/forms/retry.js
+#: root/comp/monitor_grid.js root/comp/rules.js
+#: root/forms/if_last_trap_action.js root/forms/retry.js
 msgid "Retry"
 msgstr "Reintentar"
 
@@ -8925,6 +8930,7 @@ msgid "Retries the job task that failed"
 msgstr "Reintentar la tarea del pase que falló"
 
 #: root/comp/monitor_grid.js root/comp/rules.js
+#: root/forms/if_last_trap_action.js
 msgid "Skip"
 msgstr "Ignorar"
 
@@ -9943,6 +9949,10 @@ msgstr ""
 #: root/comp/rules.js
 msgid "Trap timeout action"
 msgstr ""
+
+#: root/comp/rules.js
+msgid "Trap max retry (0 means unlimited)"
+msgstr "Máximo número de reintentos (0 ilimitado)"
 
 #: root/comp/rules.js
 msgid "Trap in Rollback?"
@@ -12697,6 +12707,14 @@ msgstr ""
 msgid "Tag Name"
 msgstr ""
 
+#: root/forms/if_last_trap_action.js
+msgid "If last trap action"
+msgstr "If última acción capturada"
+
+#: root/forms/if_last_trap_action.js
+msgid "Job Last Trap Action"
+msgstr "Última acción Capturada en el pase"
+
 #: root/forms/if_nature.js
 msgid "Cut Path"
 msgstr "Ruta cortada"
@@ -14410,6 +14428,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Max retries reached"
+#~ msgstr "Alcanzado el número máximo de reintentos"
 
 #~ msgid "Missing 'Categories' in search configuration"
 #~ msgstr "No está 'Categorías' en la configuración de búsqueda"

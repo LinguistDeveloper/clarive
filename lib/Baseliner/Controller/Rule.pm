@@ -311,7 +311,7 @@ sub palette : Local {
     my %types = (
         if     => { icon=>'/static/images/icons/if.svg' },
         let    => { icon=>'/static/images/icons/if.svg' },
-        for    => { icon=>'/static/images/icons/if.svg' },
+        for    => { icon=>'/static/images/icons/if.svg' }
     );
     #my @ifs = (
     #    { text => _loc('if var'),  statement=>'if_var', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1,  },
