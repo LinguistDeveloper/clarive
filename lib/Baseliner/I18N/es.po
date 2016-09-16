@@ -1135,9 +1135,7 @@ msgstr ""
 #: root/comp/daemon_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/rules.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_info.mas root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/site/common.js
+#: root/comp/user_info.mas root/site/common.js
 msgid "All"
 msgstr "Todos"
 
