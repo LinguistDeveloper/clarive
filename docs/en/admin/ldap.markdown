@@ -1,6 +1,6 @@
 ---
 title: LDAP Authentication
-index: 5
+index: 5000
 icon: users
 ---
 
@@ -44,13 +44,8 @@ we configure the LDAP binding credentials and server information:
 Some of the fields that are required:
 
 - `binddn` - Cointains the userid and its domain namespace.
-
 - `bindpw` - The password
-
 - `ldap-server` - The IP of the LDAP server
-
 - `user_basedn` - The domain namespace where the user names are found.
-
 - `user_field` - The LDAP field that cointains the user
-
 - `user_filter` - Used to parse the uid from the LDAP information

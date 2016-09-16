@@ -59,11 +59,11 @@ library areas:
 
 ### Version of JavaScript implemented in Clarive
 
-The current JavaScript interpreter is based on the [Duktape](http://duktape.org)
+The current JavaScript interpreter is based on the [Duktape <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://duktape.org)
 embedded interpreter engine, which
-is [Ecmascript v5/v5.1 compliant](http://www.ecma-international.org/ecma-262/5.1/),
+is [Ecmascript v5/v5.1 compliant <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://www.ecma-international.org/ecma-262/5.1/),
 although some Ecmascript v6 features are also available:
 
-List of Ecmascript v6 features supported by Duktape is available [here](http://duktape.org/guide.html#es6features)
+List of Ecmascript v6 features supported by Duktape is available [here <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://duktape.org/guide.html#es6features)
 
 

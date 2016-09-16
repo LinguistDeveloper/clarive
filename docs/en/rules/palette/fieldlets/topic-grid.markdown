@@ -1,12 +1,12 @@
 ---
 title: Topic grid
-index: 400
+index: 5000
 icon: grid
 ---
 
-Allows to add topics into a grid to the form.
+Allows to add any topic into a grid to the form.
 
-Also allows to create topics clicking on `Create button`: <img src="/static/images/icons/add.svg" />
+Also allows to create topics clicking on <img src="/static/images/icons/add.svg" /> Create button.
 
 There are a list of elements can be configured in the fieldlet:
 

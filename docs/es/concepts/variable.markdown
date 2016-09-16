@@ -1,5 +1,6 @@
 ---
 title: Variable
+index: 5000
 icon: element_copy
 ---
 
@@ -7,7 +8,7 @@ Una variable en Clarive se define de manera global usando la clase de CI Variabl
 
 Cada variable puede contener valores como cadenas de texto, número, listas, hashes (diccionarios) y CIs.
 
-Las varibles pueden ser referenciadas en las reglas usando la notación `${nombre-variable}`.
+Las variables pueden ser referenciadas en las reglas usando la notación `${nombre-variable}`.
 
 Cuando se ejecuta una regla, su [stash](concepts/stash) se carga con los valores por defecto
 de las variables globales. Entonces, al continuar con la ejecución, cada valor de las variables

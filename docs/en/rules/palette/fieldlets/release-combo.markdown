@@ -1,6 +1,6 @@
 ---
 title: Release combo
-index: 400
+index: 5000
 icon: combo_box
 ---
 
@@ -44,17 +44,9 @@ Exclude the statuses selected and shows the remainder are **not** selected.
 
 Allow to set the type of the field.
 
-**Single**
-
-Allows to select one choice of the options available.
-
-**Multiple**
-
-The user can select multiples choices.
-
-**Grid**
-
-The added topics are shown in a table.
+- **Single** - Allows to select one choice of the options available.
+- **Multiple** - The user can select multiples choices.
+- **Grid** - The added topics are shown in a table.
 
 ### Display field
 
@@ -68,7 +60,7 @@ For example, to show only a category user can use the filter:
 
     {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-Where id is the unique key of the category which can be consulted through the REPL.
+Where *id* is the unique key of the category which can be consulted through the REPL.
 
 ### Release field
 
@@ -80,7 +72,7 @@ It is through this field which should be completed by the ID field in the form o
 
 Specify a condition to the release combo.
 
-This is a combo with every fieldlets that are in the form. 
+This is a combo with every fieldlets that are in the form.
 
 This field is required if next field is not empty.
 

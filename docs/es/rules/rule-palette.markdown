@@ -1,187 +1,170 @@
 ---
-title: Rule Palette
+title: Paleta de reglas
+index: 3000
 icon: rule
 ---
 
-Operations (ops) from the palette offers the needed mechanisms to create
-rules for automation.
+Las operaciones (ops) de la paleta ofrece los mecanismos necesarios para crear reglas para automatizar.
 
-They all have a context menu with the following fields:
+Todos ellos tienen un menú contextual con las siguientes opciones:
 
-### Configuration
+### Configuración
 
-Depending on the op it displays a window with the necessary fields to implement its target.
-Full information about each field will be described at the time particular op is presented.
+Dependiendo de la operación escogida, se muestra la ventana de configuración del elemento con los elementos necesarios para su correcto funcionamiento.
 
-### Rename
+Toda la información de cada campo se describe en el momento de abrir la configuración del elemento..
 
-A dialog box is showed with a field to introduce the new name for the op.
-Its default value is the op name as it appears in the Palette.
+### Renombrar
 
-- **OK**: Saves any changes made and closes the dialog.
-- **Cancel**: Closes the dialog. If you have made any changes since the last OK they are
-not saved.
+Se abre una ventana para introducir el nuevo nombre para la operación.
+Por defecto, el nombre de la operación es el mismo que se muestra en la paleta.
 
-### Properties
+- **Aceptar** - Guarda cualquier cambio que se haga en el nombre y cierra la ventana.
+- **Cancelar** - Cierra la ventana sin guardar los cambios, en caso de haberlos realizado..
 
-Operation properties are common to all operations used in a rule. After clicking this
-option menu a new window is raised up with an action tab and three window tabs.
+### Propiedades
 
-Action tabs are:
+Las propiedades de las operaciones si son comunes para todas las operaciones usadas en una regla.
 
-- **Cancel**: To cancel all actions done since last save and close properties window.
-- **Save**: Save all properties and metadata. Once properties are saved, op may include
-some tags to indicate some attribute values.
+Se muestra una ventana con tres pestañas habilitadas, las acciones disponibles son:
 
-Windows tabs are:
+- **Cancelar** - Cancela todos los cambios que se realicen desde la ultima vez que se guardaron y cierra la ventana.
+- **Aceptar** - Guarda todas las propiedades y metadatos que han sido modificados. Una vez guardadas las propiedades es posible que se incluya alguna etiqueta en la operación para indicar algún parámetro establecido.
 
-**1. Options**
-Configurable parameters to run the operations:
+Las pestañas de esta ventana son:
 
-- *Enabled*: To activate the operation. Its defaults value is checked.
-- *Return Key*: Key stash defined by the user where output data is stored after op
-execution. Its value can be accessed through the stash in the form of:
-`cla.stash("<return_key_value>.output");`
-- *Needs Rollback?*: Rollback flag that controls whether or not to rollback
-in case of failure in the same pass. If an error is detected, the rollback starts.
-Its default value is *‘No Rollback Necessary’*. User chooses when the flag is set according
-to 4 options:
-    - *Rollback Needed After*: Flag is set after op execution.
-    - *Rollback Needed Before*: Flag is set before op execution.
-    - *Rollback Needed Always*: Flag is set at the time DSL building.
-    - *No Rollback Necessary*: Flag is not set.
-- *Needs Rollback Key*: Related to the option above, it is a text field that is showed
-when the `needs_rollback?` option is set to a different value other than ‘No Rollback
-Necessary’. It defines the op to be executed in case of error. Rollback is implemented for
-scripting and fileman service op.
-- *Run Forward*: Run if the pass is forward.
-- *Run Rollback*: Run if the pass is rollback.
-- *Timeout*: Number of seconds for the rule to run, if timeout is reached, rule stops
-with a message to inform the user.
-- *Semaphore Key*: Asks for a time slot to execute the rule. After the rule is finished
-the semaphore is release.
-- *Parallel Mode*: Defines how to run rules, in terms of parallel or serially processing.
-Its default value is ‘No Parallel’. There are three available option:
-    - *No Parallel*: All ops are performed as they are located in rule.
-    - *Fork and Wait*: Rule is running in parallel way and afterwards, wait    for children
-    to finish.
-    - *Fork and Leave*: Parallel way processing but it doesn’t wait for    children results.
-- *Error Trap*: Defines how to treat op error if it occurs. Its default value is ‘No Trap’.
-There are three options:
-    - *No Trap*: Errors are not traped.
-    - *Trap Errors*: Trap error and wait for an user action, it can be:
-        - Retrying: Retrying op.
-        - Skipping: Skipping op.
-    - *Ignore Errors*: Error is ignored.
+### **1. Opciones** - Parámetros configurables para ejecutar la operación:
 
-**2. Metadata**
-Window including op metadata, which defines op properties and behavior. It displays three
-columns containing:
+*Habilitado* - Habilita/deshabilita la operación. Por defecto está la casilla activada.
 
-- **Key**: Op attribute.
-- **Type**: Attribute value type, it can be:
-    - **Value**: Key value is a simple type.
-    - **Array**: Key value is an array.
-    - **Hash**: Key value is a hash.
-    - **CI**: Key value is a CI.
-- **Value**: Key value.
+*Clave de retorno* - Clave del stash definida por el usuario donde los datos de salida son guardados después de la ejecución de la operación. Este valor puede ser accesible a través del stash en forma:
 
-Contents of this window depend on the selected type of op and the properties defined above
-by the user. Following it is described common attributes to all ops when op is dragged
-from the palette to the rule:
+     cla.stash("<return_key_value>.output");
 
-- `Key`: Op registered.
-- `ID`: Op instance id, value is in the form of `xnode-number`.
-- `Name`: Op name,  it is a short description of what op.
-- `Text`: Its default value is the op name. This field can be changed through the rename
-action from op context menu.
-- `Icon`: Op image, describes what op does in a graphic way.
-- `Leaf`: Set to 0, this key indicates op holds or cand hold nested ops.
+*¿Es necesaria marcha atrás?* - Flag que controla cuando se debe realizar el rollback en caso de fallo en el mismo pase.
+
+Se se detecta un error, comienza el rollback.
+
+Por defecto, el valor es *Rollback no necesario*.
+
+El usuario establece cuando salta el flag de acuerdo a 4 opciones:
+
+- *La marcha atrás será necesaria después* - El flag se establece después de la ejecución de la operación.
+- *La marcha atrás será necesaria antes* - El flag se establece antes de la ejecución de la operación.
+- *Marcha atrás necesaria siempre* - El flag se establece en el momento de construir el DSL.
+- *No es necesario el rollback* - El flag no se establece nunca.
+- *Se necesita clave de rollback* - Relacionada con la opción anterior, es un campo de texto que se muestra cuando la opción `¿Es necesaria marcha atrás?` es diferente al valor 'No es necesario rollback'. Define la operación que será ejecutada en caso de error. El rollback está implementado para operaciones de scripting y gestión de archivos.
+- *Sólo en Marcha Adelante* - La operación se ejecuta si el pase avanza hacia adelante.
+- *Sólo en Marcha Atrás* - Se ejecuta la operación solo si se está realizando un rollback.
+- *Timeout* - Número de segundos para que la regla ejecute el elemento, si se llega al número de segundos establecido, se informa al usuario a través de un mensaje.
+- *Clave de semáforo* - Pide un intervalo de tiempo para ejecutar la regla. Una vez terminada la ejecución el semáforo se libera.
+- *Modo paralelo* - Define como se ejecuta la regla, si los procesos se pueden ejecutar de manera paralela o en serie. Por defecto, el valor es `No paralelo`. Existen tres opciones más disponibles:
+   - *No paralelo* - Todas las operaciones se ejecutan tal y como están en la regla.
+   - *Fork and Wait* - La regla se ejecuta en modo paralelo, y después, espera a que los procesos hijos terminen.
+   -*Fork and Leave* - La regla se ejecuta en modo paralelo pero no espera al resultado de los hijos.
+- *Debug Mode* - Permite depurar la operación. Existen tres opciones:
+   - *No debug* - No muestra información interna al ejecutar la operación.
+   - *Op trace* - Muestra información de la traza.
+   - *Op Trace + Stash Dump* - Muestra información de la traza y vuelca la información del stash actual en el log.
+- *Captura del error* - Define como tratar un error en una operación en caso de que ocurra. Por defecto, el valor establecido es `No Trap`. Hay 3 opciones más:
+   - *No Trap* - Los errores no son tratados.
+   - *Trap Errors* - Se trata al error y se espera a la acción del usuario, dichas acciones son:
+     - Retrying - Reintentar la operación.
+     - Skipping - Omitir la operación.
+   - *Ignorar errores* - El error es ignorado.
+- *Trap timeout (segundos)*: Establece el número de segundos antes de lanzar un trap.
+- *Trap timeout action*: Establece la acción a realizar tras un timeout:
+   - Abortar - Aborta la operación.
+   - Ignorar - Ignora el error.
+   - Reintentar - Reintenta ejecutar de nuevo la operación.
+- *Máximo número de reintentos (0 ilimitado)* - Permite establecer al usuario el número máximo de reintento en caso de error durante la operación.
+- *Trap in Rollback?* - Activa o desactiva los errores si se está ejecutando el rollback.
+
+### **2. Metadatos**
+
+Pestaña donde se incluye los metadatos de la operación, los cuales definen las propiedades de la misma así como su comportamiento. Se muestran tres columnas que contienen:
+
+- **Clave** - Define la operación
+- **Tipo** - Atributo de tipo valor, puede ser:
+   - **Valor** - Valor clave de tipo simple.
+   - **Array** - Valor clave de tipo array.
+   - **Hash** - Valor clave de tipo hash.
+
+El contenido de esta pestaña depende del tipo de operación y de las propiedades realizadas por el usuario en la pestaña Opciones.
+A continuación se describen algunos atributos comunes a todas las operación una vez dicha operación ha sido arrastrada desde la paleta a la regla:
+
+- `Key` - Define la operación.
+- `ID` - ID de la instancia de la operación, el valor lleva la connotación `xnode-*number*`.
+- `Name` - Nombre de la operación, una breve descripción de la finalidad de la operación.
+- `Text` - Por defecto, este valor es el nombre de la operación. Este campo se puede cambiar a través del Renombre visto anteriormente.
+- `Icon` - Icono de la operación, describe de una manera gráfica la finalidad de la operación.
+- `Leaf` - Establecido a 0, esta clave indica si esta operación puede tener operaciones anidadas o no.
+
+Cuando se guardan mas metadatos, se establecen otros atributos como:
+
+- `Data` - Este atributo es un hash con los datos que se han introducido en la configuración del elemento.
+- `Data_key` - Contiene el valor introducido por el usuario en la Clave de retorno.
+- `Disabled` - Establecido a *true* si se ha deshabilitado la operación en la pestaña anterior.
+- `Expanded` - Se establece a *true* si la operación contiene otras operaciones anidadas.
+- `Run_forward` - Aparece si el usuario ha modificado la propiedad *run_forward*. Se establece a *true* si la propiedad está activada.
+- `Run_rollback` - Muestra si el usuario ha habilitado la propiedad *run_rollback*. Se establece a *true* si la propiedad está activada.
+- `Parallel_mode` - Indica el modo de procesamiento del elemento. Puede tener tres valores diferentes:
+   - *None* - Proceso ejecutándose en serie.
+   - *Nohup* - Proceso ejecutando en modo *fork and leave*
+   - *Fork* - Proceso ejecutando en modo *fork and wait*.
+- `Error_trap` - Indica como tratar los errores. Puede tener tres valores:
+   - *None* -  Sin tratamiento de errores.
+   - *Ignored* - Ignora el error.
+   - *Trap* - Identifica el error y espera una acción externa.
+- `Semaphore_key` - Contiene el nombre del semáforo que el usuario ha introducido en la pestaña anterior.
+- `Timeout` - Contiene el número de segundos a esperar.
+- `Note` - Contiene el contenido de la pestaña Notas.
+- `Qtip` - Igual que la nota. Sus atributos dependen del tipo de operación seleccionada:
+- `Statements`
+	- *Holds_children* - Indica si la operación puede contener otras operaciones
+	- *Nested* - Si está a 0, este atributo indica que la operación es el comienzo de una función de código.
+- `Children` - Hash que contiene las operaciones anidadas
+- `Services`
+- `Rules`
+	- *Id_rule* - El valor de esta clave es el id de la regla.
 
 
-When metadata is saved others attributes are set, they are:
+### **3. Nota**
 
-- `Data`: This attribute is a hash with the data from the configuration property form
-entered by the user.
-- `Data_key`: Contains the value from the return key property filled by the user.
-- `Disabled`: Set to true if the op property ‘enable’ is not checked.
-- `Expanded`: True if op holds other ops nested.
-- `Run_forward`: This attribute is showed if the user manipulate property run_forward. Set
-to true if the property is checked.
-- `Run_rollback`: Showed if the user clicks on run_rollback property. Set to true if the
-property is checked.
-- `Parallel_mode`: Attribute that indicates the running process mode. It can have three
-different values:
-    - *None*: Process running in serial mode.
-    - *Nohup*: Process running in fork and leave mode.
-    - *Fork*: Process running in fork and way mode.
-- `Error_trap`: Attribute that indicates how to trap errors. It can have three different
-values:
-    - *None*: No trap error.
-    - *Ignored*: Ignore error.
-    - *Trap*: Trap error waiting for an action.
-- `Semaphore_key`: Contains the semaphore name filled by the user in semaphore_key option
-window.
-- `Timeout`: Attribute with the number of seconds to wait.
-- `Note`: Contains note tab contents.
-- `Qtip`: Same as note.
+Pestaña para incluir notas escritas por el usuario
 
-Attributes depending on the type ops selected are:
+### Nota
+Se muestra una ventana que incluye las operaciones de notas introducidas por el usuario o por el usuario para incluir.
+Se muestra una ventana con las notas de las operaciones introducidas por el usuario o para incluir por el usuario
 
-`Statements`
+### Copiar
 
-- *Holds_children*: Indicates if op can hold other op nested inside.
-- *Nested*: If value is 0, this attribute indicates that op is the beginning of code
-function.
-- *Children*: Hash holding the nested ops.
+Copia una operación de una regla al portapapeles.
 
-`Rules`
+### Cortar
 
-- *Id_rule*: The value of this key is the id rule number.
-
-**3. Note**
-Window including notes written by the user.
-
-### Note
-
-It displays a window including op notes entered by the user or for the user to include.
-
-### Copy
-
-Copy op from rule tree area to clipboard.
-
-### Cut
-
-Drops op from rule tree area to clipboard.
+Corta una operación de una regla al portapapeles.
 
 ### Paste
 
-Copy op from clipboard nested to the op selected, if possible.
+Pega, si es posible, una operación de una regla desde el portapapeles.
 
 ### DSL
 
-Displays a window with title DSL: `<rule name>`. An action tab and three different areas
-are showed in DSL window, the action tab is composed of:
+Muestra una ventana con el título DSL: `<nombre de la regla>`.
 
-- **Run**: button to run DSL code from DSL area. Areas are:
-- **Stash area**: Textarea with stash variables in yaml format, variables can be set by
-the user, it the rule to run is of type job chain, three stash variables are showed by
-default:
-    - changesets: []
-    - elements: []
-    - job_step: CHECK
-- **DSL area**: Textarea with DSL code from op and its configuration, this code can be
-changed and executed.
-- **Output area**: Textarea with two tab
-    - **Ouput**: Result of DSL code execution.
-    - **Stash**: Stash values from DSL code execution.
+Una pestaña de acción y tres zonas diferentes se muestran en la ventana de DSL, la pestaña de acción se compone de
 
-### Toggle
+En la ventana DSL se muestra una pestaña de acciones y tres áreas diferentes. La pestaña de acciones se compone de:
 
-Switch op state from enable to disable and viceversa. If op is not active a line through
-op is displayed.
-
-### Delete
-
-Remove op selected.
-
+- **Ejecutar** - Botón para ejecutar el código DSL que aparece en el área DSL. Las áreas son:
+- **Área Stash** - Cuadro de texto con las variables del stash en formato YAML. Las variables pueden ser establecidas por el usuario, si el tipo de regla es regla de pase, aparecen tres variables de stash por defecto:
+   - changesets: []
+   - elements: []
+   - job_step: CHECK
+- **Área DSL** - Cuadro de texto con el código DSL de la operación y su configuración, el código puede ser modificado y ejecutado desde aquí.
+- **Área de salida** - Área de texto con dos pestañas:
+   - **Output** - Resultado del código ejecutado por el DSL.
+   - **Stash** - Los valores del stash, resulta de la ejecución del código DSL.
+- **Interruptor** - Habilita/Deshabilita la operación. Si la operación está deshabilitado, una linea se muestra sobre el nombre de la operación.
+- **Borrar** - Elimina la operación seleccionada.

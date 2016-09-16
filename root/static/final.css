@@ -6,6 +6,32 @@ body {
 
 /* Help style */
 
+.help-title hr {
+    border-top: 1px solid #d3d0d0 !important;
+}
+
+.help-title h1 {
+    font-size: 30px !important;
+    text-align: center;
+}
+
+.help-title h2 {
+    text-transform: uppercase;
+    font-size: 100% !important;
+}
+
+.help-title h3 {
+    text-transform: uppercase;
+    font-size: 100% !important;
+    padding-left: 15px !important;
+}
+
+.help-title h4 {
+    text-transform: uppercase;
+    font-size: 100% !important;
+    padding-left: 25px !important;
+}
+
 .help-doc ul {
     list-style: square !important;
     list-style-position: inside !important;
@@ -13,8 +39,13 @@ body {
     margin-left: 1.5em !important;
 }
 
-.help-doc  h3, .help-doc  h4,.help-doc  h5, .help-doc  h6 {
-    padding: 0px 0 8px 0 !important;
+.help-doc h1, h2, h3, h4, h5, h6 {
+    margin: 15px 0 5px 0 !important;
+}
+
+.help-doc .label {
+    border-radius: 0px !important;
+    text-shadow: none !important;
 }
 
 .help-doc ol {
@@ -35,6 +66,63 @@ body {
     padding: 10px 10px 10px 10px !important;
 }
 
+.help-doc p {
+    line-height:1.70 !important;
+}
+
+.help-intro a:link {
+   color: #616161  !important;
+   border-bottom: none !important;
+   padding-bottom: .08em;
+   line-height: 1.70 !important;
+   text-decoration: none !important;
+   cursor:pointer;
+}
+
+.help-intro a:hover {
+   color: #a0a0a0 !important;
+   text-decoration: none !important;
+   border-bottom: .08em solid #a0a0a0 !important;
+   padding-bottom: .08em;
+}
+
+.help-intro a:visited {
+   color: #616161 !important;
+   border-bottom: .08em solid #000 !important;
+   padding-bottom: .08em;
+   line-height: 1.35 !important;
+   text-decoration: none !important;
+}
+
+
+.help-doc-url-search {
+   color: #720F75 !important;
+   line-height:1.70 !important;
+}
+
+.help-doc a:link {
+   color: #616161 !important;
+   border-bottom: .08em solid #616161 !important;
+   padding-bottom: .08em;
+   line-height: 1.35 !important;
+   text-decoration: none !important;
+   cursor:pointer;
+}
+
+.help-doc a:hover {
+   color: #a0a0a0 !important;
+   text-decoration: none !important;
+   border-bottom: .08em solid #a0a0a0 !important;
+   padding-bottom: .08em;
+}
+
+.help-doc a:visited {
+   color: #616161 !important;
+   border-bottom: .08em solid #616161 !important;
+   padding-bottom: .08em;
+   line-height: 1.35 !important;
+   text-decoration: none !important;
+}
 
 .repo-info .ext-mb-content {
     margin-top: 8px !important;
@@ -1030,6 +1118,11 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 .help_docs .x-panel-body img {
     height: 16px;
     width: 16px;
+}
+
+.help_docs .ext-link {
+    height: 13px !important;
+    width: 13px !important;
 }
 
 .img_help {

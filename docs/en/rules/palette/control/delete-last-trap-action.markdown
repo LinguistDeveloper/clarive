@@ -1,5 +1,6 @@
 ---
 title: DELETE last trap action
+index: 5000
 icon: if
 ---
 

@@ -1,12 +1,16 @@
 ---
 title: Number field
-index: 400
+index: 5000
 icon: number
 ---
 
 Add a number field in the form.
 
 There are a list of elements can be configured in the fieldlet:
+
+Clarive allows to make operations with this type of fiedlet 
+using [Calculated numberfield](rules/palette/fieldlets/calculated-numberfield)
+
 
 ### Section to view
 

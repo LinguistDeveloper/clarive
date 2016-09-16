@@ -1,5 +1,6 @@
 ---
 title: IF ANY nature THEN
+index: 5000
 icon: if
 ---
 
@@ -7,6 +8,6 @@ Checks if changeset accomplish defined natures and if it meets any of them proce
 
 Form to configure has the following field:
 
-- **Natures**: Combo box filled with data from ci ‘nature’. User can select one or multiples natures.
+- **Natures** - Combo box filled with data from ci ‘nature’. User can select one or multiples natures.
 
 

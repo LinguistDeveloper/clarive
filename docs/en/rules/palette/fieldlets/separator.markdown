@@ -1,6 +1,6 @@
 ---
 title: Separator
-index: 400
+index: 5000
 icon: separator
 ---
 

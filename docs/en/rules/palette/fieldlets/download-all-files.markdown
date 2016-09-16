@@ -1,6 +1,6 @@
 ---
 title: Download all files
-index: 400
+index: 5000
 icon: download
 ---
 

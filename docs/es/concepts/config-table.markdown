@@ -1,5 +1,6 @@
 ---
 title: Tabla de Configuración
+index: 5000
 icon: page
 ---
 
@@ -11,10 +12,10 @@ momento por el administrador y automáticamente se reflejarán en Clarive.
 
 Eso es precisamente lo que hace que esos valores de configuración sean diferentes
 de los parámetros de configuración __estáticos__ que se establecen en los
-(ficheros de configuración)[setup/config-file].
+[ficheros de configuración](setup/config-file)
 
 Los valores estáticos requieren el reinicio del servidor o del
- (dispatcher)[admin/dispatcher]
+ [dispatcher](admin/dispatcher)
 
 Por ejemplo, las siguientes variables de configuración globales son dinámicas y
 pueden ser establecidas en la tabla de configuración;

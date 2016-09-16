@@ -1,6 +1,6 @@
 ---
 title: CI Grid
-index: 400
+index: 5000
 icon: grid
 ---
 
@@ -45,46 +45,27 @@ Allows to use a JSON format to add a condition.
         {"moniker":"Moniker_of_the_project"}
 
 
-* Selectable fields to filter can be found through the REPL. In this case the command would be: `CI> project-> find_one ();`
+Selectable fields to filter can be found through the REPL. In this case the command would be: `CI> project-> find_one ();`
 
 
 ### Selection method
 
-Choose between selections.
+You specify the values that appear in the form. Two types to choose from:
 
-- **Role selection**
+- **Role selection** - Select the role to be displayed on the form, 
+regardless of class. For example, if we choose Agent, in the form we will see all
+ Agents, *ftp_agent*, *clax_agent*, etc...
+- **Class selection** - We can specify class of CI.
 
-- **Class selection**
+### Default value
 
-### Roles
-
-Selection of roles to show in the grid.
-
-Select only works if *Class selection* is selected as a method.
-
-Specify the class of CI to be shown.
-
-
-### Show class
-If Class selection is selected, the value in this field must be ci.
-
-### CI Class
-
-Select only works if *Class selection* is selected as a method.
-
-Specify the class of CI to be shown.
-
-### Default Value
-
-To show a default value in the grid.
-
-This field will be active when CI Class is selected.
+To show a default value in the box.
 
 ### Filter field
 
 Specify a condition to the CI grid.
 
-This is a combo with every fieldlets that are in the form. 
+This is a combo with every fieldlets that are in the form.
 
 This field is required if next field is not empty.
 
@@ -102,4 +83,16 @@ By default, filter type is OR.
 
 For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).
 
-### Show class
+### Description
+
+Selection of type of description to show in the list.
+
+- **Name** - Show the name.
+- **Environment** - Show the Environment separated by commas.
+- **Class** - Show the type object.
+- **Moniker** - Show the moniker specified in CI configuration.
+
+
+### Height
+
+Set the height of the grid.

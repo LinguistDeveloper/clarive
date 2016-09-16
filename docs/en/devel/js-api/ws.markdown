@@ -1,5 +1,6 @@
 ---
 title: cla/ws - webservice namespace
+index: 5000
 icon: page
 ---
 
@@ -58,11 +59,11 @@ print( req.headers('accept-language') );
 
 Some common headers one may get from a browser call:
 
-https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
+[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 
 How to send headers (myheader and another) with a `curl` command call:
 
-`curl -Hmyheader=123 -Hanother=bar http://clariveurl/rule/json/myrule`
+	curl -Hmyheader=123 -Hanother=bar http://clariveurl/rule/json/myrule
 
 #### req.params()
 

@@ -1,30 +1,31 @@
 ---
 title: cla ws - Invocar servicios web
+index: 5000
 icon: console
 ---
-* `cla ws`: Herramientas REST Clarive REST. Encuentra todos los métodos públicos disponibles a un [CI](concepts/ci) dado.
-* Se pueden pasar los siguientes parámetros:
 
-    `--classname <class_name>`: Nombre de la clase CI para buscar los métodos disponibles. Por defecto el valor es '*'
-    `--mid <mid>`: Mid al que pertenece el CI definido.
+`cla ws`: Herramientas REST Clarive REST. Encuentra todos los métodos públicos disponibles en un [CI](concepts/ci) dado.
 
-* La salida muestra métodos comunes a todas las clases de CI, y los métodos disponibles para la clase CI dada.
-* Los subcomandos que soporta este `cla ws` pueden ser consultados a través de la ayuda:
+Se pueden pasar los siguientes parámetros:
 
+`--classname <nombre-clase>`: Nombre de la clase CI para buscar los métodos disponibles. Por defecto el valor es '\*'.
 
-    >cla help ws
+`--mid <mid>`: Mid al que pertenece el CI definido.
 
-    Clarive - Copyright(C) 2010-2015 Clarive Software, Inc.
+La salida muestra métodos comunes a todas las clases de CI, y los métodos disponibles para la clase CI dada.
 
-    usage: cla [-h] [-v] [--config file] command <command-args>
+Los subcomandos que soporta este `cla ws` pueden ser consultados a través de la ayuda:
 
-    Subcommands available for ws (webservices toolchain):
+    > cla help ws
+
+    USO: cla [-h] [-v] [--config file] comando <comando-args>
+
+    Subcomandos disponibles para ws:
 
         ws-list
 
-    cla help <command> to get all subcommands.
-    cla <command> -h for command options.
+    cla help <comando> para obtener todos los subcomandos.
+    cla <comando> -h para los opciones del comando.
 
-
-* `cla ws-list`: Mismo comportamiento que `cla ws`.
+`cla ws-list`: Mismo comportamiento que `cla ws`.
 

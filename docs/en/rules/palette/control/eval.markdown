@@ -1,5 +1,6 @@
 ---
 title: EVAL
+index: 5000
 icon: cog_perl
 ---
 
@@ -9,6 +10,6 @@ In case of error, a message with the error is displayed and the rule fails.
 
 Form to configure has the following field:
 
-- **Code**: Text area to be filled with perl instructions.
+- **Code** - Text area to be filled with perl instructions.
 
 

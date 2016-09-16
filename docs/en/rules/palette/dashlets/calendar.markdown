@@ -1,13 +1,12 @@
 ---
 title: Calendar
-index: 400
+index: 5000
 icon: calendar
 ---
 
 Shows the calendar in the dashboard.
 
 There are a list of elements can be configured in the dashlet:
-
 
 ### Dimensions of the dashlet
 
@@ -23,45 +22,27 @@ Allows to make the dashlet more dinamic adding an automatic refresh (in minutes)
 
 Indicate what activity or issue will show in the calendar. The options are:
 
-
-- **Topic Activity*
-
-
-- **Open topics*
-
-
-- **Calendar planner*
-*(eg: Milestones or Environment planner)
-
-
-- **Own Fields*
-
-
+- **Topic Activity** - Allows to view topic ativity of selected topics from creation to modification.
+- **Open topics** - Shows open topics from creation to final statuses.
+- **Calendar planner** *(eg: Milestones or Environment planner)* - Show schedulers with job slots o specific milestones.
+- **Own fields** - Personalize the fields to show, for example, if user want to see only a specific range of dates. Need to specify two fields:
+  - *Initial date*.
+  - *Final date*
 
 ### Default View
 
 Establish the default view of the calendar:
 
-
-- **Month*
-
-
-- **Basic week*
-
-
-- **Schedule week*
-
-
-- **Basic day*
-
-
-- **Schedule day*
-
+- **Month** - Shows a month view by default.
+- **Basic week** - Show the complete week (from Sunday to Monday)
+- **Schedule week** - Show the week divided by hours.
+- **Basic day** - Only shows the present day.
+- **Schedule day** - Shows the present day divided by hours.s
 
 
 ### First weekday
 
-The user can select the first day of the week to see the calendar.
+Select the first day of the week to see the calendar.
 
 
 ### Select topics in categoroes
@@ -77,3 +58,5 @@ Allows to use a JSON format o MongoDB query to add a condition.
 ### Label mask
 
 Allows to personalize the information will show in the topic mask.
+
+*Example*: *${category.acronym}#${topic.mid} ${topic.title}*

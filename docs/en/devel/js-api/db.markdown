@@ -1,5 +1,6 @@
 ---
 title: cla/db - MongoDB namespace
+index: 5000
 icon: page
 ---
 
@@ -252,7 +253,7 @@ Configures the sorting for the result set to be returned.
 ```javascript
 var db = require('cla/db');
 var cursor = db.getCollection('topic').find();
-cursor.sort({ title: 1 }); // sort by mid (as numeric)
+cursor.sort({ title: 1 }); // sort by title (as alphabetical)
 cursor.sort({ m: 1 }); // sort by mid (as numeric)
 ```
 

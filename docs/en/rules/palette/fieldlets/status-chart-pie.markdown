@@ -1,6 +1,6 @@
 ---
 title: Status chart pie
-index: 400
+index: 5000
 icon: chart_pie
 ---
 

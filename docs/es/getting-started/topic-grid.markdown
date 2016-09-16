@@ -1,18 +1,19 @@
 ---
-title: Tabla de topicos
-index: 300
+title: Tabla de tópicos
+index: 5000
 icon: topic
 ---
 La tabla de tópicos es la lista de tópicos que el usuario puede visualizar.
 El concepto está basado como si fuera una bandeja de entrada de e-mail.
 
-La tabla puede ser vista desde tres modos diferentes:
+La tabla puede ser vista desde cuatro modos diferentes:
 
-- **Todos los tópicos**: Se abre seleccionando `Todos` dentro del menú de tópicos en la parte
-superior de la página.
-- **Por categoría**: Acceso a través de selecionar una categoría dentro
+- **Todos los tópicos** - Se abre seleccionando `Todos` dentro del menú de tópicos en la parte superior de la página.
+- **Por categoría** - Acceso a través de selecionar una categoría dentro
 del menú de tópicos.
-- **Por proyecto**: Por último también se puede acceder a través del explorador de proyectos
+- **Por estado** - Acceso a través de selecionar un estado dentro
+del menú de tópicos.
+- **Por proyecto** - Por último también se puede acceder a través del explorador de proyectos
 <img src="/static/images/icons/project.svg" /> situado en el panel de la izquierda.
 
 ### Ordenación
@@ -49,9 +50,18 @@ se muestran todos los tópicos.
 Filtra por la categoría que el usuario quiera ver. Si no hay ninguna seleccionado,
 muestra todas las categorías siempre que el usuario tenga los permisos necesarios.
 
-## Colapsar Filas
+#### Resetear las columnas del grid
 
-Colapsando las filas es posible ver más tópicos por página
-Collapsing rows allows viewing more topics per page.
+Permite restaurar el grid de tópicos mostrando las columnas que aparecen por defecto y ocultando aquellas añadidas por el usuario.
 
-Mostar los topicos en [vista Kanban](getting-started/kanban)
+#### Exportar
+
+Permite exportar el grid de tópicos a distintos formatos, HTML, CSV y YAML.
+
+#### Abrir Kanban
+
+Muestra los tópicos del grid actual en [vista Kanban](getting-started/kanban)
+
+#### Colapsar Filas
+
+Colapsando las filas es posible ver más tópicos por página pero con algo menos información

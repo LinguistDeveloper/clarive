@@ -1,6 +1,6 @@
 ---
 title: User combo
-index: 400
+index: 5000
 icon: combo_box
 ---
 
@@ -34,9 +34,8 @@ Check if you want the field as mandatory.
 Allow to set the type of the field.
 
 - **Single** - Allows to select one choice of the options available
-
 - **Multiple** - The user can select multiples choices
-
+-  **Grid** - To show selected user in a table.
 
 ### Display field
 

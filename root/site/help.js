@@ -86,9 +86,9 @@ Cla.help_show = function(params) {
             var html ='';
             Ext.each( docs.sort(function(a,b){ return b.matches > a.matches }) , function(doc){
                 html += function(){/*
-                   <div class="help-search-result" style="cursor: pointer;" path="[%= data.path %]">
+                   <div class="help-search-result help-doc" style="cursor: pointer;" path="[%= data.path %]">
                        <h3>[%= title %]</h3>
-                       <p style="color: #3070c0">[%= data.path %]</p>
+                       <p class="help-doc-url-search">[%= data.path %]</p>
                        <p>[%= found %]</p>
                        <hr />
                    </div>
@@ -123,8 +123,8 @@ Cla.help_show = function(params) {
         var html_chi='';
         html_chi_tpl = function(){/*
             [% if( node.leaf ) { %]
-                <li class="square" style="margin-left: [%= depth * 12 %]px">
-                <a href="#" class="help-search-result" path="[%= node.attributes.data.path %]">
+                <li class="square help-intro" style="margin-left: [%= depth * 12 %]px">
+                <a href="#" class="help-search-result"  path="[%= node.attributes.data.path %]">
                     [%= node.text %]
                 </a>
                 </li>
@@ -137,7 +137,7 @@ Cla.help_show = function(params) {
             html_chi += html_chi_tpl.tmpl({ node: node, depth: dep });
         });
         var html = function(){/*
-             <div id="boot">
+             <div id="boot" class="help-title">
                  <h1>Clarive Help</h1>
                  <hr />
                  [%= chi %]

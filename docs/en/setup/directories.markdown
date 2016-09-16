@@ -22,28 +22,20 @@ be changed by the user through the `[env].yml` file.
 This are the default directories of a Clarive installation:
 
 - `jobs/` - temporary directory where jobs are written to.
-
 - `data/` - database files are kept here by default, normally under
 `data/mongo`.
-
 - `logs/` - for server log files and `.pid` and `.lock` process files.
-
 - `tmp/` - for temporary files and directories used mostly by the web-server.
-
 - `config/` - directory for user configuration files `[env].yml`. This
 directory is in the search path for the `--env` command-line option
 for the `cla` command. MongoDB and Nginx configuration files
 are kept here by default.
-
 - `features/` - here is where user-installed product features are kept.
 each subdirectory here is a feature.
-
 - `plugins/` - here is where user-installed product plugins. Each
 subdirectory is a plugin.
-
 - `local/` - where all external libraries and binaries such as Git, OpenSSL,
   MongoDB drivers or Perl are kept.  **There are no serviceable files inside**.
-
 - `clarive/` - the CLARIVE_HOME directory. See below.
 
 #### CLARIVE_BASE in Windows
@@ -57,16 +49,12 @@ is `C:\Clarive` in this manual.
 
 - `C:\Clarive` - root installation location, where each subdirectory
 is a Clarive product, such as "Server" or "Agent".
-
 - `C:\Clarive\Server` - the Server installation
-
 - `C:\Clarive\Server\app\` - the Cygwin root installation directory,
 which emulates a \*nix root directory.
-
 - `C:\Clarive\Server\app\opt\clarive` - the CLARIVE_BASE directory. From
 here down, it matches the structure of a Linux/Unix/OSX system, so refer to
 the chapter above for more information.
-
 - `C:\Clarive\Server\bin` - special Windows binaries and other application shortcuts.
 
 ## The Clarive Home Directories CLARIVE_HOME

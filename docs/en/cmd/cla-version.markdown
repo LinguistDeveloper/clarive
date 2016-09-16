@@ -1,6 +1,7 @@
 ---
 title: cla version - Clarive version check
+index: 5000
 icon: console
 ---
 
-Shows Clarive version. 
+`cla version`: Shows Clarive version.

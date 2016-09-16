@@ -1,6 +1,6 @@
 ---
 title: HTML
-index: 400
+index: 5000
 icon: html
 ---
 
@@ -23,11 +23,9 @@ Allows to make the dashlet more dinamic adding an automatic refresh (in minutes)
 
 Some examples of code to add to the dashlet.
 
-
 ### Data URL
 
 
 ### HTML/JS code
-
 
 An powerful editor to create a personalized dashlet with HTML/JS code.

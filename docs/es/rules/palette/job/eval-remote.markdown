@@ -1,18 +1,13 @@
 ---
-title: Eval Remote
+title: Evaluación remota
+index: 5000
 icon: cog_java
 ---
-* Agente relacionado con el [CI](concepts/ci) servidor que evalúa el código dado, mostrando un mensaje de error en caso de fallo durante la ejecución o devolviendo el código y su resultado en caso de que haya ido de manera correcta.
-* La lista de configuración del elemento incluye las siguientes opciones: <br />
 
-<br />
-### Servidor
-* Servidor donde se aloja el código.
+Agente relacionado con el [CI](concepts/ci) servidor que evalúa el código dado, mostrando un mensaje de error en caso de fallo durante la ejecución o devolviendo el código y su resultado en caso de que haya ido de manera correcta.
 
-<br />
-### Usuario
-* Usuario necesario para conectar al servidor.
+La lista de configuración del elemento incluye las siguientes opciones:
 
-<br />
-### Código
-* Código a evaluar en el servido escogido.
+- **Servidor** - Servidor donde se aloja el código.
+- **Usuario** - Usuario necesario para conectar al servidor.
+- **Código** - Código a evaluar en el servido escogido.

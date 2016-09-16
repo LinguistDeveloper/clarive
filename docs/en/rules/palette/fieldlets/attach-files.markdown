@@ -1,22 +1,10 @@
 ---
 title: Attach files
-index: 400
+index: 5000
 icon: file
 ---
 
 Allows to attach files in the form.
-
-## Supported features
-
-### Multiple file upload:
-
-Allows to select multiple files at once and upload them simultaneously.
-
-### Drag & Drop support:
-
-Allows to upload files by dragging them from your desktop or filemanager and dropping them on your fieldlet.
-
-It is possible to drag&drop a complete folder structure, though this is currently only supported by Google Chrome.
 
 ## Configuration
 
@@ -48,6 +36,22 @@ The default directory to storage the files.
 
 ### Extension
 
-The extensions allowed to be upload into the form.
+The extensions allowed to be upload into the topic.
 
-Example: jpg,.png.,TXT, etc...
+Example: jpg,.png,TXT, etc...
+
+### Height
+
+Set the height of the table.
+
+## Supported features
+
+### Multiple file upload
+
+Allows to select multiple files at once and upload them simultaneously.
+
+### Drag & Drop support
+
+Allows to upload files by dragging them from your desktop or filemanager and dropping them on your fieldlet.
+
+It is possible to drag&drop a complete folder structure, though this is currently only supported by Google Chrome.

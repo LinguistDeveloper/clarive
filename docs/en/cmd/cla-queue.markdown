@@ -1,5 +1,6 @@
 ---
 title: cla queue - Queue management tools
+index: 5000
 icon: console
 ---
 

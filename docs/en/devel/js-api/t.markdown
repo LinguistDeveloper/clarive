@@ -1,5 +1,6 @@
 ---
 title: cla/t - Testing
+index: 5000
 icon: page
 ---
 
@@ -24,7 +25,7 @@ of test cases related to a functionality.
 
 The subtest `name` has to be unique in the test suite.
 
-```
+```javascript
 var t = require('cla/t');
 
 t.subtest('testing it works', function(){
@@ -103,8 +104,8 @@ that the test is ok.
 ```javascript
 var t = require('cla/t');
 t.subtest('testing a pass', function(){
-    var x = 10;
-    if( x == 10 ) {
+    var x = 11;
+    if( x != 10 ) {
         t.pass('not a 10');
     }
 });
@@ -118,7 +119,7 @@ that the test has failed.
 ```javascript
 var t = require('cla/t');
 t.subtest('testing a fail', function(){
-    var x = 10;
+    var x = 11;
     t.ok( x );
     if( x != 10 ) {
         t.fail('not a 10');
@@ -130,7 +131,7 @@ t.subtest('testing a fail', function(){
 
 Controls how many and if tests will be run.
 
-```
+```javascript
 var t = require('cla/t');
 t.plan( 'tests', 15 );
 t.plan( 'skip_all', 'no internet connection, so no tests' );
@@ -147,7 +148,7 @@ are not right.
 that will be skipped. To set the number
 of tests, see `plan()`
 
-```
+```javascript
 var t = require('cla/t');
 t.subtest('testing a fail', function(){
     t.plan( 'tests', 1 );
@@ -208,7 +209,10 @@ t.cmpDeeply( arr, [ t.re('^f'), t.re('...') ] );
 This does a set comparison, that is, it compares two arrays but ignores the
 order of the elements and it ignores duplicate elements, so
 
-    t.cmpDeeply([1, 2, 2, 3], set(3, 2, 1, 1));
+```javascript
+    var t = require('cla/t');
+    t.cmpDeeply([1, 2, 2, 3], t.set(3, 2, 1, 1));
+```
 
 will be a pass.
 
@@ -217,7 +221,10 @@ will be a pass.
 This does a bag comparison, that is, it compares two arrays but ignores the
 order of the elements so
 
-  t.cmpDeeply([1, 2, 2], bag(2, 2, 1))
+```javascript
+    var t = require('cla/t');
+    t.cmpDeeply([1, 2, 2], t.bag(2, 2, 1));
+```
 
 will be a pass.
 
@@ -230,8 +237,11 @@ will be a pass.
 These operators allow for partial comparison of
 arrays elements.
 
+```javascript
+    var t = require('cla/t');
     t.cmpDeeply([11], t.subsetof(22,11) );  // PASS
     t.cmpDeeply([11,22,33], t.supersetof(22,11) );  // PASS
+```
 
 ### t.all(...)
 

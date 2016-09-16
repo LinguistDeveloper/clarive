@@ -1,6 +1,6 @@
 ---
 title: Role Administration
-index: 6
+index: 5000
 icon: role
 ---
 
@@ -18,18 +18,15 @@ category will be managed by the role "Release manager".
 
 A user will get one of more roles and inherit that way the access to the topics he can work on.
 
-Role administration can be performed by selecting Admin-Roles from the menu bar.
+Role administration can be performed by selecting Admin - <img src="/static/images/icons/role.svg" /> Roles from the menu bar.
 This will display all the currently available roles in a list view.
 
 The list view contains the following columns:
 
-- `Role`: The name of the Role
-
-- `Description`: The description of the role
-
-- `Mailbox`: The mailbox specific for the role, for notification purposes
-
-- `Options`: Summary of all Role actions for this Role
+- `Role` - The name of the Role
+- `Description` - The description of the role
+- `Mailbox` - The mailbox specific for the role, for notification purposes
+- `Options` - Summary of all Role actions for this Role
 
 
 ## Role List Options
@@ -39,12 +36,9 @@ The list view contains the following columns:
 
 The following information needs to be provided for creation:
 
-- **Role Name**: The name of the role e.g. developer, release manager, change manager
-
-- **Description**: A longer description of the Role
-
-- **Dashboard**: Clarive has several Dashboards, combining relevant reports, related to the roles.
-
+- **Role Name** - The name of the role e.g. developer, release manager, change manager
+- **Description** - A longer description of the Role
+- **Dashboard** - Clarive has several Dashboards, combining relevant reports, related to the roles.
 
 The dashboards combo box is the list of dashboards that are available for users with that role. The first one (in order) will be the default one. The user can also select his default dashboard in his preferences (user menu on top right corner).
 
@@ -55,9 +49,8 @@ All available actions are displayed in the left panel, Actions attributed to the
 are displayed in the left pane. A Group of actions or a specific action can be added by
 selecting and dragging the action of group from the left pane to the right pane.
 
-- `Remove Selection` <img src="/static/images/icons/delete_red.svg" /> - Removes the currently selected action from the Role. </br>
-
-- `Remove All` <img src="/static/images/icons/del_all.svg" /> - Removes all selections
+- `Remove Selection` <img src="/static/images/icons/delete_red.svg" /> - Removes the currently selected action from the Role.
+- `Remove All` <img src="/static/images/icons/del_all.svg" /> - Removes all selections.
 
 
 ## Users that Have a Role
@@ -72,57 +65,35 @@ This a pivoted version of the User list. Now you see what users have the
 current rol.
 
 
+ The permit also gives permission to administer see CIs so it is not necessary to add the two. To specify the CIs, you have to drag the action. In the new window, select the roles and collections that the user can view / manage. You can also add negative filters. For example, if the user can see all CIs least the project collection, you can add all roles and then a negative filter to the collection.
+
 ## Actions
 
-Actions are logically grouped, actions can be added related to the following groups :
+Actions are logically grouped, actions can be added related to the following groups:
 
-- `Admin`: All actions related to the tool administration e.g. topic administration, user administration
-
-- `Artifacts`: All action related to Artifacts
-
-- `Calendar`: All actions related to Job Calendars
-
-- `CI`: All actions related to configuration items. These actions are split in two groups, A group for administering the CI’s and a second group for Viewing the CI’s.  An example here is adding or viewing a status.
-
-- `Development`: All actions related to the Development menu on the top bar of the tool Git: All actions for accessing the Git Repository
-
-- `Help`: Actions related to the Help menu
-
-- `Home`:
-
-- `Job`: All actions related to jobs e.g. creating new jobs, restart jobs....
-
-- `Labels`: Action allowing to administer labels
-
-- `Notify`: Actions allowing the role to receive general admin and notification messages
-
-- `Projects`: Action allowing to access the Project Lifecycle
-
-- `Reports`: Actions allowing to view dynamics fields and reports
-
-- `Search`: Actions allowing to search for Jobs, Ci’s and topics
-
-- `SQA`: Actions allowing to access the quality portal
-
-- `Topics`: Actions on topics, For each topic in the database there is actions to, view, add, delete, edit the topic and to add/view comments to a topic.
-
-- `Topicfields`: For each field of a topic in a specific status, an action can be set to allowing the field to be edited by the role, or an action can be set to prohibit the role from viewing the field.
-
- - By default all fields of a topic in a specific status are READONLY. For ALL Fields that can be added when creating an instance of a topic or Fields that can  be changed when Editing an instance of a topic the action`:
-
-For example, when adding the action “Can edit the field Changesets" in a category called "Change Request"
-for the status "Deployed", the user with the role currently edited, will be able to edit
-and change the field “changeset” for the topic “Change Request”,
-when an instance of that topic has the status “Deployed”.
+- `admin` - All actions related to the tool administration e.g. topic administration, user administration
+- `artifacts` - All action related to Artifacts
+- `calendar` - All actions related to Job Calendars
+- `ci` - All actions related to configuration items.You can give permission to manage or view CIs. The action Admin CIs also give permission to view CIs so it is not neccesary to add both. To specify the CIs, you have to drag the action. In the new window, select the roles and collections that the user can view/manage. You can also add negative filters. For example, if the user can see all CIs except the project collection, you can add all roles and then add a negative filter to that collection.
+- `development` - All actions related to the Development menu on the top bar of the tool.
+- `git` - All actions for accessing the Git Repository
+- `help` - Actions related to the Help menu
+- `home` - Actions allowing to view Lifecycle panel or to the menu
+- `job` - All actions related to jobs e.g. creating new jobs, restart jobs....
+- `labels` - Action allowing to administer labels
+- `notify` - Actions allowing the role to receive general admin and notification messages
+- `projects` - Action allowing to access the Project Lifecycle
+- `reports` - Actions allowing to view dynamics fields and reports
+- `search` - Actions allowing to search for Jobs, Ci’s and topics
+- `topics` - It allows the user to view topics, delete topics, create a topic, add comments to the topics, etc... Once the action is drawn, you can filter so the user can only apply that action for given categories.
+- `topicfields` - It allows you to configure the actions to see and/or edit the fields of the topics. It is possible to configure each field depending on the category and the status of the topic. Just add the category, status and the field so the user can interact with it. It is also possible negative filters, for example, provide a user permission to view all fields of a category minus the 'Estimate' field. To do this, assigned permissions to see all the fields in that category and add a negative filter to the 'Estimate' field.
 
 For each field of each topic in any status, this action has to be added for those role that need to edit this field.
-
 
 ### <img src="/static/images/icons/edit.svg" /> Edit the selected Role
 
 Allows editing the selected Role. Once changes have been made, select the “Accept”. To avoid
 any changes, select the “Close” button instead.
-
 
 ### <img src="/static/images/icons/copy.svg" /> Duplicate the selected Role
 

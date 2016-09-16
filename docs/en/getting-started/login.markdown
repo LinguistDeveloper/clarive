@@ -1,6 +1,6 @@
 ---
 title: Login
-index: 100
+index: 4000
 icon: user
 ---
 
@@ -20,22 +20,30 @@ when single sign on or LDAP/SAML authentication is enabled.
 
 If you wish to log into Clarive directly from your company portal,
 or from another web page that is external to Clarive, you may use this
-HTML code as a template to create your login form:
+HTML code as a template to create your login form::
 
+```html
 <textarea style="height: 250px; width: 90%">
-    &lt;form action="https://clariveserver:port/login" method="POST"&gt;
-    &lt;table border="0" cellspacing="5" cellpadding="5"&gt;
-    &lt;tr&gt;
-    &lt;td&gt;User Name:&lt;/td&gt;
-    &lt;td&gt;&lt;input type="text" name="username"/&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-    &lt;td&gt;Password:&lt;/td&gt;
-    &lt;td&gt;&lt;input type="password" name="password"/&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-    &lt;td colspan="2"&gt;&lt;input type="submit"/&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;/table&gt;
-    &lt;/form&gt;
+    <form action="https://clariveserver:port/login" method="POST">
+        <table border="0" cellspacing="5" cellpadding="5">
+            <tr>
+                <td>User Name:</td>
+                <td>
+                    <input type="text" name="username" />
+                </td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td>
+                    <input type="password" name="password" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" />
+                </td>
+            </tr>
+        </table>
+    </form>
 </textarea>
+```

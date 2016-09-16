@@ -5439,8 +5439,7 @@ msgstr "Combo de Usuarios"
 msgid "Topic Selector"
 msgstr "Selector de Tópico"
 
-#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/cis.js
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/cis.js
 msgid "CI Combo"
 msgstr "Combo de CIs"
 
@@ -13438,6 +13437,10 @@ msgstr "Campos de la operación"
 #: root/fields/templates/config/checkbox.js
 msgid "Checked"
 msgstr "Marcado"
+
+#: root/fields/templates/config/ci_grid.js
+msgid "CI grid"
+msgstr ""
 
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js

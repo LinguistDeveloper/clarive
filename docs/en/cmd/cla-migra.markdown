@@ -1,9 +1,10 @@
 ---
 title: cla migra - Migrations
+index: 5000
 icon: console
 ---
 
-`cla migra`: Runs database migrations, which are needed to level the database version with the current version of Clarive after installing patches. 
+`cla migra`: Runs database migrations, which are needed to level the database version with the current version of Clarive after installing patches.
 
 
 ## Subcommands
@@ -17,7 +18,7 @@ Initializes the migrations
 ### migra-start
 
 Upgrade/Downgrade the migrations. Options are:
-            
+
         --init run initialization before migrating
         --path path to migrations instead of default
 
@@ -25,14 +26,14 @@ Upgrade/Downgrade the migrations. Options are:
 ### migra-set
 
 Manually set the latest migrations version
-            
+
         --version the version to be set
 
 
 
 ### migra-fix
 
-Removes the error from last migration. Use *ONLY
+Removes the error from last migration. Use *ONLY*
 when the issue is really
 fixed
 
@@ -41,10 +42,10 @@ fixed
 
 Upgrade/Downgrade manually by passing the migration name (upgrade by
 default). Options are:
-            
+
         --name name of the migration
         --downgrade run downgrade instead of upgrading
 
 
 
-     
+

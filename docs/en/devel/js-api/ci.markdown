@@ -1,5 +1,6 @@
 ---
 title: cla/ci - CI Classes
+index: 5000
 icon: page
 ---
 
@@ -16,7 +17,7 @@ This is accomplished using the `ci.load(mid)` function.
 
 ```javascript
 var ci = require("cla/ci");
-var server = ci.load(123);
+var server = ci.load("123");
 ```
 
 ## Instanciating CIs
@@ -51,7 +52,7 @@ storage and methods.
 
 ```javascript
 var ci = require("cla/ci");
-ci.create("MyClass",{
+ci.createClass("MyClass",{
     has:{
         ipAddress: { is:"rw", isa:"Str", required: true }
     },

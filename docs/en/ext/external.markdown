@@ -1,5 +1,6 @@
 ---
 title: Clarive Plugins and Features
+index: 200
 icon: page
 ---
 

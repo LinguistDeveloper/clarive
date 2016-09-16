@@ -1,5 +1,6 @@
 ---
 title: Extending cla wth commands
+index: 2000
 icon: page
 ---
 

@@ -1,5 +1,6 @@
 ---
-title: Grafico ciclo de vida
+title: Gráfico ciclo de vida
+index: 5000
 icon: diagram
 ---
 

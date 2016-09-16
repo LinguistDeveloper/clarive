@@ -1,5 +1,6 @@
 ---
 title: Stash
+index: 5000
 icon: stash
 ---
 

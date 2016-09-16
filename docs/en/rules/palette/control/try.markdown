@@ -1,5 +1,6 @@
 ---
 title: TRY statement
+index: 5000
 icon: if
 ---
 

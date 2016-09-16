@@ -1,6 +1,6 @@
 ---
 title: Topic charts
-index: 400
+index: 5000
 icon: chart_pie
 ---
 
@@ -18,29 +18,47 @@ Can personalize the size of the dashlet modifying the number of columns and rows
 
 Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
+### Select or type the grouping field
+
+Select the fiedlets to group the topics.
 
 ### Chart will be shown as...
 
 Can show a different views of the chart
 
-- **Pie*
+- Pie
+- Donut
+- Bar
 
+### Grouper number field
 
-- **Donut*
-
-
-- **Bar**
-
+We can group topics by their numeric fiedlet.
 
 ### Minium % to group series in Others group
 
-Set the lower value to group topics in 'Other' group
+Set the lower value to group topics in 'Other' group. Decimals can be used.
+
+### Type of number
+
+Set the type of number defined in the Grouper number field option.
+
+### Currency symbol to be shown
+
+User can add a symbol at the end of the number like $ or €.
+
+### Agregate grouper field by
+
+Allow show operations like average or total.
 
 
-### Select or type the grouping field
+### Max characters in legend
 
-Select the grouping field. Can be by categories or by dates.
+Allow to set number of max characters to show in legend.
 
+
+### Order by legend
+
+Sort by legend
 
 ### Select topics in categories
 

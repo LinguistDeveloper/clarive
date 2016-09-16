@@ -1,5 +1,6 @@
 ---
 title: Request Approval
+index: 5000
 icon: user_green
 ---
 
@@ -9,5 +10,5 @@ These users/roles will be notified by email.
 
 Form to configure has the following fields:
 
-- **Approvals**: Users or roles allowed for approving the current job.
+- **Approvals** - Users or roles allowed for approving the current job.
 

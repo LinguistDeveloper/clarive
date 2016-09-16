@@ -1,6 +1,6 @@
 ---
 title: Milestones
-index: 400
+index: 5000
 icon: milestone
 ---
 
@@ -36,19 +36,12 @@ The first literal indicate de name of the column and the second the type. The se
 
     init_date,datefield; end_date, datefield; notes, text;
 
-Types availables
 
-**Datefield**
+#### Types availables
 
-Introduced a calendar into the column to put a date.
-
-**Textfield**
-
-Put a text field into the column (one text row).
-
-**Text**
-
-Put a text field into the column for example for descriptions or observations (three text rows ).
+- **Datefield** - Introduced a calendar into the column to put a date.
+- **Textfield** - Put a text field into the column (one text row).
+- **Text** - Put a text field into the column for example for descriptions or observations (three text "rows ).
 
 
 

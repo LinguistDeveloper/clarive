@@ -1,6 +1,6 @@
 ---
 title: Search Syntax
-index: 500
+index: 5000
 icon: search-small
 ---
 

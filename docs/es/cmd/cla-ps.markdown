@@ -1,25 +1,27 @@
 ---
 title: cla ps - Monitor de procesos
+index: 5000
 icon: console
 ---
-* `cla ps`: Lista los procesos que está directamente relacionados con servicios de Clarive, clasificándolos en función del tipo de proceso. Estos pueden ser:
-    Jobs
-    Dispatcher
-    Server
 
-* La salida muestra las siguientes columnas: PID del proceso, PPID, CPU, MEM, STAT, START, COMMAND.
-* Este comando dispone de subcomandos que pueden ser consultados a través de la ayuda:
+`cla ps`: Lista los procesos que está directamente relacionados con servicios de Clarive, clasificándolos en función del tipo de proceso. Estos pueden ser:
 
-        >cla help ps
-        Clarive - Copyright(C) 2010-2015 Clarive Software, Inc.
+- Jobs
+- Dispatcher
+- Server
 
+La salida muestra las siguientes columnas: PID del proceso, PPID, CPU, MEM, STAT, START, COMMAND.
 
-        usage: cla [-h] [-v] [--config file] command <command-args>
+Este comando dispone de subcomandos que pueden ser consultados a través de la ayuda:
 
-        Subcommands available for ps (list server processes):
+        > cla help ps
 
+        uso: cla [-h] [-v] [--fichero de configuración] comando <comando-args>
+
+        Subcomandos disponibles para ps (lista de procesos):
         ps-filter
-        cla help <command> to get all subcommands.
-        cla <command> -h for command options.
 
-* `cla ps-filter`: Lista todos los procesos relacionados con el servidor y el dispatcher.
+        cla help <comando> para obtener todos los subcomandos.
+        cla <comando> -h para los opciones del comando.
+
+`cla ps-filter`: Lista todos los procesos relacionados con el servidor y el dispatcher.

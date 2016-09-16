@@ -1,6 +1,6 @@
 ---
 title: Swarm
-index: 400
+index: 5000
 icon: swarm
 ---
 
@@ -49,7 +49,6 @@ Select the lower number of categories to show.
 Nodes can be groupping by categories or status
 
 
-
 ### Select topics in categories
 
 Select one o more categories to show in the swarm.
@@ -58,3 +57,8 @@ Select one o more categories to show in the swarm.
 ### Select topics in statuses
 
 Select one o more status to configure the view.
+
+### Exclude selected statuses?
+
+Exclude selected classes in the previous combo and 
+show the rest that no selected.

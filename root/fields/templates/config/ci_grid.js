@@ -4,8 +4,8 @@
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
     Cla.help_push({
-        title: _('CI Combo'),
-        path: 'rules/palette/fieldlets/ci-combo'
+        title: _('CI grid'),
+        path: 'rules/palette/fieldlets/ci-grid'
     });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({

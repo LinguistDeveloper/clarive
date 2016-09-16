@@ -1,6 +1,6 @@
 ---
 title: cla help - Help on cla commands
-index: 10
+index: 5000
 icon: console
 ---
 
@@ -11,8 +11,7 @@ These commands are called through the command cla as follow: `cla <command><comm
 Cla command itself has two options:
 
 - `version`: displays Clarive version.
-
-- `help`: shows the available command. Help output can be accessed through the option `–h` as well. 
+- `help`: shows the available command. Help output can be accessed through the option `–h` as well.
 
 Cla command is in charge of collecting all configuration data from config files, environment and arguments passed through the command line before running the command call itself.
 

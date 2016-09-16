@@ -1,6 +1,6 @@
 ---
-title: Busquedas avanzadas
-index: 500
+title: Búsquedas avanzadas
+index: 5000
 icon: search-small
 ---
 
@@ -14,7 +14,7 @@ Por ejemplo la siguiente búsqueda:
 
 Encontrará coincidencias con todos los documentos que tengan la cadena gui O
 la cadena security en uno de los campos del documento, en un [CI](concepts/ci)
-o en [Topic](concepts/topic)
+o en [tópico](concepts/topic)
 
 Por otro lado, la siguiente búsqueda:
 
@@ -25,7 +25,7 @@ o security en cualquiera de los campos del documento. Un campo, por ejemplo, "ti
 puede contener la palabra "gui", y el otro, por ejemplo, "departamento" puede
 contener la palabra "security"
 
-### Mayusculas y Minúsculas
+### Mayúsculas y Minúsculas
 
 Todas las búsquedas no tienen en cuenta mayúsculas y minúsculas. Para que sean
 distinguidas, utiliza comillas dobles alrededor de la cadena:
@@ -37,15 +37,15 @@ Sólo buscará para documentos con la palabra "GUI" completamente en mayúsculas
 En resumen, los siguientes tipos de sintaxis de búsqueda:
 
     term
-    "term"  - no distingue mayusculas y minúsculas
+    "term"  - no distingue mayúsculas y minúsculas
     Term  - distingue mayúsculas y minúsculas
-    T?rm  - busca 1 caracter en ?
+    T?rm  - busca 1 carácter en ?
     T*rm  - busca 0 de muchos caracteres en *
     +term1 +term2  - tiene que tener ambas term1 y term2
     +term1 -term2  - tiene term1 pero no term2
     /term regex.*/  - expresión regular
 
-### Busqueda de campos
+### Búsqueda de campos
 
 Clarive soporta también y conjunto limitado de búsquedas en campos. Las búsquedas
 por campo, sólo buscan en esos campos:

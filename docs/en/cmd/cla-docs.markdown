@@ -1,12 +1,10 @@
 ---
 title: cla docs - Help and Documentation Generation
-index: 20
+index: 5000
 icon: console
 ---
 
-## cla docs-export
-
-Exports the help docs into a Mkdocs static site.
+`cla docs-export`: Exports the help docs into a Mkdocs static site.
 
 **Note**: For this command to work, you need to install Mkdocs, which
 in turn requires Python.

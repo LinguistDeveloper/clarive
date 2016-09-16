@@ -1,5 +1,6 @@
 ---
 title: cla prove - Run internal testing
+index: 5000
 icon: console
 ---
 
@@ -22,7 +23,6 @@ In case of error the output shows the error message in red.
 This command accepts the following options:
 
 - `-- type <directory>` - Passed as an argument to the command, executes only the tests defined under …/t/< directory >.
-
 - `-- case <test_name>` - Executes only test <test_name>.
 
 This command has a subcommand that can be displayed through the help option

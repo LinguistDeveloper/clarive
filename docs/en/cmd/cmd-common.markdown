@@ -1,7 +1,7 @@
 ---
 title: Common Command-Line Options
+index: 3000
 icon: console
-index: 5
 ---
 
 This are the common, global command-line

@@ -1,12 +1,12 @@
 ---
 title: State
-index: 400
+index: 5000
 icon: lock_small
 ---
 
 Allows to define the state.
 
-This fieldlet is **mandatory**.
+This fieldlet is **mandatory** and **unique**.
 
 There are a list of elements can be configured in the fieldlet:
 
@@ -15,11 +15,9 @@ There are a list of elements can be configured in the fieldlet:
 
 Indicates in which part of the view position the fieldlet.
 
-
 ### Row width
 
 Allows to personalize the anchor of the fieldlet.
-
 
 ### Hidden from view mode
 

@@ -1,5 +1,6 @@
 ---
 title: cla/rule - rule execution
+index: 5000
 icon: page
 ---
 
@@ -22,6 +23,8 @@ var ruleId = rule.create({ name: "myrule", type: "independent" }, [
             icon: "/static/images/icons/cog_perl.svg",
             key: "statement.code.server",
             name: "Server CODE",
+            text: "Server CODE",
+            leaf: "false",
             data: {
                 lang: "js",
                 code: "cla.stash('returning_value', 999)",

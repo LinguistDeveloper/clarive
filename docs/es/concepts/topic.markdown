@@ -1,5 +1,6 @@
 ---
-title: Topico
+title: Tópico
+index: 5000
 icon: topic
 ---
 
@@ -8,7 +9,7 @@ El tópico representa la entidad central del ciclo de vida en Clarive.
 Una **categoría de tópico** es una instancia que define la organización
 que tiene asociado un [flujo de trabajo](concepts/workflow).
 
-Un **tópico** es una instancia de una categoría de tópioc, que lleva asignado
+Un **tópico** es una instancia de una categoría de tópico, que lleva asignado
 un [mid](concepts/mid).
 
 Una categoría de tópico llega asociado las siguientes propiedades:
@@ -17,12 +18,13 @@ Una categoría de tópico llega asociado las siguientes propiedades:
 - Un flujo de trabajo.
 - Una [regla](concepts/rule) de tipo formulario donde se define el formulario que
 se utilizará para rellenar la información del tópico.
-- Seguridad a nivel de flujos: Establece que usuarios/roles puede transitar un tópico
+- Seguridad a nivel de flujos - Establece que usuarios/roles puede transitar un tópico
 de un estado a otro pudiendo establecerse flujos distintos en función del rol y del proyecto
 - Un color para representar la categoría de manera visual.
 - Un sobrenombre, para identificar de manera sencilla a la categoría.
 
 Algunas de las categorías de ejemplo que se pueden crear son:
+
 - Release
 - Cambio
 - Bug

@@ -1,5 +1,6 @@
 ---
 title: cla plugin - plugin helper
+index: 5000
 icon: console
 ---
 
@@ -37,7 +38,7 @@ more precisely `CLARIVE_BASE/plugins/[plugin-id]/t`.
 Test output is TAP-compatible (Test Anything Protocol), which make it
 compatible with severeal testing frameworks.
 
-For more information: https://testanything.org/
+For more information: [https://testanything.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://testanything.org/)
 
 #### --verbose-tests
 

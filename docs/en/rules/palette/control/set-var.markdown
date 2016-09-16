@@ -1,5 +1,6 @@
 ---
 title: SET VAR
+index: 5000
 icon: let
 ---
 
@@ -9,8 +10,7 @@ Stash is accessible to set value to new variable.
 
 Form to configure has the following fields:
 
-- **Variable**: Stash variable to create.
-
-- **Value**: Value to assign to variable defined in variable field. Can use stash to set value dynamically.
+- **Variable** - Stash variable to create.
+- **Value** - Value to assign to variable defined in variable field. Can use stash to set value dynamically.
 
 

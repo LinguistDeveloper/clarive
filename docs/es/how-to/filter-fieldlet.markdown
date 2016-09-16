@@ -1,16 +1,16 @@
 ---
 title: Filtros en fieldlets
-index: 1
+index: 5000
 icon: wrench
 ---
 
 Este tipo de filtros están presentes en los siguientes fieldlets:
 
-- **Topic Selector**.
-- **Release Combo**.
-- **CI List**.
-- **CI Grid**.
-- **CI Combo**.
+- [Topic Selector](rules/palette/fieldlets/topic-selector)
+- [Release Combo](rules/palette/fieldlets/release-combo)
+- [CI List](rules/palette/fieldlets/ci-list)
+- [CI Grid](rules/palette/fieldlets/ci-grid)
+- [CI Combo](rules/palette/fieldlets/ci-combo)
 
 En estos fieldlets, vamos a tener que configurar tres campos:
 
@@ -22,8 +22,8 @@ En estos fieldlets, vamos a tener que configurar tres campos:
 
 ### Ejemplos
 
-Queremos filtrar topicos a partir de usuarios. Para ello, creamos dos fieldlets. El primero es un combo de usuarios
-con el id 'users' y el segundo es un selector de topicos con el id 'topics'.
+Queremos filtrar tópicos a partir de usuarios. Para ello, creamos dos fieldlets. El primero es un combo de usuarios
+con el id 'users' y el segundo es un selector de tópicos con el id 'topics'.
 El fieldlet 'users' tiene que estar en el formulario por encima del de tópicos.
 La configuración de nuestro fieldlet de tópicos quedaría de la siguiente forma:
 

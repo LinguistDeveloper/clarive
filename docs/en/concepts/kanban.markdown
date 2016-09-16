@@ -1,5 +1,6 @@
 ---
 title: Kanban
+index: 5000
 icon: kanban
 ---
 

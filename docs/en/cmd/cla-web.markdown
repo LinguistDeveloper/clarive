@@ -1,6 +1,6 @@
 ---
 title: cla web - Web server management
-index: 10
+index: 5000
 icon: console
 ---
 
@@ -62,7 +62,6 @@ Subcommands supported can be displayed with the help option:
 `web-stop`  Stops the web server.  This call accepts the following options:
 
 - `--no_wait_kill` The dispatcher is killed without wait, if this option is not set, web will wait 30 seconds to shutdown.
-
 - `--keep_pidfile` - Keeps the file containing the process pid.
 
 `web-restart` Restart the web server  (signal ‘HUP’ 1).
@@ -72,7 +71,5 @@ Subcommands supported can be displayed with the help option:
 `web-tail` Follows log file, it accepts some arguments when called to configure the output, these are:
 
 - `--tail [lines]` Number of lines displayed, default is 500.
-
 - `--interval [seconds]` The initial number of seconds will be spent sleeping, before the file is first checked, default is .5.
-
-`--maxinterval [seconds]` The maximum number of seconds that will be spent sleeping, by default is 1.
+- `--maxinterval [seconds]` The maximum number of seconds that will be spent sleeping, by default is 1.

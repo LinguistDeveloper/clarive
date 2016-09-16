@@ -1,5 +1,6 @@
 ---
 title: cla/log - Logging Classes
+index: 5000
 icon: page
 ---
 

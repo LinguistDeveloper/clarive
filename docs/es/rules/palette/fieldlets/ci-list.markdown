@@ -1,6 +1,6 @@
 ---
-title: CI List
-index: 400
+title: Lista de CIs
+index: 5000
 icon: grid
 ---
 
@@ -38,6 +38,7 @@ Indica si el campo tiene que ser completado obligatoriamente.
 
 
 ### Tipo
+
 Permite definir la apariencia de la tabla en el tópico:
 
 - **Único** - Permite seleccionar unicamente una opción.
@@ -61,8 +62,6 @@ En este ejemplo solo mostrará un proyecto para mostrar:
         {"name":"Nombre_proyecto"}
         {"moniker":"Alias_del_proyecto"}
 
-
-
 Los campos seleccionables para poder filtrar se pueden consultar a través del REPL. En este caso el comando será: `ci->project->find_one();`
 
 También es posible aplicar intervalos para limitar los resultados. Para ello es necesario hacer uso de los comandos *lt* y *gt* propios de MongoDB.
@@ -72,28 +71,12 @@ Así para mostrar solo proyectos creados durante un intervalo de tiempo bastaria
         {"ts": {"$gt":"2016-03-22","$lt":"2016-04-08" } }
 
 
-
 ### Método de selección
 
-Permite filtrar las posibles opciones seleccionables.
+Permite especificar los valores que salen en el formulario. Dos tipos a elegir:
 
-- **Selección por rol**
-- **Selección por clase**
-
-### Roles
-Se muestra una lista con los roles.
-
-Por defecto, el valor de este campo es **CI**.
-
-Si la opción *Selección por clase* está activada, el valor de este campo tiene que ser **CI**.
-
-
-### Clase CI
-
-La selección de este campo solo está disponible si está activado la *selección por clase*
-
-Especifica la clase de CI que se va a mostrar en las opciones.
-
+- **Selección de rol** - Selecciona el rol a mostrar en el formulario, sin importar la clase. Si seleccionamos por ejemplo Agente, en el formulario se podrá seleccionar cualquier agente independientemente de si es *ftp_agent*, *clax_agent*, etc...
+- **Selección por clase** - Se habilita el campo Clase CI, donde una vez especificado el rol en el campo anterior, especificamos la clase (*ftp_agent*, *clax_agent*, etc...) y se mostraran solo los CIs que pertenecen a la clase indicada.
 
 ### Valor por defecto
 
@@ -119,5 +102,19 @@ Indica la lógica del filtro.
 
 Por defecto, el tipo es OR.
 
-Para más información, hay un how-to llamado [Filtros es fieldlets](how-to/filter-fieldlet).
+Para más información, hay un *how-to* llamado [Filtros es fieldlets](how-to/filter-fieldlet).
 
+
+### Descripción
+
+Selecciona la descripción que será mostrada al mostrar el listado de opciones.
+
+- **Nombre** - Muestra el nombre del elemento.
+- **Entorno** - Muestra los entornos separados por comas.
+- **Clase** - Muestra el tipo de objeto que es.
+- **Nemónico** - Muestra el nemónico especificado en la configuración del CI.
+
+
+### Altura
+
+Define la altura del grid en modo edición.
