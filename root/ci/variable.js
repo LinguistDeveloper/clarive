@@ -61,8 +61,8 @@
         disabled: true,
         value: params.rec.var_ci_class
     });
-    
-    var ci_role =  new Baseliner.ComboSingleRemote({ 
+
+    var ci_role =  new Baseliner.ComboDoubleRemote({
         fieldLabel: _('CI Role'),
         name: 'var_ci_role',
         hidden: true,
@@ -70,11 +70,12 @@
         allowBlank: true,
         baseParams: { name_format: 'short' },
         value: params.rec.var_ci_role || 'CI',
-        field: 'name',
+        displayField: 'name',
+        valueField: 'role',
         fields: [ 'role', 'name' ],
         url: '/ci/roles'
     });
-    
+
     var var_ci_multiple = new Baseliner.CBox({
         fieldLabel: _('CI Multiple'), 
         name: 'var_ci_multiple',

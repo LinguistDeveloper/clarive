@@ -2903,7 +2903,7 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         self.store = self.buildStore(data);
 
         self.fieldLabel = self.fieldLabel || self.name;
-        self.valueField = self.field || self.name;
+        self.valueField = self.valueField || self.field || self.name;
         self.displayField = self.displayField || self.field || 'display_name';
         self.hiddenField = self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
@@ -2926,14 +2926,19 @@ Baseliner.ComboDoubleRemote = Ext.extend( Baseliner.ComboDouble, {
     mode: 'remote',
     initComponent: function(){
         var self = this;
+
         var value = self.value;
         delete self.value;
-        Baseliner.ComboDoubleRemote.superclass.initComponent.call(this); 
+
+        Baseliner.ComboDoubleRemote.superclass.initComponent.call(this);
+
         self.store.on('load', function(){
             if( value != undefined ) {
-                // rgo: not working, finds erroneous indexes everywhere: var ix = self.store.find( self.valueField, value ); 
-                var ix = self.store.findBy( function(r){ return r.data[self.valueField] == value }); 
-                if( ix > -1 ) self.setValue(self.store.getAt(ix).get( self.valueField ));
+                // rgo: not working, finds erroneous indexes everywhere: var ix = self.store.find( self.valueField, value );
+                var ix = self.store.findBy( function(r){ console.log(self.valueField); return r.data[self.valueField] == value });
+                if( ix != -1 ) {
+                    self.setValue(self.store.getAt(ix).get( self.valueField ));
+                }
             } else {
                 self.setValue(self.store.getAt(0).get( self.valueField ));
             }
