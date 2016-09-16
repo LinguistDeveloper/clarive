@@ -1,6 +1,5 @@
 (function(params){
     var data = params.data || {};
-    if (data.var_ci_role == 'CI') data.var_ci_role = _('All');
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
     Cla.help_push({ title:_('List ci'), path:'rules/palette/fieldlets/list-ci' });
@@ -76,10 +75,10 @@
         xtype: 'combo',
         fieldLabel: _('Roles'),
         triggerAction: 'all',
-        valueField: 'name',
+        valueField: 'role',
         displayField: 'name',
         singleMode: false,
-        value: data.var_ci_role || _('All'),
+        value: data.var_ci_role || 'CI',
         allowBlank: Boolean(ci_class_field.value),
         mode: 'remote',
         listeners:{
