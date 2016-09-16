@@ -3843,27 +3843,35 @@ msgid "CAPTURE for item %1 with regex %2"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
-msgid "clax get_file: error while executing a command"
+msgid "Error while creating a directory: %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
-msgid "clax get_file: could not open local file '%1': %2"
+msgid "Error while executing a command: %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
-msgid "clax put_file: error while sending remote file: $response->{reason}"
+msgid "Could not open local file `%1`: %2"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
-msgid "clax get_file: remote file '%1' does not exit"
+msgid "Error while sending a file: %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
-msgid "clax get_file: error while getting remote file"
+msgid "Remote file `%1` does not exist"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
-msgid "clax get_file: crc32 check failed"
+msgid "Error while receiving a file: %1"
+msgstr ""
+
+#: lib/BaselinerX/CI/clax_agent.pm
+msgid "CRC32 check failed"
+msgstr ""
+
+#: lib/BaselinerX/CI/clax_agent.pm
+msgid "Error while removing a file: %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/dbi_connection.pm

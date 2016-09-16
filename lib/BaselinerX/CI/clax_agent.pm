@@ -8,7 +8,6 @@ use String::CRC32 ();
 use Baseliner::Utils qw(:logging _file _dir _array);
 use BaselinerX::Type::Model::ConfigStore;
 
-has user => qw(is rw isa Maybe[Str]);
 has auth_username => qw(is rw isa Str);
 has auth_password => qw(is rw isa Str);
 has
@@ -27,9 +26,23 @@ sub BUILD {
 };
 
 sub error;
-sub rmpath;
 
 method mkpath ( $path ) {
+    my $ua = $self->_build_ua;
+
+    my $url = $self->_build_url("/tree/");
+
+    my $response = $ua->post_form( $url, { dirname => $path } );
+
+    if ( !$response->{success} ) {
+        _fail _loc('Error while creating a directory: %1', $self->_parse_reason($response));
+    }
+
+    $self->rc( 0 );
+    $self->ret( '' );
+    $self->output( '' );
+
+    return $self->tuple;
 }
 
 method chmod ( $mode, $path ) {
@@ -73,8 +86,8 @@ sub execute {
         }
     );
 
-    if (!$response->{success}) {
-        _fail( _loc( "clax get_file: error while executing a command") );
+    if ( !$response->{success} ) {
+        _fail _loc('Error while executing a command: %1', $self->_parse_reason($response));
     }
 
     $exit_code = $response->{headers}->{'x-clax-exit'};
@@ -96,6 +109,18 @@ method is_remote_dir( $dir ) {
 }
 
 method file_exists( $file_or_dir ) {
+    my $ua = $self->_build_ua;
+
+    my $url = $self->_build_url("/tree/$file_or_dir");
+
+    my $response = $ua->head( $url );
+
+    if ( $response->{success} ) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 method check_writeable( $file_or_dir ) {
@@ -109,7 +134,7 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 
     my $ua = $self->_build_ua();
 
-    open my $fh, '<', $local or _fail( _loc( "clax get_file: could not open local file '%1': %2", $local, $! ) );
+    open my $fh, '<', $local or _fail( _loc( "Could not open local file `%1`: %2", $local, $! ) );
     binmode $fh;
 
     if ($self->os eq 'win') {
@@ -174,7 +199,9 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     );
 
     if (!$response->{success}) {
-        _fail( _loc( "clax put_file: error while sending remote file: $response->{reason}") );
+        my $reason = $response->{reason};
+
+        _fail _loc('Error while sending a file: %1', $self->_parse_reason($response));
     }
 
     return $self->tuple;
@@ -185,7 +212,7 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
 
     my $ua = $self->_build_ua();
 
-    open my $fh, '>', $local or _fail( _loc( "clax get_file: could not open local file '%1': %2", $local, $! ) );
+    open my $fh, '>', $local or _fail( _loc( "Could not open local file `%1`: %2", $local, $! ) );
     binmode $fh;
 
     my $url      = $self->_build_url("/tree/$remote");
@@ -201,11 +228,10 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
 
     if (!$response->{success}) {
         if ($response->{status} eq '404') {
-            _fail( _loc( "clax get_file: remote file '%1' does not exit", $remote) );
+            _fail( _loc( "Remote file `%1` does not exist", $remote) );
         }
-        else {
-            _fail( _loc( "clax get_file: error while getting remote file") );
-        }
+
+        _fail _loc('Error while receiving a file: %1', $self->_parse_reason($response));
     }
 
     close $fh;
@@ -215,8 +241,45 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
 
         if ($exp_crc32 ne $got_crc32) {
             unlink $local;
-            _fail( _loc( "clax get_file: crc32 check failed") )
+
+            _fail _loc('CRC32 check failed');
         }
+    }
+
+    return $self->tuple;
+}
+
+sub rmpath {
+    my $self = shift;
+    my ($path) = @_;
+
+    return $self->delete_file(remote => $path, recursive => 1);
+}
+
+sub delete_file {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $remote = $params{remote};
+    if ($self->os eq 'win') {
+        $remote =~ s{\\}{/}g;
+    }
+
+    my $ua = $self->_build_ua();
+
+    my $url = $self->_build_url("/tree/$remote");
+    if ( $params{recursive} ) {
+        $url->query_form( recursive => 1 );
+    }
+
+    my $response = $ua->delete($url);
+
+    if ( !$response->{success} ) {
+        if ( $response->{status} eq '404' ) {
+            _fail _loc( "Remote file `%1` does not exist", $remote );
+        }
+
+        _fail _loc('Error while removing a file: %1', $self->_parse_reason($response));
     }
 
     return $self->tuple;
@@ -226,6 +289,16 @@ method remote_eval( $code ) {
 }
 
 method sync_dir { _throw 'sync_dir not supported' }
+
+sub _parse_reason {
+    my $self = shift;
+    my ( $response ) = @_;
+
+    my $reason = $response->{content};
+    $reason //= $response->{reason};
+
+    return $reason;
+}
 
 sub _crc32_from_file {
     my $self = shift;

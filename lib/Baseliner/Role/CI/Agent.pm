@@ -6,7 +6,7 @@ sub icon { '/static/images/icons/agent.svg' }
 
 use Moose::Util::TypeConstraints;
 
-has user        => qw(is rw isa Str);
+has user        => qw(is rw isa Maybe[Str]);
 has password    => qw(is rw isa Str);
 
 has server => qw(is rw isa CI),

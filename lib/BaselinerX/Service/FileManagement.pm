@@ -389,7 +389,7 @@ sub run_ship {
     my $log   = $job->logger;
     my $stash = $c->stash;
     my $job_dir = $stash->{job_dir};
-    my $job_mode = $stash->{job_mode};
+    my $job_mode = $stash->{job_mode} // '';
     my $task  = $stash->{current_task_name};
     my $job_exec = $job->exec;
     my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_path';
