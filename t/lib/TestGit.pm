@@ -3,9 +3,12 @@ package TestGit;
 use strict;
 use warnings;
 
+use TestUtils;
+
 use Time::Piece;
 use Test::TempDir::Tiny;
-use TestUtils;
+use File::Basename qw(dirname);
+use File::Path qw(mkpath);
 
 my %STORE = ();
 
@@ -48,6 +51,7 @@ sub commit {
 
     my $cmd = '';
     if ($params{action} eq 'add') {
+        mkpath dirname "$dir/$params{file}";
         open my $fh, '>>', "$dir/$params{file}" or die $!;
         print $fh $params{content};
         print $fh "\n";
@@ -55,6 +59,7 @@ sub commit {
         $cmd = qq{git add .};
     }
     elsif ($params{action} eq 'replace') {
+        mkpath dirname "$dir/$params{file}";
         open my $fh, '>', "$dir/$params{file}" or die $!;
         print $fh $params{content};
         print $fh "\n";
