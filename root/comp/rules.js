@@ -810,10 +810,25 @@
             fieldLabel: _('Error Trap'), name:'error_trap', value: attr.error_trap || 'none',
             data: [ ['none',_('No Trap')], ['trap',_('Trap Errors')], ['ignore',_('Ignore Errors')] ]
         });
-        var trap_timeout = new Ext.form.TextField({ fieldLabel:_('Trap timeout (seconds)'), name:'trap_timeout', value: attr.trap_timeout || 0 });
+        var trapTimeout = new Ext.ux.form.SpinnerField({
+            fieldLabel: _('Trap timeout (seconds)'),
+            minValue: 0,
+            allowDecimals: true,
+            incrementValue: 0.5,
+            name: 'trap_timeout',
+            value: attr.trap_timeout || 0
+        });
         var trap_timeout_action = new Baseliner.ComboDouble({
             fieldLabel: _('Trap timeout action'), name:'trap_timeout_action', value: attr.trap_timeout_action || 'abort',
             data: [ ['abort',_('Abort')], ['skip',_('Skip')], ['retry',_('Retry')] ]
+        });
+        var trapMaxRetry = new Ext.ux.form.SpinnerField({
+            fieldLabel: _('Trap max retry (0 means unlimited)'),
+            minValue: 0,
+            allowDecimals: false,
+            incrementValue: 1,
+            name: 'trap_max_retry',
+            value: attr.trap_max_retry || 0
         });
         var trap_rollback = new Ext.form.Checkbox({ fieldLabel:_('Trap in Rollback?'), checked: _bool(attr.trap_rollback,true) });
 
@@ -830,7 +845,7 @@
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
             enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, debug_mode,
-            error_trap, trap_timeout, trap_timeout_action, trap_rollback, sub_name
+            error_trap, trapTimeout, trap_timeout_action, trapMaxRetry, trap_rollback, sub_name
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/action_save.svg', handler:function(){
             node.attributes = de.getData();
@@ -850,8 +865,9 @@
             node.attributes.debug_mode = debug_mode.getValue();
             node.attributes.parallel_mode = parallel_mode.getValue();
             node.attributes.error_trap = error_trap.getValue();
-            node.attributes.trap_timeout = trap_timeout.getValue();
+            node.attributes.trap_timeout = trapTimeout.getValue();
             node.attributes.trap_timeout_action = trap_timeout_action.getValue();
+            node.attributes.trap_max_retry = trapMaxRetry.getValue();
             node.attributes.trap_rollback = trap_rollback.checked;
             node.attributes.semaphore_key = semaphore_key.getValue().trim();
             node.attributes.timeout = timeout.getValue();

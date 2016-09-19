@@ -155,7 +155,23 @@ sub wait_for_children {
 }
 
 sub error_trap {
-    my ($stash, $trap_timeout,$trap_timeout_action, $trap_rollback, $mode, $code)= @_;
+    my (%params) = @_;
+
+    my $stash               = $params{stash};
+    my $trap_timeout        = $params{trap_timeout};
+    my $trap_timeout_action = $params{trap_timeout_action};
+    my $trap_max_retry      = $params{trap_max_retry};
+    my $trap_rollback       = $params{trap_rollback};
+    my $mode                = $params{mode};
+    my $code                = $params{code};
+
+    my %timeouts = $params{timeouts} // ();
+    $timeouts{initial_timeout}  //= $timeouts{default_timeout} // 4;
+    $timeouts{pause_timeout}    //= $timeouts{default_timeout} // 5;
+    $timeouts{interval_timeout} //= $timeouts{default_timeout} // 10;
+    $timeouts{zero_timeout}     //= $timeouts{default_timeout} // 5;
+
+    my $no_retry_limit = !$trap_max_retry;
 
     RETRY_TRAP:
     try {
@@ -206,24 +222,37 @@ sub error_trap {
         my $timeout = $trap_timeout;
 
         LOOP:
-        sleep 4;
-        while( 1 ) {
+        sleep $timeouts{initial_timeout};
+        while (1) {
             if ( $last_status eq 'TRAPPED_PAUSED' ) {
-                sleep 5;
-            } else {
+                sleep $timeouts{pause_timeout};
+            }
+            else {
                 if ( !$trap_timeout || $trap_timeout eq '0' ) {
-                    sleep 5;
-                } else {
-                    sleep 10;
-
+                    sleep $timeouts{zero_timeout};
+                }
+                else {
+                    sleep $timeouts{interval_timeout};
                     # WE SLEEP HERE AT LEAST 14 SECONDS NO MATTER WHAT trap_timeout IS
-                    $timeout = $timeout - 10;
+                    $timeout = $timeout - $timeouts{interval_timeout};
                     if ( $timeout gt 0 ) {
-                        $job->logger->warn( _loc("%1 seconds remaining to cancel trap with action %2", $timeout, $trap_timeout_action) );
-                    } else {
-                        $job->trap_action({ action => $trap_timeout_action, comments => _loc("Trap timeout expired.  Action configured: %1", $trap_timeout_action)});
-
-                        # WHAT TO DO HERE?
+                        $job->logger->warn(
+                            _loc(
+                                "%1 seconds remaining to cancel trap with action %2",
+                                $timeout,
+                                $trap_timeout_action
+                            )
+                        );
+                    }
+                    else {
+                        $job->trap_action(
+                            {   action   => $trap_timeout_action,
+                                comments => _loc(
+                                    "Trap timeout expired.  Action configured: %1",
+                                    $trap_timeout_action
+                                )
+                            }
+                        );
                     }
                 }
             }
@@ -232,19 +261,30 @@ sub error_trap {
                 last;
             }
         }
-
-        if( $last_status eq 'RETRYING' ) {
-            $job->logger->info( _loc("Retrying task", $err ) );
-            goto RETRY_TRAP;
-        } elsif( $last_status eq 'SKIPPING' ) {
-            $job->logger->info( _loc("Skipping task", $err ) );
-            return;
-        } elsif( $last_status eq 'ERROR' ) { # ERROR
-            $job->logger->info( _loc("Aborting task", $err ) );
-            _fail( $err );
-        } else {
-           goto LOOP;
+        if ( $last_status eq 'RETRYING' ) {
+            $stash->{_last_trap_action} = 'retry';
+            if ($no_retry_limit || $trap_max_retry > 0){
+                $job->logger->info( _loc( "Retrying task: %1", $err ) );
+                $trap_max_retry-- unless $no_retry_limit;
+                goto RETRY_TRAP;
+            } else {
+                $job->logger->info( _loc( "Cannot retry. Max retries reached: %1", $err ) );
+                _fail(_loc("Cannot retry. Max retries reached: %1", $err));
+            }
         }
+        elsif ( $last_status eq 'SKIPPING' ) {
+            $stash->{_last_trap_action} = 'skip';
+            $job->logger->info( _loc( "Skipping task: %1", $err ) );
+            return;
+        }
+        elsif ( $last_status eq 'ERROR' ) {
+            $job->logger->info( _loc( "Aborting task: %1", $err ) );
+            _fail($err);
+        }
+        else {
+            goto LOOP;
+        }
+
     };
 }
 

@@ -3333,15 +3333,19 @@ msgid "Trap timeout expired.  Action configured: %1"
 msgstr ""
 
 #: lib/Baseliner/RuleFuncs.pm
-msgid "Retrying task"
+msgid "Retrying task: %1"
 msgstr ""
 
 #: lib/Baseliner/RuleFuncs.pm
-msgid "Skipping task"
+msgid "Cannot retry. Max retries reached: %1"
 msgstr ""
 
 #: lib/Baseliner/RuleFuncs.pm
-msgid "Aborting task"
+msgid "Skipping task: %1"
+msgstr ""
+
+#: lib/Baseliner/RuleFuncs.pm
+msgid "Aborting task: %1"
 msgstr ""
 
 #: lib/Baseliner/RuleFuncs.pm
@@ -8800,7 +8804,8 @@ msgstr ""
 msgid "Error trapped"
 msgstr ""
 
-#: root/comp/monitor_grid.js root/comp/rules.js root/forms/retry.js
+#: root/comp/monitor_grid.js root/comp/rules.js
+#: root/forms/if_last_trap_action.js root/forms/retry.js
 msgid "Retry"
 msgstr ""
 
@@ -8809,6 +8814,7 @@ msgid "Retries the job task that failed"
 msgstr ""
 
 #: root/comp/monitor_grid.js root/comp/rules.js
+#: root/forms/if_last_trap_action.js
 msgid "Skip"
 msgstr ""
 
@@ -9824,6 +9830,10 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Trap timeout action"
+msgstr ""
+
+#: root/comp/rules.js
+msgid "Trap max retry (0 means unlimited)"
 msgstr ""
 
 #: root/comp/rules.js
@@ -12556,6 +12566,14 @@ msgstr ""
 
 #: root/forms/git_create_tag.js
 msgid "Tag Name"
+msgstr ""
+
+#: root/forms/if_last_trap_action.js
+msgid "If last trap action"
+msgstr ""
+
+#: root/forms/if_last_trap_action.js
+msgid "Job Last Trap Action"
 msgstr ""
 
 #: root/forms/if_nature.js

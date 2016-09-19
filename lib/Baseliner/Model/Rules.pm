@@ -333,10 +333,9 @@ sub dsl_build {
 
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1);
-        my $error_trap = $attr->{error_trap} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
-        my $trap_timeout = $attr->{trap_timeout} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
-        my $trap_timeout_action = $attr->{trap_timeout_action} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
-        my $trap_rollback = $attr->{trap_rollback} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
+
+        my $is_error_trap = $attr->{error_trap} && $attr->{error_trap} ne 'none' ? 1 : 0;
+
         my $needs_rollback_mode = $attr->{needs_rollback_mode} // 'none';
         my $needs_rollback_key  = $attr->{needs_rollback_key} // '';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
@@ -384,7 +383,26 @@ sub dsl_build {
         if( length $attr->{key} ) {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = $stash->{job_step};', $needs_rollback_key || $name_id) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
-            push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap;
+
+            if ($is_error_trap) {
+                my $error_trap          = $attr->{error_trap};
+                my $trap_timeout        = $attr->{trap_timeout} || 0;
+                my $trap_timeout_action = $attr->{trap_timeout_action} // '';
+                my $trap_max_retry      = $attr->{trap_max_retry} // -1;
+                my $trap_rollback       = $attr->{trap_rollback} // 1;
+
+                push @dsl, sprintf(<<'EOF', $trap_timeout, $trap_timeout_action, $trap_max_retry, $trap_rollback, $error_trap );
+            error_trap(
+                stash => $stash,
+                trap_timeout => "%s",
+                trap_timeout_action => "%s",
+                trap_max_retry => "%s",
+                trap_rollback => "%s",
+                mode => "%s",
+                code => sub {
+EOF
+            }
+
             if( my $semaphore_key = $attr->{semaphore_key} ) {
                 # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
                 push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s},$stash) }, $stash)->take;', $semaphore_key, $name ) . "\n";
@@ -411,7 +429,7 @@ sub dsl_build {
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
             push @dsl, sprintf( '$stash->{_sem}->release if $stash->{_sem};') if $attr->{semaphore_key};
-            push @dsl, '});' if $error_trap; # current_task close
+            push @dsl, '});' if $is_error_trap; # current_task close
             push @dsl, '});' if $parallel_mode; # current_task close
             push @dsl, '});' if $closure; # current_task close
         } else {
@@ -679,6 +697,18 @@ register 'statement.delete.key' => {
         sprintf(q{
            delete $stash->{ '%s' } ;
         }, $n->{key}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.delete.trap_action' => {
+    text => 'DELETE last trap action',
+    type => 'if',
+    holds_children => 0,
+    dsl => sub {
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+           delete $stash->{_last_trap_action};
+        });
     },
 };
 
@@ -1159,6 +1189,23 @@ register 'statement.if.any_nature' => {
     },
 };
 
+register 'statement.if.last_trap_action' => {
+    text => 'IF last trap status THEN',
+    form => '/forms/if_last_trap_action.js',
+    type => 'if',
+    data => { job_trap_action => 'skip', },
+    dsl  => sub {
+        my ( $self, $n, %p ) = @_;
+        sprintf(
+            q{
+            if( $stash->{_last_trap_action} && $stash->{_last_trap_action} eq '%s' ) {
+                %s
+            }
+        }, $n->{job_trap_action} // 'skip',
+            $self->dsl_build( $n->{children}, %p )
+        );
+    },
+};
 
 register 'statement.if.rollback' => {
     text => 'IF ROLLBACK',

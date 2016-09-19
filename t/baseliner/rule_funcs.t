@@ -200,10 +200,17 @@ subtest 'error_trap: does nothing when ok' => sub {
 
     my $job = Test::MonkeyMock->new;
     $job->mock( rollback => sub { } );
-
     my $stash = { job => $job };
 
-    my $rv = error_trap( $stash, 1, 'action', 'do_rollback', 'ignore', sub { 'ok' } );
+    my $rv = error_trap(
+        stash               => $stash,
+        trap_timeout        => 1,
+        trap_timeout_action => 'action',
+        trap_max_retry      => '',
+        trap_rollback       => 'do_rollback',
+        mode                => 'ignore',
+        code                => sub { 'ok' }
+      );
 
     ok !$job->mocked_called('rollback');
 };
@@ -213,7 +220,15 @@ subtest 'error_trap: on error returns nothing when no job provided' => sub {
 
     my $stash = {};
 
-    my $rv = error_trap( $stash, 1, 'action', 'do_rollback', 'ignore', sub { die 'error' } );
+    my $rv = error_trap(
+        stash               => $stash,
+        trap_timeout        => 1,
+        trap_timeout_action => 'action',
+        trap_max_retry      => '',
+        trap_rollback       => 'do_rollback',
+        mode                => 'ignore',
+        code                => sub { die 'error' }
+      );
 
     ok !defined $rv;
 };
@@ -230,7 +245,16 @@ subtest 'error_trap: on error fail if rollback and no rollback flag' => sub {
     my $stash = { job => $job };
 
     like exception {
-        error_trap( $stash, 1, 'action', 0, 'ignore', sub { die 'error' } )
+        error_trap(
+            stash               => $stash,
+            trap_timeout        => 1,
+            trap_timeout_action => 'action',
+            trap_max_retry      => '',
+            trap_rollback       => 0,
+            mode                => 'ignore',
+            code                => sub { die 'error' }
+          )
+
     }, qr/error/;
 };
 
@@ -245,7 +269,15 @@ subtest 'error_trap: returns undef on ignore' => sub {
 
     my $stash = { job => $job };
 
-    ok !defined error_trap( $stash, 1, 'action', 1, 'ignore', sub { die 'error' } );
+    ok !defined error_trap(
+        stash               => $stash,
+        trap_timeout        => 1,
+        trap_timeout_action => 'action',
+        trap_max_retry      => '',
+        trap_rollback       => 1,
+        mode                => 'ignore',
+        code                => sub { die 'error' }
+    );
 };
 
 subtest 'error_trap: creates event' => sub {
@@ -259,10 +291,17 @@ subtest 'error_trap: creates event' => sub {
     $job->mock( update      => sub { } );
     $job->mock( load        => sub { { status => 'SKIPPING' } } );
     $job->mock( trap_action => sub { } );
-
     my $stash = { job => $job };
 
-    error_trap( $stash, 1, 'action', 1, '', sub { die 'error' } );
+    error_trap(
+        stash               => $stash,
+        trap_timeout        => 1,
+        trap_timeout_action => 'action',
+        trap_max_retry      => '',
+        trap_rollback       => 1,
+        mode                => '',
+        code                => sub { die 'error' }
+    );
 
     my $event = mdb->event->find_one;
 
@@ -288,10 +327,64 @@ subtest 'error_trap: creates event' => sub {
 #
 #    my $stash = { job => $job };
 #
-#    error_trap( $stash, 1, 'action', 1, '', sub { die 'error' } );
+#    error_trap( $stash, 1, 'action', '', 1, '', sub { die 'error' } );
 #
 #    ok $trapped;
 #};
+
+subtest 'error_trap: sets last trap action when status is SKIPPING' => sub {
+    _setup();
+
+    my $job_logger = _mock_job_logger();
+
+    my $job = Test::MonkeyMock->new;
+    $job->mock( rollback    => sub { 0 } );
+    $job->mock( logger      => sub { $job_logger } );
+    $job->mock( update      => sub { } );
+    $job->mock( load        => sub { { status => 'SKIPPING' } } );
+    $job->mock( trap_action => sub { } );
+
+    my $stash = { job => $job };
+
+    error_trap(
+        stash               => $stash,
+        trap_timeout        => 1,
+        trap_timeout_action => 'action',
+        trap_max_retry      => '',
+        trap_rollback       => 1,
+        mode                => '',
+        code                => sub { die 'error' }
+      );
+
+    is $stash->{_last_trap_action}, 'skip';
+};
+
+subtest 'error_trap: sets last trap action when status is RETRYING' => sub {
+    _setup();
+
+    my $job_logger = _mock_job_logger();
+
+    my $job = Test::MonkeyMock->new;
+    $job->mock( rollback    => sub { 0 } );
+    $job->mock( logger      => sub { $job_logger } );
+    $job->mock( update      => sub { } );
+    $job->mock( load        => sub { { status => 'RETRYING' } } );
+    $job->mock( trap_action => sub { } );
+
+    my $stash = { job => $job };
+
+    like exception { error_trap(
+        stash               => $stash,
+        trap_timeout        => 1,
+        trap_timeout_action => 'action',
+        trap_max_retry      => 1,
+        trap_rollback       => 1,
+        mode                => '',
+        code                => sub { die 'error' }
+    )}, qr/Max retries reached/;
+
+    is $stash->{_last_trap_action}, 'retry';
+};
 
 subtest 'parralel_run: runs task in background' => sub {
     _setup();
@@ -391,13 +484,14 @@ subtest 'eval_code: evals code' => sub {
     is $ret->{ret}, 2;
 };
 
-done_testing;
+done_testing();
 
 sub _mock_job_logger {
     my $job_logger = Test::MonkeyMock->new;
     $job_logger->mock( info  => sub { } );
     $job_logger->mock( debug => sub { } );
     $job_logger->mock( error => sub { } );
+    $job_logger->mock( warn => sub { } );
 
     return $job_logger;
 }
