@@ -92,6 +92,60 @@ subtest 'execute: sends correct request with environment' => sub {
     is_deeply $ret, {rc => 0, ret => 'bar', output => 'bar'};
 };
 
+subtest 'execute: sends correct request with basic auth' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent(
+        ua                  => $ua,
+        basic_auth_enabled  => 1,
+        basic_auth_username => 'clax',
+        basic_auth_password => 'password'
+    );
+
+    my $ret = $clax_agent->execute( 'echo bar' );
+
+    my ( $url, $data ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'http://clax:password@bar:8888/command';
+};
+
+subtest 'execute: sends correct request with ssl' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent(
+        ua          => $ua,
+        ssl_enabled => 1,
+    );
+
+    my $ret = $clax_agent->execute( 'echo bar' );
+
+    my ( $url, $data ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'https://bar:8888/command';
+};
+
 subtest 'get_file: sends correct request' => sub {
     my $ua = _mock_ua();
 
