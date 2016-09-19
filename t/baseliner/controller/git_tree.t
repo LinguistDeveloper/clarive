@@ -8,6 +8,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst';
+use TestGit;
 
 use Clarive::ci;
 use Clarive::mdb;
@@ -40,8 +41,9 @@ subtest 'get_commits_history: returns validation errors' => sub {
 subtest 'get_commits_history: returns commits' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci, message => 'initial');
+    TestGit->commit($repo_ci);
 
     my $controller = _build_controller();
 
@@ -61,12 +63,12 @@ subtest 'get_commits_history: returns commits' => sub {
                     'revision' => re_sha8(),
                     'comment'  => '
 
-    dir
+    update
 ',
                     'date'   => re_date(),
-                    'author' => 'vti <vti@clarive.com>',
+                    'author' => 'clarive <clarive@localhost>',
                     'ago'    => ignore(),
-                    'tags'   => re(qr/HEAD.*?(master|release).*?(release|master)/)
+                    'tags'   => re(qr/HEAD.*?master/)
                 },
                 {
                     'revision' => re_sha8(),
@@ -74,7 +76,7 @@ subtest 'get_commits_history: returns commits' => sub {
 
     initial',
                     'date'   => re_date(),
-                    'author' => 'vti <vti@clarive.com>',
+                    'author' => 'clarive <clarive@localhost>',
                     'ago'    => ignore()
                 }
 
@@ -104,8 +106,10 @@ subtest 'branch_commits: returns commits' => sub {
 
     BaselinerX::CI::bl->new( bl => 'release' )->save;
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci);
+    TestGit->commit($repo_ci);
+    TestGit->tag($repo_ci, tag => 'release');
 
     my $controller = _build_controller();
 
@@ -120,12 +124,12 @@ subtest 'branch_commits: returns commits' => sub {
         json => [
             {
                 'icon' => ignore(),
-                'text' => re(qr/^\[$RE_sha8\] dir$/),
+                'text' => re(qr/^\[$RE_sha8\] update$/),
                 'data' => {
                     'sha'        => re_sha(),
                     'branch'     => 'master',
                     'rev_num'    => re_sha(),
-                    'repo_dir'   => 't/data/git-bare.git',
+                    'repo_dir'   => ignore(),
                     'controller' => 'gittree',
                     'click'      => {
                         'repo_mid' => ignore(),
@@ -134,20 +138,20 @@ subtest 'branch_commits: returns commits' => sub {
                         'type'     => 'comp',
                         'title'    => re(qr/^Commit $RE_sha8$/),
                         'load'     => \1,
-                        'repo_dir' => 't/data/git-bare.git'
+                        'repo_dir' => ignore()
                     },
                     'ci' => {
                         'ns'   => re(qr/^git\.revision\/$RE_sha$/),
-                        'name' => re(qr/^\[$RE_sha8\] dir$/),
+                        'name' => re(qr/^\[$RE_sha8\] update$/),
                         'data' => {
                             'repo'   => 'ci_pre:0',
                             'ci_pre' => [
                                 {
                                     'mid'  => ignore(),
-                                    'ns'   => 'git.repository/t/data/git-bare.git',
-                                    'name' => 't/data/git-bare.git',
+                                    'ns'   => re(qr{git.repository/}),
+                                    'name' => ignore(),
                                     'data' => {
-                                        'repo_dir' => 't/data/git-bare.git'
+                                        'repo_dir' => ignore()
                                     },
                                     'class' => 'GitRepository'
                                 }
@@ -185,8 +189,8 @@ subtest 'branch_changes returns validation errors' => sub {
 subtest 'branch_changes returns changes' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci);
 
     my $controller = _build_controller();
 
@@ -201,7 +205,7 @@ subtest 'branch_changes returns changes' => sub {
         json => [
             {
                 icon => ignore(),
-                text => 'foo/bar',
+                text => 'README',
                 leaf => \1
             }
         ]
@@ -226,8 +230,9 @@ subtest 'branch_tree: returns validation errors' => sub {
 subtest 'branch_tree: returns tree' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci);
+    TestGit->commit($repo_ci, file => 'foo/bar');
 
     my $controller = _build_controller();
 
@@ -241,19 +246,19 @@ subtest 'branch_tree: returns tree' => sub {
       {
         json => [
             {
-                'text'    => 'foo',
-                'url'     => '/gittree/branch_tree',
-                'iconCls' => 'default_folders',
-                'data'    => {
-                    'sha'      => re_sha(),
-                    'repo_mid' => $repo_ci->mid,
-                    'branch'   => 'HEAD',
-                    'folder'   => 'foo'
-                },
-                'leaf' => \0
+              'leaf' => \0,
+              'url' => '/gittree/branch_tree',
+              'iconCls' => 'default_folders',
+              'data' => {
+                          'repo_mid' => ignore(),
+                          'branch' => 'HEAD',
+                          'sha' => ignore(),
+                          'folder' => 'foo'
+                        },
+              'text' => 'foo'
             },
             {
-                'text' => 'HOWTO',
+                'text' => 'README',
                 'data' => {
                     'controller' => 'gittree',
                     'tab_icon'   => ignore(),
@@ -261,11 +266,11 @@ subtest 'branch_tree: returns tree' => sub {
                         'action' => 'edit',
                         'url'    => '/comp/view_file.js',
                         'type'   => 'comp',
-                        'title'  => 'HEAD: HOWTO',
+                        'title'  => 'HEAD: README',
                         'load'   => \1
                     },
                     'repo_mid' => $repo_ci->mid,
-                    'file'     => 'HOWTO',
+                    'file'     => 'README',
                     'rev_num'  => re_sha(),
                     'branch'   => 'HEAD'
                 },
@@ -279,8 +284,8 @@ subtest 'branch_tree: returns tree' => sub {
 subtest 'branch_tree: returns tree from a subdirectory' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci, file => 'foo/bar');
 
     my $controller = _build_controller();
 
@@ -341,12 +346,12 @@ subtest 'get_file_revisions: returns validation errors' => sub {
 subtest 'get_file_revisions: returns commits' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, message => 'initial');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '123' };
+    my $params = { repo_mid => $repo_ci->mid, filename => 'README', sha => $sha };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -386,12 +391,12 @@ subtest 'view_file: returns validation errors' => sub {
 subtest 'view_file: returns file content' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, message => 'initial', content => 'This is a howto.');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
+    my $params = { repo_mid => $repo_ci->mid, filename => 'README', sha => $sha };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -462,12 +467,12 @@ subtest 'get_file_blame: returns validation errors' => sub {
 subtest 'get_file_blame: returns blame' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, content => 'This is a howto.');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
+    my $params = { repo_mid => $repo_ci->mid, filename => 'README', sha => $sha };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -476,7 +481,7 @@ subtest 'get_file_blame: returns blame' => sub {
     cmp_deeply $c->stash,
       {
         json => {
-            'msg'      => re(qr/^\^[a-f0-9]{7} \(vti .*?\) This is a howto\.$/),
+            'msg'      => re(qr/^\^[a-f0-9]{7} \(clarive .*?\) This is a howto\.$/),
             'success'  => \1,
             'suported' => \1
         }
@@ -537,12 +542,12 @@ subtest 'view_diff_file: returns validation errors' => sub {
 subtest 'view_diff_file: returns diff' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, message => 'initial', content => 'This is a howto.');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, file => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
+    my $params = { repo_mid => $repo_ci->mid, file => 'README', sha => $sha };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -568,7 +573,7 @@ subtest 'view_diff_file: returns diff' => sub {
                             'code'  => "+This is a howto.\n"
                         }
                     ],
-                    'path'      => 'HOWTO',
+                    'path'      => 'README',
                     'revision2' => re_sha8(),
                 }
             ]
@@ -682,12 +687,12 @@ subtest 'view_diff: returns validation errors' => sub {
 subtest 'view_diff: returns diff' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, message => 'initial', content => 'This is a howto.');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
+    my $params = { repo_mid => $repo_ci->mid, sha => $sha };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -699,8 +704,8 @@ subtest 'view_diff: returns diff' => sub {
             'commit_info' => {
                 'revision' => re_sha8(),
                 'comment'  => '    initial',
-                'date'     => '  Mon Jul 27 09:21:31 2015 +0200',
-                'author'   => 'vti <vti@clarive.com>'
+                'date'     => ignore(),
+                'author'   => 'clarive <clarive@localhost>'
             },
             'msg'     => 'Success loading diffs',
             'success' => \1,
@@ -713,8 +718,8 @@ subtest 'view_diff: returns diff' => sub {
                             'code'  => '+This is a howto.'
                         }
                     ],
-                    'path'      => 'HOWTO',
-                    'revision2' => 'eb6af9b'
+                    'path'      => 'README',
+                    'revision2' => ignore()
                 }
             ]
         }
@@ -776,12 +781,12 @@ subtest 'get_file_history: returns validation errors' => sub {
 subtest 'get_file_history: returns diff' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, message => 'initial');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, filename => 'HOWTO', sha => '38405ec58cb2aa9eecf8f44326bdb80c8624d057' };
+    my $params = { repo_mid => $repo_ci->mid, filename => 'README', sha => $sha };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -822,8 +827,9 @@ subtest 'get_tags: returns validation errors' => sub {
 subtest 'get_tags: returns tags' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci);
+    TestGit->tag($repo_ci, tag => 'release');
 
     my $controller = _build_controller();
 
@@ -860,8 +866,8 @@ subtest 'get_commits_search: returns validation errors' => sub {
 subtest 'get_commits_search: returns found commits by comment' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci, message => 'initial');
 
     my $controller = _build_controller();
 
@@ -882,8 +888,8 @@ subtest 'get_commits_search: returns found commits by comment' => sub {
                     'comment'  => '
 
     initial',
-                    'date'   => '2015-07-27T07:21:31',
-                    'author' => 'vti <vti@clarive.com>',
+                    'date'   => ignore(),
+                    'author' => 'clarive <clarive@localhost>',
                     'ago'    => ignore()
                 }
             ]
@@ -894,12 +900,13 @@ subtest 'get_commits_search: returns found commits by comment' => sub {
 subtest 'get_commits_search: returns found commits by author' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci, message => 'initial');
+    TestGit->commit($repo_ci, message => 'update');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, query => '--author="vti"' };
+    my $params = { repo_mid => $repo_ci->mid, query => '--author="clarive"' };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -912,13 +919,13 @@ subtest 'get_commits_search: returns found commits by author' => sub {
             'success'    => \1,
             'commits'    => [
                 {
-                    'revision' => 'f8785d4e',
+                    'revision' => ignore(),
                     'comment'  => '
 
-    dir
+    update
 ',
                     'date'   => re_date(),
-                    'author' => 'vti <vti@clarive.com>',
+                    'author' => 'clarive <clarive@localhost>',
                     'ago'    => ignore()
                 },
                 {
@@ -927,7 +934,7 @@ subtest 'get_commits_search: returns found commits by author' => sub {
 
     initial',
                     'date'   => re_date(),
-                    'author' => 'vti <vti@clarive.com>',
+                    'author' => 'clarive <clarive@localhost>',
                     'ago'    => ignore()
                 }
             ]
@@ -938,12 +945,12 @@ subtest 'get_commits_search: returns found commits by author' => sub {
 subtest 'get_commits_search: returns found commits by revision' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    my $sha = TestGit->commit($repo_ci, message => 'initial');
 
     my $controller = _build_controller();
 
-    my $params = { repo_mid => $repo_ci->mid, query => '38405ec58c' };
+    my $params = { repo_mid => $repo_ci->mid, query => substr($sha, 0, 5) };
 
     my $c = mock_catalyst_c( req => { params => $params } );
 
@@ -960,8 +967,8 @@ subtest 'get_commits_search: returns found commits by revision' => sub {
                     'comment'  => '
 
     initial',
-                    'date'   => '2015-07-27T07:21:31',
-                    'author' => 'vti <vti@clarive.com>',
+                    'date'   => ignore(),
+                    'author' => 'clarive <clarive@localhost>',
                     'ago'    => ignore()
                 }
             ]
@@ -972,8 +979,8 @@ subtest 'get_commits_search: returns found commits by revision' => sub {
 subtest 'get_commits_search: returns empty result when nothing found' => sub {
     _setup();
 
-    my $repo_ci = ci->GitRepository->new( repo_dir => 't/data/git-bare.git' );
-    $repo_ci->save;
+    my $repo_ci = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo_ci, message => 'initial');
 
     my $controller = _build_controller();
 
