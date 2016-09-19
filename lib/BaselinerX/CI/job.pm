@@ -1211,10 +1211,39 @@ sub run {
         $self->goto_next_step( $self->final_status );
         $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     }
+
+    my $current_step = $self->step;
+    my @projects = map { $_->{mid} } _array( $self->{projects} );
+
     $self->step( $self->final_step );
     $self->build_job_contents(0);
 
     $self->save;
+
+    my $notify_end = {
+        project => \@projects,
+        status  => $end_status,
+        bl      => $bl_mid,
+        step    => $current_step
+    };
+    event_new 'event.job.end_step' => {
+        notify    => $notify_end,
+        job       => $self,
+        job_stash => $self->stash,
+        status    => $end_status,
+        bl        => $self->bl,
+        step      => $current_step
+    };
+    if ( $current_step eq 'POST' ) {
+        event_new 'event.job.end' => {
+            notify    => $notify_end,
+            job       => $self,
+            job_stash => $self->stash,
+            status    => $end_status,
+            bl        => $self->bl,
+            step      => $current_step
+        };
+    }
 
     Util->_debug( Util->_loc('Job %1 saved and ready for: step `%2` and status `%3`', $self->name, $self->step, $self->status ) );
     unlink $self->pid_file;
@@ -1289,35 +1318,7 @@ sub finish {
     $status ||= 'FINISHED';
 
     Util->_debug( "JOB FINISHED=$status, rollback=" . $self->rollback );
-    my @projects = map { $_->{mid} } _array( $self->{projects} );
-    my $bl = ci->bl->find_one( { name => $self->bl } );
-    my $bl_mid = $bl->{mid};
 
-    my $notify = {
-        project => \@projects,
-        status  => $status,
-        bl      => $bl_mid,
-        step    => $self->step
-    };
-    event_new 'event.job.end_step' => {
-        notify    => $notify,
-        job       => $self,
-        job_stash => $self->stash,
-        status    => $self->status,
-        bl        => $self->bl,
-        step      => $self->step
-    };
-
-    if ( $self->step eq 'POST' ) {
-        event_new 'event.job.end' => {
-            notify    => $notify,
-            job       => $self,
-            job_stash => $self->stash,
-            status    => $self->status,
-            bl        => $self->bl,
-            step      => $self->step
-        };
-    }
     $self->status($status);
     $self->step_status->{ $self->step } = $status;
     $self->last_finish_status($status);    # saved for POST

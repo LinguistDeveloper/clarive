@@ -17,7 +17,7 @@ use_ok 'Baseliner::Model::Jobs';
 subtest 'monitor: returns progress 100% when job finished' => sub {
     _setup();
 
-    my $changeset_mid = _create_changeset();
+    my $changeset_mid = TestSetup->create_changeset();
 
     my $job = _create_job( changesets => [$changeset_mid] );
     $job->status('FINISHED');
@@ -33,7 +33,7 @@ subtest 'monitor: returns progress 100% when job finished' => sub {
 subtest 'monitor: returns progress start' => sub {
     _setup();
 
-    my $changeset_mid = _create_changeset();
+    my $changeset_mid = TestSetup->create_changeset();
 
     my $job = _create_job( changesets => [$changeset_mid] );
 
@@ -47,7 +47,7 @@ subtest 'monitor: returns progress start' => sub {
 subtest 'monitor: returns progress in beetween' => sub {
     _setup();
 
-    my $changeset_mid = _create_changeset();
+    my $changeset_mid = TestSetup->create_changeset();
 
     my $job = _create_job( changesets => [$changeset_mid] );
 
@@ -68,7 +68,7 @@ subtest 'monitor: returns progress in beetween' => sub {
 subtest 'monitor: does not return progress over 100%' => sub {
     _setup();
 
-    my $changeset_mid = _create_changeset();
+    my $changeset_mid = TestSetup->create_changeset();
 
     my $job = _create_job( changesets => [$changeset_mid] );
 
@@ -333,53 +333,6 @@ sub _create_job {
     return $job;
 }
 
-sub _create_changeset {
-    my (%params) = @_;
-
-    my $id_changeset_rule = TestSetup->create_rule_form(
-        rule_tree => [
-            {
-                "attributes" => {
-                    "data" => {
-                        "bd_field"     => "id_category_status",
-                        "name_field"   => "Status",
-                        "fieldletType" => "fieldlet.system.status_new",
-                        "id_field"     => "status_new",
-                        "name_field"   => "status",
-                    },
-                    "key" => "fieldlet.system.status_new",
-                }
-            },
-            {
-                "attributes" => {
-                    "data" => {
-                        "bd_field"     => "project",
-                        "fieldletType" => "fieldlet.system.projects",
-                        "id_field"     => "project",
-                        "name_field"   => "project",
-                        meta_type => 'project',
-                        collection => 'project',
-                    },
-                    "key" => "fieldlet.system.projects",
-                }
-            },
-        ]
-    );
-
-    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
-
-    my $project = $params{project} || TestUtils->create_ci('project');
-    my $user = $params{user} || do {
-        my $id_role = $params{id_role} || TestSetup->create_role(actions => [ {action =>'action.job.viewall', bl => '*' }]);
-
-        TestSetup->create_user( id_role => $id_role, project => $project );
-    };
-
-    my $changeset_mid =
-      TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1, username => $user->name );
-
-    return $changeset_mid;
-}
 
 sub _build_model {
     Baseliner::Model::Jobs->new(@_);
