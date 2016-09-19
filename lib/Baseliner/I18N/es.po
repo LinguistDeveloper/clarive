@@ -6393,9 +6393,9 @@ msgstr "Secuencia"
 msgid "Options"
 msgstr "Opciones"
 
-#: root/ci/capture.js root/ci/dbi_connection.js root/ci/grammar.js
-#: root/ci/matcher.js root/comp/rules.js root/forms/web_request.js
-#: root/site/tabfu.js
+#: root/ci/capture.js root/ci/clax_agent.js root/ci/dbi_connection.js
+#: root/ci/grammar.js root/ci/matcher.js root/comp/rules.js
+#: root/forms/web_request.js root/site/tabfu.js
 msgid "Timeout"
 msgstr "Tiempo de espera"
 
