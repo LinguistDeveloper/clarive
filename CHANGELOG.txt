@@ -1,3 +1,50 @@
+---------------------------------------------- 6.4.7.3 --------------------------------------------
+[ENHANCEMENTS]
+- #32897 Use project groups as scopes for calendar slots (#32883)
+- #34243 Show customized topic grid columns by Category
+- #34476 Update icons from icons/lc and icons/mime folders
+- #34523 Improve destination combo in notifications
+- #34530 Implement complete agent interface in clax agent
+- #34549 Update icons in images/chromium folder
+- #34588 Change icons to SVG format from images/ci folder
+- #34599 Make about clarive icons customized by client
+- #34600 Create Report Rules with basic content
+- #34610 Change icons to SVG format from images/circular folder
+- #34611 Make list_topics dashboard limit configurable by user
+- #34623 Update StatusBox fieldlets to have icon
+- #34627 Remove groupBy in monitor columns that are not groupables
+- #34641 Update licence check to allow nodes
+- #34642 Change icons to SVG format from images/nature folder
+- #34647 Update help format and content for concepts and getting started folders
+- #34648 Update icons format references
+- #34651 Update silk folder
+- #34652 Remove extra icons in scm folder
+- #34704 Support SSL settings in clax agent
+- #34705 Enable HTTP timeout setting in Clax agent
+- #34694 Implement control trapped actions in jobs
+- #34628 Add an option to limit file size in file management
+
+[FIXES]
+- #34135 Cannot delete labels associated to a topic (#33589)
+- #34198 Disable 'Users and roles' in Report settings when 'Permissions' value is Private
+- #34404 Make sure rollback for PRE step is not waiting to scheduler date
+- #34479 Make sure calendars in New job window loads correctly
+- #34488 Make sure dashlet.job.chart open jobs from selected groups
+- #34514 Do not fail when cannot send email
+- #34556 Make sure user project security is updated when deleting ci item role project
+- #34589 Make public reports can only be shared with users and roles
+- #34593 Make sure compile_wsdl calls are working
+- #34618 Make sure topic_list dashlet is shown properly
+- #34621 Make sure Server is mandatory in Agent CIs
+- #34622 Make sure migration of fieldlets take filters properly
+- #34624 Make sure cannot remove report default types
+- #34631 Make sure dashlets are properly sized by default
+- #34632 Make sure emails are not sended duplicated
+- #34656 Make sure icons in notifications pop-up notifications have correct size
+- #34682 Update bad-formed icons
+- #34696 Make sure All ci filter is using id value instead of translation
+- #34489 Make sure event.job.end_step starts after update ci job
+
 ---------------------------------------------- 6.4.7 ----------------------------------------------
 [ENHANCEMENTS]
 - #32495 Show name instead of mid in list_topics fieldlets
