@@ -539,8 +539,8 @@ sub reset {   # aka restart
     my %p = %{ $p || {} };
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
-    my $last_finish_status = $p{last_finish_status} // '';
-
+    my $last_finish_status = $p{last_finish_status};
+    $last_finish_status //= $self->last_finish_status;
     _fail _loc('Job %1 is currently running (%2) and cannot be rerun', $self->name, $self->status)
         if $self->is_running;
 

@@ -9110,6 +9110,10 @@ msgid "FAIL"
 msgstr ""
 
 #: root/comp/monitor_grid.js
+msgid "Change Job Status"
+msgstr ""
+
+#: root/comp/monitor_grid.js
 msgid "Initial Step"
 msgstr ""
 
