@@ -15,6 +15,7 @@ has
     return BaselinerX::Type::Model::ConfigStore->new->get( 'clax_port', value => 1 )
       || 11801;
   };
+has timeout => qw(is rw isa Str);
 
 has basic_auth_enabled  => qw(is rw isa BoolCheckbox coerce 1 default 0);
 has basic_auth_username => qw(is rw isa Str);
@@ -344,6 +345,7 @@ sub _build_ua {
     my $self = shift;
 
     return HTTP::Tiny->new(
+        timeout => $self->timeout ? $self->timeout : undef,
         $self->ssl_enabled
         ? (
             SSL_verify => $self->ssl_verify ? 1 : 0,

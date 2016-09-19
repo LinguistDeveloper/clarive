@@ -99,6 +99,11 @@
             singleMode: true
         }), {
             xtype: 'textfield',
+            fieldLabel: _('Timeout'),
+            name:'timeout',
+            value: params.rec.timeout
+        }, {
+            xtype: 'textfield',
             fieldLabel: _('Port'),
             name: 'port',
             value: params.rec.port || 11801,

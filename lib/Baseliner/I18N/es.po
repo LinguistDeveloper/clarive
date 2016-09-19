@@ -6425,7 +6425,7 @@ msgstr "Fichero de Certificado"
 
 #: root/ci/clax_agent.js
 msgid "Private Key File"
-msgstr "Fechero de Llave Privada"
+msgstr "Fichero de Llave Privada"
 
 #: root/ci/clax_agent.js
 msgid "Basic Authentication"
