@@ -5558,6 +5558,14 @@ msgid "Sending file '%1' to '%2'"
 msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
+msgid "Sending files by parts"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Concatenating files: %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/FileManagement.pm
 msgid "Error doing a chown '%1' to file '%2': %3"
 msgstr ""
 
@@ -12913,6 +12921,10 @@ msgid "Chmod"
 msgstr ""
 
 #: root/forms/ship_remote.js
+msgid "Max Transfer Chunk Size"
+msgstr ""
+
+#: root/forms/ship_remote.js
 msgid "Copy File Attributes"
 msgstr ""
 
@@ -13622,6 +13634,10 @@ msgstr ""
 
 #: root/site/common.js
 msgid "Invalid sequence"
+msgstr ""
+
+#: root/site/common.js
+msgid "Invalid natural number"
 msgstr ""
 
 #: root/site/dashboard.js

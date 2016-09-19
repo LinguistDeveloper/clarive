@@ -5632,6 +5632,14 @@ msgid "Sending file '%1' to '%2'"
 msgstr ""
 
 #: lib/BaselinerX/Service/FileManagement.pm
+msgid "Sending files by parts"
+msgstr "Enviar ficheros por partes"
+
+#: lib/BaselinerX/Service/FileManagement.pm
+msgid "Concatenating files: %1"
+msgstr "Concatenando ficheros: %1"
+
+#: lib/BaselinerX/Service/FileManagement.pm
 msgid "Error doing a chown '%1' to file '%2': %3"
 msgstr ""
 
@@ -13054,6 +13062,10 @@ msgid "Chmod"
 msgstr "Chmod"
 
 #: root/forms/ship_remote.js
+msgid "Max Transfer Chunk Size"
+msgstr "Tamaño máximo de fragmento"
+
+#: root/forms/ship_remote.js
 msgid "Copy File Attributes"
 msgstr ""
 
@@ -13768,6 +13780,10 @@ msgstr "Nombre de etiqueta no válido"
 #: root/site/common.js
 msgid "Invalid sequence"
 msgstr "Secuencia no válida"
+
+#: root/site/common.js
+msgid "Invalid natural number"
+msgstr ""
 
 #: root/site/dashboard.js
 msgid "Dashlet config"

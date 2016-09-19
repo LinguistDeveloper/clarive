@@ -151,9 +151,14 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
         $remote =~ s{\\}{/}g;
     }
 
-    my $remote_basename = basename $local;
-    my $remote_dir = dirname $remote;
-    $remote_dir = '' if $remote_dir eq '/' || $remote_dir eq '.';
+    my $remote_basename = basename $remote;
+    my $remote_dir = dirname($remote);
+
+    if ($remote_dir eq '/' || $remote_dir eq '.') {
+        $remote_dir = '' ;
+    } else {
+        $remote_dir .= '/';
+    }
 
     my @alpha = ('0' .. '9', 'a' .. 'z', 'A' .. 'Z');
     my $boundary = '------------clax';
