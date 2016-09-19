@@ -33,6 +33,11 @@ Baseliner::Controller::Root - Root Controller for Baseliner
 All root / urls are installed here.
 
 =cut
+sub ping : Global {
+    my ( $self, $c ) = @_;
+    $c->stash->{json} = { success => \1 };
+    $c->forward('View::JSON');
+}
 
 sub begin : Private {  # placeholder so we don't break people who actually do a forward here
     my ($self,$c) = @_;
