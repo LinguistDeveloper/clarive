@@ -1838,8 +1838,9 @@ msgid "No user details available"
 msgstr "No datos de usuario disponible"
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Reports/listado_jobs.pm
-#: root/forms/create_job.js root/forms/system_messages.js root/site/login.js
-#: root/site/tabfu.js root/site/timeline-graph.js
+#: root/ci/clax_agent.js root/forms/create_job.js
+#: root/forms/system_messages.js root/site/login.js root/site/tabfu.js
+#: root/site/timeline-graph.js
 msgid "Username"
 msgstr "Usuario"
 
@@ -6182,9 +6183,9 @@ msgstr "Todos los ficheros"
 msgid "Job Items"
 msgstr "Elementos del pase"
 
-#: root/ci/DBDest.js root/ci/balix_agent.js root/ci/clax_agent.js
-#: root/ci/dbi_connection.js root/ci/ftp_agent.js root/ci/oracle_connection.js
-#: root/ci/ssh_agent.js root/ci/web_cluster.js root/comp/dashboard_job.html
+#: root/ci/DBDest.js root/ci/balix_agent.js root/ci/dbi_connection.js
+#: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/ssh_agent.js
+#: root/ci/web_cluster.js root/comp/dashboard_job.html
 #: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
 #: root/comp/monitor_grid.js root/comp/role_detail.js root/comp/user_grid.js
 #: root/comp/user_info.mas root/email/approval_job.html
@@ -6200,8 +6201,8 @@ msgstr "Elementos del pase"
 msgid "User"
 msgstr "Usuario"
 
-#: root/ci/DBDest.js root/ci/dbi_connection.js root/ci/ftp_agent.js
-#: root/ci/oracle_connection.js root/ci/user.js
+#: root/ci/DBDest.js root/ci/clax_agent.js root/ci/dbi_connection.js
+#: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/user.js
 #: root/comp/lifecycle/workspace_new.js root/comp/user_grid.js
 #: root/forms/ldap_search.js root/forms/web_request.js root/site/login.js
 #: root/site/tabfu.js
@@ -6406,13 +6407,33 @@ msgstr "Analizar tipos"
 msgid "Regex"
 msgstr "Expresion regular"
 
-#: root/ci/clax_agent.js
-msgid "Auth Username"
-msgstr ""
+#: root/ci/clax_agent.js root/comp/rules.js
+msgid "Enabled"
+msgstr "Habilitado"
 
 #: root/ci/clax_agent.js
-msgid "Auth Password"
-msgstr ""
+msgid "Verify"
+msgstr "Verificar"
+
+#: root/ci/clax_agent.js
+msgid "CA File"
+msgstr "Fichero de CA"
+
+#: root/ci/clax_agent.js
+msgid "Certificate File"
+msgstr "Fichero de Certificado"
+
+#: root/ci/clax_agent.js
+msgid "Private Key File"
+msgstr "Fechero de Llave Privada"
+
+#: root/ci/clax_agent.js
+msgid "Basic Authentication"
+msgstr "Autenticación de acceso básica"
+
+#: root/ci/clax_agent.js
+msgid "SSL"
+msgstr "SSL"
 
 #: root/ci/dbi_connection.js
 msgid "Table Name"
@@ -9890,10 +9911,6 @@ msgstr ""
 #: root/comp/rules.js
 msgid "Needs Rollback Key"
 msgstr "se necesita clave de la marcha atrás"
-
-#: root/comp/rules.js
-msgid "Enabled"
-msgstr "Habilitado"
 
 #: root/comp/rules.js
 msgid "Run Forward"

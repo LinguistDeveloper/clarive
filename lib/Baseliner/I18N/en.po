@@ -1818,8 +1818,9 @@ msgid "No user details available"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Reports/listado_jobs.pm
-#: root/forms/create_job.js root/forms/system_messages.js root/site/login.js
-#: root/site/tabfu.js root/site/timeline-graph.js
+#: root/ci/clax_agent.js root/forms/create_job.js
+#: root/forms/system_messages.js root/site/login.js root/site/tabfu.js
+#: root/site/timeline-graph.js
 msgid "Username"
 msgstr ""
 
@@ -6107,9 +6108,9 @@ msgstr ""
 msgid "Job Items"
 msgstr ""
 
-#: root/ci/DBDest.js root/ci/balix_agent.js root/ci/clax_agent.js
-#: root/ci/dbi_connection.js root/ci/ftp_agent.js root/ci/oracle_connection.js
-#: root/ci/ssh_agent.js root/ci/web_cluster.js root/comp/dashboard_job.html
+#: root/ci/DBDest.js root/ci/balix_agent.js root/ci/dbi_connection.js
+#: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/ssh_agent.js
+#: root/ci/web_cluster.js root/comp/dashboard_job.html
 #: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
 #: root/comp/monitor_grid.js root/comp/role_detail.js root/comp/user_grid.js
 #: root/comp/user_info.mas root/email/approval_job.html
@@ -6125,8 +6126,8 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: root/ci/DBDest.js root/ci/dbi_connection.js root/ci/ftp_agent.js
-#: root/ci/oracle_connection.js root/ci/user.js
+#: root/ci/DBDest.js root/ci/clax_agent.js root/ci/dbi_connection.js
+#: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/user.js
 #: root/comp/lifecycle/workspace_new.js root/comp/user_grid.js
 #: root/forms/ldap_search.js root/forms/web_request.js root/site/login.js
 #: root/site/tabfu.js
@@ -6331,12 +6332,32 @@ msgstr ""
 msgid "Regex"
 msgstr ""
 
-#: root/ci/clax_agent.js
-msgid "Auth Username"
+#: root/ci/clax_agent.js root/comp/rules.js
+msgid "Enabled"
 msgstr ""
 
 #: root/ci/clax_agent.js
-msgid "Auth Password"
+msgid "Verify"
+msgstr ""
+
+#: root/ci/clax_agent.js
+msgid "CA File"
+msgstr ""
+
+#: root/ci/clax_agent.js
+msgid "Certificate File"
+msgstr ""
+
+#: root/ci/clax_agent.js
+msgid "Private Key File"
+msgstr ""
+
+#: root/ci/clax_agent.js
+msgid "Basic Authentication"
+msgstr ""
+
+#: root/ci/clax_agent.js
+msgid "SSL"
 msgstr ""
 
 #: root/ci/dbi_connection.js
@@ -9771,10 +9792,6 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Needs Rollback Key"
-msgstr ""
-
-#: root/comp/rules.js
-msgid "Enabled"
 msgstr ""
 
 #: root/comp/rules.js
