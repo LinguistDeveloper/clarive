@@ -1,21 +1,30 @@
 package BaselinerX::CI::clax_agent;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _file _dir);
+
+use URI;
 use HTTP::Tiny;
 use File::Basename qw(basename dirname);
-use URI;
 use String::CRC32 ();
-use Baseliner::Utils qw(:logging _file _dir _array);
+use IO::Socket::SSL;
 use BaselinerX::Type::Model::ConfigStore;
+use Baseliner::Utils qw(:logging _file _dir _array);
 
-has auth_username => qw(is rw isa Str);
-has auth_password => qw(is rw isa Str);
 has
-  port    => qw(is rw isa Num),
+  port    => qw(is rw isa Str),
   default => sub {
-    return Baseliner->model('ConfigStore')->get( 'clax_port', value => 1 )
+    return BaselinerX::Type::Model::ConfigStore->new->get( 'clax_port', value => 1 )
       || 11801;
   };
+
+has basic_auth_enabled  => qw(is rw isa BoolCheckbox coerce 1 default 0);
+has basic_auth_username => qw(is rw isa Str);
+has basic_auth_password => qw(is rw isa Str);
+
+has ssl_enabled => qw(is rw isa BoolCheckbox coerce 1 default 0);
+has ssl_verify  => qw(is rw isa BoolCheckbox coerce 1 default 0);
+has ssl_ca      => qw(is rw isa Str);
+has ssl_cert    => qw(is rw isa Str);
+has ssl_key     => qw(is rw isa Str);
 
 with 'Baseliner::Role::CI::Agent';
 
@@ -316,14 +325,36 @@ sub _build_url {
     my $self = shift;
     my ($path) = @_;
 
+    my $auth = '';
+    if ( $self->basic_auth_enabled ) {
+        $auth = join ':', $self->basic_auth_username, $self->basic_auth_password;
+        $auth .= '@';
+    }
+
+    my $schema = 'http';
+    if ($self->ssl_enabled) {
+        $schema .= 's';
+    }
+
     my $url = $self->server->hostname . ':' . $self->port;
-    return URI->new("http://$url$path");
+    return URI->new("$schema://$auth$url$path");
 }
 
 sub _build_ua {
     my $self = shift;
 
-    return HTTP::Tiny->new;
+    return HTTP::Tiny->new(
+        $self->ssl_enabled
+        ? (
+            SSL_verify => $self->ssl_verify ? 1 : 0,
+            SSL_options => {
+                SSL_ca_file   => $self->ssl_ca,
+                SSL_cert_file => $self->ssl_cert,
+                SSL_key_file  => $self->ssl_key,
+            }
+          )
+        : ()
+    );
 }
 
 1;
