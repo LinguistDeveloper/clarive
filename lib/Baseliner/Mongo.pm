@@ -324,10 +324,22 @@ indexes before creating them.
 sub index_all {
     my ($self, $collection, %p)=@_;
     $p{drop} //= 1;
+
+    my %topic_weights = Clarive->config->{index}{weights}{topic} ? %{ Clarive->config->{index}{weights}{topic} } : ();
+    foreach my $key ( keys %topic_weights ) {
+        $topic_weights{$key} = int $topic_weights{$key};
+    }
+    my %master_doc_weights =
+      Clarive->config->{index}{weights}{master_doc} ? %{ Clarive->config->{index}{weights}{master_doc} } : ();
+    foreach my $key ( keys %master_doc_weights ) {
+        $master_doc_weights{$key} = int $master_doc_weights{$key};
+    }
+
     my $base_indexes = {
         activity => [
             [{ mid=>1, ts=>-1 }],
-            [{ ts=>-1 }],  # Dashboards.pm
+            [{ mid => 1, event_key => 1 }],
+            [{ ts=>-1 }],
         ],
         cache => [
             [{ _id=>1 }],
@@ -342,6 +354,7 @@ sub index_all {
             [{ mid=>1 }],
             [{ mid=>1, ts=>1 }],
             [{ mid=>1, event_key=>1, ts=>1 }],
+            [{ ts => 1, event_key => 1, event_status => 1 }],
             [{ ts=>1 }],
             [{ event_key=>1 }],
             [{ 'event_status'=>1 }],
@@ -362,10 +375,11 @@ sub index_all {
         job_log => [
             [{ id=>1 }],
             [{ mid=>1 }],
-            [[ ts=>1, t=>1 ]],
+            [{ ts=>1, t=>1 }],
             [{ mid=>1, exec=>1 }],
             [{ mid=>1, lev=>1, exec=>1 }],
             [{ mid=>1, exec=>1, ts=>1, t=>1 }],
+            [{ mid => 1, ts => 1, t => 1, exec => 1 }],
         ],
         master => [
             [{ mid=>1 },{ unique=>1 }],
@@ -398,14 +412,17 @@ sub index_all {
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
             [{ projects=>1 }],
+            [{ projects => 1, collection => 1 }],
             [{ collection=>1 }],
             [{ starttime=>-1 }],  # used by Dashboards.pm and monitor_json
             [{ collection=>1, name=>1 }],
-            [[ collection=>1, starttime=>-1 ]],  # job monitor
+            [{ collection => 1, starttime => -1 }],
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
+            [{ step => 1, status => 1, now => 1, collection => 1, host => 1 }],
+            [{ step => 1, status => 1, schedtime => 1, maxstarttime => 1, collection => 1, host => 1 }],
             [{'$**'=> "text"},{
-                    weights=>{ %{ Clarive->config->{index}{weights}{master_doc} || {} } },
+                %master_doc_weights ? (weights => \%master_doc_weights) : (),
                     language_override=>'_lang', background=>1 }],
         ],
         message => [
@@ -424,11 +441,15 @@ sub index_all {
         rule => [
             [{ id=>1 }],
             [{ rule_name=>1 }],
-            [[ rule_seq=>1, _id=>-1 ]],
-            [[ rule_seq=>1, ts=>-1 ]],
+            [{ rule_seq=>1, _id=>-1 }],
+            [{ rule_seq=>1, ts=>-1 }],
         ],
         rule_version => [
             [{ ts=>1 }],
+        ],
+        rule_status => [
+            [ { id => 1, type => 1, status => 1 } ],
+            [ { id => 1, status => 1 } ],
         ],
         sem => [
             [{ key=>1 },{ unique=>1, dropDups => 1 }],
@@ -448,13 +469,15 @@ sub index_all {
             [{ 'category.is_release'=>1 }],
             [{ 'category_name'=>1 }],
             [{ 'category.id'=>1, 'category_status.id'=>1, 'category_status.type'=>1 }],
+            [{ 'category.id' => 1, 'category_status.type' => 1, _project_security => 1 }],
             [{ '_project_security.project'=>1, 'category.id'=>1 }],
+            [{ '_project_security.project' => 1, category_name => 1 }],
             [{ '_project_security.area'=>1, 'category.id'=>1 }],
             [{ '_project_security'=>1, category_name=>1 }],
             [{ '_project_security'=>1, 'category.id'=>1, 'category_status.type'=>1 }],
             [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
             [{'$**'=> "text"},{
-                    weights=>{ %{ Clarive->config->{index}{weights}{topic} || {} } },
+                %topic_weights ? (weights => \%topic_weights) : (),
                     language_override=>'_lang', background=>1 }],
         ],
         topic_image => [
