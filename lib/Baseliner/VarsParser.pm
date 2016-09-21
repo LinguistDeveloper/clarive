@@ -154,7 +154,7 @@ sub _parse_var_top {
     if ($result && ref $result) {
         _throw _loc('Unexpected reference found in %1', $str);
     }
-    return $result;
+    return $result // '';
 }
 
 sub _parse_var {

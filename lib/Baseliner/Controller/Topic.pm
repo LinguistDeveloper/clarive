@@ -1301,7 +1301,7 @@ sub filters_list : Local {
                     idfilter    => $_->{id},
                     text        => _loc($_->{name}),
                     color       => $_->{color},
-                    seq         => $_->{seq},
+                    seq         => $_->{seq} // 0,
                     cls         => 'forum label',
                     iconCls     => 'icon-no',
                     checked     => \0,
