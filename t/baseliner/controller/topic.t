@@ -3480,11 +3480,12 @@ subtest 'generate_menus: generates create topics menu for user' => sub {
         'tab_icon'  => ignore(),
         'comp_data' => {
             'new_category_id'   => $id_category,
-            'new_category_name' => 'Category'
+            'new_category_name' => 'Category',
+            'swEdit'=>'1'
         },
         'label' => re(qr/Category/),
         'index'    => 11,
-        'url_comp' => '/topic/view?swEdit=1',
+        'url_comp' => '/topic/view',
         'actions'  => [
             {
                 'bounds' => {

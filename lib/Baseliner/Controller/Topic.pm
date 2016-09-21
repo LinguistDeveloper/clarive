@@ -60,8 +60,8 @@ qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px">
 qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
             index    => $seq++,
             actions  => [ { action => "action.topics.create", bounds => { id_category => $data->{id} } } ],
-            url_comp => '/topic/view?swEdit=1',
-            comp_data => { new_category_name => $name, new_category_id => $data->{id} },
+            url_comp => '/topic/view',
+            comp_data => { new_category_name => $name, new_category_id => $data->{id}, swEdit=>'1' },
             tab_icon  => '/static/images/icons/topic.svg'
           }
     } sort { lc $a->{name} cmp lc $b->{name} } @cats;

@@ -412,7 +412,13 @@ Cla.topic_grid = function(params){
                 data.forEach(function(value){
                     if (value.id == args.id) {
                         data_ok = 1;
-                        Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title , { title: args.title, new_category_id: args.id, new_category_name: args.name, _parent_grid: grid_topics.id }, new Date().getTime().toString());
+                        Baseliner.add_tabcomp('/topic/view', args.title, {
+                            title: args.title,
+                            swEdit: 1,
+                            new_category_id: args.id,
+                            new_category_name: args.name,
+                            _parent_grid: grid_topics.id
+                        }, new Date().getTime().toString());
                      };
                  });
                 if (data_ok == 0) { Baseliner.message(_('ERROR'), _('User does not have permission to perform the operation'))}
