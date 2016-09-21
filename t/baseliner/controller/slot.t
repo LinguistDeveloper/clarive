@@ -485,6 +485,20 @@ subtest 'calendar_grid_json: returns calendar list with limit 1' => sub {
     is $c->stash->{json}{totalCount}, 2;
 };
 
+subtest 'calendar_grid_json: returns names as scopes' => sub {
+    _setup();
+
+    my $area = TestUtils->create_ci('area');
+    TestSetup->create_calendar(bl => '*', name => 'Calendar', ns =>$area->mid);
+
+    my $c = _build_c( username => 'root' );
+    my $controller = _build_controller();
+    $controller->calendar_grid_json($c);
+
+    is @{$c->stash->{json}{data}}, 1;
+    is $c->stash->{json}{data}->[0]->{ns}, "$area->{name}";
+};
+
 subtest 'calendar: check permissions in the stash to admin calendar' => sub {
     _setup();
 

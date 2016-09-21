@@ -13,10 +13,10 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 <DIV class='job-calendar' ID="calendarDiv">
 
 <FORM name="infForm" action="" method="GET">
-    <TABLE border=0 style="height: 300px">
+    <TABLE class='job-calendar-slots-table'>
         <TR>
 % foreach my $header (@{ $table->{headers} }) {
-            <TH width='100' align=center><% $header %></TH>
+            <TH><% $header %></TH>
 % }
         </TR>
 <%perl>
@@ -56,7 +56,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
     }
 </%perl>
 </TABLE>
-<TABLE border="0" width="100%" cellpadding="2" id="days_week">
+<TABLE cellpadding="2" id="days_week">
         <TR>
 <%perl> 
     foreach my $dd ( 0..6 ) {
@@ -72,37 +72,25 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 
 </TABLE>
 </FORM>
-<TABLE border="0" width="100%" cellpadding="2" id="leyend_key">
+<TABLE   cellpadding="2"  id="caption_key">
 <TR>
-        <TD width=20 class="slot_N" height=20>&nbsp;</TD>
-        <TD width=100><% _loc("Normal") %></TD>
+        <TD class="slot_N" height=20>&nbsp;</TD>
+        <TD class="slots-caption" ><% _loc("Normal") %></TD>
 
-        <TD width=10>&nbsp;</TD>
+        <TD class="slot_U">&nbsp;</TD>
+        <TD class="slots-caption"><% _loc("Urgent") %></TD>
 
-        <TD width=20 class="slot_U">&nbsp;</TD>
-        <TD width=100><% _loc("Urgent") %></TD>
+        <TD class="slot_X">&nbsp;</TD>
+        <TD class="slots-caption"><% _loc("No Job") %></TD>
 
-        <TD width=10>&nbsp;</TD>
+        <TD class="slot_B">&nbsp;</TD>
+        <TD class="slots-caption"><% _loc("Empty") %></TD>
 
-        <TD width=20 class="slot_X">&nbsp;</TD>
-        <TD width=100><% _loc("No Job") %></TD>
+        <TD class="slot_N_off" height=20>&nbsp;</TD>
+        <TD class="slots-caption-big"><% _loc("Normal") . " <i>(" . _loc("No Job") .")</i>" %></TD>
 
-        <TD width=10>&nbsp;</TD>
-
-        <TD width=20 class="slot_B">&nbsp;</TD>
-        <TD ><% _loc("Empty") %></TD>
-
-</TR>
-<TR>
-        <TD width=20 class="slot_N_off" height=20>&nbsp;</TD>
-        <TD width=100><% _loc("Normal") . " <i>(" . _loc("No Job") .")</i>" %></TD>
-                <TD width=10>&nbsp;</TD>
-
-        <TD width=20 class="slot_U_off">&nbsp;</TD>
-        <TD width=100><% _loc("Urgent") . " <i>(" . _loc("No Job") .")</i>" %></TD>
-
-        <TD width=10>&nbsp;</TD>
-
+        <TD  class="slot_U_off">&nbsp;</TD>
+        <TD class="slots-caption-big"><% _loc("Urgent") . " <i>(" . _loc("No Job") .")</i>" %></TD
 </TR>
 </TABLE>
 </DIV>

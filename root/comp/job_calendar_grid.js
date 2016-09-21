@@ -1,3 +1,6 @@
+<%perl>
+    my $cal = $c->stash->{calendar};
+</%perl>
 (function() {
     var ps = 30;
     var store = new Baseliner.JsonStore({
@@ -160,21 +163,15 @@
                         valueField: 'id',
                         displayField: 'name',
                         allowBlank: false
-                    }, {
-                        xtype: 'combo',
-                        name: 'bl',
-                        hiddenName: 'bl',
-                        fieldLabel: _('Baseline'),
-                        mode: 'local',
-                        editable: false,
-                        forceSelection: true,
-                        triggerAction: 'all',
-                        store: bl_store,
-                        valueField: 'value',
-                        value: '*',
-                        displayField: 'name',
-                        allowBlank: false
                     },
+                     Baseliner.ci_box({
+                        name: 'bl',
+                        fieldLabel: _('Baseline'),
+                        "class": 'BaselinerX::CI::bl',
+                         value: '<% $cal->{bl} %>' || ['*'],
+                        valueField: 'moniker',
+                        force_set_value: true
+                    }),
                     Baseliner.ci_box({
                         name: 'ns',
                         role: 'Project',
