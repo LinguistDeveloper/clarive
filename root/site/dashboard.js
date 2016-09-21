@@ -45,7 +45,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 if ( "[%= autorefresh %]" != "0" ) {
                     setInterval(function () {
                         var obj = Ext.getCmp("[%= id_cmp %]");
-                        if( obj ) obj.refresh_dashlet("[%= id_dashlet %]", true);
+                        Ext.Ajax.request({
+                            url: '/ping',
+                            success: function(xhr) {
+                                if (obj) obj.refresh_dashlet("[%= id_dashlet %]", true);
+                            }
+                        });
                     },
                     [%= autorefresh %]);
                 };

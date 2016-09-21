@@ -22,6 +22,17 @@ use Baseliner::Controller::Root;
 
 my $api_key = '1234';
 
+subtest 'ping: get succes response if server is available' => sub {
+    _setup();
+
+    my $controller = Baseliner::Controller::Root->new( application => '' );
+    my $c = _build_c();
+
+    $controller->ping($c);
+
+    ok $c->stash->{json};
+};
+
 subtest 'authenticate with api_key' => sub {
     _setup();
 
