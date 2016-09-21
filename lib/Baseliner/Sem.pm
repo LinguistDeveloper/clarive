@@ -3,7 +3,7 @@ use Moose;
 
 use Try::Tiny;
 use Sys::Hostname ();
-use Baseliner::Utils qw(_loc _debug _fail);
+use Baseliner::Utils qw(_loc _debug _fail _array);
 
 use constant DEBUG => !!$ENV{BASELINER_SEM_DEBUG};
 
@@ -322,62 +322,66 @@ sub _connections {
 sub _cleanup_dead_sessions {
     my $self = shift;
 
-    my $sem_doc = mdb->sem->find_one( { key => $self->key } );
-    return unless $sem_doc;
-
-    my @queue = @{ $sem_doc->{queue} || [] };
-    return unless @queue;
-
-    $self->_debug_threshold( "Found " . scalar(@queue) . " running queues. Checking if they are alive.." );
-
     my $conn = $self->_connections;
     my %active_sessions = map { ( $_->{connectionId} => 1 ) } grep { $_->{connectionId} } @$conn;
 
     warn "$self: [cleanup] attempt connections=" . keys(%active_sessions) . "\n" if DEBUG;
 
-    for my $item (@queue) {
-        if ( !$active_sessions{ $item->{session} } ) {
+    mdb->sem->remove( { '$or' => [ { queue => { '$eq' => [] } }, { queue => undef } ] }, { multiple => 1 } );
 
-            warn "$self: [cleanup] detected $item->{session}\n" if DEBUG;
+    my @sems = mdb->sem->find( { queue => { '$ne' => [] } } )->all;
 
-            # waiting and dead? removed from queue
-            mdb->sem->update(
-                {
-                    key   => $self->key,
-                    queue => {
-                        '$elemMatch' => { _id => $item->{_id}, status => 'waiting', granted => { '$exists' => 0 } }
-                    }
-                },
-                { '$pull'  => { queue => { _id => $item->{_id}, status => 'waiting' } } },
-                { multiple => 1 },
-            );
+    $self->_debug_threshold( "Found " . scalar(@sems) . " running queues. Checking if they are alive.." );
 
-            # busy and dead? removed from queue and slot increased
-            mdb->sem->update(
-                {
-                    key   => $self->key,
-                    queue => {
-                        '$elemMatch' => { _id => $item->{_id}, status => 'busy', granted => { '$exists' => 0 } }
-                    }
-                },
-                {
-                    '$inc'  => { slots => -1 },
-                    '$pull' => { queue => { _id => $item->{_id}, status => 'busy' } }
-                },
-                { multiple => 1 },
-            );
+    foreach my $sem (@sems) {
+        my @queue = _array $sem->{queue};
 
-            # granted semaphores do not decrease slot
-            mdb->sem->update(
-                {
-                    key   => $self->key,
-                    queue => {
-                        '$elemMatch' => { _id => $item->{_id}, status => 'busy', granted => { '$exists' => 1 } }
-                    }
-                },
-                { '$pull'  => { queue => { _id => $item->{_id}, status => 'busy' } } },
-                { multiple => 1 },
-            );
+        my $key = $sem->{key};
+
+        for my $item (@queue) {
+            if ( !$active_sessions{ $item->{session} } ) {
+
+                warn "$self: [cleanup] detected $item->{session}\n" if DEBUG;
+
+                # waiting and dead? removed from queue
+                mdb->sem->update(
+                    {
+                        key   => $key,
+                        queue => {
+                            '$elemMatch' => { _id => $item->{_id}, status => 'waiting', granted => { '$exists' => 0 } }
+                        }
+                    },
+                    { '$pull'  => { queue => { _id => $item->{_id}, status => 'waiting' } } },
+                    { multiple => 1 },
+                );
+
+                # busy and dead? removed from queue and slot increased
+                mdb->sem->update(
+                    {
+                        key   => $key,
+                        queue => {
+                            '$elemMatch' => { _id => $item->{_id}, status => 'busy', granted => { '$exists' => 0 } }
+                        }
+                    },
+                    {
+                        '$inc'  => { slots => -1 },
+                        '$pull' => { queue => { _id => $item->{_id}, status => 'busy' } }
+                    },
+                    { multiple => 1 },
+                );
+
+                # granted semaphores do not decrease slot
+                mdb->sem->update(
+                    {
+                        key   => $key,
+                        queue => {
+                            '$elemMatch' => { _id => $item->{_id}, status => 'busy', granted => { '$exists' => 1 } }
+                        }
+                    },
+                    { '$pull'  => { queue => { _id => $item->{_id}, status => 'busy' } } },
+                    { multiple => 1 },
+                );
+            }
         }
     }
 }

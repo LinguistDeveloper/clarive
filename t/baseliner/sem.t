@@ -410,7 +410,7 @@ subtest 'take: removes dead busy semaphor connection' => sub {
                 }
 
                 my $sem_doc = mdb->sem->find_one( { key => 'sem' } );
-                if ( $sem_doc->{queue} && @{ $sem_doc->{queue} } == 1 && $sem_doc->{queue}->[0]->{status} eq 'busy' ) {
+                if ( $sem_doc->{queue} && @{ $sem_doc->{queue} } >= 1 && $sem_doc->{queue}->[0]->{status} eq 'busy' ) {
                     $before = $sem_doc;
 
                     kill 9, $pid;
@@ -564,6 +564,21 @@ subtest 'take: removes dead granted semaphore' => sub {
     is @{ $sem_doc->{queue} }, 1;
 
     $sem2->release;
+};
+
+subtest 'take: removes sems without queues' => sub {
+    _setup();
+
+    mdb->sem->insert( { key => 'some key1' } );
+    mdb->sem->insert( { key => 'some key2', queue => undef } );
+    mdb->sem->insert( { key => 'some key3', queue => [] } );
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    $sem->release;
+
+    is( mdb->sem->count, 1 );
 };
 
 subtest 'take: throws on timeout' => sub {
