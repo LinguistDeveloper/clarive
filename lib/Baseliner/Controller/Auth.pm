@@ -116,7 +116,7 @@ sub login_basic : Local {
     }
 }
 
-sub surrogate : Local : Does(ACL) ACL(action.surrogate) {
+sub surrogate : Local : Does('ACL') : ACL('action.surrogate') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $case = $c->config->{user_case};

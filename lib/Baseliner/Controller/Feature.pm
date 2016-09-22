@@ -21,7 +21,7 @@ register 'menu.admin.upgrade' => {
     index => 1000,
 };
 
-sub restart_server : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub restart_server : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     if( defined $ENV{BASELINER_PARENT_PID} ) {
@@ -34,7 +34,7 @@ sub restart_server : Local : Does(ACL) ACL(action.admin.upgrade) {
     }
 }
 
-sub local_delete : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub local_delete : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
@@ -49,7 +49,7 @@ sub local_delete : Local : Does(ACL) ACL(action.admin.upgrade) {
     $c->forward('View::JSON');
 }
 
-sub local_get : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub local_get : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $file = $p->{file};
@@ -61,7 +61,7 @@ sub local_get : Local : Does(ACL) ACL(action.admin.upgrade) {
     $c->forward('/serve_file');
 }
 
-sub install_cpan : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub install_cpan : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
@@ -152,7 +152,7 @@ sub local_cpan : Local {
     $c->forward('View::JSON');
 }
 
-sub upload_cpan : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub upload_cpan : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
@@ -188,7 +188,7 @@ sub upload_file_b64 : Private {
     close $ff;
 }
 
-sub pull : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub pull : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
@@ -241,7 +241,7 @@ sub pull : Local : Does(ACL) ACL(action.admin.upgrade) {
     $c->forward('View::JSON');
 }
 
-sub list_repositories : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub list_repositories : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
@@ -299,7 +299,7 @@ sub list_repositories : Local : Does(ACL) ACL(action.admin.upgrade) {
     $c->forward('View::JSON');
 }
 
-sub checkout : Local : Does(ACL) ACL(action.admin.upgrade) {
+sub checkout : Local : Does('ACL') : ACL('action.admin.upgrade') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
