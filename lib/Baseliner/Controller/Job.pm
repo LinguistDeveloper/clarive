@@ -335,7 +335,7 @@ sub job_stash_save : Local {
 
 our %CACHE_ICON;
 
-sub monitor_json : Path('/job/monitor_json') Does(ACL) ACL(action.job.view_monitor) {
+sub monitor_json : Path('/job/monitor_json') : Does('ACL') : ACL('action.job.view_monitor') {
     my ( $self, $c ) = @_;
 
     my $p = $c->request->parameters;
@@ -627,7 +627,7 @@ sub types_json {
   _encode_json $data;
 }
 
-sub monitor : Path('/job/monitor') Does(ACL) ACL(action.job.view_monitor) {
+sub monitor : Path('/job/monitor') : Does('ACL') : ACL('action.job.view_monitor') {
     my ( $self, $c, $dashboard ) = @_;
     $c->languages( ['es'] );
     $c->forward('/permissions/load_user_actions');

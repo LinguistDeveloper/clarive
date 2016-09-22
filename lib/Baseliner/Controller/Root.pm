@@ -490,7 +490,7 @@ sub cla_worker : Path('cla-worker') {
     $c->res->body( scalar _file($c->path_to('bin/cla-worker'))->slurp );
 }
 
-sub cache_clear : Local Does(ACL) ACL(action.development.cache_clear) {
+sub cache_clear : Local : Does('ACL') : ACL('action.development.cache_clear') {
     my ($self,$c) = @_;
     $c->stash->{json} = try {
         cache->clear;

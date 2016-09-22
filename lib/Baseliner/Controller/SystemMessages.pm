@@ -15,7 +15,7 @@ register 'menu.admin.sms' => {
     index    => 1000
 };
 
-sub sms_create : Local : Does(ACL) ACL(action.admin.sms) {
+sub sms_create : Local : Does('ACL') : ACL('action.admin.sms') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
