@@ -108,7 +108,7 @@ body {
 }
 
 .x-grid3-row-checker, .x-grid3-hd-checker {
-    background-image: url("/static/images/row-check-sprite.gif");
+    background-image: url("/static/images/icons/row-check-sprite.gif");
 }
 
 .bali-main-menu button {
@@ -346,7 +346,7 @@ body {
 .styledCheckboxWrap {
     padding: 1px;
     position: relative;
-    background: url('/static/images/row-check-sprite.png') no-repeat;
+    background: url('/static/images/icons/row-check-sprite.png') no-repeat;
     height: 18px;
     width: 100%;
 }
@@ -570,12 +570,12 @@ a {
 }
 
 .x-tree-node-loading .x-tree-node-icon {
-    background-image:url('/static/images/loading-fast.gif') !important;
+    background-image:url('/static/images/loading/loading-fast.gif') !important;
 }
 
 .x-tree-node .x-tree-node-inline-icon  {
     background-image: none;
-
+    vertical-align: middle;
 
 }
 
@@ -645,7 +645,7 @@ div[class*='ui-ci_box-'].search-item img {
     zoom:1;
     background-position:center;
     padding:100px 50 50 50;
-    background-image:url('/static/images/loading.gif') !important 40px 40px;
+    background-image:url('/static/images/loading/loading.gif') !important 40px 40px;
     background-repeat: no-repeat;
     background-size:32px;
     line-height:50px;
@@ -682,7 +682,7 @@ div[class*='ui-ci_box-'].search-item img {
 }
 
 .ext-el-mask-msg div {
-    background: url("/static/images/loading.gif") no-repeat scroll 35px 5px / 52px auto;
+    background: url("/static/images/loading/loading.gif") no-repeat scroll 35px 5px / 52px auto;
     background-position: center;
     height: 100%;
     border: none;
@@ -810,6 +810,11 @@ td.x-btn-bl, td.x-btn-bc, td.x-btn-br {
     height:40px;
     position:absolute;
     left: 80%;
+    width: auto !important;
+    height: 100% !important;
+}
+
+.div-about-file > img {
     width: auto !important;
     height: 100% !important;
 }

@@ -50,7 +50,7 @@
         '->',
         {   xtype: 'button',
             text: _('Reload'),
-            icon:'static/images/reload.gif',
+            icon:'static/images/icons/reload.svg',
             cls: 'x-btn-text-icon',
             handler: function(){ treeLoader.load(root); }
         }];

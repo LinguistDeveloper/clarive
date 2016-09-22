@@ -131,7 +131,7 @@
         });
      };
      var button_add = new Ext.Button({
-        icon:'/static/images/icons/add_green.svg',
+        icon:'/static/images/icons/add-green.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
@@ -209,7 +209,7 @@
         else if( value == 'granted' )
             img = '<img src="/static/images/icons/start.svg" alt="'+value+'"/>';
         else if( value == 'busy' ) 
-            img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
+            img = '<img src="/static/images/loading/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 
             img = '<img src="/static/images/icons/write.svg" alt="'+value+'"/>';
         else if( value == 'done' ) 

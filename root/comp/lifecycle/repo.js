@@ -165,7 +165,7 @@
             });
             properties.add( output );
             properties.setActiveTab( output );
-            properties.changeTabIcon( '/static/images/moredata.gif' );
+            properties.changeTabIcon( '/static/images/icons/moredata.svg' );
             properties.expand();
         }else{*/
             Baseliner.ajaxEval('/comp/view_file.js', { repo_dir: repo_path, repo_mid: repo_mid, file: path, rev_num: version, controller: controller, bl: bl }, function(comp){

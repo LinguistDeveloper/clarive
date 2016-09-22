@@ -36,7 +36,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 </div>
                 <div id="[%= no_boot=="1" ? 'no-' : '' %]boot">
                     <div id="[%= id_div %]" style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;" onmouseout="document.body.style.cursor='default';">
-                       <center><div style="width: 100%; margin-top: [%= dashlet.data.rows * 150 %]px"> <img style ='height:40px;width:40px;' src="/static/images/loading.gif" /></div></center>
+                       <center><div style="width: 100%; margin-top: [%= dashlet.data.rows * 150 %]px"> <img style ='height:40px;width:40px;' src="/static/images/loading/loading.gif" /></div></center>
                     </div>
                 </div>
               </div>
@@ -248,7 +248,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         var dashlet = self.dashlets[ id_dashlet ];
         var div = document.getElementById(dashlet.id_div);
         if( check_visible && ( !div || div.offsetWidth <= 0 || div.offsetHeight <= 0 ) ) return;  // if not visible, get out
-        if(div) div.innerHTML= " <div id='[%= id_div %]' style='width: 100%;'><center><div style='width: 100%;height: 100%;margin-top:20%'><img style='height:40px;width:40px;' src=/static/images/loading.gif /></div></center></div>"
+        if(div) div.innerHTML= " <div id='[%= id_div %]' style='width: 100%;'><center><div style='width: 100%;height: 100%;margin-top:20%'><img style='height:40px;width:40px;' src=/static/images/loading/loading.gif /></div></center></div>"
         Cla.ajaxEval(dashlet.js_file, { id_div: dashlet.id_div, project_id: self.project_id, topic_mid: self.topic_mid, data: dashlet.data }, function(){
             var update = document.getElementById(dashlet.id_div + "_update");
             var now = new moment();

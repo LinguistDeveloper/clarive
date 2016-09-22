@@ -119,7 +119,7 @@ Lightbox.prototype = {
         //              </div>
         //              <div id="bottomNav">
         //                  <a href="#" id="bottomNavClose">
-        //                      <img src="images/close.gif">
+        //                      <img src="images/icons/close-small.svg">
         //                  </a>
         //              </div>
         //          </div>

@@ -90,7 +90,7 @@
  
     var btn_watch_all_actions = new Ext.Toolbar.Button({
             text: _('Watch all actions'),
-            icon:'/static/images/key.png',
+            icon:'/static/images/icons/advanced.svg',
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {

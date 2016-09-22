@@ -772,7 +772,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             },
             disable_all: function() {
                 refresh_count++;
-                button_refresh.setIcon('/static/images/loading-fast.gif');
+                button_refresh.setIcon('/static/images/loading/loading-fast.gif');
                 // alert('dis:' + refresh_count);
                 tool_bar.disable();
             }

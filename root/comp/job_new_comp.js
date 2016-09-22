@@ -640,7 +640,7 @@
             <%doc>
             {
             text: 'List Job Items',
-            icon:'/static/images/drop-add.gif',
+            icon:'/static/images/icons/add-green.svg',
             cls: 'x-btn-text-icon',
             handler: function() {
                 var w = new Ext.Window({
@@ -670,7 +670,7 @@
             },
             { 
             xtype:'button', text: _('Reset'),
-            icon:'/static/images/asterisk.gif',
+            icon:'/static/images/icons/reset-grey.svg',
             cls: 'x-btn-text-icon',
             handler: Baseliner.jobResetAll
             }, 

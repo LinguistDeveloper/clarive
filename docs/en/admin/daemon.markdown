@@ -22,7 +22,7 @@ Daemons are critical to the correct operation of Clarive, including:
 
 - Semaphore control
 
-Accessing the Daemon administration in the Admin Menu: <img class="bali-topic-editor-image"  src="/static/images/daemon.gif" /> Daemons
+Accessing the Daemon administration in the Admin Menu: <img class="bali-topic-editor-image"  src="/static/images/icons/daemon.svg" /> Daemons
 
 In the daemon screen, we can see what daemons are started at a given point in time.
 

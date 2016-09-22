@@ -568,7 +568,7 @@ sub _build_comm {
     $comm = Test::MonkeyMock->new($comm);
     $comm->mock( _init_connection    => sub { } );
     $comm->mock( _send               => sub { } );
-    $comm->mock( _path_to_about_icon => sub { 'root/static/images/about_email.jpg' } );
+    $comm->mock( _path_to_about_icon => sub { 'root/static/images/logo/about_email.jpg' } );
 
     return $comm;
 }

@@ -802,7 +802,7 @@
  
     //var btn_add = new Ext.Toolbar.Button({
     //    text: _('New'),
-    //    //icon:'/static/images/icons/add.gif',
+    //    //icon:'/static/images/icons/add.svg',
     //    //cls: 'x-btn-text',
     //    iconCls: 'sprite add',
     //    handler: function() {

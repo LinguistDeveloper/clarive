@@ -106,7 +106,7 @@
     var t = new Ext.Template(
         '<div class="x-form-item {5}" tabIndex="-1">',
             '<label for="{0}" style="{2}" class="x-form-item-label">{1}{4}',
-            '<img src="/static/images/del_field.gif" border=0 style="display:inline;"></img></label>',
+            '<img src="/static/images/icons/forbidden.svg" border=0 style="display:inline;"></img></label>',
             '<div class="x-form-element" id="x-form-el-{0}" style="{3}">',
             '</div><div class="{6}"></div>',
         '</div>'

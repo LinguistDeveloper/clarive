@@ -20,14 +20,13 @@
 }
 
 .x-grid-group-hd {
-    /* background-image: url(/static/images/yellow-grad.gif) !important; */
-    /* background: #B6C6B9 url(/static/images/section-grad-green.jpg) repeat-x; */
-    /* background: #B5AA8A url(/static/images/section-grad-brown.jpg) repeat-x;  */
-    /* background: #FFFFFF url(/static/images/section-grad.gif) repeat-x;  */
+    /* background: #B6C6B9 url(/static/images/components/section-grad-green.jpg) repeat-x; */
+    /* background: #B5AA8A url(/static/images/components/section-grad-brown.jpg) repeat-x;  */
+    /* background: #FFFFFF url(/static/images/components/section-grad.gif) repeat-x;  */
 	/* background: #EDD05E !important; */
 	background: #fbfbfb !important;
-	
 }
+
 .x-grid-group-hd div {
 	/* color: #151010; */
 }

@@ -724,7 +724,7 @@ Baseliner.array_field = function( args ) {
             })(),
             tbar: [{
                 text: _('Add'),
-                icon: '/static/images/drop-add.gif',
+                icon: '/static/images/icons/add-green.svg',
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     var ___record = Ext.data.Record.create([{
@@ -1370,7 +1370,7 @@ Baseliner.loading_panel = function(msg){
             '<div style="position:absolute; left:0; top:0; width:100%; height:100%; background-color:white;"></div>',
             '<div style="position:absolute; left:45%; top:40%; padding:2px; height:auto;">',
             '<center>',
-            '<img style="height:52px;width:52px;" src="/static/images/loading.gif" />',
+            '<img style="height:52px;width:52px;" src="/static/images/loading/loading.gif" />',
             '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
             '</div>',
             '</center>',
@@ -1492,7 +1492,7 @@ Baseliner.ImportWindow = Ext.extend( Baseliner.Window, {
 
 Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
         text: _('CSV'),
-        icon:'/static/images/download.gif',
+        icon:'/static/images/icons/save.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var self = this;

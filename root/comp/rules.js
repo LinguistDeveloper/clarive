@@ -1493,7 +1493,7 @@
             if(!Prefs.search_box_re) str=str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
             var re = new RegExp(str,re_opts);
             var root = rule_tree.root;
-            btn_search.setText( '<img src="/static/images/loading-fast.gif" />') ;
+            btn_search.setText( '<img src="/static/images/loading/loading-fast.gif" />') ;
             var expand_parents = function(n){
                 if(n.parentNode) {
                     expand_parents(n.parentNode);

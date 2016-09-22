@@ -188,7 +188,7 @@
 .curved {
  -moz-border-radius:4px;
  -webkit-border-radius:4px;
- /* behavior:url(/static/images/border-radius.htc); */
+ /* behavior:url(/static/images/components/border-radius.htc); */
 }
 
 .cannot-job { color: gray; }

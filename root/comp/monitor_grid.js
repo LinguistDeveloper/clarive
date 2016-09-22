@@ -1351,7 +1351,7 @@
 % if( $c->stash->{user_action}->{'action.job.restart'} || $c->stash->{user_action}->{'action.job.reschedule'} ) {
                 new Ext.Toolbar.Button({
                     text: _('Reschedule'),
-                    icon:'/static/images/date_field.png',
+                    icon:'/static/images/icons/datefield.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

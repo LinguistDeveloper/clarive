@@ -479,7 +479,7 @@ if( Prefs.routing ) {
         if( title == undefined || title=='' ) {
             title = comp.title;
             if( title == undefined || title == '' ) { // probably a slow load and deferred title
-                tabpanel.changeTabIcon( tab, "/static/images/loading-fast.gif" );
+                tabpanel.changeTabIcon( tab, "/static/images/loading/loading-fast.gif" );
                 title = '';
             }
         }
@@ -1225,7 +1225,7 @@ if( Prefs.routing ) {
 
                         Baseliner.error_win(url,params,xhr, msg);
                     }
-                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/disconnected.png' });
+                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/icons/disconnected.svg' });
                     return;
                 }
                 try {

@@ -70,7 +70,7 @@
         tbar: [ _('Search')+': ', ' ', searchField,
             new Ext.Toolbar.Button({
                 text: 'Add',
-                icon:'/static/ext/resources/images/default/dd/drop-add.gif',
+                icon:'/static/images/icons/add-green.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     Baseliner.addNewTab('/core/registry', 'AddJob');
