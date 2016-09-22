@@ -732,7 +732,7 @@ sub topics_for_user {
         $data->{calevent} = {
             mid    => $mid,
             color  => $data->{category_color},
-            title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title}),
+            title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title} // ''),
             allDay => \1
         };
         $data->{category_status_name} = _loc($data->{category_status}{name});
