@@ -826,9 +826,9 @@ subtest 'list_category: returns ids categories when filter on id categories' => 
 
     $controller->list_category($c);
 
+    is $c->stash->{json}->{totalCount}, 2;
     is $c->stash->{json}->{data}[0]->{category}, $category_1;
     is $c->stash->{json}->{data}[1]->{category}, $category_3;
-    is $c->stash->{json}->{totalCount}, 2;
 };
 
 subtest 'list_category: returns ids categories when all option filter is activated' => sub {
@@ -876,27 +876,22 @@ subtest 'list_category: return ids when user has permission' => sub {
 
     my $project = TestUtils->create_ci_project;
 
-    mdb->role->insert(
-        {   id      => '1',
-            actions => [ { action => 'action.topics.category.view' } ],
-            role    => 'Developer'
-        }
-    );
-
-    TestUtils->create_ci(
-        'user',
-        name             => 'developer',
-        username         => 'developer',
-        project_security => { '1' => { project => [ $project->mid ] } }
-    );
-
     my $category_1 = TestSetup->create_category();
     my $category_2 = TestSetup->create_category();
 
-    my @category_name = map { $_->{name} }
-        mdb->category->find( { id => mdb->in( $category_1, $category_2 ) } )->fields( { name => 1 } )->all;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $category_1 } ]
+            }
+        ],
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $c = _build_c(
-        username => 'developer',
+        username => $user->username,
         req      => { params => { action => 'view' } }
     );
 
@@ -904,9 +899,8 @@ subtest 'list_category: return ids when user has permission' => sub {
 
     $controller->list_category($c);
 
+    is $c->stash->{json}->{totalCount}, 1;
     is $c->stash->{json}->{data}[0]->{category}, $category_1;
-    is $c->stash->{json}->{data}[1]->{category}, $category_2;
-    is $c->stash->{json}->{totalCount}, 2;
 };
 
 subtest 'list_category: do not return categories when user not has permission' => sub {
@@ -914,27 +908,16 @@ subtest 'list_category: do not return categories when user not has permission' =
 
     my $project = TestUtils->create_ci_project;
 
-    mdb->role->insert(
-        {   id      => '1',
-            actions => [ { action => 'action.topics.category.view' } ],
-            role    => 'Developer'
-        }
-    );
-
-    TestUtils->create_ci(
-        'user',
-        name             => 'developer',
-        username         => 'developer',
-        project_security => { '1' => { project => [ $project->mid ] } }
-    );
-
     my $category_1 = TestSetup->create_category();
     my $category_2 = TestSetup->create_category();
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my @category_name = map { $_->{name} }
         mdb->category->find( { id => mdb->in( $category_1, $category_2 ) } )->fields( { name => 1 } )->all;
     my $c = _build_c(
-        username => 'developer',
+        username => $user->username,
         req      => { params => { action => 'create' } }
     );
 
@@ -950,23 +933,20 @@ subtest 'list_category: return just categories that have permission to return' =
 
     my $project = TestUtils->create_ci_project;
 
-    mdb->role->insert(
-        {   id      => '1',
-            actions => [ { action => 'action.topics.category_1.create' } ],
-            role    => 'Developer'
-        }
-    );
-
-    TestUtils->create_ci(
-        'user',
-        name             => 'developer',
-        username         => 'developer',
-        project_security => { '1' => { project => [ $project->mid ] } }
-    );
-
     my $category_1 = TestSetup->create_category(name => 'category_1' );
     my $category_2 = TestSetup->create_category();
     my $category_3 = TestSetup->create_category();
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $category_1 } ]
+            }
+        ],
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $c = _build_c(
         username => 'developer',
@@ -977,8 +957,8 @@ subtest 'list_category: return just categories that have permission to return' =
 
     $controller->list_category($c);
 
-    is $c->stash->{json}->{data}[0]->{category}, $category_1;
     is $c->stash->{json}->{totalCount}, 1;
+    is $c->stash->{json}->{data}[0]->{category}, $category_1;
 };
 
 subtest 'topic_drop: set error when no drop fields found' => sub {
@@ -1015,7 +995,6 @@ subtest 'topic_drop: drops child to parent' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $user    = _create_user_with_drop_rules( project => $project );
 
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
@@ -1024,6 +1003,13 @@ subtest 'topic_drop: drops child to parent' => sub {
     my $id_release_rule = _create_release_form();
     my $id_release_category =
       TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $user = _create_user_with_drop_rules(
+        project               => $project,
+        id_changeset_category => $id_changeset_category,
+        id_release_category   => $id_release_category,
+        id_status             => $status->id_status,
+    );
 
     my $release_mid = TestSetup->create_topic(
         project     => $project,
@@ -1065,7 +1051,6 @@ subtest 'topic_drop: asks user if several variants possible' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $user    = _create_user_with_drop_rules( project => $project );
 
     my $id_changeset_rule = _create_changeset_form( with_sprint => 1 );
     my $id_changeset_category =
@@ -1074,6 +1059,13 @@ subtest 'topic_drop: asks user if several variants possible' => sub {
     my $id_release_rule = _create_release_form();
     my $id_release_category =
       TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $user = _create_user_with_drop_rules(
+        project               => $project,
+        id_changeset_category => $id_changeset_category,
+        id_release_category   => $id_release_category,
+        id_status             => $status->id_status,
+    );
 
     my $release_mid = TestSetup->create_topic(
         project     => $project,
@@ -1115,7 +1107,6 @@ subtest 'topic_drop: uses selected by user variant' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $user    = _create_user_with_drop_rules( project => $project );
 
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
@@ -1124,6 +1115,13 @@ subtest 'topic_drop: uses selected by user variant' => sub {
     my $id_release_rule = _create_release_form();
     my $id_release_category =
       TestSetup->create_category( name => 'Release', id_rule => $id_release_rule, id_status => $status->mid );
+
+    my $user = _create_user_with_drop_rules(
+        project               => $project,
+        id_changeset_category => $id_changeset_category,
+        id_release_category   => $id_release_category,
+        id_status             => $status->id_status,
+    );
 
     my $release_mid = TestSetup->create_topic(
         project     => $project,
@@ -1172,7 +1170,6 @@ subtest 'topic_drop: correctly select relese field when something was previously
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $user    = _create_user_with_drop_rules( project => $project );
 
     my $id_changeset_rule = _create_changeset_form( with_sprint => 1 );
     my $id_changeset_category =
@@ -1185,6 +1182,13 @@ subtest 'topic_drop: correctly select relese field when something was previously
     my $id_sprint_rule = _create_sprint_form();
     my $id_sprint_category =
       TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status->mid );
+
+    my $user = _create_user_with_drop_rules(
+        project               => $project,
+        id_changeset_category => $id_changeset_category,
+        id_release_category   => $id_release_category,
+        id_status             => $status->id_status,
+    );
 
     my $sprint_mid = TestSetup->create_topic(
         project     => $project,
@@ -1243,7 +1247,6 @@ subtest 'topic_drop: correctly adds existing release' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $user    = _create_user_with_drop_rules( project => $project );
 
     my $id_changeset_rule = _create_changeset_form( with_sprint => 1 );
     my $id_changeset_category =
@@ -1256,6 +1259,14 @@ subtest 'topic_drop: correctly adds existing release' => sub {
     my $id_sprint_rule = _create_sprint_form();
     my $id_sprint_category =
       TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status->mid );
+
+    my $user = _create_user_with_drop_rules(
+        project               => $project,
+        id_changeset_category => $id_changeset_category,
+        id_release_category   => $id_release_category,
+        id_sprint_category    => $id_sprint_category,
+        id_status             => $status->id_status,
+    );
 
     my $sprint_mid = TestSetup->create_topic(
         project     => $project,
@@ -1313,6 +1324,7 @@ subtest 'topic_drop: correctly adds existing release' => sub {
       };
 
     my $changeset_doc = mdb->topic->find_one( { mid => $changeset_mid } );
+
     cmp_deeply $changeset_doc->{release}, [ $release_mid, $release_mid2 ];
 };
 
@@ -1321,7 +1333,6 @@ subtest 'topic_drop: correctly replaces existing release when value_type is sing
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $user    = _create_user_with_drop_rules( project => $project );
 
     my $id_changeset_rule = _create_changeset_form( release => { value_type => 'single' }, with_sprint => 1 );
     my $id_changeset_category =
@@ -1334,6 +1345,14 @@ subtest 'topic_drop: correctly replaces existing release when value_type is sing
     my $id_sprint_rule = _create_sprint_form();
     my $id_sprint_category =
       TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status->mid );
+
+    my $user = _create_user_with_drop_rules(
+        project               => $project,
+        id_changeset_category => $id_changeset_category,
+        id_release_category   => $id_release_category,
+        id_sprint_category    => $id_sprint_category,
+        id_status             => $status->id_status,
+    );
 
     my $sprint_mid = TestSetup->create_topic(
         project     => $project,
@@ -2083,8 +2102,6 @@ subtest 'topic_selector: sort topics on filed asc' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2092,6 +2109,16 @@ subtest 'topic_selector: sort topics on filed asc' => sub {
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2154,15 +2181,22 @@ subtest 'topic_selector: sort topics on filed desc' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
-
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
         name      => 'Changeset',
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2225,8 +2259,6 @@ subtest 'topic_selector: sort topics on filed desc' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2234,6 +2266,16 @@ subtest 'topic_selector: sort topics on filed desc' => sub {
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2296,8 +2338,6 @@ subtest 'topic_selector: must operate when sort field is not specified' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2305,6 +2345,16 @@ subtest 'topic_selector: must operate when sort field is not specified' => sub {
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2364,8 +2414,6 @@ subtest 'topic_selector: must operate when sort field do not exist' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2373,6 +2421,16 @@ subtest 'topic_selector: must operate when sort field do not exist' => sub {
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2433,8 +2491,6 @@ subtest 'topic_selector: sort by mid asc' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2442,6 +2498,16 @@ subtest 'topic_selector: sort by mid asc' => sub {
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2505,8 +2571,6 @@ subtest 'topic_selector: sort by mid desc' => sub {
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2514,6 +2578,16 @@ subtest 'topic_selector: sort by mid desc' => sub {
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2576,8 +2650,6 @@ subtest 'topic_selector: must operate when sort order is not specified or is wro
 
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $id_topic_selector_rule = _create_topic_selector_form();
     my $id_changeset_category  = TestSetup->create_category(
@@ -2585,6 +2657,16 @@ subtest 'topic_selector: must operate when sort order is not specified or is wro
         id_rule   => $id_topic_selector_rule,
         id_status => $status->mid
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     TestSetup->create_topic(
         project     => $project,
@@ -2675,6 +2757,7 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
       TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
 
     my $topic_mid = TestSetup->create_topic(
+        project => $project,
         status => $status,
         username => $user->username,
         id_category => $id_changeset_category,
@@ -2758,27 +2841,25 @@ subtest 'update: new topics have menu_deploy in stash' => sub {
 subtest 'view: strips html from fields' => sub {
     _setup();
 
-    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
-    my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
-
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            },
-        ]
-    );
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $project = TestUtils->create_ci_project();
 
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
 
-    my $id_changeset_rule = _create_changeset_form(rule_tree => [
+    my $id_changeset_rule = _create_changeset_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    data => {
+                        id_field => 'project',
+                    },
+                    key  => "fieldlet.system.projects",
+                    name => 'Project',
+                }
+            },
             {
                 "attributes" => {
                     "data" => {
-                        "bd_field"     => "description",
-                        "fieldletType" => "fieldlet.system.description",
-                        "id_field"     => "description",
+                        "id_field" => "description",
                     },
                     "key" => "fieldlet.system.description",
                     name  => 'Description',
@@ -2787,24 +2868,45 @@ subtest 'view: strips html from fields' => sub {
             {
                 "attributes" => {
                     "data" => {
-                        "bd_field"     => "content",
-                        "fieldletType" => "fieldlet.html_editor",
-                        "id_field"     => "content",
+                        "id_field" => "content",
                     },
                     "key" => "fieldlet.html_editor",
                     name  => 'Content',
                 }
             },
-        ]);
-    my $id_changeset_category =
-      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid, is_changeset => 1 );
+        ]
+    );
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        id_rule      => $id_changeset_rule,
+        id_status    => $status->mid,
+        is_changeset => 1
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_changeset_category}]
+            },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {id_category => $id_changeset_category, id_status => $status->id_status, id_field => 'description'},
+                    {id_category => $id_changeset_category, id_status => $status->id_status, id_field => 'content'},
+                ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic_mid = TestSetup->create_topic(
+        project     => $project,
         status      => $status,
         id_category => $id_changeset_category,
         title       => "Topic",
         description => 'Hello <script>alert("hi")</script>there!',
-        content => 'Bye, <script>alert("hi")</script>bye!',
+        content     => 'Bye, <script>alert("hi")</script>bye!',
     );
 
     my $controller = _build_controller();
@@ -2832,9 +2934,6 @@ subtest 'view: sets correct category name/color' => sub {
 
     my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
     my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
-
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.changeset.view', }, ] );
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
 
@@ -2869,6 +2968,20 @@ subtest 'view: sets correct category name/color' => sub {
         id_status    => $status->mid,
         is_changeset => 1
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category
+                    }
+                ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic_mid = TestSetup->create_topic(
         status      => $status,
@@ -3031,28 +3144,29 @@ subtest 'view: allows users with action to see job monitor to see it' => sub {
 
     my $project = TestUtils->create_ci('project');
 
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            },
-            {
-                action => 'action.topics.changeset.jobs',
-            },
-            {
-                action => 'action.job.view_monitor',
-            }
-        ]
-    );
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category = TestSetup->create_category(
         name         => 'changeset',
         id_rule      => $id_changeset_rule,
         is_changeset => 1
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_changeset_category}]
+            },
+            {
+                action => 'action.topics.jobs',
+                bounds => [{id_category => $id_changeset_category}]
+            },
+            {
+                action => 'action.job.view_monitor'
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic_mid = TestSetup->create_topic(
         username    => $user->username,
@@ -3083,22 +3197,22 @@ subtest 'view: does not allow users without action to see job monitor to see it'
 
     my $project = TestUtils->create_ci('project');
 
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            }
-        ]
-    );
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category = TestSetup->create_category(
         name         => 'changeset',
         id_rule      => $id_changeset_rule,
         is_changeset => 1
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_changeset_category}]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic_mid = TestSetup->create_topic(
         username    => $user->username,
@@ -3256,33 +3370,164 @@ subtest 'filters_list: returns labels ordered by seq' => sub {
     is $seqs->[4]->{seq}, 5;
 };
 
+subtest 'generate_menus: generates empty menu' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $menus = $controller->generate_menus;
+
+    cmp_deeply $menus,
+      {
+        'menu.topic' => {
+            'label'   => 'Topics',
+            'title'   => 'Topics',
+            'actions' => [ 'action.topics.%' ]
+        },
+        'menu.topic.topics' => {
+            'index'     => 1,
+            'title'     => 'Topics',
+            'icon'      => ignore(),
+            'tab_icon'  => ignore(),
+            'actions'   => [ 'action.topics.%' ],
+            'comp_data' => {
+                'tabTopic_force' => 1
+            },
+            'url_comp' => '/topic/grid',
+            'label'    => 'All'
+        },
+        'menu.topic._sep_' => {
+            'separator' => 1,
+            'index'     => 3
+        },
+      };
+};
+
+subtest 'generate_menus: generates view topics menu for user' => sub {
+    _setup();
+
+    my $id_category = TestSetup->create_category(name => 'Category');
+
+    my $controller = _build_controller();
+
+    my $menus = $controller->generate_menus;
+
+    cmp_deeply $menus->{'menu.topic.category'}, {
+        'actions' => [
+            {
+                'bounds' => {
+                    'id_category' => $id_category
+                },
+                'action' => 'action.topics.view'
+            }
+        ],
+        'index'    => 10,
+        'label'    => re(qr/Category/),
+        'title'    => re(qr/Category/),
+        'tab_icon' => ignore(),
+        'url_comp' => '/topic/grid?category_id=' . $id_category
+    };
+};
+
+subtest 'generate_menus: generates create topics menu for user' => sub {
+    _setup();
+
+    my $id_category = TestSetup->create_category(name => 'Category');
+
+    my $controller = _build_controller();
+
+    my $menus = $controller->generate_menus;
+
+    cmp_deeply $menus->{'menu.topic.create'},
+      {
+        'label'   => 'Create',
+        'icon'    => ignore(),
+        'index'   => 2,
+        'actions' => [
+            {
+                'action' => 'action.topics.create',
+                'bounds' => '*'
+            }
+        ]
+      };
+
+    cmp_deeply $menus->{'menu.topic.create.category'},
+      {
+        'tab_icon'  => ignore(),
+        'comp_data' => {
+            'new_category_id'   => $id_category,
+            'new_category_name' => 'Category'
+        },
+        'label' => re(qr/Category/),
+        'index'    => 11,
+        'url_comp' => '/topic/view?swEdit=1',
+        'actions'  => [
+            {
+                'bounds' => {
+                    'id_category' => $id_category
+                },
+                'action' => 'action.topics.create'
+            }
+        ]
+      };
+};
+
+subtest 'generate_menus: generates view by status menu for user' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci('status', name => 'New');
+
+    my $controller = _build_controller();
+
+    my $menus = $controller->generate_menus;
+
+    cmp_deeply $menus->{'menu.topic.status'},
+      {
+        'index' => 2,
+        'icon'  => ignore(),
+        'label' => 'Status'
+      };
+
+    cmp_deeply $menus->{'menu.topic.status.new'},
+      {
+        'url_comp'    => '/topic/grid?status_id=' . $status->id_status,
+        'title'       => re(qr/New/),
+        'hideOnClick' => 0,
+        'tab_icon'    => ignore(),
+        'label'       => re(qr/New/),
+        'index'       => 10,
+        'icon'        => ignore(),
+      };
+};
+
 done_testing;
 
 sub _create_user_with_drop_rules {
     my (%params) = @_;
 
+    my $id_changeset_category = delete $params{id_changeset_category};
+    my $id_release_category   = delete $params{id_release_category};
+    my $id_sprint_category    = delete $params{id_sprint_category};
+    my $id_status             = delete $params{id_status};
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.changeset.view',
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category }, { id_category => $id_release_category } ],
             },
             {
-                action => 'action.topicsfield.changeset.release.new.write',
-            },
-            {
-                action => 'action.topicsfield.changeset.sprint.new.write',
-            },
-            {
-                action => 'action.topics.release.view',
-            },
-            {
-                action => 'action.topicsfield.release.changesets.new.write',
-            },
-            {
-                action => 'action.topicsfield.sprint.changesets.new.write',
+                action => 'action.topicsfield.write',
+                bounds => [
+                    { id_category => $id_changeset_category, id_status => $id_status, id_field => 'release' },
+                    { id_category => $id_changeset_category, id_status => $id_status, id_field => 'sprint' },
+                    { id_category => $id_release_category,   id_status => $id_status, id_field => 'changesets' },
+                    { id_category => $id_sprint_category,    id_status => $id_status, id_field => 'changesets' },
+                ],
             },
         ]
     );
+
     return TestSetup->create_user( id_role => $id_role, %params );
 }
 
@@ -3291,6 +3536,15 @@ sub _create_changeset_form {
 
     return TestSetup->create_rule_form(
         rule_tree => [
+            {
+                "attributes" => {
+                    data => {
+                        id_field => 'project',
+                    },
+                    key  => "fieldlet.system.projects",
+                    name => 'Project',
+                }
+            },
             {
                 "attributes" => {
                     "data" => {
@@ -3397,12 +3651,26 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',            'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',                     'BaselinerX::Fieldlets',
-        'BaselinerX::Service::TopicServices', 'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',            'BaselinerX::LcController',
-        'BaselinerX::Type::Model::ConfigStore', 'Baseliner::Model::TopicExporter',
-        'Baseliner::Controller::TopicAdmin'
+        'BaselinerX::CI',
+        'BaselinerX::Job',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::LcController',
+        'BaselinerX::Service::TopicServices',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Model::ConfigStore',
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Label',
+        'Baseliner::Model::TopicExporter',
+        'Baseliner::Controller::Topic',
+        'Baseliner::Controller::TopicAdmin',
     );
     TestUtils->cleanup_cis;
 

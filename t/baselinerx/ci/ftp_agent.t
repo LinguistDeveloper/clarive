@@ -184,7 +184,13 @@ subtest 'put_file: ships file to remote side' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'Baseliner::CI', 'BaselinerX::CI' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'Baseliner::CI',
+        'BaselinerX::CI' );
 
     TestUtils->cleanup_cis;
 }

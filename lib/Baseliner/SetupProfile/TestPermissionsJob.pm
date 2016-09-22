@@ -148,7 +148,7 @@ sub setup {
             actions => [
                 { action => 'action.home.show_menu' },
                 { action => 'action.job.view_monitor' },
-                { action => 'action.job.viewall', bl => '*' }
+                { action => 'action.job.viewall', bounds => [ {} ] }
             ]
         },
         project  => $project,
@@ -161,7 +161,7 @@ sub setup {
             actions => [
                 { action => 'action.home.show_menu' },
                 { action => 'action.job.view_monitor' },
-                { action => 'action.job.viewall', bl => 'QA' }
+                { action => 'action.job.viewall', bounds => [ { bl => 'QA' } ] }
             ]
         },
         project  => $project,
@@ -174,7 +174,7 @@ sub setup {
             actions => [
                 { action => 'action.home.show_menu' },
                 { action => 'action.job.view_monitor' },
-                { action => 'action.job.viewall', bl => '*' },
+                { action => 'action.job.viewall', bounds => [ {} ] },
                 { action => 'action.job.advanced_menu' }
             ]
         },
@@ -188,7 +188,7 @@ sub setup {
             actions => [
                 { action => 'action.home.show_menu' },
                 { action => 'action.job.view_monitor' },
-                { action => 'action.job.viewall', bl => '*' },
+                { action => 'action.job.viewall', bounds => [ {} ] },
                 { action => 'action.job.run_in_proc' }
             ]
         },
@@ -202,7 +202,7 @@ sub setup {
             actions => [
                 { action => 'action.home.show_menu' },
                 { action => 'action.job.view_monitor' },
-                { action => 'action.job.viewall' },
+                { action => 'action.job.viewall', bounds => [ {} ] },
                 { action => 'action.job.restart' }
             ]
         },
@@ -216,7 +216,7 @@ sub setup {
             actions => [
                 { action => 'action.home.show_menu' },
                 { action => 'action.job.view_monitor' },
-                { action => 'action.job.viewall' },
+                { action => 'action.job.viewall', bounds => [ {} ] },
                 { action => 'action.job.delete' }
             ]
         },

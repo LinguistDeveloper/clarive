@@ -6,6 +6,7 @@ use Perl::Tidy ();
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
 use BaselinerX::CI::variable;
 use Try::Tiny;
 use v5.10;
@@ -57,6 +58,14 @@ register 'event.rule.ws' => {
     description => _locl('Webservice rule call'),
     vars => ['username', 'rule_id', 'rule_name', 'ws_params', 'ws_response']
 };
+
+sub list_rules {
+    my $self = shift;
+
+    return
+      map { { id => $_->{id}, title => $_->{rule_name} } }
+      mdb->rule->find->fields( { _id => 0, id => 1, rule_name => 1 } )->sort( { rule_name => 1 } )->all;
+}
 
 sub init_job_tasks {
     my ($self)=@_;
@@ -1266,6 +1275,14 @@ sub get_rules_info {
     my $sort = $p->{sort} || 'ts';
     $sort = 'name_insensitive' if $sort eq 'rule_name';
     my $dir = $p->{dir} && $p->{dir} eq 'ASC' ? 1 : -1;
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    my $action = $permissions->user_action($p->{username}, 'action.admin.rules', bounds => '*');
+    return () unless $action;
+
+    $permissions->inject_bounds_filters( $p->{username}, 'action.admin.rules', $where, map => { id_rule => 'id' } );
+
     if( $p->{query} ) {
         mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type rule_compile_mode username)] );
     }
@@ -1285,7 +1302,7 @@ sub get_rules_info {
         $rule->{event_name} = Baseliner->registry->get( $rule->{rule_event} )->name if $rule->{rule_event};
         push @rules, $rule;
     }
-    if($p->{destination} eq 'tree'){
+    if($p->{destination} && $p->{destination} eq 'tree'){
         my $expanded = $p->{query} ? \1 : \0;
         my $ids = $p->{ids};
         my $where = {};

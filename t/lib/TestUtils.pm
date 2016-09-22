@@ -99,6 +99,8 @@ sub setup_registry {
     $class->clear_registry;
     Class::Load::load_class($_) for @modules;
     $class->reload_module($_) for @modules;
+
+    Baseliner::Core::Registry->initialize;
 }
 
 sub random_string {

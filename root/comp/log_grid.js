@@ -2,10 +2,12 @@
     $mid
     $annotate_now => 0
     $job_exec => 1
-    $user_action
     $service_name
     $auto_refresh
 </%args>
+<%perl>
+    use Baseliner::Model::Permissions;
+</%perl>
 (function(params){
     if( !params ) params = {};
     var ps = 500; //page_size
@@ -520,7 +522,7 @@
                     handler: annotation
                 },
                 button_resume,
-% if( $user_action->{'action.job.advanced_menu'} ) {
+% if( Baseliner::Model::Permissions->user_has_action($c->username, 'action.job.advanced_menu') ) {
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
                     icon: '/static/images/icons/password.svg', 

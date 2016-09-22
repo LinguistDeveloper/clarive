@@ -286,14 +286,6 @@ subtest 'tree_project_releases: build releases tree' => sub {
     my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'F' );
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.release.view',
-            }
-        ]
-    );
-    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
 
     my $id_category = TestSetup->create_category(
         name       => 'Release',
@@ -301,6 +293,16 @@ subtest 'tree_project_releases: build releases tree' => sub {
         id_status  => [ $status_new->mid, $status_finished->mid ],
         is_release => '1'
     );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
 
     my $topic_mid = TestSetup->create_topic(
         project     => $project,
@@ -856,10 +858,18 @@ sub _build_controller {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::CI',
-        'BaselinerX::Events',      'BaselinerX::Type::Fieldlet',
-        'Baseliner::Model::Topic', 'BaselinerX::Fieldlets',
-        'Baseliner::Controller::Topic', 'Baseliner::Model::Rules'
+        'BaselinerX::CI',
+        'BaselinerX::Events',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules',
+        'Baseliner::Controller::Topic',
     );
 
     TestUtils->cleanup_cis;

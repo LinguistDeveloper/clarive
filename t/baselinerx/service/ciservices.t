@@ -26,7 +26,13 @@ subtest 'ci_create: creates ci with parameters' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI'
+    );
 
     TestUtils->cleanup_cis;
 }

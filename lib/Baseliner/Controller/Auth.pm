@@ -116,7 +116,7 @@ sub login_basic : Local {
     }
 }
 
-sub surrogate : Local {
+sub surrogate : Local : Does(ACL) ACL(action.surrogate) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $case = $c->config->{user_case};
@@ -124,7 +124,6 @@ sub surrogate : Local {
     my $username= $case eq 'uc' ? uc($p->{login})
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
     try {
-        _fail('User cannot surrogate') unless $c->has_action('action.surrogate');
         my $doc = ci->user->find_one({ name=>$username, active => mdb->true });
         if ($doc){
             $c->authenticate({ id=>$username }, 'none');
@@ -456,8 +455,9 @@ sub create_user_session : Local {
     my ( $self, $c ) = @_;
     try {
         _fail _loc('S0003: create_user_session not enabled') unless $c->config->{create_user_session};
+        my $permissions = Baseliner::Model::Permissions->new;
         _fail _loc('S0001: User %1 not authorized: action.create_user_session', $c->username)
-            if $c->username && !$c->has_action('action.create_user_session');
+            if $c->username && !$permissions->user_has_action($c->username, 'action.create_user_session');
         my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc('Missing userid');
         # check that username is in the database
         my $uid = ci->user->find({ username=>$username })->next;

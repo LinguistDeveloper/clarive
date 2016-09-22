@@ -316,7 +316,12 @@ subtest 'unloads temp rule on DESTROY' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::Type::Statement', 'Baseliner::Model::Rules' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'Baseliner::Model::Rules'
+    );
 
     mdb->rule->drop;
     mdb->rule_version->drop;

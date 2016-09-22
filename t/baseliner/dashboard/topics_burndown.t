@@ -27,7 +27,8 @@ subtest 'burndown: by default show for today with hour scale' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -37,15 +38,15 @@ subtest 'burndown: by default show for today with hour scale' => sub {
     my $dashboard = _build_dashboard();
 
     my $topic_new_mid = mock_time '2015-01-01T01:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     my $topic_in_progress_mid = mock_time '2015-01-01T02:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     my $topic_finished = mock_time '2015-01-01T03:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     mock_time '2015-01-02T01:00:00', sub {
@@ -114,7 +115,8 @@ subtest 'burndown: scale by day' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -124,13 +126,13 @@ subtest 'burndown: scale by day' => sub {
     my $dashboard = _build_dashboard();
 
     my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     my $topic_finished = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     mock_time '2015-01-02T00:00:00', sub {
         Baseliner::Model::Topic->new->change_status(
@@ -153,7 +155,7 @@ subtest 'burndown: scale by day' => sub {
         );
     };
 
-    my $topic_during = mock_time '2015-01-04T03:00:00', sub { TestSetup->create_topic( project => $project ) };
+    my $topic_during = mock_time '2015-01-04T03:00:00', sub { TestSetup->create_topic( id_category => $id_category, project => $project ) };
 
     my $burndown = $dashboard->dashboard(
         username => $user->username,
@@ -182,7 +184,8 @@ subtest 'burndown: scale by month' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -192,13 +195,13 @@ subtest 'burndown: scale by month' => sub {
     my $dashboard = _build_dashboard();
 
     my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     my $topic_finished = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     mock_time '2015-02-01T00:00:00', sub {
         Baseliner::Model::Topic->new->change_status(
@@ -248,7 +251,8 @@ subtest 'burndown: scale by year' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -258,13 +262,13 @@ subtest 'burndown: scale by year' => sub {
     my $dashboard = _build_dashboard();
 
     my $topic_new_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     my $topic_in_progress_mid = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     my $topic_finished = mock_time '2015-01-01T00:00:00',
-      sub { TestSetup->create_topic( status => $status_new, project => $project ) };
+      sub { TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project ) };
 
     mock_time '2016-02-01T00:00:00', sub {
         Baseliner::Model::Topic->new->change_status(
@@ -314,7 +318,8 @@ subtest 'burndown: created and closed during period' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -324,15 +329,15 @@ subtest 'burndown: created and closed during period' => sub {
     my $dashboard = _build_dashboard();
 
     my $topic_new_mid = mock_time '2015-01-01T01:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     my $topic_in_progress_mid = mock_time '2015-01-01T02:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     my $topic_finished = mock_time '2015-01-01T03:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     mock_time '2015-01-02T01:00:00', sub {
@@ -344,7 +349,7 @@ subtest 'burndown: created and closed during period' => sub {
     };
 
     my $topic_during = mock_time '2015-01-02T03:00:00', sub {
-        TestSetup->create_topic( status => $status_new, project => $project );
+        TestSetup->create_topic( id_category => $id_category, status => $status_new, project => $project );
     };
 
     mock_time '2015-01-02T04:00:00', sub {
@@ -426,7 +431,8 @@ subtest 'burndown: filters out categories that user has no access to' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -490,7 +496,8 @@ subtest 'burndown: filters out topics that user has no access to project' => sub
     my $id_role       = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -591,7 +598,8 @@ subtest 'burndown: filters by custom filter' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -632,19 +640,6 @@ subtest 'burndown: filters by topic_mid' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            },
-            {
-                action => 'action.topics.sprint.view',
-            }
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
     my ( $status_new, $status_in_progress, $status_finished ) = _create_statuses();
 
     my $id_changeset_rule = _create_changeset_form( with_sprint => 1 );
@@ -654,6 +649,21 @@ subtest 'burndown: filters by topic_mid' => sub {
     my $id_sprint_rule = _create_sprint_form();
     my $id_sprint_category =
       TestSetup->create_category( name => 'Sprint', id_rule => $id_sprint_rule, id_status => $status_new->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_changeset_category}]
+            },
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_sprint_category}]
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $sprint1_mid = TestSetup->create_topic(
         project     => $project,
@@ -710,21 +720,22 @@ subtest 'burndown: selects dates with including' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            },
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
     my ( $status_new, $status_in_progress, $status_finished ) = _create_statuses();
 
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
       TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status_new->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{ id_category => $id_changeset_category }]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $changeset_mid = mock_time '2016-01-02 23:59:59', sub {
         TestSetup->create_topic(
@@ -751,21 +762,22 @@ subtest 'burndown: understands several status changes' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.changeset.view',
-            },
-        ]
-    );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
     my ( $status_new, $status_in_progress, $status_finished ) = _create_statuses();
 
     my $id_changeset_rule = _create_changeset_form();
     my $id_changeset_category =
       TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status_new->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{ id_category => $id_changeset_category }]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $topic_mid = mock_time '2016-01-01 00:00:00', sub {
         TestSetup->create_topic(
@@ -895,9 +907,16 @@ sub _create_changeset_form {
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules'
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules'
     );
 
     TestUtils->cleanup_cis;

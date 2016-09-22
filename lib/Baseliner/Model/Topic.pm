@@ -215,93 +215,211 @@ register 'event.topic_list.export' => {
 };
 
 register 'action.topics.logical_change_status' => {
-    name => _locl('Change topic status logically (no deployment)')
+    name => _locl('Change topic status logically (no deployment)'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
 };
 
-register 'registor.action.topic_category' => {
-    generator => sub {
-        my %type_actions_category = (
-            create => 'Can create topic for category `%1`',
-            view   => 'Can view topic for category `%1`',
-            edit   => 'Can edit topic for category `%1`',
-            delete => 'Can delete topic in category `%1`',
-            comment => 'Can add/view comments in topics of category `%1`',
-            activity => 'Can view activity in topics of category `%1`',
-            jobs => 'Can view jobs in topics of category `%1`',
-        );
+register 'action.topics.create' => {
+    name    => _locl('Create Topic'),
+    extends => ['action.topics.view'],
+    bounds  => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
 
-        my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
+register 'action.topics.view' => {
+    name   => _locl('View Topic'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
 
-        my %actions_category;
-        foreach my $action ( keys %type_actions_category ) {
-            foreach my $category (@categories) {
-                my $id_action = 'action.topics.' . _name_to_id( $category->{name} ) . '.' . $action;
-                $actions_category{$id_action} = { id => $id_action, name => _loc($type_actions_category{$action},$category->{name}) };
+register 'action.topics.edit' => {
+    name    => _locl('Edit Topic'),
+    extends => ['action.topics.view'],
+    bounds  => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
+
+register 'action.topics.delete' => {
+    name   => _locl('Delete Topic'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
+
+register 'action.topics.comment' => {
+    name   => _locl('Add/View Topic Comments'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
+
+register 'action.topics.activity' => {
+    name   => _locl('View Topic Activity'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
+
+register 'action.topics.jobs' => {
+    name   => _locl('View Topic jobs'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        }
+    ]
+};
+
+register 'action.topicsfield.read' => {
+    name   => _locl('View Topic Field'),
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        },
+        {
+            key     => 'id_status',
+            name    => 'Status',
+            depends => ['id_category'],
+            handler => 'Baseliner::Model::Topic=bounds_statuses',
+        },
+        {
+            key     => 'id_field',
+            name    => 'Field',
+            depends => ['id_category'],
+            handler => 'Baseliner::Model::Topic=bounds_fields',
+        }
+    ]
+};
+
+register 'action.topicsfield.write' => {
+    name   => _locl('Edit Topic Field'),
+    extends => ['action.topicsfield.read'],
+    bounds => [
+        {
+            key     => 'id_category',
+            name    => 'Category',
+            handler => 'Baseliner::Model::Topic=bounds_categories',
+        },
+        {
+            key     => 'id_status',
+            name    => 'Status',
+            depends => ['id_category'],
+            handler => 'Baseliner::Model::Topic=bounds_statuses',
+        },
+        {
+            key     => 'id_field',
+            name    => 'Field',
+            depends => ['id_category'],
+            handler => 'Baseliner::Model::Topic=bounds_fields',
+        }
+    ]
+};
+
+sub bounds_categories {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $where = {};
+    if ($params{id}) {
+        $where->{id} = mdb->in($params{id});
+    }
+
+    my @categories = mdb->category->find($where)->sort( { name => 1 } )->fields( { id => 1, name => 1 } )->all;
+
+    return map { { id => $_->{id}, title => $_->{name} } } @categories;
+}
+
+sub bounds_statuses {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $where = {};
+    if ($params{id_category} && $params{id_category} ne '*' ) {
+        my $category = mdb->category->find_one( { id => $params{id_category} }, { _id => 0, statuses => 1 } );
+
+        if ( $category && $category->{statuses} ) {
+            $where->{id_status} = { '$in' => [ _array $category->{statuses} ] };
+        }
+    }
+
+    if ($params{id}) {
+        $where->{id_status} = mdb->in($params{id});
+    }
+
+    my @statuses = ci->status->find($where)->sort( { index => 1 } )->fields( { id_status => 1, name => 1 } )->all;
+
+    return map { { id => $_->{id_status}, title => $_->{name} } } @statuses;
+}
+
+sub bounds_fields {
+    my $self = shift;
+    my (%params) = @_;
+
+    my @id_categories = _array $params{id_category};
+
+    if (!@id_categories) {
+        @id_categories = map { $_->{id} } mdb->category->find()->fields( { id => 1 } );
+    }
+
+    my @fields;
+    foreach my $id_category (@id_categories) {
+        my $meta = $self->get_meta( undef, $id_category );
+
+        foreach my $field (@$meta) {
+            next unless $field->{active};
+            next if $field->{disabled};
+            next if $field->{hidden};
+
+            push @fields,
+              {
+                id    => $field->{id_field},
+                title => ( $field->{name_field} // $field->{name} // $field->{id_field} )
+              };
+
+            if ( $fields[-1]->{title} ne $fields[-1]->{id} ) {
+                $fields[-1]->{title} .= ' (' . $fields[-1]->{id} . ')';
             }
         }
-        return \%actions_category;
     }
-};
 
-register 'registor.action.topic_category_fields' => {
-    generator => sub {
-        my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
-
-        my %actions_category_fields;
-        my %statuses = ci->status->statuses;
-        for ( values %statuses ) {
-            $$_{name_id} = _name_to_id($$_{name});
-        }
-        foreach my $category (@categories){
-            my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );
-            my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
-            my @statuses2 = @statuses{ _array($cat_statuses) };
-
-            my $msg_view = 'Cannot view the field %1 in category %2';
-            my $msg_edit_s = 'Can edit the field %1 in category %2 for the status %3';
-            my $msg_view_s = 'Cannot view the field %1 in category %2 for the status %3';
-
-            my $cat_to_id = _name_to_id( $category->{name} );
-
-            my $id_action;
-            my $description;
-
-            for my $field (_array $meta){
-                my $field_to_id = $field->{id_field};
-                if ($field->{fields}) {
-                    my @fields_form = _array $field->{fields};
-
-                    for my $field_form (@fields_form){
-                        my $field_form_to_id = _name_to_id($field_form->{id_field});
-                        $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id, 'read';
-                        $description = _loc($msg_view, $field_form->{name_field}, $category->{name} );
-                        $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                        for my $status (@statuses2){
-                            $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id, $status->{name_id}, 'write';
-                            $description = _loc($msg_edit_s, $field_form->{name_field}, $category->{name}, $status->{name});
-                            $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                        }
-                    }
-                }
-                else{
-                    $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.read';
-                    $description = _loc($msg_view, $field->{name_field}, $category->{name});
-                    $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                    for my $status (@statuses2){
-                        next unless length($cat_to_id) && length($field_to_id) && length($status->{name_id});
-                        $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
-                        $description = _loc($msg_edit_s, $field->{name_field}, $category->{name}, $status->{name} );
-                        $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                        $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.read';
-                        $description = _loc($msg_view_s, $field->{name_field}, $category->{name}, $status->{name} );
-                        $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                    }
-                }
-            }
-        }
-        return \%actions_category_fields;
-    }
-};
+    return sort { $a->{title} cmp $b->{title} } @fields;
+}
 
 sub build_field_query {
     my ($self,$query,$where,$username,%opts) = @_;
@@ -424,13 +542,12 @@ sub topics_for_user {
     }
 
     my @user_categories = map { $_->{id} }
-      Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
+      $self->get_categories_permissions( username => $username, type => 'view' );
 
     my @categories = @{ $self->grep_in_and_nin(\@user_categories, \@filter_categories) };
     $where->{'category.id'} = mdb->in(@categories);
 
-    # project security - grouped by - into $or
-    Baseliner::Model::Permissions->new->build_project_security( $where, $username, $is_root, @categories );
+    $perm->inject_security_filter($username, $where);
 
     if( @topic_list ) {
         $where->{mid} = mdb->in(@topic_list);
@@ -620,10 +737,9 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status}{name});
         $data->{category_name} = _loc($data->{category_name});
-        $data->{can_edit} = $perm->user_has_action(
-            action   => 'action.topics.' . _name_to_id( $data->{category_name} ) . '.edit',
-            username => $username
-        );
+        $data->{can_edit} =
+          $perm->user_has_action( $username, 'action.topics.edit', bounds => { id_category => $data->{id_category} } )
+          && $perm->user_has_security( $username, $data->{_project_security} );
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
@@ -667,8 +783,6 @@ sub update_mid_data {
 
     my @rel_mids = keys +{ map{ $_=>1 } map { keys %$_ } (values %topics_out, values %topics_in) };
     my %all_rels = map { $_->{mid} => $_->{title} } mdb->topic->find({ mid=>mdb->in(@rel_mids) })->fields({ _id=>0,title=>1,mid=>1 })->all ;
-
-    my $user_security = Baseliner::Model::Permissions->new->user_projects_ids_with_collection(username => $username, with_role => 1);
 
     my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ _txt=>0 })->all;
 
@@ -766,15 +880,17 @@ sub update {
                         project         => [map { $_->{mid} } $topic->projects]
                     };
 
-                    my @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $p->{username}, mid => $topic_mid  );
-                    my $cat = mdb->category->find_one( { id => $id_category } );
-                    my $workflow;
-                    if ($cat){
-                        $workflow = grep {
-                            $_->{id_status_from} eq $id_category_status && $_->{job_type} && $_->{id_role} ~~ @user_roles
-                        } _array $cat->{workflow};
+                    if (!Baseliner::Model::Permissions->new->is_root($p->{username})) {
+                        my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $p->{username}, topics => $topic_mid  );
+                        my $cat = mdb->category->find_one( { id => $id_category } );
+                        my $workflow;
+                        if ($cat){
+                            $workflow = grep {
+                                $_->{id_status_from} eq $id_category_status && $_->{job_type} && $_->{id_role} ~~ @user_roles
+                            } _array $cat->{workflow};
+                        }
+                        $return_options->{reload_tab} = 1 if $workflow;
                     }
-                    $return_options->{reload_tab} = 1 if $workflow;
 
                     my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title // '');
                     {   mid             => $topic->mid,
@@ -975,7 +1091,6 @@ sub field_parent_topics {
 
 sub next_status_for_user {
     my ($self, %p ) = @_;
-    my @user_roles;
     my $username = $p{username};
     my $topic_mid = $p{topic_mid};
     my $id_category = ''.$p{id_category};
@@ -985,7 +1100,7 @@ sub next_status_for_user {
     my @to_status;
 
     if ( !$is_root ) {
-        @user_roles = Baseliner::Model::Permissions->new->user_roles_for_topic( username => $username, mid => $topic_mid  );
+        my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic_mid  );
         $where->{'workflow.id_role'} = mdb->in(@user_roles);
         my %my_roles = map { $_=>1 } @user_roles;
         my $_tos;
@@ -1039,16 +1154,20 @@ sub next_status_for_user {
 
             push @to_status, @no_deployable_status;
 
-            foreach my $status (@deployable_status){
-                if ( $status->{job_type} eq 'promote' ) {
-                    if(Baseliner::Model::Permissions->new->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
+            my $permissions = Baseliner::Model::Permissions->new;
+            foreach my $status (@deployable_status) {
+                if ( $status->{job_type} eq 'promote' || $status->{job_type} eq 'demote' ) {
+                    my $can_change_status_logically = $permissions->user_has_action(
+                        $username,
+                        'action.topics.logical_change_status',
+                        bounds => { id_category => $id_category }
+                    );
+
+                    if ($can_change_status_logically) {
                         push @to_status, $status;
                     }
-                }elsif ( $status->{job_type} eq 'demote' ) {
-                    if(Baseliner::Model::Permissions->new->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
-                        push @to_status, $status;
-                    }
-                }else {
+                }
+                else {
                     push @to_status, $status;
                 }
             }
@@ -2857,188 +2976,110 @@ sub set_labels {
 }
 
 sub get_categories_permissions {
-    my ( $self, %param ) = @_;
+    my $self = shift;
+    my (%params) = @_;
 
-    my $username   = delete $param{username};
-    my $type       = delete $param{type};
-    my $order      = delete $param{order};
-    my $topic_mid  = delete $param{topic_mid};
-    my $is_release = delete $param{is_release};
+    my $username    = $params{username};
+    my $type        = $params{type};
+    my $order       = $params{order};
+    my $id_category = $params{id};
+    my $is_release  = $params{is_release};
+    my $all_fields  = $params{all_fields};
 
     my $dir = $order->{dir} && $order->{dir} =~ /desc/i ? -1 : 1;
     my $sort = $order->{sort} || 'name';
 
-    my $re_action;
+    my $permissions = Baseliner::Model::Permissions->new;
+    my $action = $permissions->user_action( $username, "action.topics.$type", bounds => '*' );
+    return () unless $action;
 
-    if ( $type eq 'view' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(view|edit|create)$/;
-    }
-    elsif ( $type eq 'edit' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
-    }
-    elsif ( $type eq 'create' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
-    }
-    elsif ( $type eq 'delete' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(delete)$/;
-    }
-    elsif ( $type eq 'comment' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(comment)$/;
-    }
-    elsif ( $type eq 'activity' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(activity)$/;
-    }
-    elsif ( $type eq 'jobs' ) {
-        $re_action = qr/^action\.topics\.(.*?)\.(jobs)$/;
+    my @id_categories = _unique map { $_->{id_category} } _array $action->{bounds};
+
+    if ($id_category) {
+        if ( grep { $id_category eq $_ } @id_categories ) {
+            @id_categories = ($id_category);
+        }
+        else {
+            return ();
+        }
     }
 
-    my @permission_categories;
     my $where = {};
-    $where->{id}         = "$param{id}" if $param{id};
     $where->{is_release} = $is_release  if $is_release;
 
-    my $rs = mdb->category->find($where);
-    $rs->fields( { id => 1, name => 1, color => 1 } ) if !$param{all_fields};
-    my @categories = $rs->sort( { $sort => $dir } )->all;
-    if ( Baseliner::Model::Permissions->new->is_root($username) ) {
-        return @categories;
+    if (@id_categories) {
+        $where->{id} = { '$in' => \@id_categories };
     }
-    push @permission_categories, _unique map {
-        $_ =~ $re_action;
-        $1;
-        } Baseliner::Model::Permissions->new->user_actions_list(
-        username => $username,
-        action   => $re_action,
-        mid      => $topic_mid
-        );
 
-    my %granted_categories = map { $_ => 1 } @permission_categories;
-    @categories = grep { $granted_categories{ _name_to_id( $_->{name} ) } } @categories;
+    my $rs = mdb->category->find($where);
+    $rs->fields( { id => 1, name => 1, color => 1 } ) unless $all_fields;
+    my @categories = $rs->sort( { $sort => $dir } )->all;
 
     return @categories;
 }
 
 sub get_meta_permissions {
-    my ($self, %p) = @_;
-    my ($username, $meta, $data, $name_category, $name_status,$id_category,$id_status) =
-        @p{qw(username meta data name_category name_status id_category id_status)};
-    my @hidden_field;
+    my ( $self, %p ) = @_;
 
-    my $mid;
-    $mid = $data->{topic_mid};
-    # my $cache_key = { d=>'topic:meta',
-    #     st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')),
-    #     cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
-    # defined && $mid && return $_ for cache->get($cache_key);
+    my ( $username, $meta, $data, $id_category, $id_status ) =
+      @p{qw(username meta data id_category id_status)};
 
-    my $parse_category;
-
-    # This is mainly for backwards compatibility
-    if ($data->{name_category}) {
-        $parse_category = $data->{name_category};
-    }
-    elsif ($name_category) {
-        $parse_category = $name_category;
-    }
-
-    # This is the current way for doing things
-    elsif (my $category = $data->{category}) {
-        $parse_category = $category->{name};
-    }
-
-    _fail 'cannot parse category name' unless $parse_category = _name_to_id($parse_category);
-
-    my $parse_status;
-
-    # This is mainly for backwards compatibility
-    if ($data->{name_status}) {
-        $parse_status = $data->{name_status};
-    }
-    elsif ($name_status) {
-        $parse_status = $name_status;
-    }
-
-    # This is the current way for doing things
-    elsif (my $status = $data->{category_status}) {
-        $parse_status = $status->{name};
-    }
-
-    _fail 'cannot parse status name' unless $parse_status = _name_to_id($parse_status);
+    $id_category //= $data->{id_category}        // $data->{category}->{id};
+    $id_status   //= $data->{id_category_status} // $data->{category_status}->{id_status};
 
     my $permissions = Baseliner::Model::Permissions->new;
 
-    my $is_root = $permissions->is_root( $username );
-    my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $user_actions = $permissions->user_actions_by_topic( username=> $username, mid => $mid,user_security => $user_security );
-    my @user_actions_for_topic = _array $user_actions->{positive};
-    my @user_read_actions_for_topic = _array $user_actions->{negative};
+    my $is_root = $permissions->is_root($username);
 
-    for (_array $meta){
-        my $parse_id_field = $_->{id_field};
+    my %hidden_fields;
 
-        if($_->{fieldlets}){
-            my @fields_form = _array $_->{fieldlets};
-            for my $field_form ( @fields_form ){
-                my $parse_field_form_id = $field_form->{id_field};
-                my $write_action = join '.', 'action.topicsfield', $parse_category, $parse_id_field,  $parse_field_form_id, $parse_status, 'write';
-                if ( $is_root ) {
-                        $field_form->{readonly} = \0;
-                        $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
-                } else {
-                    my $has_action = $write_action  ~~ @user_actions_for_topic;
-                    if ( $has_action ){
-                        $field_form->{readonly} = \0;
-                    }else{
-                        $field_form->{readonly} = \1;
-                    }
-                }
-                my $read_action = join '.', 'action.topicsfield',  $parse_category,  $parse_id_field,  $parse_field_form_id, 'read';
-                if ( $is_root ) {
-                        $field_form->{hidden} = \0;
-                } else {
+    my @projects = _array $data->{_project_security}->{project};
 
-                    if ( $read_action ~~ @user_read_actions_for_topic ){
-                    # if (model->Permissions->user_has_read_action( username=> $username, action => $read_action )){
-                        $field_form->{hidden} = \1;
-                        #push @hidden_field, $field_form->{id_field};
-                    }
-                }
+    my @fields_always_readable = qw(title status_new category);
+
+    for my $meta_field ( _array $meta) {
+        my $id_field = $meta_field->{id_field};
+
+        my $is_always_readable = !!grep { $id_field eq $_ } @fields_always_readable;
+
+        my $readonly = 0;
+        if ($is_root) {
+            $meta_field->{readonly} = \0;
+            $meta_field->{allowBlank} = 'true' unless $meta_field->{id_field} eq 'title';
+        }
+        else {
+            my $bounds = { id_category => $id_category, id_status => $id_status, id_field => $id_field };
+
+            if (
+                $permissions->user_has_action(
+                    $username, 'action.topicsfield.write',
+                    bounds   => $bounds,
+                    projects => \@projects
+                )
+              )
+            {
+                $meta_field->{readonly} = \0;
             }
-        }else{
-            my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
-            my $readonly = 0;
-            if ( $is_root ) {
-                    $_->{readonly} = \0;
-                    $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
-            } else {
-                my $has_action = $write_action ~~ @user_actions_for_topic;
-                #my $has_action = model->Permissions->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
-                # _log "Comprobando ".$write_action."= ".$has_action;
-                if ( $has_action ){
-                    $_->{readonly} = \0;
-                }else{
-                    $_->{readonly} = \1;
-                    $readonly = 1;
-                }
+            elsif (
+                $is_always_readable
+                || $permissions->user_has_action(
+                    $username, 'action.topicsfield.read',
+                    bounds   => $bounds,
+                    projects => \@projects
+                )
+              )
+            {
+                $meta_field->{readonly} = \1;
             }
-
-            my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
-            my $read_action_status = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
-
-            if ( !$is_root ) {
-                if ( $read_action ~~ @user_read_actions_for_topic || $read_action_status ~~ @user_read_actions_for_topic || ($readonly && $_->{hidden_if_protected} && $_->{hidden_if_protected} eq 'true')){
-                    push @hidden_field, $_->{id_field};
-                }
+            else {
+                $hidden_fields{$id_field}++;
             }
-
         }
     }
 
-    my %hidden_field = map { $_ => 1} @hidden_field;
-    $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
+    $meta = [ grep { !$hidden_fields{ $_->{id_field} } } _array $meta];
 
-    # cache->set($cache_key,$meta);
-    return $meta
+    return $meta;
 }
 
 # Global search
@@ -3121,13 +3162,14 @@ called by user_workflow.
 =cut
 sub non_root_workflow {
     my ( $self, $username, %p ) = @_;
-    my %roles = map { $_=>1 } Baseliner::Model::Permissions->new->user_role_ids($username);
-    my $where = { 'workflow.id_role'=>mdb->in(keys %roles) };
+    my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username );
+    my %user_roles_map = map { $_ => 1 } @user_roles;
+    my $where = { 'workflow.id_role'=>mdb->in(@user_roles) };
     $where->{id} = mdb->in($p{categories}) if exists $p{categories};
     return _array( map {
         # add category id to workflow array
         my $id_cat = $$_{id};
-        [ map { $$_{id_category}=$id_cat; $_ } grep { $roles{$$_{id_role}} } _array($$_{workflow}) ]
+        [ map { $$_{id_category}=$id_cat; $_ } grep { $user_roles_map{$$_{id_role}} } _array($$_{workflow}) ]
     } mdb->category->find($where)->all );
 }
 
@@ -3457,11 +3499,16 @@ sub check_fields_required {
             my $data = Baseliner::Model::Topic->new->get_data( $meta, $mid, no_cache => 1 );
 
             for my $field ( keys %fields_required){
-                next if !Baseliner::Model::Permissions->new->user_has_action(
-                    username => $username,
-                    action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write',
-                    mid => $mid
-                );
+                next
+                  unless Baseliner::Model::Permissions->new->user_has_action(
+                    $username,
+                    'action.topicsfield.write',
+                    bounds => {
+                        id_category => $data->{id_category},
+                        id_status   => $data->{id_status},
+                        id_field    => $field
+                    }
+                  );
                 my $v = $data->{$field};
                 $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
                 if($p{data}){
@@ -3482,11 +3529,16 @@ sub check_fields_required {
                 map { $_->{id_field} => $_->{name_field} }
                 grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array($meta);
             for my $field ( keys %fields_required){
-                next if !Baseliner::Model::Permissions->new->user_has_action(
-                    username => $username,
-                    action => 'action.topicsfield.'._name_to_id($category->{name}).'.'.$field.'.'._name_to_id($status->{name}).'.write',
-                    mid => $mid
-                );
+                next
+                  unless Baseliner::Model::Permissions->new->user_has_action(
+                    $username,
+                    'action.topicsfield.write',
+                    bounds => {
+                        id_category => $data->{id_category},
+                        id_status   => $data->{id_status},
+                        id_field    => $field
+                    }
+                  );
                 my $v = $data->{$field};
                 $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
 
@@ -3514,7 +3566,7 @@ sub get_short_name {
 
 sub user_can_search {
     my ($self, $username) = @_;
-    return Baseliner::Model::Permissions->new->user_has_action( username => $username, action => 'action.search.topic');
+    return Baseliner::Model::Permissions->new->user_has_action( $username, 'action.search.topic');
 }
 
 sub apply_filter{
@@ -3595,35 +3647,6 @@ sub filter_children {
             mdb->master_rel->find({ to_mid=>$id_project, rel_type=>'topic_project' })->all;
         push @mids_in, grep { length } @topics_project;
         $where->{mid} = mdb->in(@mids_in) if @mids_in;
-    }
-}
-
-sub get_topics_mdb {
-    my ($self, %p ) = @_;
-    my ($where, $username, $start, $limit, $fields, $order_by, $sort_by) = @p{qw(where username start limit fields order_by sort_by )};
-    try{
-        $where = {} if !$where;
-        my @mids_in = _array( delete $where->{mid} );
-        push @mids_in, _array( delete $where->{mid}{'$in'} ) if ref $where->{mid} eq 'HASH';
-        if( my $query = delete $where->{query} ) {
-            push @mids_in, $self->run_query_builder($query,$where,$username, build_query=>1);
-        }
-        $where->{mid} = mdb->in( @mids_in ) if @mids_in;
-        _throw _loc('Missing username') if !$username;
-
-        Baseliner::Model::Permissions->new->build_project_security( $where, $username );
-        my $rs_topics = mdb->topic->find($where);
-        $fields //= {};
-        $rs_topics->fields({ _id=>0, _txt=>0, %$fields });
-        my $cnt = $rs_topics->count;
-        $rs_topics->sort({ $order_by => 0+$sort_by }) if ($sort_by && $order_by );
-        $rs_topics->skip($start) if ($start);
-        $rs_topics->limit($limit) if ($limit);
-
-        return ($cnt , $rs_topics->all);
-    }
-    catch{
-        _throw _loc( 'Error getting Topics ( %1 )', shift() );
     }
 }
 
@@ -3933,12 +3956,24 @@ sub get_downloadable_files {
             grep { $_->{type} && $_->{type} eq 'upload_files' } _array($rel_data);
         for my $cat_field (@cat_fields){
             my $read_action = 'action.topicsfield.'._name_to_id($cat_field->{name_category}).'.'.$cat_field->{id_field}.'.read';
-            my $write_action = 'action.topicsfield.'._name_to_id($cat_field->{name_category}).'.'.$cat_field->{id_field}.'.write';
-            if ( !model->Permissions->user_has_read_action( username=> $p->{username}, action => $read_action) ) {
-                if ($fields eq 'ALL'){
-                    $available_docs->{$cat_field->{id_field}} = $cat_field->{name_field};
-                } else {
-                    $available_docs->{$cat_field->{id_field}} = $cat_field->{name_field} if ($filter_docs{$cat_field->{name_field}});
+            if (
+                Baseliner::Model::Permissions->new->user_has_action(
+                    $p->{username},
+                    'action.topicsfield.read',
+                    bounds => {
+                        id_category => $cat_field->{id_category},
+                        id_status   => '*',
+                        id_field    => $cat_field->{id_field}
+                    }
+                )
+              )
+            {
+                if ( $fields eq 'ALL' ) {
+                    $available_docs->{ $cat_field->{id_field} } = $cat_field->{name_field};
+                }
+                else {
+                    $available_docs->{ $cat_field->{id_field} } = $cat_field->{name_field}
+                      if ( $filter_docs{ $cat_field->{name_field} } );
                 }
             }
         }

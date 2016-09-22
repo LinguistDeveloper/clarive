@@ -375,7 +375,13 @@ subtest '_bc_sub: 123' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', );
+    TestUtils->setup_registry(
+        'BaselinerX::CI',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+    );
 
     TestUtils->cleanup_cis;
 }

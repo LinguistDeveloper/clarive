@@ -17,7 +17,7 @@ sub setup {
 
     my $project = TestUtils->create_ci_project( name => 'Project' );
 
-    TestUtils->create_ci('ssh_agent', name => 'SSH');
+    TestUtils->create_ci( 'ssh_agent', name => 'SSH' );
 
     TestSetup->create_user(
         id_role => {
@@ -33,7 +33,10 @@ sub setup {
             role    => 'CanViewSSHAgentCI',
             actions => [
                 { action => 'action.home.show_lifecycle' },
-                { action => 'action.ci.view.Agent.ssh_agent' },
+                {
+                    action => 'action.ci.view',
+                    bounds => [ { role => 'Baseliner::Role::CI::Agent', collection => 'ssh_agent' } ]
+                },
             ]
         },
         project  => $project,
@@ -45,7 +48,10 @@ sub setup {
             role    => 'CanEditSSHAgentCI',
             actions => [
                 { action => 'action.home.show_lifecycle' },
-                { action => 'action.ci.admin.Agent.ssh_agent' },
+                {
+                    action => 'action.ci.admin',
+                    bounds => [ { role => 'Baseliner::Role::CI::Agent', collection => 'ssh_agent' } ]
+                },
             ]
         },
         project  => $project,

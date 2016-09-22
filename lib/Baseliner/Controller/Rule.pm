@@ -15,7 +15,16 @@ use Baseliner::Sugar;
 
 with 'Baseliner::Role::ControllerValidator';
 
-register 'action.admin.rules' => { name=>'Admin Rules' };
+register 'action.admin.rules' => {
+    name   => _locl('Admin Rules'),
+    bounds => [
+        {
+            key     => 'id_rule',
+            name    => 'Rule',
+            handler => 'Baseliner::Model::Rules=list_rules'
+        }
+    ]
+};
 
 register 'config.rules' => {
     metadata => [
@@ -29,9 +38,9 @@ register 'config.rules' => {
 };
 
 register 'menu.admin.rule' => {
-    label    => 'Rules',
-    title    => _loc('Rules'),
-    action   => 'action.admin.rules',
+    label    => _locl('Rules'),
+    title    => _locl('Rules'),
+    actions   => [{action => 'action.admin.rules', bounds => '*'}],
     url_comp => '/comp/rules.js',
     icon     => '/static/images/icons/rule.svg',
     tab_icon => '/static/images/icons/rule.svg'
@@ -277,7 +286,11 @@ sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     $p->{destination} = 'grid';
-    my @rules = Baseliner->model('Rules')->get_rules_info($p);
+
+    $p->{username} = $c->username;
+
+    my @rules = Baseliner::Model::Rules->new->get_rules_info($p);
+
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -1091,6 +1104,7 @@ sub tree_structure : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
     $p->{destination} = 'tree';
+    $p->{username} = $c->username;
     my @rules = Baseliner->model('Rules')->get_rules_info($p);
     $c->stash->{json} = \@rules;
     $c->forward( 'View::JSON' );

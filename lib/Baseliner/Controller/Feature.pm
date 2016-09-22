@@ -21,10 +21,9 @@ register 'menu.admin.upgrade' => {
     index => 1000,
 };
 
-sub restart_server : Local {
+sub restart_server : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
     if( defined $ENV{BASELINER_PARENT_PID} ) {
         # normally, this tells a start_server process to restart children
         _log _loc("Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}");
@@ -35,11 +34,10 @@ sub restart_server : Local {
     }
 }
 
-sub local_delete : Local {
+sub local_delete : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $files = _from_json( $p->{files} );
         ref $files or _fail 'Missing parameter files';
         map { unlink $_ if -e $_ } @$files;
@@ -51,10 +49,9 @@ sub local_delete : Local {
     $c->forward('View::JSON');
 }
 
-sub local_get : Local {
+sub local_get : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
     my $file = $p->{file};
     _fail _loc('File does not exist: %1', $file) unless -e $file;
     my $f = _file( $file );
@@ -64,12 +61,11 @@ sub local_get : Local {
     $c->forward('/serve_file');
 }
 
-sub install_cpan : Local {
+sub install_cpan : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $files = _from_json( $p->{files} );
         ref $files or _fail 'Missing parameter files';
         # load cpanm from its file
@@ -156,11 +152,10 @@ sub local_cpan : Local {
     $c->forward('View::JSON');
 }
 
-sub upload_cpan : Local {
+sub upload_cpan : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $dir = _dir( $c->path_to( $c->config->{install_dir} // $INSTALL_DIR ) );
         $dir->mkpath unless -d "$dir";
         $p->{filename} ||= 'cpan-' . _md5(rand()) . 'tar.gz';
@@ -193,12 +188,11 @@ sub upload_file_b64 : Private {
     close $ff;
 }
 
-sub pull : Local {
+sub pull : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $data = $p->{data} or _fail 'Missing data';
         my $id = $p->{id} // _md5( rand() ) ;
         # dump to file
@@ -247,11 +241,10 @@ sub pull : Local {
     $c->forward('View::JSON');
 }
 
-sub list_repositories : Local {
+sub list_repositories : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my @features =  $c->features->list;
         my @repositories = map { { feature=>$_->name, dir=>$_->path . '/.git' } } @features;
         unshift @repositories, { feature=>'clarive', dir=>$c->path_to('.git') . '' };
@@ -306,12 +299,11 @@ sub list_repositories : Local {
     $c->forward('View::JSON');
 }
 
-sub checkout : Local {
+sub checkout : Local : Does(ACL) ACL(action.admin.upgrade) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
     $c->stash->{json} = try {
-        _fail _loc('Unauthorized') unless $c->has_action('action.admin.upgrade');
         my $repos = _from_json( $p->{repos} );
         my %repositories = $self->repositories( $c );
         for my $repo ( _array $repos ) {

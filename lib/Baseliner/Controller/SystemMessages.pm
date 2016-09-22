@@ -1,9 +1,10 @@
 package Baseliner::Controller::SystemMessages;
 use Moose;
+BEGIN { extends 'Catalyst::Controller' }
+
+use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
-use Try::Tiny;
-BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.admin.sms' => { name => 'System Messages' };
 register 'menu.admin.sms' => {
@@ -14,17 +15,11 @@ register 'menu.admin.sms' => {
     index    => 1000
 };
 
-sub sms_create : Local {
+sub sms_create : Local : Does(ACL) ACL(action.admin.sms) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
     try {
-        _fail _loc('Unauthorized')
-            unless Baseliner::Model::Permissions->new->user_has_action(
-            username => $c->username,
-            action   => 'action.admin.sms'
-            );
-
         my $system_message;
         $system_message->{ua}       = $c->req->user_agent;
         $system_message->{username} = $c->username;

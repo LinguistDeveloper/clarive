@@ -80,15 +80,23 @@ subtest 'job_daemon: runs scheduled job immediately when step pre finishs ok in 
 done_testing;
 
 sub _setup {
-    TestUtils->cleanup_cis;
-
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',  'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Config', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',    'BaselinerX::Job',
-        'Baseliner::Model::Topic',  'Baseliner::Model::Rules',
-        'Baseliner::Model::Jobs',   'BaselinerX::Type::Statement'
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'BaselinerX::Job',
+        'Baseliner::Model::Jobs',
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Topic',
     );
+
+    TestUtils->cleanup_cis;
 
     mdb->rule->drop;
 }

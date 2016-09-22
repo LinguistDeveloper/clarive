@@ -498,9 +498,11 @@ sub _mock_job_logger {
 
 sub _setup {
     TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
         'BaselinerX::Type::Event',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
         'BaselinerX::Service::Scripting',

@@ -5,7 +5,9 @@ use Baseliner::Utils qw(_array _loc);
 has c => qw(is ro weak_ref 1);
 
 sub topic_grid {
-    my ( $self, $meta, $data, $user_security ) = @_;
+    my $self = shift;
+    my ( $meta, $data, $user_security ) = @_;
+
     my $c = $self->c;
 
     my @topics;
@@ -20,7 +22,10 @@ sub topic_grid {
         modified_by => _loc('Modified By'),
         modified_on => _loc('Modified On')
     };
+
     @topics = Util->_array( $data->{ $meta->{id_field} } );
+
+    $meta->{columns} //= '';
     my $cols = ref $meta->{columns} ? $meta->{columns} : do {
         [ map { [ split /,/ ] } split /;/, $meta->{columns} ];
     };
@@ -33,14 +38,14 @@ sub topic_grid {
             }
     } @$cols;
 
+    my $permissions = Baseliner::Model::Permissions->new;
+
     @topics = grep {
-        Baseliner::Model::Permissions->user_can_topic_by_project(
-            mid            => $_->{mid},
-            username       => $c->username,
-            topic_security => $_->{_project_security},
-            user_security  => $user_security
-            )
+        $permissions->user_has_action( $c->username, 'action.topics.view',
+            bounds => { id_category => $_->{id_category} } )
+          && $permissions->user_has_security( $c->username, $_->{_project_security} )
     } @topics;
+
     if ( !@head ) {
         @head = map { +{ key => $_, name => ( $names->{$_} // $_ ) } }
             qw/name title name_status created_by created_on modified_by modified_on/;

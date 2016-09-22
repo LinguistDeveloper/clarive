@@ -16,6 +16,10 @@ use_ok 'BaselinerX::CI::report';
 subtest 'report_update: deletes report' => sub {
     _setup();
 
+    my $project     = TestUtils->create_ci_project;
+    my $id_role     = TestSetup->create_role();
+    my $user        = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
+
     my $report      = TestUtils->create_ci('report');
     my $id_form     = TestSetup->create_rule_form();
     my $status      = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
@@ -27,7 +31,7 @@ subtest 'report_update: deletes report' => sub {
     );
     my $topic_mid = TestSetup->create_topic( id_category => $id_category, default_grid => $report->{mid} );
 
-    my $return_data = $report->report_update( { action => 'delete', username => 'developer' } );
+    my $return_data = $report->report_update( { action => 'delete', username => $user->username } );
 
     my $category_grid = mdb->category->find_one();
 
@@ -42,6 +46,10 @@ subtest 'report_update: deletes report' => sub {
 
 subtest 'report_update: deletes report then exists several categories' => sub {
     _setup();
+
+    my $project     = TestUtils->create_ci_project;
+    my $id_role     = TestSetup->create_role();
+    my $user        = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
 
     my $report        = TestUtils->create_ci('report');
     my $id_form       = TestSetup->create_rule_form();
@@ -59,7 +67,7 @@ subtest 'report_update: deletes report then exists several categories' => sub {
         default_grid => $report->{mid}
     );
 
-    my $return_data = $report->report_update( { action => 'delete', username => 'developer' } );
+    my $return_data = $report->report_update( { action => 'delete', username => $user->username } );
 
     my $category_grid_1 = mdb->category->find_one( { id => $id_category_1 } );
     my $category_grid_2 = mdb->category->find_one( { id => $id_category_2 } );
@@ -71,9 +79,13 @@ subtest 'report_update: deletes report then exists several categories' => sub {
 subtest 'reports_from_rule: returns empty tree when no report rules' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $report = TestUtils->create_ci('report');
 
-    my $tree = $report->reports_from_rule( { username => 'developer' } );
+    my $tree = $report->reports_from_rule( { username => $user->username } );
 
     is_deeply $tree, [];
 };
@@ -81,11 +93,15 @@ subtest 'reports_from_rule: returns empty tree when no report rules' => sub {
 subtest 'reports_from_rule: builds tree from report rules' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $id_rule = _create_report_rule( code => q/$stash->{report_security} = 1;/ );
 
     my $report = TestUtils->create_ci('report');
 
-    my $tree = $report->reports_from_rule( { username => 'developer' } );
+    my $tree = $report->reports_from_rule( { username => $user->username } );
 
     cmp_deeply $tree,
       [
@@ -112,11 +128,15 @@ subtest 'reports_from_rule: builds tree from report rules' => sub {
 subtest 'reports_from_rule: returns nothing when security fails' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
     _create_report_rule();
 
     my $report = TestUtils->create_ci('report');
 
-    my $tree = $report->reports_from_rule( { username => 'developer' } );
+    my $tree = $report->reports_from_rule( { username => $user->username } );
 
     is @$tree, 0;
 };
@@ -124,11 +144,15 @@ subtest 'reports_from_rule: returns nothing when security fails' => sub {
 subtest 'reports_from_rule: returns nothing when security fails as a function' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
     _create_report_rule( code => q/$stash->{report_security} = sub {0}/ );
 
     my $report = TestUtils->create_ci('report');
 
-    my $tree = $report->reports_from_rule( { username => 'developer' } );
+    my $tree = $report->reports_from_rule( { username => $user->username } );
 
     is @$tree, 0;
 };
@@ -136,18 +160,24 @@ subtest 'reports_from_rule: returns nothing when security fails as a function' =
 subtest 'reports_from_rule: sends username to security function' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $username = $user->username;
+
     _create_report_rule(
-        code => q/
-                    $stash->{report_security} = sub {
-                        my %params = @_;
-                        $params{username} eq 'developer' ? 1 : 0;
+        code => qq/
+                    \$stash->{report_security} = sub {
+                        my %params = \@_;
+                        \$params{username} eq '$username' ? 1 : 0;
                       }
                 /
     );
 
     my $report = TestUtils->create_ci('report');
 
-    my $tree = $report->reports_from_rule( { username => 'developer' } );
+    my $tree = $report->reports_from_rule( { username => $user->username } );
 
     is @$tree, 1;
 };
@@ -519,16 +549,81 @@ subtest 'get_where: builds correct string not in where' => sub {
     cmp_deeply $where, { title => { '$nin' => [qw/foo bar baz/] } };
 };
 
+subtest 'all_fields: returns all fields' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form;
+
+    my $id_category1 = TestSetup->create_category(id_rule => $id_rule);
+    #my $id_category2 = TestSetup->create_category(id_rule => $id_rule);
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_category1 } ]
+            },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [ { } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $report = TestUtils->create_ci('report');
+
+    my $fields = $report->all_fields({username => $user->username});
+
+    my $children = $fields->[0]->{children};
+
+    ok grep { $_->[0] eq 'description' } @{ $children->[0]->{data}->{fields} };
+};
+
+subtest 'all_fields: filters out not accessible fields' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form;
+
+    my $id_category1 = TestSetup->create_category(id_rule => $id_rule);
+    my $id_category2 = TestSetup->create_category(id_rule => $id_rule);
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_category1 } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $report = TestUtils->create_ci('report');
+
+    my $fields = $report->all_fields({username => $user->username});
+
+    my $children = $fields->[0]->{children};
+
+    ok !grep { $_->[0] eq 'description' } @{ $children->[0]->{data}->{fields} };
+};
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::CI',          'Baseliner::Model::Topic',
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'Baseliner::Model::Rules', 'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
         'BaselinerX::Fieldlets',
+        'Baseliner::Model::Rules',
+        'Baseliner::Model::Topic',
     );
-
 
     TestUtils->cleanup_cis;
 
@@ -537,11 +632,6 @@ sub _setup {
     mdb->role->drop;
     mdb->category->drop;
     mdb->topic->drop;
-
-    my $project     = TestUtils->create_ci_project;
-    my $id_role     = TestSetup->create_role();
-    my $user        = TestSetup->create_user( id_role => $id_role, project => $project, username => 'developer' );
-
 }
 
 sub _create_report_rule {

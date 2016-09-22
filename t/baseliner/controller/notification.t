@@ -285,6 +285,19 @@ subtest 'get_recipients: gets recipients type Users' => sub {
 done_testing;
 
 sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::Auth',
+        'BaselinerX::Job',
+        'BaselinerX::CI',
+        'Baseliner::Model::Jobs'
+    );
+
     mdb->master->drop;
     mdb->master_rel->drop;
     mdb->master_doc->drop;
@@ -292,11 +305,6 @@ sub _setup {
     mdb->notification->drop;
     mdb->index_all('notification');
     mdb->role->drop;
-
-    TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Auth', 'BaselinerX::Job', 'Baseliner::Model::Jobs',
-        'BaselinerX::CI'
-    );
 }
 
 sub _build_controller {

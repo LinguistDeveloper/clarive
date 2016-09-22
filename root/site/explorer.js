@@ -1,9 +1,9 @@
-Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_releases = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_releases', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( action=>'action.reports.view', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_dashboards = <% $c->model('Permissions')->user_has_any_action( action=>'action.dashboards.view', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_action( $c->username,  'action.ci.view', bounds => '*' ) ? 'true' : 'false' %>;
+Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects_ids( $c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_action( $c->username, 'action.home.view_workspace') ? 'true' : 'false' %>;
+Baseliner.user_can_releases = <% $c->model('Permissions')->user_has_action( $c->username, 'action.home.view_releases') ? 'true' : 'false' %>;
+Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_action( $c->username, 'action.reports.view') ? 'true' : 'false' %>;
+Baseliner.user_can_dashboards = <% $c->model('Permissions')->user_has_action( $c->username, 'action.dashboards.view') ? 'true' : 'false' %>;
 
 var base_menu_items = [ ];
 

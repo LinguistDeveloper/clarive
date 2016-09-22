@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
@@ -8,23 +7,28 @@ use Test::Fatal;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
-
 use TestUtils;
 
 use_ok('BaselinerX::CI::project');
 
 subtest 'variable any env' => sub {
+    _setup();
+
     my $prj = BaselinerX::CI::project->new(name=>'prj', variables=>{ '*'=>{ var=>11 } } );
     is $prj->merged_variables->{var}, 11;
 };
 
 subtest 'variable some env' => sub {
+    _setup();
+
     my $prj = BaselinerX::CI::project->new(name=>'prj', variables=>{ '*'=>{ var=>11 }, 'TEST'=>{ var=>99 } } );
     is $prj->merged_variables->{var}, 11;
     is $prj->merged_variables('TEST')->{var}, 99;
 };
 
 subtest 'variable not in some env' => sub {
+    _setup();
+
     my $prj = BaselinerX::CI::project->new(name=>'prj', variables=>{ '*'=>{ var=>11 }, 'TEST'=>{ var=>99 } } );
     is $prj->merged_variables('PROD')->{var}, 11;
 };
@@ -188,7 +192,14 @@ subtest 'import_template: overwrites local variables' => sub {
 done_testing();
 
 sub _setup {
-    TestUtils->cleanup_cis;
+    TestUtils->setup_registry(
+        'BaselinerX::CI',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'Baseliner::Model::Permissions',
+    );
 
-    TestUtils->setup_registry('BaselinerX::CI', 'BaselinerX::Type::Event');
+    TestUtils->cleanup_cis;
 }

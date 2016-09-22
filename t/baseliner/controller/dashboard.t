@@ -4,18 +4,19 @@ use warnings;
 use Test::More;
 use Test::Fatal;
 use Test::Deep;
+use Test::MonkeyMock;
 
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils ':catalyst', 'mock_time';
 use TestSetup;
 
-use Test::MonkeyMock;
+use Capture::Tiny qw(capture);
+use Class::Date;
 use Clarive::ci;
 use Clarive::mdb;
-use Class::Date;
-use Capture::Tiny qw(capture);
-use Baseliner::Controller::Dashboard;
+
+use_ok 'Baseliner::Controller::Dashboard';
 
 our $SECS_IN_DAY = 3600 * 24;
 
@@ -142,17 +143,22 @@ subtest 'list_topics: returns topics' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category(id_rule => $id_rule);
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    my $topic_mid = TestSetup->create_topic(project => $project);
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project);
 
     my $controller = _build_controller();
 
@@ -166,7 +172,7 @@ subtest 'list_topics: returns topics' => sub {
       {
         'json' => {
             'success' => \1,
-            'cis'     => {},
+            'cis'     => ignore(),
             'data'    => [ignore()]
         }
       };
@@ -180,17 +186,22 @@ subtest 'list_topics: returns topics limited' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category(id_rule => $id_rule);
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    TestSetup->create_topic(project => $project) for 1 .. 10;
+    TestSetup->create_topic(id_category => $id_category, project => $project) for 1 .. 10;
 
     my $controller = _build_controller();
 
@@ -209,22 +220,25 @@ subtest 'list_topics: returns topics filtered by category' => sub {
     my $id_rule = TestSetup->create_rule_form();
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_category2 =
+      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             },
             {
-                action => 'action.topics.othercategory.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-    my $id_category2 =
-      TestSetup->create_category( name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category,  status => $status, title => 'Topic' );
     TestSetup->create_topic( project => $project, id_category => $id_category2, status => $status, title => 'Topic2' );
@@ -248,18 +262,19 @@ subtest 'list_topics: returns topics filtered by status' => sub {
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $status2  = TestUtils->create_ci( 'status', name => 'Closed', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
-
     TestSetup->create_topic( project => $project, id_category => $id_category,  status => $status, title => 'Topic' );
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status2, title => 'Topic2' );
 
@@ -282,17 +297,19 @@ subtest 'list_topics: returns topics filtered by status exclusively' => sub {
     my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $status2  = TestUtils->create_ci( 'status', name => 'Closed', type => 'I' );
     my $project = TestUtils->create_ci_project;
+
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
 
     TestSetup->create_topic( project => $project, id_category => $id_category,  status => $status, title => 'Topic' );
     TestSetup->create_topic( project => $project, id_category => $id_category, status => $status2, title => 'Topic2' );
@@ -315,17 +332,13 @@ subtest 'list_topics: does not return topics if user does not have access' => su
     my $id_rule = TestSetup->create_rule_form();
     my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $project = TestUtils->create_ci_project;
-    my $id_role = TestSetup->create_role(
-        actions => [
-            {
-                action => 'action.topics.category.view',
-            }
-        ]
-    );
+
+    my $id_category = TestSetup->create_category(name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid);
+
+    my $id_role = TestSetup->create_role;
 
     my $user = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    my $id_category = TestSetup->create_category(name => 'OtherCategory', id_rule => $id_rule, id_status => $status->mid);
     TestSetup->create_topic(project => $project, id_category => $id_category, status => $status);
 
     my $controller = _build_controller();
@@ -343,10 +356,15 @@ subtest 'list_topics: filters by user Any' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -354,11 +372,11 @@ subtest 'list_topics: filters by user Any' => sub {
     my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
     my $developer2 = TestSetup->create_user(id_role => $id_role, project => $project, username => 'Developer2');
 
-    my $topic_mid = TestSetup->create_topic(project => $project);
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project);
     mdb->master_rel->insert(
         { from_mid => $topic_mid, to_mid => $developer->mid, rel_type => 'topic_users'});
 
-    my $topic_mid2 = TestSetup->create_topic(project => $project);
+    my $topic_mid2 = TestSetup->create_topic(id_category => $id_category, project => $project);
     mdb->master_rel->insert(
         { from_mid => $topic_mid2, to_mid => $developer2->mid, rel_type => 'topic_users'});
 
@@ -379,10 +397,15 @@ subtest 'list_topics: filters by user Current' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
@@ -390,11 +413,11 @@ subtest 'list_topics: filters by user Current' => sub {
     my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
     my $developer2 = TestSetup->create_user(id_role => $id_role, project => $project, username => 'Developer2');
 
-    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic');
     mdb->master_rel->insert(
         { from_mid => $topic_mid, to_mid => $developer->mid, rel_type => 'topic_users'});
 
-    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'His Topic');
+    my $topic_mid2 = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'His Topic');
     mdb->master_rel->insert(
         { from_mid => $topic_mid2, to_mid => $developer2->mid, rel_type => 'topic_users'});
 
@@ -416,17 +439,22 @@ subtest 'list_topics: filters by user Current when no topics' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic');
 
     my $controller = _build_controller();
 
@@ -444,18 +472,23 @@ subtest 'list_topics: sorts topics DESC by default' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
-    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2');
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic');
+    my $topic_mid2 = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic2');
 
     my $controller = _build_controller();
 
@@ -475,18 +508,23 @@ subtest 'list_topics: sorts topics' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project;
+
+    my $id_rule     = TestSetup->create_common_topic_rule_form;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic');
-    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2');
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic');
+    my $topic_mid2 = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic2');
 
     my $controller = _build_controller();
 
@@ -507,18 +545,21 @@ subtest 'list_topics: filters topics by project' => sub {
 
     my $project1 = TestUtils->create_ci_project;
     my $project2 = TestUtils->create_ci_project;
+
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => [$project1, $project2]);
 
-    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
     my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category, title => 'My Topic' );
     my $topic_mid2 = TestSetup->create_topic( project => $project2, id_category => $id_category, title => 'My Topic2' );
 
@@ -541,18 +582,21 @@ subtest 'list_topics: returns all topics without limit' => sub {
 
     my $project1 = TestUtils->create_ci_project;
     my $project2 = TestUtils->create_ci_project;
+
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => [$project1, $project2]);
 
-    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
     my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category, title => 'My Topic' );
     my $topic_mid2 = TestSetup->create_topic( project => $project2, id_category => $id_category, title => 'My Topic2' );
 
@@ -574,18 +618,21 @@ subtest 'list_topics: returns limited topics' => sub {
 
     my $project1 = TestUtils->create_ci_project;
     my $project2 = TestUtils->create_ci_project;
+
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => [$project1, $project2]);
 
-    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
-    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
     my $topic_mid  = TestSetup->create_topic( project => $project1, id_category => $id_category, title => 'My Topic' );
     my $topic_mid2 = TestSetup->create_topic( project => $project2, id_category => $id_category, title => 'My Topic2' );
 
@@ -608,20 +655,24 @@ subtest 'topics_by_field: counts topics by status' => sub {
     my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $status_in_progress = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
 
+    my $id_rule = TestSetup->create_rule_form( rule_tree => TestSetup->_fieldlets() );
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule );
+
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category}]
             }
         ]
     );
 
     my $developer = TestSetup->create_user(id_role => $id_role, project => $project);
 
-    my $topic_mid = TestSetup->create_topic(project => $project, title => 'My Topic', status => $status_new);
-    my $topic_mid2 = TestSetup->create_topic(project => $project, title => 'My Topic2', status => $status_in_progress);
-    my $topic_mid3 = TestSetup->create_topic(project => $project, title => 'My Topic3', status => $status_in_progress);
+    my $topic_mid = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic', status => $status_new);
+    my $topic_mid2 = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic2', status => $status_in_progress);
+    my $topic_mid3 = TestSetup->create_topic(id_category => $id_category, project => $project, title => 'My Topic3', status => $status_in_progress);
 
     my $controller = _build_controller();
 
@@ -658,10 +709,12 @@ subtest 'topics_by_field: groups topics by field' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}]
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}]
             }
         ]
     );
@@ -705,10 +758,12 @@ subtest 'topics_by_field: sorts by label' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}]
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}]
             }
         ]
     );
@@ -753,10 +808,12 @@ subtest 'topics_by_field: truncates labels' => sub {
     my $id_role = TestSetup->create_role(
         actions => [
             {
-                action => 'action.topics.category1.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category1}]
             },
             {
-                action => 'action.topics.category2.view',
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_category2}]
             }
         ]
     );
@@ -964,7 +1021,7 @@ subtest 'viewjobs: returns mid jobs filtered by status' => sub {
     my $id_topic_rule = _create_topic_form();
 
     my $project           = TestUtils->create_ci_project;
-    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role           = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [{}]} ] );
     my $user              = TestSetup->create_user( id_role => $id_role, project => $project );
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
     my $topic_mid         = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
@@ -1011,7 +1068,7 @@ subtest 'viewjobs: returns mid jobs filtered by period' => sub {
     my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
 
     my $project   = TestUtils->create_ci_project;
-    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [{}]} ] );
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule   = TestSetup->create_rule( rule_when => 'promote' );
@@ -1057,7 +1114,7 @@ subtest 'viewjobs: returns mid jobs filtered by bl' => sub {
 
     my $project   = TestUtils->create_ci_project;
     my $bl        = TestUtils->create_ci( 'bl', name => 'PROD', bl => 'PROD' );
-    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bl => '*' } ] );
+    my $id_role   = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [{}] } ] );
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
     my $topic_mid = TestSetup->create_topic( id_category => $id_topic_category, project => $project );
     my $id_rule   = TestSetup->create_rule( rule_when => 'promote' );
@@ -1096,20 +1153,203 @@ subtest 'viewjobs: returns mid jobs filtered by bl' => sub {
     is $c->{stash}->{jobs}, $job_ci->{mid} . ',' . $job_ci2->{mid};
 };
 
+subtest 'list_jobs: returns empty response when no jobs' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => {} } );
+
+    $controller->list_jobs($c);
+
+    my $stash = $c->stash;
+
+    is_deeply $stash,
+      {
+        'json' => {
+            'success' => \1,
+            'data'    => []
+        }
+      };
+};
+
+subtest 'list_jobs: returns no jobs if user does not have permission' => sub {
+    _setup();
+
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role;
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    capture {
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid],
+            bl         => 'PROD',
+            bl_to      => 'PROD'
+        );
+    };
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => {} } );
+
+    $controller->list_jobs($c);
+
+    my $stash = $c->stash;
+
+    is_deeply $stash,
+      {
+        'json' => {
+            'success' => \1,
+            'data'    => []
+        }
+      };
+};
+
+subtest 'list_jobs: returns jobs allowed to user' => sub {
+    _setup();
+
+    TestUtils->create_ci('bl', bl => 'QA');
+    TestUtils->create_ci('bl', bl => 'PROD');
+
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+    my $project2 = TestUtils->create_ci('project');
+    my $id_role =
+      TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ { bl => 'QA' } ] } ] );
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid2
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project2, is_changeset => 1 );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    capture {
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid],
+            bl         => 'QA',
+            bl_to      => 'QA'
+        );
+
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid2],
+            bl         => 'QA',
+            bl_to      => 'QA'
+        );
+
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid],
+            bl         => 'PROD',
+            bl_to      => 'PROD'
+        );
+    };
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => {} } );
+
+    $controller->list_jobs($c);
+
+    my $stash = $c->stash;
+
+    is @{ $c->stash->{json}->{data} }, 1;
+    is $c->stash->{json}->{data}->[0]->{bl}, 'QA';
+};
+
+subtest 'list_jobs: returns jobs allowed to user filtered by bl' => sub {
+    _setup();
+
+    my $bl_QA = TestUtils->create_ci('bl', bl => 'QA');
+    my $bl_PROD = TestUtils->create_ci('bl', bl => 'PROD');
+
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+    my $project2 = TestUtils->create_ci('project');
+    my $id_role =
+      TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+
+    my $user = TestSetup->create_user(id_role => $id_role, project => $project);
+
+    my $changeset_mid
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project, is_changeset => 1 );
+    my $changeset_mid2
+        = TestSetup->create_topic( id_category => $id_changeset_category, project => $project2, is_changeset => 1 );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    capture {
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid],
+            bl         => 'QA',
+            bl_to      => 'QA'
+        );
+
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid2],
+            bl         => 'QA',
+            bl_to      => 'QA'
+        );
+
+        TestUtils->create_ci(
+            'job',
+            changesets => [$changeset_mid],
+            bl         => 'PROD',
+            bl_to      => 'PROD'
+        );
+    };
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => {bls => [$bl_QA->mid]} } );
+
+    $controller->list_jobs($c);
+
+    my $stash = $c->stash;
+
+    is @{ $c->stash->{json}->{data} }, 1;
+    is $c->stash->{json}->{data}->[0]->{bl}, 'QA';
+};
+
 sub _build_c {
     mock_catalyst_c( username => 'test', @_ );
 }
 
 sub _setup {
     TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Config',
         'BaselinerX::Type::Event',
         'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',
         'Baseliner::Model::Jobs',
-        'BaselinerX::Type::Statement'
+        'Baseliner::Controller::Job',
     );
     TestUtils->cleanup_cis;
 

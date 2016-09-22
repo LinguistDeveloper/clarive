@@ -2,6 +2,7 @@ package Baseliner::DataView::Job;
 use Moose;
 
 use JSON ();
+use Array::Utils qw(intersect);
 use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_fail _array _unique _debug);
 
@@ -14,6 +15,9 @@ sub find {
     my $sort       = delete $params{sort};
     my $groupdir   = delete $params{groupdir};
     my $group_keys = $params{group_keys};
+
+    my $permissions  = Baseliner::Model::Permissions->new;
+    return unless $permissions->user_has_action( $params{username}, 'action.job.viewall', bounds => '*');
 
     $sort ||= 'starttime';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1;
@@ -83,52 +87,17 @@ sub build_where {
         }
     }
 
-    if ( !$permissions->is_root($username) ) {
-        my $user = ci->user->find_one( { name => $username } );
-        my $project_security = $user->{project_security};
-        if ( $project_security && ref($project_security) eq 'HASH' ) {
-            my @bl_permissions;
-            my @roles = keys %$project_security;
-            if (@roles) {
-                @bl_permissions = map {
-                    map      { $_->{bl} }
-                        grep { $_->{action} eq 'action.job.viewall' }
-                        _array( $_->{actions} )
-                } mdb->role->find( { id => { '$in' => \@roles } } )->fields( { actions => 1, _id => 0 } )->all;
-            }
-            my @ids_project = $permissions->user_projects_with_action(
-                username => $username,
-                action   => 'action.job.viewall',
-                level    => 1,
-                bl       => \@bl_permissions
-            );
+    $permissions->inject_project_filter( $username, 'action.job.viewall', $where, filter => $filter->{filter_project} );
 
-            if ( @bl_permissions && !( grep /^\*$/, @bl_permissions ) ) {
-                $where->{bl} = mdb->in(@bl_permissions);
-            }
-            $where->{projects} = mdb->in( sort @ids_project );
+    $permissions->inject_bounds_filters(
+        $username,
+        'action.job.viewall',
+        $where,
+        filters => {
+            bl => \@bls
         }
-    }
+    );
 
-    if (@bls) {
-        if ( $where->{bl} ) {
-            my @bl_names;
-            foreach my $filter_bl (@bls) {
-                if ( grep /^$filter_bl$/, _array $where->{bl}->{'$in'} ) {
-                    push @bl_names, $filter_bl;
-                }
-            }
-            if (@bl_names) {
-                $where->{bl} = mdb->in(@bl_names);
-            }
-            else {
-                $where->{bl} = '';
-            }
-        }
-        else {
-            $where->{bl} = mdb->in(@bls);
-        }
-    }
     if ($period) {
         my $start = substr( Class::Date->now - $period, 0, 10 );
         $where->{endtime} = { '$gt' => "$start" };
@@ -139,28 +108,7 @@ sub build_where {
     if ( $filter->{filter_type} ) {
         $where->{job_type} = $filter->{filter_type};
     }
-    if ( $filter->{filter_project} ) {
-        my @filters_projects = _array $filter->{filter_project};
-        if ( !$permissions->is_root($username) ) {
-            my @mid_projects;
-            my @projects = _array $where->{projects}->{'$in'};
 
-            foreach my $filter_project (@filters_projects) {
-                if ( grep /^$filter_project$/, @projects ) {
-                    push @mid_projects, $filter_project;
-                }
-            }
-            if (@mid_projects) {
-                $where->{projects} = mdb->in(@mid_projects);
-            }
-            else {
-                $where->{projects} = '';
-            }
-        }
-        else {
-            $where->{projects} = mdb->in(@filters_projects);
-        }
-    }
     if ( $filter->{job_state_filter} ) {
         my @job_state_filters = do {
             my $job_state_filter = Util->_decode_json( $filter->{job_state_filter} );

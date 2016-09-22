@@ -6,6 +6,8 @@ use Try::Tiny;
 use experimental 'autoderef', 'switch';
 use Baseliner::Utils;
 use Baseliner::Model::Permissions;
+use Baseliner::Model::Users;
+use Baseliner::Model::Topic;
 use Baseliner::RuleRunner;
 
 with 'Baseliner::Role::CI::Internal';
@@ -30,10 +32,6 @@ sub rel_type {
 
 sub root_reports {
     my ($self,$p) = @_;
-
-    my @usersandroles = map { 'role/'.$_->{id}} Baseliner->model('Permissions')->user_roles( $p->{username} );
-    push @usersandroles, 'user/'.ci->user->find_one({name => $p->{username}})->{mid};
-    push @usersandroles, undef;
 
     my @searches = $self->search_cis( sort=>"name" );
     my @public;
@@ -100,7 +98,7 @@ sub report_list {
             }
     );
     #root user can view all reports of all users.
-    if (Baseliner->model('Permissions')->is_root( $p->{username} )){
+    if (Baseliner::Model::Permissions->is_root( $p->{username} )){
         my $root_reports = $self->root_reports({ meta=>\%meta, username=>$p->{username} });
         push @trees, ({
                 text => _loc('All') . " (Root)",
@@ -333,7 +331,7 @@ sub my_searches {
 sub public_searches {
     my ($self,$p) = @_;
 
-    my @usersandroles = map { 'role/'.$_->{id}} model->Permissions->user_roles( $p->{username} );
+    my @usersandroles = map { 'role/'.$_} Baseliner::Model::Permissions->user_roles_ids( $p->{username} );
     push @usersandroles, 'user/'.ci->user->find_one({name => $p->{username}})->{mid};
     push @usersandroles, undef;
 
@@ -463,105 +461,88 @@ sub all_fields {
     my ($self,$p) = @_;
 
     my $username = $p->{username};
-    my @cats = Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
     my @tree;
 
-    # Fields that are common to every topic (system fields)
-    my $id_category = $p->{id_category} ? $p->{id_category} : undef;
-    my $name_category = $p->{name_category} ? Util->_name_to_id($p->{name_category}) : undef;
+    my @user_categories = Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
-
-    my %categories;
-    $categories{$id_category} = $name_category if($id_category);
-    my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $username );
-
-
-    my @fieldlets = _array( Baseliner->model('Topic')->get_meta(undef, $id_category, $username) );
-
-    if(!$id_category){
-        my @children =    map {
-                            my $name_id  = Util->_name_to_id($_->{name});
-                            my @fields = map { [ $_, _loc($user_categories_fields_meta->{$name_id}->{$_}->{name_field})] }
-                                         keys $user_categories_fields_meta->{$name_id} ;
-
-                            $_->{text}     = $_->{name};
-                            $_->{icon}    ='/static/images/icons/topic.svg';
-                            $_->{data}    = {
-                                'id_category'     => $_->{id},
-                                'name_category' => $_->{name},
-                                'fields'         => \@fields};
-                            $_->{type}='category';
-                            $_->{leaf}=\0;
-                            $_
-                        }
-                        sort { defined($a->{name_field})  cmp defined($b->{name_field})  }
-                        @cats;
-
-        push @tree, (
-            {     text        => _loc('Categories'),
-                leaf        => \0,
-                draggable     => \0,
-                expanded     => \1,
-                icon         => '/static/images/icons/topic.svg',
-                children     => \@children
-            }
+    my @categories_with_fields;
+    foreach my $category (@user_categories) {
+        my $meta = Baseliner::Model::Topic->new->get_meta( undef, $category->{id}, $username );
+        $meta = Baseliner::Model::Topic->new->get_meta_permissions(
+            username    => $username,
+            meta        => $meta,
+            id_category => $category->{id},
+            id_status   => '*',
         );
 
-        my $reports_config = Baseliner->model( 'ConfigStore' )->get( 'config.reports' );
-        if ($reports_config->{fields_dynamics} ne 'NO'){
-            my $has_action = Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.reports.dynamics' );
-            if($has_action){
-                push @tree, {
-                    text => _loc('Dynamic'),
-                    leaf => \0,
-                    icon     => '/static/images/icons/all.svg',
-                    url  => '/ci/report/dynamic_fields',
-                    draggable => \0,
-                    children => [
-                        map {
-                            my $key = $_;
-                            my ($prefix,$data_key) = split( /\./, $key, 2);
-                            {
-                                text     => $key,
-                                icon     => '/static/images/icons/field-add.svg',
-                                id_field => $prefix,
-                                data_key => $data_key,
-                                type     => 'select_field',
-                                leaf     => \1
-                            }
-                        }
-                        grep !/^_/,
-                        grep !/\.[0-9]+$/,
-                        mdb->topic->all_keys
-                    ],
-                };
-            }
-        }
+        push @categories_with_fields, {
+            id     => $category->{id},
+            name   => $category->{name},
+            fields => [
+                map {
+                    [ $_->{id_field} => _loc( $_->{name_field} ) ]
+                } @$meta
+            ]
+        };
     }
-    else{
-        map {
+
+    my @children;
+    foreach my $category (@categories_with_fields) {
+        push @children,
+          {
+            text => $category->{name},
+            icon => '/static/images/icons/topic.svg',
+            data => {
+                'id_category'   => $category->{id},
+                'name_category' => $category->{name},
+                'fields'        => $category->{fields},
+            },
+            type => 'category',
+            leaf => \0
+          };
+    }
+
+    push @tree, (
+        {     text        => _loc('Categories'),
+            leaf        => \0,
+            draggable     => \0,
+            expanded     => \1,
+            icon         => '/static/images/icons/topic_one.png',
+            children     => \@children
+        }
+    );
+
+    my $reports_config = BaselinerX::Type::Model::ConfigStore->get( 'config.reports' );
+    if ($reports_config->{fields_dynamics} && $reports_config->{fields_dynamics} ne 'NO'){
+        my $has_action = Baseliner::Model::Permissions->new->user_has_action( $username, 'action.reports.dynamics' );
+        if($has_action){
             push @tree, {
-                text        => _loc($user_categories_fields_meta->{$name_category}->{$_}->{name_field}),
-                id_field    => $_,
-                icon        => '/static/images/icons/field-add.svg',
-                type        => 'select_field',
-                meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
-                collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},
-                collection_extends  => $user_categories_fields_meta->{$name_category}->{$_}->{collection_extends},
-                ci_class    => $user_categories_fields_meta->{$name_category}->{$_}->{ci_class},
-                filter      => $user_categories_fields_meta->{$name_category}->{$_}->{filter},
-                gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
-                category    => $p->{name_category},
-                options     => $user_categories_fields_meta->{$name_category}->{$_}->{options},
-                format     => $user_categories_fields_meta->{$name_category}->{$_}->{format},
-                leaf        =>\1
-            } if !($_ eq 'priority' && $user_categories_fields_meta->{$name_category}->{$_}->{meta_type} eq 'priority'); # temporal solution to hide system_priority
-
+                text => _loc('Dynamic'),
+                leaf => \0,
+                icon     => '/static/images/icons/all.svg',
+                url  => '/ci/report/dynamic_fields',
+                draggable => \0,
+                children => [
+                    map {
+                        my $key = $_;
+                        my ($prefix,$data_key) = split( /\./, $key, 2);
+                        {
+                            text     => $key,
+                            icon     => '/static/images/icons/field-add.svg',
+                            id_field => $prefix,
+                            data_key => $data_key,
+                            type     => 'select_field',
+                            leaf     => \1
+                        }
+                    }
+                    grep !/^_/,
+                    grep !/\.[0-9]+$/,
+                    mdb->topic->all_keys
+                ],
+            };
         }
-        sort { lc $a cmp lc $b }
-        keys $user_categories_fields_meta->{$name_category};
-
     }
+
     return \@tree;
 }
 
@@ -601,7 +582,6 @@ sub selected_fields {
 
     my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
     my @status = values +{ ci->status->statuses( id_category=>\@categories ) };
-    my @cols_roles = Baseliner::Model::Permissions->new->user_projects_ids_with_collection( username => $p->{username} );
 
     my %filters;
     for my $filter ( _array($fields{where}) ) {
@@ -624,15 +604,10 @@ sub selected_fields {
                     if($type->{value} && $type->{value} eq 'default'){
                         my $collection = $filter->{collection} // $filter->{ci_class} ;
                         my @cis;
-                        my (@options, @values, @mids);
+                        my (@options, @values);
 
-                        for my $sec ( @cols_roles ) {
-                            if(exists $sec->{$collection}){
-                                for my $ci_mid (keys $sec->{$collection}){
-                                    push @mids, $ci_mid;
-                                }
-                            }
-                        }
+                        my @mids = Baseliner::Model::Permissions->new->user_security_dimension( $p->{username}, $collection );
+
                         if( @mids ) {
                             @cis = ci->$collection->find({ mid=>mdb->in(@mids) })->fields({ _id=>0, name=>1, mid=>1 })->sort({ name=>1 })->all;
                         } else {
@@ -1026,7 +1001,10 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
             my $id_category = $mdb2->category->find_one({name=>qr/^$category$/i})->{id};
             push @categories, $id_category;
         }
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @categories );
+
+        Baseliner->model('Permissions')->inject_security_filter( $username, $where );
+
+        $where->{'category.id'} = {'$in' => \@categories};
     }
 
     if( length $query ) {

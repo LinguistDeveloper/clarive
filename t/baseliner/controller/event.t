@@ -77,7 +77,12 @@ subtest 'log: catches exception when registry is not loaded' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'Baseliner::Controller::Event' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Menu',
+        'Baseliner::Controller::Event',
+    );
 
     mdb->event->drop;
 }

@@ -14,19 +14,6 @@ use TestSetup;
 
 use_ok 'Baseliner::Model::SystemMessages';
 
-subtest 'create: fails if user does not have permissions' => sub {
-    _setup();
-
-    TestSetup->create_user( name => 'sms_user', username => 'sms_user');
-
-    my $model = _build_model();
-    my $p = {
-        username => 'sms_user'
-    };
-
-    like exception { $model->create( $p ) }, qr/Unauthorized/;
-};
-
 subtest 'create: fails if title is not present' => sub {
     _setup();
     _create_user_with_admin_permissions();

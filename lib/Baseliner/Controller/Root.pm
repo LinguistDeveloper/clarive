@@ -10,7 +10,7 @@ register 'action.home.show_lifecycle' => { name => 'User can access the lifecycl
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
 register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
-register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ;
+register 'action.home.view_project_repos' => { name => 'User can access the repositories in a project' } ;
 register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ;
 register 'event.wipe_cache' => { name => 'Wipe Cache', description => 'Wipe Cache', vars=>['username','ts'] } ;
 
@@ -349,17 +349,18 @@ sub index : Private {
     # set language
     $self->_set_user_lang($c);
 
+    my $perms = $c->model('Permissions');
+
     # load menus
     if ( ! $c->stash->{ reload_all } ) {
         $c->stash->{ reload_all } = 1;
     my @menus;
     $c->forward('/user/can_surrogate');
     if( $c->username ) {
-        my $perms = $c->model('Permissions');
-        my @actions = $perms->list( username=> $c->username, ns=>'any', bl=>'any' );
+        my @actions = $perms->user_actions( $c->username );
         $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
-        $c->stash->{show_js_reload} = $perms->user_has_action( username => $c->username, action => 'action.development' );
-        $c->stash->{can_change_password} = $perms->user_has_action( username => $c->username, action => 'action.change_password' ) && $c->config->{authentication}{default_realm} eq 'none';
+        $c->stash->{show_js_reload} = $perms->user_has_any_action( $c->username, 'action.development.%' );
+        $c->stash->{can_change_password} = $perms->user_has_action( $c->username, 'action.change_password' ) && $c->config->{authentication}{default_realm} eq 'none';
         #$c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
 
         # TLC
@@ -391,9 +392,8 @@ sub index : Private {
     }
     $c->stash->{$_} = $c->config->{header_init}->{$_} for keys %{$c->config->{header_init} || {}};
 
-    $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
-    $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
-        if( !( $c->stash->{can_menu} = $c->has_action('action.home.show_menu')) ) {
+    $c->stash->{can_lifecycle} = $perms->user_has_action($c->username, 'action.home.show_lifecycle');
+        if( !( $c->stash->{can_menu} = $perms->user_has_action($c->username, 'action.home.show_menu')) ) {
             delete $c->stash->{menus}
         }
     }
@@ -490,10 +490,9 @@ sub cla_worker : Path('cla-worker') {
     $c->res->body( scalar _file($c->path_to('bin/cla-worker'))->slurp );
 }
 
-sub cache_clear : Local {
+sub cache_clear : Local Does(ACL) ACL(action.development.cache_clear) {
     my ($self,$c) = @_;
     $c->stash->{json} = try {
-        _fail 'No permission' unless $c->has_action('action.development.cache_clear');
         cache->clear;
         event_new 'event.wipe_cache'=>{ username=>$c->username, ts=>mdb->now->string };
         { success=>\1, msg=>"CACHE CLEARED..." };

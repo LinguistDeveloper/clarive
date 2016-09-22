@@ -59,13 +59,13 @@ sub setup {
         username => 'developer',
     );
 
-    my $id_question_rule = _create_question_form();
+    my $id_question_rule     = _create_question_form();
     my $id_question_category = TestSetup->create_category(
-        name         => 'Question',
-        id_rule      => $id_question_rule,
-        id_status    => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
+        name      => 'Question',
+        id_rule   => $id_question_rule,
+        id_status => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ]
     );
-    my $question_mid      = TestSetup->create_topic(
+    my $question_mid = TestSetup->create_topic(
         project     => $project,
         id_rule     => $id_question_rule,
         id_category => $id_question_category,
@@ -114,7 +114,10 @@ sub setup {
     TestSetup->create_user(
         id_role => {
             role    => 'CanSeeTopics',
-            actions => [ { action => 'action.home.show_menu' }, { action => 'action.topics.changeset.view' } ]
+            actions => [
+                { action => 'action.home.show_menu' },
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] }
+            ]
         },
         project  => $project,
         username => 'can_see_topics',
@@ -125,8 +128,8 @@ sub setup {
             role    => 'CanCreateTopics',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.create' }
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topics.create', bounds => [ { id_category => $id_changeset_category } ] },
             ]
         },
         project  => $project,
@@ -138,8 +141,8 @@ sub setup {
             role    => 'CanEditTopics',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.edit' }
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] },
+                { action => 'action.topics.edit', bounds => [ { id_category => $id_changeset_category } ] }
             ]
         },
         project  => $project,
@@ -151,8 +154,11 @@ sub setup {
             role    => 'CanDeleteTopics',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.delete' }
+                { action => 'action.topics.view', bounds => [ { id_category => $id_changeset_category } ] },
+                {
+                    action => 'action.topics.delete',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                }
             ]
         },
         project  => $project,
@@ -164,9 +170,14 @@ sub setup {
             role    => 'CanCommentOnTopics',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.delete' },
-                { action => 'action.topics.changeset.comment' },
+                {
+                    action => 'action.topics.view',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                },
+                {
+                    action => 'action.topics.comment',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                }
             ]
         },
         project  => $project,
@@ -178,9 +189,14 @@ sub setup {
             role    => 'CanSeeActivity',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.delete' },
-                { action => 'action.topics.changeset.activity' },
+                {
+                    action => 'action.topics.view',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                },
+                {
+                    action => 'action.topics.activity',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                }
             ]
         },
         project  => $project,
@@ -192,9 +208,14 @@ sub setup {
             role    => 'CanSeeTopicJobs',
             actions => [
                 { action => 'action.home.show_menu' },
-                { action => 'action.topics.changeset.view' },
-                { action => 'action.topics.changeset.delete' },
-                { action => 'action.topics.changeset.jobs' },
+                {
+                    action => 'action.topics.view',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                },
+                {
+                    action => 'action.topics.jobs',
+                    bounds => [ { id_category => $id_changeset_category } ]
+                }
             ]
         },
         project  => $project,

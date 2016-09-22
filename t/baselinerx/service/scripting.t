@@ -154,7 +154,14 @@ subtest 'run_remote: runs remote command with correct arguments' => sub {
 done_testing;
 
 sub _setup {
-    TestUtils->setup_registry( 'BaselinerX::Type::Event', 'BaselinerX::CI', 'Baseliner::Model::Jobs' );
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::CI',
+        'Baseliner::Model::Jobs'
+    );
     TestUtils->cleanup_cis;
 
     mdb->job_log->drop;

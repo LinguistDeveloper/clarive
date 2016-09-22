@@ -62,6 +62,12 @@ our $group_keys = {
     natures      => 'job_contents.list_natures'
 };
 
+sub bounds_baselines {
+    my $self = shift;
+
+    return map { { id => $_->{bl}, title => $_->{name} } } Baseliner::Core::Baseline->baselines;
+}
+
 sub monitor {
     my ( $self, $p ) = @_;
 
@@ -69,6 +75,10 @@ sub monitor {
     my @filter_bls = _array $p->{filter_bl};
     my $where_filter = {};
     my $permissions = Baseliner::Model::Permissions->new;
+
+    if (!$permissions->user_has_action($username, 'action.job.viewall', bounds => '*')) {
+        return ( 0 );
+    }
 
     my ( $start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt )
         = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
@@ -123,7 +133,7 @@ sub monitor {
         }
     );
 
-   if ( $p->{list_only} ) {
+    if ( $p->{list_only} ) {
         return ( 0, $rs->fields( { mid => 1 } )->next );
     }
 
@@ -175,11 +185,11 @@ sub monitor {
         my ($last_exec) = sort { $b cmp $a } keys %{ $job->{milestones} };
 
         my $can_restart
-            = $permissions->user_has_action( username => $username, action => 'action.job.restart', bl => $job->{bl} );
+            = $permissions->user_has_action( $username, 'action.job.restart', bounds => { bl => $job->{bl} } );
         my $can_cancel
-            = $permissions->user_has_action( username => $username, action => 'action.job.cancel', bl => $job->{bl} );
+            = $permissions->user_has_action( $username, 'action.job.cancel', bounds => { bl => $job->{bl} } );
         my $can_delete
-            = $permissions->user_has_action( username => $username, action => 'action.job.delete', bl => $job->{bl} );
+            = $permissions->user_has_action( $username, 'action.job.delete', bounds => { bl => $job->{bl} } );
 
         push @rows,
             {
@@ -394,7 +404,7 @@ sub get_contents {
 
 sub user_can_search {
     my ($self, $username) = @_;
-    return Baseliner::Model::Permissions->user_has_action( username => $username, action => 'action.search.job');
+    return Baseliner::Model::Permissions->user_has_action( $username, 'action.search.job');
 }
 
 sub build_field_query {

@@ -1,9 +1,12 @@
 package Baseliner::Controller::Message;
 use Moose;
+BEGIN {  extends 'Catalyst::Controller' }
+
+use Try::Tiny;
+use Baseliner::Model::Permissions;
+use Baseliner::Model::Messaging;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
-use Try::Tiny;
-BEGIN {  extends 'Catalyst::Controller' }
 
 sub detail : Local {
     my ($self,$c) = @_;
@@ -35,13 +38,19 @@ sub im_json : Local {
 # all messages for the user
 sub inbox_json : Local {
     my ($self,$c) = @_;
+
     my $p = $c->request->parameters;
+
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
     $sort ||= 'sent';
     $dir ||= 'DESC';
-    return unless $c->user || $p->{test};
-    my $username = $c->has_action('action.admin.user') ? $p->{username} : $c->username;
-    $c->stash->{messages} = $c->model('Messaging')->inbox(
+
+    my $permissions = Baseliner::Model::Permissions->new;
+
+    my $username = $p->{username}
+      && $permissions->user_has_action( $c->username, 'action.admin.users' ) ? $p->{username} : $c->username;
+
+    $c->stash->{messages} = Baseliner::Model::Messaging->new->inbox(
             all      => 1,
             username => $username,
             query    => $query,

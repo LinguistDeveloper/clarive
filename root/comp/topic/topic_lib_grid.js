@@ -4,7 +4,7 @@
  *********************************************************************************
  */
 var hasPermissionToAttachLabels = false;
-% if ( Baseliner->model('Permissions')->user_has_action( username => $c->username, action => 'action.labels.attach_labels') ) {
+% if ( Baseliner->model('Permissions')->user_has_action( $c->username, 'action.labels.attach_labels') ) {
        hasPermissionToAttachLabels = true;
 %}
 var shorten_title = function(t){

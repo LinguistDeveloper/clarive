@@ -1048,8 +1048,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 } else {
                     self.btn_edit.toggle(true);
                     self.btn_detail.toggle(false);
-                    self.show_form();
                 }
+
+                self.show_form();
             }
             if( !self.permDelete ) {
                 self.btn_delete_form.hide();

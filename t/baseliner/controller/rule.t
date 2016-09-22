@@ -983,23 +983,15 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',             'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement',         'BaselinerX::CI',
-        'BaselinerX::Fieldlets',               'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',             'BaselinerX::Service::ChangesetServices',
-        'BaselinerX::Service::CIServices',     'BaselinerX::Service::CallWebService',
-        'BaselinerX::Service::Catalog' ,       'BaselinerX::Service::CreateJob',
-        'BaselinerX::Service::DBServices',     'BaselinerX::Service::Dispatcher',
-        'BaselinerX::Service::FileManagement', 'BaselinerX::Service::FootprintElements',
-        'BaselinerX::Service::Init',           'BaselinerX::Service::JobDaemon',
-        'BaselinerX::Service::LDAPServices',   'BaselinerX::Service::Parsing',
-        'BaselinerX::Service::PauseSuspend',   'BaselinerX::Service::Purge',
-        'BaselinerX::Service::RenameItems',    'BaselinerX::Service::SchedulerService',
-        'BaselinerX::Service::Scripting',      'BaselinerX::Service::Sed',
-        'BaselinerX::Service::ServerService',  'BaselinerX::Service::Sleep',
-        'BaselinerX::Service::SystemMessages', 'BaselinerX::Service::Templating',
-        'BaselinerX::Service::TopicServices',  'BaselinerX::Service::ValidateStashVariables',
-        'BaselinerX::Type::Service'
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules',
     );
 
     TestUtils->cleanup_cis;

@@ -234,13 +234,13 @@ sub _resolve_repo_project {
     }
 
     my $id_project = $project->{mid};
-    my @project_ids = Baseliner::Model::Permissions->new->user_projects_ids(username=>$c->username);
 
-    my $is_user_project = (grep { $_ && $_ eq $id_project } @project_ids) ? 1 : 0;
-    my $user_has_action =
-      $project->user_has_action( username => $c->username, action => 'action.git.repository_access' );
+    my $permissions = Baseliner::Model::Permissions->new;
 
-    unless ($is_user_project && $user_has_action) {
+    my $is_user_project = $permissions->user_has_security( $c->username, { project => $id_project } );
+    my $can_access_repos = $permissions->user_has_action( $c->username, 'action.git.repository_access' );
+
+    unless ($is_user_project && $can_access_repos) {
         $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project->name ) );
         $c->response->status( 401 );
         return;
@@ -297,11 +297,8 @@ sub bl_change_granted {
 
         if ( $bls && $ref =~ /refs\/tags\/($bls)/ ) {
             my $tag = $1;
-            my $can_tags = Baseliner::Model::Permissions->new->user_has_action(
-                username => $c->username,
-                action   => 'action.git.update_tags',
-                bl       => $tag
-            );
+            my $can_tags =
+              Baseliner::Model::Permissions->new->user_has_action( $c->username, 'action.git.update_tags' );
             if ( !$can_tags ) {
                 $self->process_error( $c, 'Push Error', _loc( 'Cannot update internal tag %1', $tag ) );
                 return;

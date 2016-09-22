@@ -1152,7 +1152,7 @@ sub set_task_status {
     my ($self, $task_selected, $id_category, $id_status, $stash) = @_;
 
     my $username = $stash->{username};
-    my @roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $task_selected->{attributes}->{topic_mid} );
+    my @roles = Baseliner->model('Permissions')->user_roles_ids( $username, topics => $task_selected->{attributes}->{topic_mid} );
     if (!@roles){
         $username = 'clarive' if ($username ne 'root');
     }
@@ -1174,7 +1174,7 @@ sub set_service_status {
     my ($self, $service_selected, $id_category, $id_status, $stash) = @_;
 
     my $username = $stash->{username};
-    my @roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $service_selected->{mid_topic_created_service}  );
+    my @roles = Baseliner->model('Permissions')->user_roles_ids( $username, topics => $service_selected->{mid_topic_created_service}  );
     if (!@roles){
         $username = 'clarive' if ($username ne 'root');
     }

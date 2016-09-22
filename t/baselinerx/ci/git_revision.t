@@ -613,16 +613,19 @@ subtest 'items: redeploy after redeploy' => sub {
 done_testing;
 
 sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'BaselinerX::CI',
+        'Baseliner::Model::Jobs',
+        'Baseliner::Model::Rules'
+    );
+
     TestUtils->cleanup_cis;
 
     mdb->rule->drop;
     mdb->topic->drop;
     mdb->category->drop;
-
-    TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::CI',
-        'Baseliner::Model::Jobs',
-        'Baseliner::Model::Rules'
-    );
 }

@@ -11,13 +11,13 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Clarive::Code;
 
-register 'action.development.repl'          => { name => 'Baseliner REPL' };
-register 'action.development.js_reload',    => { name => 'JS Reload' };
-register 'action.development.cache_clear',  => { name => 'Wipe Cache' };
-register 'action.development.ext_api'       => { name => 'ExtJS API Reference' };
-register 'action.development.ext_examples'  => { name => 'ExtJS Examples' };
-register 'action.development.gui_designer', => { name => 'GUI Designer' };
-register 'action.development.sequences',    => { name => 'Sequences' };
+register 'action.development.repl'          => { name => _locl('Baseliner REPL') };
+register 'action.development.js_reload',    => { name => _locl('JS Reload') };
+register 'action.development.cache_clear',  => { name => _locl('Wipe Cache') };
+register 'action.development.ext_api'       => { name => _locl('ExtJS API Reference') };
+register 'action.development.ext_examples'  => { name => _locl('ExtJS Examples') };
+register 'action.development.gui_designer', => { name => _locl('GUI Designer') };
+register 'action.development.sequences',    => { name => _locl('Sequences') };
 
 register 'menu.development' => {
     label  => _locl('Development'),
@@ -150,7 +150,10 @@ sub test : Local {
 
 sub main : Local {
     my ( $self, $c ) = @_;
-    model->Permissions->user_has_action( username => $c->username, action => 'action.development.repl', fail => 1 );
+
+    Baseliner::Model::Permissions->new->user_has_action( $c->username, 'action.development.repl' )
+      or _fail 'User does not have access to REPL';
+
     $c->stash->{template} = '/comp/repl.js';
 }
 

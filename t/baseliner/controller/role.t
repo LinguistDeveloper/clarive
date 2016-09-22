@@ -22,7 +22,7 @@ use_ok 'Baseliner::Controller::Role';
 subtest 'action_tree: returns all actions when new role' => sub {
     _setup();
 
-    my $controller = _build_controller( actions => [ { key => 'action.topics.category.view' } ] );
+    my $controller = _build_controller( actions => [ { key => 'action.ci.admin' } ] );
 
     my $c = _build_c( req => { params => {} }, authenticate => {} );
 
@@ -32,7 +32,7 @@ subtest 'action_tree: returns all actions when new role' => sub {
 
     is scalar @$actions, 1;
 
-    is $actions->[0]->{key}, 'action.topics';
+    is $actions->[0]->{key}, 'action.ci';
 };
 
 subtest 'action_tree: returns action tree' => sub {
@@ -44,13 +44,13 @@ subtest 'action_tree: returns action tree' => sub {
             role    => 'Role',
             actions => [
                 {
-                    action => 'action.topics.category.view'
+                    action => 'action.ci.admin'
                 }
             ]
         }
     );
 
-    my $controller = _build_controller( actions => [ { key => 'action.topics.category.view' } ] );
+    my $controller = _build_controller( actions => [ { key => 'action.ci.admin' } ] );
 
     my $c = _build_c( req => { params => { id_role => '1' } }, authenticate => {} );
 
@@ -58,32 +58,24 @@ subtest 'action_tree: returns action tree' => sub {
 
     cmp_deeply $c->stash,
       {
-        json => [
+        'json' => [
             {
-                'icon'     => '/static/images/icons/action_folder.svg',
-                'text'     => 'topics',
-                'children' => [
+                'draggable' => \0,
+                'children'  => [
                     {
-                        'icon'      => '/static/images/icons/file.svg',
-                        '_modified' => 1,
-                        'children'  => [
-                            {
-                                'icon' => '/static/images/icons/checkbox.svg',
-                                'text' => undef,
-                                'id'   => 'action.topics.category.view',
-                                'leaf' => \1,
-                                'key'  => 'action.topics.category.view'
-                            }
-                        ],
-                        'key'       => 'action.topics.category',
-                        'text'      => 'category',
-                        'leaf'      => \0,
-                        'draggable' => \0
+                        'icon'             => '/static/images/icons/checkbox.svg',
+                        'id'               => 'action.ci.admin',
+                        'text'             => undef,
+                        'bounds_available' => \0,
+                        'key'              => 'action.ci.admin',
+                        'leaf'             => \1
                     }
                 ],
+                'icon'      => '/static/images/icons/file.svg',
+                'key'       => 'action.ci',
+                'text'      => 'ci',
                 'leaf'      => \0,
-                'draggable' => \0,
-                'key'       => 'action.topics'
+                '_modified' => 1
             }
         ]
       };
@@ -98,14 +90,14 @@ subtest 'action_tree: searches through actions' => sub {
             role    => 'Role',
             actions => [
                 {
-                    action => 'action.topics.category.view',
+                    action => 'action.ci.admin',
                 }
             ]
         }
     );
 
     my $controller =
-      _build_controller( actions => [ { key => 'action.topics.category.view', name => 'View topics' } ] );
+      _build_controller( actions => [ { key => 'action.ci.admin', name => 'View topics' } ] );
 
     my $c = _build_c( req => { params => { id_role => '1', query => 'topics' } }, authenticate => {} );
 
@@ -117,7 +109,8 @@ subtest 'action_tree: searches through actions' => sub {
             {
                 'icon' => '/static/images/icons/checkbox.svg',
                 'text' => 'View topics',
-                'id'   => 'action.topics.category.view',
+                'id'   => 'action.ci.admin',
+                'bounds_available' => \0,
                 'leaf' => \1
             }
         ]
@@ -242,6 +235,144 @@ subtest 'update: updates role' => sub {
             }
         }
     );
+};
+
+subtest 'update: creates role with actions' => sub {
+    _setup();
+
+    local $Baseliner::_no_cache = 1;
+
+    my $controller = _build_controller();
+    my $c = _build_c(
+        req => {
+            params => {
+                name         => 'Developer',
+                role_actions => JSON::encode_json( [ { action => 'action.some', bounds => [ { foo => 'bar' } ] } ] )
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one();
+
+    is_deeply $role_updated->{actions},
+      [
+        {
+            'action' => 'action.some',
+            'bounds' => [
+                {
+                    'foo' => 'bar'
+                }
+            ]
+        }
+      ];
+};
+
+subtest 'update: creates role with actions converting no bounds' => sub {
+    _setup();
+
+    local $Baseliner::_no_cache = 1;
+
+    my $controller = _build_controller();
+    my $c = _build_c(
+        req => {
+            params => {
+                name         => 'Developer',
+                role_actions => JSON::encode_json( [ { action => 'action.some', bounds => '' } ] )
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one();
+
+    is_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ {} ] } ];
+};
+
+subtest 'update: creates role with actions converting empty bounds to no bounds' => sub {
+    _setup();
+
+    local $Baseliner::_no_cache = 1;
+
+    my $controller = _build_controller();
+    my $c = _build_c(
+        req => {
+            params => {
+                name         => 'Developer',
+                role_actions => JSON::encode_json( [ { action => 'action.some', bounds => [ {'' => ''}, { foo => 'bar' } ] } ] )
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one();
+
+    is_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ {}, { foo => 'bar' } ] } ];
+};
+
+subtest 'update: creates role with actions removing private keys' => sub {
+    _setup();
+
+    local $Baseliner::_no_cache = 1;
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                name         => 'Developer',
+                role_actions => JSON::encode_json(
+                    [
+                        {
+                            action => 'action.some',
+                            bounds => [
+                                { foo => 'bar', _deny => 1, _foo_title => 'Bar' },
+                            ]
+                        }
+                    ]
+                )
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one();
+
+    is_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ { _deny => 1, foo => 'bar' } ] } ];
+};
+
+subtest 'update: creates role with actions removing duplications' => sub {
+    _setup();
+
+    local $Baseliner::_no_cache = 1;
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                name         => 'Developer',
+                role_actions => JSON::encode_json(
+                    [
+                        {
+                            action => 'action.some',
+                            bounds => [
+                                { '' => '' },
+                                {},
+                                { foo => 'bar' },
+                                { foo => 'bar' },
+                                { foo => 'bar', another => 'here' }
+                            ]
+                        }
+                    ]
+                )
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one();
+
+    is_deeply $role_updated->{actions},
+      [ { 'action' => 'action.some', 'bounds' => [ {}, { foo => 'bar' }, { foo => 'bar', another => 'here' } ] } ];
 };
 
 subtest 'update: does not update role with same name as another' => sub {
@@ -378,7 +509,7 @@ subtest 'duplicate: returns correct name' => sub {
     _setup();
 
     my $id_role1 = TestSetup->create_role(role => 'Role');
-    my $controller = _build_controller( actions => [ { key => 'action.topics.category.view' } ] );
+    my $controller = _build_controller( actions => [ { key => 'action.ci.admin' } ] );
     my $c = _build_c( req => { params => { id_role => $id_role1, role => 'Role'} }, authenticate => {} );
     $controller->duplicate($c);
 
@@ -448,15 +579,152 @@ subtest 'json: returns correct successful response without filter' => sub {
     is $c->stash->{json}{totalCount}, 2;
 };
 
+subtest 'action_info: returns no info for unknown action' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c( req => { params => { action => 'action.unknown' } } );
+
+    my $controller = _build_controller();
+
+    $controller->action_info($c);
+
+    cmp_deeply $c->stash->{json}, {success => \0};
+};
+
+subtest 'action_info: returns info action' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main',
+        'action.some' => { bounds => [ { key => 'foo', name => 'Foo' }, { key => 'bar', name => 'Bar' } ] } );
+
+    my $c = mock_catalyst_c( req => { params => { action => 'action.some' } } );
+
+    my $controller = _build_controller();
+
+    $controller->action_info($c);
+
+    cmp_deeply $c->stash->{json},
+      {
+        success => \1,
+        info    => {
+            values => [],
+            action => 'action.some',
+            bounds => [
+                {
+                    key     => 'foo',
+                    name    => 'Foo',
+                    depends => undef,
+                },
+                {
+                    key     => 'bar',
+                    name    => 'Bar',
+                    depends => undef,
+                }
+            ]
+        }
+      };
+};
+
+subtest 'bounds: returns no data when unknown action' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c( req => { params => { action => 'action.unknown' } } );
+
+    my $controller = _build_controller();
+
+    $controller->bounds($c);
+
+    cmp_deeply $c->stash->{json}, {
+        'data' => [
+            {
+                'id'    => '',
+                'title' => 'Any'
+            }
+        ],
+        totalCount => 1
+    };
+};
+
+subtest 'bounds: returns no data when action has no bounds' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.some' => {} );
+
+    my $c = mock_catalyst_c( req => { params => { action => 'action.some' } } );
+
+    my $controller = _build_controller();
+
+    $controller->bounds($c);
+
+    cmp_deeply $c->stash->{json}, {
+        'data' => [
+            {
+                'id'    => '',
+                'title' => 'Any'
+            }
+        ],
+        totalCount => 1
+    };
+};
+
+subtest 'bounds: returns available bounds for action' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add(
+        'main',
+        'action.some' => {
+            bounds =>
+              [ { key => 'foo', name => 'Foo', handler => 'TestRoleAction=bounds' }, { key => 'bar', name => 'Bar' } ]
+        }
+    );
+
+    my $c = mock_catalyst_c( req => { params => { action => 'action.some', bound => 'foo' } } );
+
+    my $controller = _build_controller();
+
+    $controller->bounds($c);
+
+    cmp_deeply $c->stash->{json},
+      { data => [ { id => '', title => 'Any' }, { id => 'id', title => 'Title' } ], totalCount => 2, };
+};
+
+subtest 'bounds: returns available bounds for action with filter' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add(
+        'main',
+        'action.some' => {
+            bounds =>
+              [ { key => 'foo', name => 'Foo', handler => 'TestRoleAction=bounds' }, { key => 'bar', name => 'Bar' } ]
+        }
+    );
+
+    my $c = mock_catalyst_c(
+        req => { params => { action => 'action.some', bound => 'foo', filter => JSON::encode_json( { filter => 'me' } ) } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->bounds($c);
+
+    cmp_deeply $c->stash->{json},
+      { data => [ { id => '', title => 'Any' }, { id => 'filtered', title => 'Filtered' } ], totalCount => 2, };
+};
+
+done_testing;
+
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event', 'BaselinerX::Type::Statement',
-        'BaselinerX::CI',          'BaselinerX::Events',
-        'Baseliner::Model::Rules',
-        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::CI',
+        'BaselinerX::Events',
         'BaselinerX::Fieldlets',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service',
+        'Baseliner::Model::Rules',
         'Baseliner::Model::Topic',
-
     );
 
     mdb->master->drop;
@@ -470,7 +738,22 @@ sub _build_controller {
     my (%params) = @_;
 
     my $actions = Test::MonkeyMock->new;
-    $actions->mock( list => sub { @{ $params{actions} || [] } } );
+    $actions->mock(
+        list => sub {
+            my @actions = @{ $params{actions} || [] };
+
+            my @objects;
+            foreach my $action (@actions) {
+                my $mock = Test::MonkeyMock->new;
+                $mock->mock( key    => sub { $action->{key} } );
+                $mock->mock( name   => sub { $action->{name} } );
+                $mock->mock( bounds => sub { } );
+                push @objects, $mock;
+            }
+
+            return @objects;
+        }
+    );
 
     my $controller = Baseliner::Controller::Role->new( application => '' );
 
@@ -482,4 +765,27 @@ sub _build_controller {
 
 sub _build_c { mock_catalyst_c(@_); }
 
-done_testing;
+package TestRoleAction;
+
+sub new {
+    my $class = shift;
+
+    my $self = {};
+    bless $self, $class;
+
+    return $self;
+}
+
+sub bounds {
+    my $self = shift;
+    my (%params) = @_;
+
+    return ({id => 'filtered', title => 'Filtered'}) if $params{filter};
+
+    (
+        {
+            id => 'id',
+            title => 'Title',
+        }
+    )
+}

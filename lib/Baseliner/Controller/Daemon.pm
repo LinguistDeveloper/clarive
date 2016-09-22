@@ -10,7 +10,7 @@ use v5.10;
 use experimental 'switch';
 BEGIN { extends 'Catalyst::Controller' }
 
-register 'action.admin.daemon' => { name => 'Administer daemons'};
+register 'action.admin.daemon' => { name => _locl('Administer daemons') };
 register 'menu.admin.daemon' => { label => 'Daemons', url_comp=>'/daemon/grid', title=>'Daemons', icon=>'/static/images/icons/daemon.svg', action => 'action.admin.daemon'};
 
 sub grid : Local {

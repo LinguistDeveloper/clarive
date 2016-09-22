@@ -34,11 +34,12 @@ subtest 'to_and_cc: with params' => sub {
 
     $controller->to_and_cc($c);
     cmp_deeply $c->stash,
-        {
+      {
         json => {
             success => \1,
             data    => [
-                {   id   => 'user\/1300',
+                {
+                    id   => 'user\/1300',
                     long => '',
                     name => 'user\/1300',
                     ns   => 'user\/1300',
@@ -147,7 +148,99 @@ subtest 'to_and_cc: returns empty values from query' => sub {
     cmp_deeply $c->stash->{json}->{data}, [];
 };
 
+subtest 'inbox_json: returns empty inbox' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username );
+
+    $controller->inbox_json($c);
+
+    is_deeply $c->stash,
+      {
+        username => $user->username,
+        messages => {
+            total => 0,
+            data  => []
+        }
+      };
+};
+
+subtest 'inbox_json: returns inbox' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user();
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username );
+
+    TestSetup->create_message( queue => [ { username => $user->username } ] );
+
+    $controller->inbox_json($c);
+
+    cmp_deeply $c->stash,
+      {
+        username => $user->username,
+        messages => {
+            total => 1,
+            data  => [ ignore() ]
+        }
+      };
+};
+
+subtest 'inbox_json: returns inbox for another user if has permission' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.admin.users'
+            }
+        ]
+    );
+
+    my $user = TestSetup->create_user( project => $project, id_role => $id_role );
+
+    my $otheruser = TestSetup->create_user( username => 'otheruser' );
+
+    TestSetup->create_message( queue => [ { username => $otheruser->username } ] );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, req => { params => { username => $otheruser->username } } );
+
+    $controller->inbox_json($c);
+
+    cmp_deeply $c->stash,
+      {
+        username => $otheruser->username,
+        messages => {
+            total => 1,
+            data  => [ ignore() ]
+        }
+      };
+};
+
 done_testing;
+
+sub _setup {
+    TestUtils->setup_registry(
+        'BaselinerX::Type::Action',  'BaselinerX::Type::Menu',
+        'BaselinerX::Type::Config',  'BaselinerX::Type::Event',
+        'BaselinerX::Type::Service', 'BaselinerX::CI',
+        'BaselinerX::Auth',          'Baseliner::Controller::User',
+    );
+
+    TestUtils->cleanup_cis;
+
+    mdb->message->drop;
+    mdb->role->drop;
+}
 
 sub _build_controller {
     my (%params) = @_;
@@ -157,23 +250,4 @@ sub _build_controller {
 
 sub _build_c {
     mock_catalyst_c( username => 'root', @_ );
-}
-
-sub _setup {
-    Baseliner::Core::Registry->clear();
-
-    TestUtils->setup_registry(
-        'Baseliner::Controller::CI',
-        'Baseliner::Model::Jobs',
-        'Baseliner::Model::Topic'
-    );
-
-    TestUtils->cleanup_cis();
-
-    TestUtils->register_ci_events();
-
-    mdb->master->drop;
-    mdb->master_rel->drop;
-    mdb->master_doc->drop;
-    mdb->role->drop;
 }

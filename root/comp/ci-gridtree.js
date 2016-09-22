@@ -454,7 +454,7 @@
                         ci_export_file('/ci/export_file', 'csv', params.item, 'FrameDownload')} }
                 ]
             },
-            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.svg', cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.svg', hidden: !can_save, cls: 'x-btn-text-icon', 
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.svg', handler:function(){ ci_import('yaml') } },
                     { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_import('csv', params.item) } }
