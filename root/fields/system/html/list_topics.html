@@ -8,9 +8,8 @@
 <%perl>
 my $iid = Util->_md5;
 my $ix = 0;
-my $table = $c->build_helper('Topics')->list_topics($c, $meta, $data, $user_security);
+my $table = $c->build_helper('Topics')->list_topics($meta, $data, $user_security);
 </%perl>
-
 %  if ( !$meta->{hidden} ) {
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0">
