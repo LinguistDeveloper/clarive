@@ -1,3 +1,4 @@
+
 Ext.Panel.prototype.setTabTip = function(msg) {
     var tabPanel = this.findParentByType(Ext.TabPanel);
     if (tabPanel) {
@@ -35,7 +36,21 @@ Cla.id = function(prefix) {
     return (prefix||'cla') + '-' + Ext.id() + '-' + Date.now();
 }
 
-// File loader
+Cla.iconTplList = new Ext.XTemplate(
+        '<tpl for=".">'
+       +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span></div>'
+       +'</tpl>'
+    );
+Cla.iconTplField = new Ext.XTemplate(
+        '<tpl for=".">'
+       +  '<span id="boot" class="ui-ci-class" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span>'
+       +'</tpl>'
+    );
+
 Baseliner.loadFile = function(filename, filetype){
 
     var rnd = Math.floor(Math.random()*80000);

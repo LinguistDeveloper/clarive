@@ -593,6 +593,7 @@ sub list_classes {
     }else{
         push @ret, packages_that_do( $role );
     }
+    @ret = _unique @ret;
     map {
         my $pkg = $_;
         ( my $name = $pkg ) =~ s/^BaselinerX::CI:://g;
@@ -602,7 +603,9 @@ sub list_classes {
 
 sub list_roles {
     my ($self, %p) = @_;
+
     $p{name_format} //= '';
+
     my $name_transform = sub {
         my $name = shift;
         return $name if $p{name_format} eq 'full';
@@ -649,21 +652,59 @@ sub class_methods : Local {
 }
 
 sub classes : Local : Does('Ajax') {
-    my ($self, $c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
-    my $role = $p->{role};
-    my $query = $p->{query};
-    my @classes = map { $$_{name_loc}=_loc('ci:'.$$_{name}); $_ } sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes($role);
-    @classes = Util->query_grep( query=>$query, fields=>[qw(name classname name_loc)], rows=>\@classes ) if length $query;
-    $c->stash->{json} = { data=>\@classes, totalCount=>scalar(@classes) };
+
+    my $role  = $p->{role};
+    my $query = $p->{query} // '';
+
+    my @classes = map { $$_{name_loc} = _loc( 'ci:' . $$_{name} ); $_ }
+        sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes($role);
+
+    if ( $query =~ /^Baseliner/ ) {
+        @classes = grep { $query eq $_->{classname} } @classes;
+        $query = '' if (@classes);
+    }
+
+    @classes = Util->query_grep( query => $query, fields => [qw(name classname name_loc)], rows => \@classes )
+        if($query);
+
+    my $count_class = scalar (@classes);
+
+    @classes = Util->slice_page(
+        data  => \@classes,
+        start => $p->{start},
+        limit => $p->{limit}
+    ) if ($p->{limit} && $p->{limit} != -1);
+
+    $c->stash->{json} = { data => \@classes, totalCount => $count_class };
     $c->forward('View::JSON');
 }
 
 sub roles : Local : Does('Ajax') {
-    my ($self, $c) = @_;
-    my $name_format = $c->req->params->{name_format};
+    my ( $self, $c ) = @_;
+
+    my $p = $c->req->params;
+    my $name_format = $p->{name_format};
     my @roles = $self->list_roles( name_format=>$name_format, sort => 'name' );
-    $c->stash->{json} = { data=>\@roles, totalCount=>scalar(@roles) };
+
+    if ( $p->{query} ) {
+        my @array_query = split( ' ', $p->{query} );
+        @roles = $p->{query} =~ /^Baseliner/
+            ? grep ${ { map { $_, 1 } @array_query } }{ $_->{role} }, @roles
+            : grep ${ { map { $_, 1 } @array_query } }{ $_->{name} }, @roles;
+    }
+
+    my $count_role = scalar (@roles);
+
+    @roles = Util->slice_page(
+        data  => \@roles,
+        start => $p->{start},
+        limit => $p->{limit}
+    ) if ( $p->{limit} && $p->{limit} != -1);
+
+    $c->stash->{json} = { data => \@roles, totalCount => $count_role };
     $c->forward('View::JSON');
 }
 

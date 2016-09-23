@@ -11,6 +11,8 @@ use TestUtils ':catalyst';
 use TestSetup;
 use TestGit;
 
+use Baseliner::Utils qw(_array);
+
 use Clarive::ci;
 use Clarive::mdb;
 
@@ -20,6 +22,95 @@ use BaselinerX::CI::ssh_agent;
 use BaselinerX::Type::Action;
 
 use_ok 'Baseliner::Controller::CI';
+
+subtest 'roles: returns ci role paging' => sub {
+    _setup();
+
+    my $project    = TestUtils->create_ci('project');
+    my $id_role    = TestSetup->create_role();
+    my $user       = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { limit => '3', start => '0' } }, username => $user->name );
+    $controller->roles($c);
+
+    my $number_of_element = scalar( _array $c->stash->{json}->{data} );
+    is $number_of_element, 3;
+};
+
+subtest 'roles: returns ci role without paging' => sub {
+    _setup();
+
+    my $project    = TestUtils->create_ci('project');
+    my $id_role    = TestSetup->create_role();
+    my $user       = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { limit => '3', start => '0' } }, username => $user->name );
+    $controller->roles($c);
+
+    ok grep { $_->{name} eq 'All' } _array $c->stash->{json}->{data};
+};
+
+subtest 'classes: returns class role paging' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { role =>'Baseliner::Role::CI',limit => '3', start => '0'}  },
+        username => $user->name);
+    $controller->classes($c);
+
+    my $number_of_element = scalar( _array $c->stash->{json}->{data} );
+    is $number_of_element, 3;
+};
+
+subtest 'classes: returns class role without paging' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req      => { params => { role => 'Baseliner::Role::CI', limit => '-1', start => '0' } },
+        username => $user->name
+    );
+    $controller->classes($c);
+
+    ok grep { $_->{name} eq 'area' } _array $c->stash->{json}->{data};
+};
+
+subtest 'classes: returns class specified by query' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c = _build_c( req => { params => { query =>'BaselinerX::CI::area'} },username => $user->name);
+    $controller->classes($c);
+    my $class =  $c->stash->{json}->{data}[0]->{classname} ;
+
+    is $class, 'BaselinerX::CI::area';
+};
+
+subtest 'list_classes: returns unique classes' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my @roles      = [ "Baseliner::Role::CI", "Baseliner::Role::CI::Project" ];
+    my @data       = $controller->list_classes(@roles);
+
+    my $match_name_count = grep { $_->{name} =~ /project/ } @data;
+
+    is $match_name_count, 1;
+};
 
 subtest 'tree_object_depend: returns dependencies tree correctly' => sub {
     _setup();
@@ -199,6 +290,18 @@ subtest 'roles: returns all as first data item name with name_format lc and sort
 
     my $data = $c->stash->{json}->{data}->[0];
     is $data->{name}, 'all'
+};
+
+subtest 'roles: returns the role specified by query' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { query => 'Baseliner::Role::CI::Project' } } );
+
+    my $controller = _build_controller();
+    my @tree = $controller->roles($c);
+
+    my $data = $c->stash->{json}->{data}->[0];
+    is $data->{role}, 'Baseliner::Role::CI::Project'
 };
 
 subtest 'roles: returns All as first data item name with name_format short' => sub {

@@ -1,8 +1,12 @@
-(function(params){
+(function(params) {
     var data = params.data || {};
+
     var ret = Baseliner.generic_fields(data);
     var value_type = Baseliner.generic_list_fields(data);
-    Cla.help_push({ title:_('CI Combo'), path:'rules/palette/fieldlets/ci-combo' });
+    Cla.help_push({
+        title: _('CI Combo'),
+        path: 'rules/palette/fieldlets/ci-combo'
+    });
     ret.push(value_type);
     var ci_role_field = new Ext.form.Field({
         name: 'ci_role',
@@ -10,6 +14,7 @@
         value: data.ci_role || ''
     });
     ci_role_field.hide();
+
     var ci_class_field = new Ext.form.Field({
         name: 'ci_class',
         xtype: "textfield",
@@ -17,129 +22,83 @@
     });
     ci_class_field.hide();
 
+    var default_store = new Baseliner.store.CI();
+    default_store.baseParams.class = ci_class_field.value || {};
 
-    var roles_store = new Ext.data.JsonStore({
-        root: 'data',
-        allowBlank: false,
-        remoteSort: true,
-        totalProperty: 'totalCount',
-        id: 'id',
-        baseParams: Ext.apply({  start: 0, limit: 9999 }, this.baseParams ),
-        url: '/ci/roles',
-        fields: [ 'role', 'name' ]
+    var default_box = new Baseliner.DefaultBox({
+        name: 'default_value',
+        value: data.default_value,
+        store: default_store
     });
 
-   var ci_store = new Ext.data.JsonStore({
-        root: 'data',
-        remoteSort: true,
-        totalProperty: 'totalCount',
-        id: 'id',
-        baseParams: Ext.apply({  start: 0, limit: 9999 }, this.baseParams ),
-        url: '/ci/classes',
-        fields: [ 'name', 'classname' ],
-    });
-    ci_store.on('load', function(){
-        ci_class_box.setValue(data.ci_class_box);
-    });
-
-    var default_store = new Baseliner.store.CI({
-        baseParams: Ext.apply({ params:{'class': ci_class_field.value, no_vars: 1}})
-    });
-
-    default_store.on('load', function(){
-        default_box.setValue(data.default_value);
-        default_store.baseParams.class = ci_class_field.value;
-    });
-
-    var class_selected = false;
-
-    var role_box_multiselect = new Cla.SuperBox({
-        deal_combo_change: function(obj){
+    var firstRoleChange = false;
+    var role_box_multiselect = new Baseliner.CIRoleCombo({
+        value: data.var_ci_role || 'Baseliner::Role::CI',
+        name: 'var_ci_role',
+        addData : true,
+        deal_combo_change: function(obj) {
             ci_role_field.setValue('');
+            if (firstRoleChange) {
+                ci_class_box.clearValue();
+                default_box.clearValue();
+            }
+            if (data.var_ci_role.length === obj.usedRecords.items.length) firstRoleChange = true;
             var selected = [];
-            for(var i= 0; i<obj.usedRecords.items.length; i++){
+            for (var i = 0; i < obj.usedRecords.items.length; i++) {
                 var temp = obj.usedRecords.items[i].data.role;
                 selected.push(temp);
             }
             ci_role_field.setValue(selected);
-            if(class_selected){
-                ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});
-             }
-        },
-        store: roles_store,
-        name: 'var_ci_role',
-        xtype: 'combo',
-        fieldLabel: _('Roles'),
-        triggerAction: 'all',
-        valueField: 'role',
-        displayField: 'name',
-        singleMode: false,
-        value: data.var_ci_role || 'CI',
-        allowBlank: Boolean(ci_class_field.value),
-        mode: 'remote',
-        listeners:{
-            'removeitem': function(obj){
-                return this.deal_combo_change(obj);
-            },
-            'additem': function(obj){
-                return this.deal_combo_change(obj);
-            }
 
+            ci_class_box.store.baseParams = Ext.apply({
+                start: 0,
+                limit: Cla.constants.PAGE_SIZE,
+                role: ci_role_field.value
+            });
+            ci_class_box.lastQuery = null;
         }
     });
 
-    var ci_class_box = new Baseliner.SuperBox({
-        deal_combo_change: function(obj){
+    var firstClassChange = false;
+    var ci_class_box = new Baseliner.CIClassCombo({
+        value: data.ci_class_box,
+        singleMode: true,
+        name: 'ci_class_box',
+        displayField: 'name',
+        valueField: 'name',
+        pageSize: Cla.constants.PAGE_SIZE,
+        deal_combo_change: function(obj) {
             ci_class_field.setValue('');
-            var selected = [];
-            for(var i= 0; i<obj.usedRecords.items.length; i++){
-                var temp = obj.usedRecords.items[i].data.classname;
-                selected.push(temp);
-            }
-            ci_class_field.setValue(selected);
-            ci_role_field.setValue('');
-            if (obj.usedRecords.items.length){
-                Cla.enableDefaultBox(default_box);
-                default_store.load({params:{'class': ci_class_field.value, process_array: 1}});
+            var className = obj.usedRecords.items[0] ? obj.usedRecords.items[0].data.classname : '';
+            ci_class_field.setValue(className);
+
+            if (className) {
+                default_box.enable();
+                if ( data.ci_class_box) Cla.enableDefaultBox(default_box);
+                default_store.baseParams.class = ci_class_field.value;
+                default_box.lastQuery = null;
+                ci_role_field.setValue('');
+                firstClassChange = true;
             } else {
                 Cla.disableDefaultBox(default_box);
             }
-            //role_box_multiselect.setValue('');
         },
-        name: 'ci_class_box',
-        xtype: 'combo',
-        fieldLabel: _('CI class'),
-        triggerAction: 'all',
-        store: ci_store,
-        valueField: 'name',
-        displayField: 'name',
-        singleMode: true,
-        autoLoad: false,
-        mode: 'local',
-        value: data.ci_class_box,
-        listeners:{
-            'removeitem': function(obj){
+        listeners: {
+            'removeitem': function(obj) {
                 return this.deal_combo_change(obj);
             },
-            'additem': function(obj){
+            'additem': function(obj) {
                 return this.deal_combo_change(obj);
             }
         }
     });
-
-    var default_box = new Baseliner.DefaultBox({
-        store: default_store,
-        value: data.default_value
-    });
-
-    if(!ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value){
+    if (!ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value) {
         role_box_multiselect.allowBlank = false;
-        role_box_multiselect.show();
         ci_class_box.disable();
-    }else if(ci_class_field.value){
-        ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});
-        class_selected = true;
-        role_box_multiselect.allowBlank = true;
+        Cla.disableDefaultBox(default_box);
+    } else if (ci_class_field.value) {
+
+        role_box_multiselect.allowBlank = false;
         ci_class_box.allowBlank = false;
         ci_class_box.enable();
     }
@@ -172,45 +131,59 @@
     });
 
     ret.push([
-        // { xtype:'hidden', name:'fieldletType', value: 'fieldlet.system.cis' },
         {
             xtype: 'container',
             layout: 'hbox',
             fieldLabel: _('Selection method'),
-            items: [
-                {
-                    xtype: 'radiogroup',
-                    items: [
-                        { boxLabel: _('Role selection'), name: 'rdoMethod', inputValue: 'roleSelection', width: 20, checked: !ci_role_field.value && !ci_class_field.value || ci_role_field.value },
-                        { boxLabel: 'Class selection', name: 'rdoMethod', width: 20, inputValue: 'classSelection', checked: ci_class_field.value }
-                    ],
-                    listeners: {
-                        'change': function(rg,checked){
-                            ci_class_box.setValue('');
-                            if(checked.id == 'rdoRole'){
-                                ci_class_box.allowBlank = true;
-                                class_selected = false;
-                                role_box_multiselect.allowBlank = false;
-                               ci_class_box.disable();
-                            }else{
-                                ci_store.load({params:{'role': ci_role_field.value, process_array: 1}});
-                                class_selected=true;
-                                ci_class_box.allowBlank = false;
-                                role_box_multiselect.allowBlank = true;
-                                ci_class_box.enable();
-                            }
+            items: [{
+                xtype: 'radiogroup',
+                items: [{
+                    boxLabel: _('Role selection'),
+                    name: 'rdoMethod',
+                    inputValue: 'roleSelection',
+                    width: 20,
+                    checked: !ci_role_field.value && !ci_class_field.value || ci_role_field.value && !ci_class_field.value
+                }, {
+                    boxLabel: 'Class selection',
+                    name: 'rdoMethod',
+                    width: 20,
+                    inputValue: 'classSelection',
+                    checked: ci_class_field.value
+                }],
+                listeners: {
+                    'change': function(rg, checked) {
+                        ci_class_box.clearValue();
+                        default_box.clearValue();
+
+                        if (checked.inputValue == 'roleSelection') {
+                            ci_class_box.allowBlank = false;
+                            role_box_multiselect.allowBlank = false;
+                            ci_class_box.clearInvalid();
+                            default_box.disable();
+                            ci_class_box.disable();
+
+                        } else {
+                            ci_class_box.allowBlank = false;
+                            role_box_multiselect.allowBlank = false;
+                            ci_class_box.enable();
+
                         }
                     }
                 }
-            ]
+            }]
         },
         role_box_multiselect,
         ci_class_box,
         ci_role_field,
         ci_class_field,
         default_box,
-        display_mode,
-        { xtype:'checkbox', name:'show_class', fieldLabel:_('Show class'), value: data.show_class, checked: data.show_class ? true : false }
+        display_mode, {
+            xtype: 'checkbox',
+            name: 'show_class',
+            fieldLabel: _('Show class'),
+            value: data.show_class,
+            checked: data.show_class ? true : false
+        }
     ]);
 
     return ret;

@@ -26,7 +26,7 @@ Baseliner.SuperBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     hiddenName: 'projects',
     valueField: 'mid',
     extraItemCls: 'x-tag',
-    queryValuesDelimiter: ' ', // important, so that the query parameter gets all mids in a searcheable manner, otherwise multivalues do not load
+    queryValuesDelimiter: ' ',
     get_save_data: function(){
          var arr=[];
          this.items.each(function(r){ arr.push(r.value) });
@@ -39,38 +39,16 @@ Baseliner.SuperBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     }
 });
 
-Baseliner.DefaultBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
-    minChars: 2,
-    pageSize: 20,
-    typeAhead: false,
-    loadingText: _('Searching...'),
-    resizable: true,
-    allowBlank: true,
-    lazyRender: false,
-    triggerAction: 'all',
-    msgTarget: 'under',
-    emptyText: _('Select one'),
-    displayField: 'name',
-    valueField: 'mid',
-    extraItemCls: 'x-tag',
-    queryValuesDelimiter: ' ', // important, so that the query parameter gets all mids in a searcheable manner, otherwise multivalues do not load
-    name: 'default_value',
-    xtype: 'combo',
+Baseliner.DefaultBox = Ext.extend( Baseliner.SuperBox, {
+
     fieldLabel: _('Default Value'),
     singleMode: true,
-    autoLoad: true,
-    disabled: true,
-    mode: 'local',
-    get_save_data: function(){
-         var arr=[];
-         this.items.each(function(r){ arr.push(r.value) });
-         return arr;
-    },
-    get_labels: function(){
-         var arr=[];
-         this.items.each(function(r){ arr.push(r.display) });
-         return arr;
-    }
+    mode: 'remote',
+    displayField: 'name',
+    valueField: 'mid',
+    itemSelector: 'div.search-item',
+    tpl: Cla.iconTplList,
+    displayFieldTpl: Cla.iconTplField
 });
 
 Baseliner.store.AllProjects = function(c) {
@@ -950,6 +928,66 @@ Baseliner.CIClassComboSimple = Ext.extend(Baseliner.ComboSingleRemote, {
     url: '/ci/classes'
 });
 
+Baseliner.CIRoleCombo = Ext.extend(Baseliner.SuperBox, {
+    fieldLabel: _('Roles'),
+    firstload: true,
+    initComponent: function() {
+        var self = this;
+        self.store = new Baseliner.JsonStore({
+            url: '/ci/roles',
+            fields: ['name', 'role'],
+            root: 'data',
+            remoteSort: true,
+            autoLoad: false,
+            totalProperty: 'totalCount',
+            baseParams: {
+                start: 0,
+                limit: self.ps || -1
+            },
+            id: 'id'
+        });
+        self.store.on('load', function() {
+            if (self.firstload) {
+                self.firstload = false;
+                self.setValue(self.value);
+            }
+        });
+        Baseliner.CIClassCombo.superclass.initComponent.call(this);
+    },
+    itemSelector: 'div.search-item',
+    tpl: new Ext.XTemplate(
+        '<tpl for=".">'
+       +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="/static/images/icons/class.svg" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span></div>'
+       +'</tpl>'
+    ),
+    displayFieldTpl: new Ext.XTemplate(
+        '<tpl for=".">'
+       +  '<span id="boot" class="ui-ci-class" style="background: transparent">'
+       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="/static/images/icons/class.svg" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
+       +  '</span>'
+       +'</tpl>'
+    ),
+    allowAddNewData: true,
+    addNewDataOnBlur: true,
+    typeAhead: true,
+    forceSelection: false,
+    pageSize: Cla.constants.PAGE_SIZE,
+    emptyText: _('Select CI Role'),
+    displayField: 'name',
+    valueField: 'role',
+    listeners: {
+        'removeitem': function(obj) {
+            return this.deal_combo_change(obj);
+        },
+        'additem': function(obj) {
+            return this.deal_combo_change(obj);
+        }
+
+    }
+});
+
 Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
     fieldLabel: _('CI Class'),
     firstload: true,
@@ -962,11 +1000,14 @@ Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
             remoteSort: true,
             autoLoad: false,
             totalProperty: 'totalCount',
-            baseParams: {  start: 0, limit: self.ps || 99999999 },
+            baseParams: {
+                start: 0,
+                limit: self.ps || -1
+            },
             id: 'id'
         });
         self.store.on('load', function(){
-            if( self.firstload ) { // For default value purpose
+            if( self.firstload ) {
                 self.firstload = false;
                 self.setValue( self.value );
             }
@@ -974,40 +1015,19 @@ Baseliner.CIClassCombo = Ext.extend(Baseliner.SuperBox, {
         Baseliner.CIClassCombo.superclass.initComponent.call(this);
     },
     itemSelector: 'div.search-item',
-    tpl: new Ext.XTemplate(
-        '<tpl for=".">'
-       +  '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
-       +  '</span></div>'
-       +'</tpl>'
-    ),
-    displayFieldTpl: new Ext.XTemplate(
-        '<tpl for=".">'
-       +  '<span id="boot" class="ui-ci-class" style="background: transparent">'
-       +  '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{[ Cla.ci_loc(values.name) ]}</strong>'
-       +  '</span>'
-       +'</tpl>'
-    ),
-    allowBlank: true,
-    resizable: true,
+    tpl: Cla.iconTplList,
+    displayFieldTpl: Cla.iconTplField,
     allowAddNewData: true,
     addNewDataOnBlur: true,
-    singleMode: false,
     typeAhead: true,
     forceSelection: false,
-    resizable: true,
-    msgTarget: 'under',
     paging: false,
     pageSize: 0,
-    loadingText: _('Searching...'),
     emptyText: _('Select CI Classes'),
-    triggerAction: 'all',
-    mode: 'remote',
     name: 'classname',
     hiddenName: 'classname',
     displayField: 'name',
     valueField: 'name',
-    extraItemCls: 'x-tag'
 });
 
 /*

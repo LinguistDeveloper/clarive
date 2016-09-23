@@ -1320,9 +1320,8 @@ msgid "Admin Roles"
 msgstr ""
 
 #: lib/Baseliner/Controller/Role.pm root/comp/catalog/manual_deploy.js
-#: root/comp/role_grid.js root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/users.js
+#: root/comp/role_grid.js root/fields/templates/config/users.js
+#: root/site/model.js
 msgid "Roles"
 msgstr ""
 
@@ -1861,6 +1860,7 @@ msgstr ""
 #: root/comp/user_info.mas root/dashlets/filtered_topics.html
 #: root/dashlets/my_topics.html root/dashlets/status_changes.html
 #: root/fields/system/js/list_revisions.js
+#: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/forms/ci_invoke.js
 #: root/site/common.js root/site/explorer.js root/site/model.js
@@ -4535,7 +4535,7 @@ msgstr ""
 msgid "CI List"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/ci_grid.js
+#: lib/BaselinerX/Fieldlets.pm
 msgid "CI Grid"
 msgstr ""
 
@@ -4641,8 +4641,8 @@ msgid "Numberfield"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm root/comp/ci-editor.js root/comp/ci-gridtree.js
-#: root/comp/topic/topic_lib_grid.js root/fields/templates/config/ci_list.js
-#: root/fields/templates/config/cis.js
+#: root/comp/topic/topic_lib_grid.js root/fields/templates/config/ci_grid.js
+#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js
 msgid "Moniker"
 msgstr ""
@@ -4658,6 +4658,7 @@ msgstr ""
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
 #: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
+#: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 msgid "Description"
@@ -4688,7 +4689,8 @@ msgstr ""
 msgid "Topic Selector"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/cis.js
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/ci_grid.js
+#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 msgid "CI Combo"
 msgstr ""
 
@@ -6401,6 +6403,7 @@ msgstr ""
 #: root/comp/revision/grid.mas root/comp/topic/topic_admin.js
 #: root/comp/user_info.mas root/comp/user_infoactions.mas
 #: root/dashlets/jobs.html root/dashlets/last_jobs.js
+#: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/model.js
@@ -7262,6 +7265,7 @@ msgstr ""
 
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
 #: root/comp/ci-viewer.js root/comp/job_new.js
+#: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/site/common.js
 msgid "Class"
@@ -12198,8 +12202,11 @@ msgstr ""
 
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/projects.js
-msgid "CI class"
+#: root/fields/templates/config/list_topics.js
+#: root/fields/templates/config/list_topics_selector.js
+#: root/fields/templates/config/projects.js root/forms/catalog_task.js
+#: root/site/common.js root/site/model.js
+msgid "Select one"
 msgstr ""
 
 #: root/fields/templates/config/ci_grid.js
@@ -12210,18 +12217,6 @@ msgstr ""
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 msgid "Role selection"
-msgstr ""
-
-#: root/fields/templates/config/ci_list.js
-msgid "List ci"
-msgstr ""
-
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/list_topics.js
-#: root/fields/templates/config/list_topics_selector.js
-#: root/fields/templates/config/projects.js root/forms/catalog_task.js
-#: root/site/common.js root/site/model.js
-msgid "Select one"
 msgstr ""
 
 #: root/fields/templates/config/cis.js
@@ -12408,6 +12403,10 @@ msgstr ""
 
 #: root/fields/templates/config/projects.js
 msgid "Project combo"
+msgstr ""
+
+#: root/fields/templates/config/projects.js
+msgid "CI class"
 msgstr ""
 
 #: root/fields/templates/config/projects.js
@@ -14083,6 +14082,10 @@ msgstr ""
 
 #: root/site/model.js
 msgid "select users or roles"
+msgstr ""
+
+#: root/site/model.js
+msgid "Select CI Role"
 msgstr ""
 
 #: root/site/model.js
