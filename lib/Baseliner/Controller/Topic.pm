@@ -1301,7 +1301,7 @@ sub filters_list : Local {
                     idfilter    => $_->{id},
                     text        => _loc($_->{name}),
                     color       => $_->{color},
-                    seq         => $_->{seq} // 0,
+                    priority    => $_->{priority} // 0,
                     cls         => 'forum label',
                     iconCls     => 'icon-no',
                     checked     => \0,
@@ -1309,7 +1309,7 @@ sub filters_list : Local {
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
             }
-            @labels = sort { $a->{seq} <=> $b->{seq} } @labels;
+            @labels = sort { $b->{priority} <=> $a->{priority} } @labels;
             push @tree, {
                 id          => 'L',
                 text        => _loc('Labels'),
@@ -1985,6 +1985,11 @@ sub report_csv : Local {
     }
 
     my $exporter = Baseliner::Model::TopicExporter->new;
+    foreach my $node (@$data) {
+        if ( $node->{labels} ) {
+            $node->{labels} = join ';', map { $_ =~ m/\;(.*)\;/; $1 } _array $node->{labels};
+        }
+    }
     my $body     = $exporter->export(
         'csv', $data,
         username   => $c->username,

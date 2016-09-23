@@ -77,10 +77,47 @@ subtest 'attach: user with permission to attach labels can attach labels' => sub
     $controller->attach($c);
 
     cmp_deeply( $c->stash,
-        { json => { msg => re(qr/Labels assigned/), success => \1 } } );
+        { json => { msg => re(qr/Label assigned/), success => \1 } } );
 
     ok (mdb->label->find_one({id => $label_id}));
     ok (mdb->topic->find_one({mid => $topic_mid, labels =>[$label_id]}));
+};
+
+subtest 'attach: updates max priority of the topic' => sub {
+    _setup();
+
+    my $label_id  = TestSetup->create_label( priority => 50 );
+    my $label_id2 = TestSetup->create_label( priority => 100 );
+    my $project   = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.labels.attach_labels' } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+    );
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                ids       => [ $label_id, $label_id2 ]
+            }
+        }
+    );
+
+    $controller->attach($c);
+
+    my $topic_doc = mdb->topic->find_one( { mid => $topic_mid } );
+    is( $topic_doc->{_sort}->{labels_max_priority}, 100 );
 };
 
 subtest 'attach: user without permission to attach labels can not attach labels' => sub {
@@ -161,6 +198,81 @@ subtest 'detach: detaches a label properly if user has permission' => sub {
     ok !(mdb->topic->find_one({mid => $topic_mid, labels =>[$label_id]}));
 };
 
+subtest 'detach: updates priority of topic' => sub {
+    _setup();
+
+    my $label_id  = TestSetup->create_label( priority => 50 );
+    my $label_id2 = TestSetup->create_label( priority => 30 );
+    my $project   = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.labels.remove_labels' } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [ $label_id, $label_id2 ]
+    );
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                ids       => [$label_id]
+            }
+        }
+    );
+    $controller->detach( $c, $topic_mid, $label_id );
+
+    my $topic_doc = ( mdb->topic->find_one( { mid => $topic_mid } ) );
+
+    is( $topic_doc->{_sort}->{labels_max_priority}, 30 );
+};
+
+subtest 'detach: removes priority from topic when last label' => sub {
+    _setup();
+
+    my $label_id = TestSetup->create_label( priority => 50 );
+    my $project  = TestUtils->create_ci('project');
+    my $id_role  = TestSetup->create_role( actions => [ { action => 'action.labels.remove_labels' } ] );
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [$label_id]
+    );
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                ids       => [$label_id]
+            }
+        }
+    );
+    $controller->detach( $c, $topic_mid, $label_id );
+
+    my $topic_doc = mdb->topic->find_one( { mid => $topic_mid } );
+
+    ok !exists $topic_doc->{_sort}->{labels_max_priority};
+};
+
 subtest 'detach: user without permission to detach can not detach a label' => sub {
     _setup();
 
@@ -225,10 +337,10 @@ subtest 'update: creates a new label if action is add' => sub {
         username => $user->username,
         req      => {
             params => {
-                action => 'add',
-                color  => '#000000',
-                name   => 'MyLabel',
-                seq    => 123
+                action   => 'add',
+                color    => '#000000',
+                name     => 'MyLabel',
+                priority => 123
             }
         }
     );
@@ -238,9 +350,9 @@ subtest 'update: creates a new label if action is add' => sub {
 
     my $new_label = mdb->label->find_one( { name => 'MyLabel' } );
 
-    is $new_label->{name},  'MyLabel';
-    is $new_label->{seq},   '123';
-    is $new_label->{color}, '#000000';
+    is $new_label->{name},     'MyLabel';
+    is $new_label->{priority}, '123';
+    is $new_label->{color},    '#000000';
 };
 
 subtest 'update: does not create label if the name already exists' => sub {
@@ -270,10 +382,10 @@ subtest 'update: does not create label if the name already exists' => sub {
         username => $user->username,
         req      => {
             params => {
-                action => 'add',
-                color  => '#000000',
-                name   => 'MyLabel',
-                seq    => 123
+                action   => 'add',
+                color    => '#000000',
+                name     => 'MyLabel',
+                priority => 123
             }
         }
     );
@@ -311,18 +423,18 @@ subtest 'update: updates label' => sub {
         project     => $project,
     );
 
-    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', seq => 123 );
+    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', priority => 123 );
 
     my $controller = _build_controller();
-    my $c          = _build_c(
+    my $c = _build_c(
         username => $user->username,
         req      => {
             params => {
-                id     => $label_id,
-                action => 'update',
-                name   => 'New Value',
-                color  => '#123123',
-                seq    => 321
+                id       => $label_id,
+                action   => 'update',
+                name     => 'New Value',
+                color    => '#123123',
+                priority => 321
             }
         }
     );
@@ -333,8 +445,50 @@ subtest 'update: updates label' => sub {
     my $updated_label = mdb->label->find_one( { id => $label_id } );
 
     is $updated_label->{name},  'New Value';
-    is $updated_label->{seq},   '321';
+    is $updated_label->{priority},   '321';
     is $updated_label->{color}, '#123123';
+};
+
+subtest 'update: updates topic priority' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', priority => 200 );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [$label_id]
+    );
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                id       => $label_id,
+                action   => 'update',
+                name     => 'New Value',
+                color    => '#123123',
+                priority => 321
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $topic_doc = ( mdb->topic->find_one( { mid => $topic_mid } ) );
+
+    is( $topic_doc->{_sort}->{labels_max_priority}, 321 );
 };
 
 subtest 'update: updates label with the same name' => sub {
@@ -357,18 +511,18 @@ subtest 'update: updates label with the same name' => sub {
         project     => $project,
     );
 
-    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', seq => 123 );
+    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', priority => 123 );
 
     my $controller = _build_controller();
-    my $c          = _build_c(
+    my $c = _build_c(
         username => $user->username,
         req      => {
             params => {
-                id     => $label_id,
-                action => 'update',
-                name   => 'MyLabel',
-                color  => '#123123',
-                seq    => 321
+                id       => $label_id,
+                action   => 'update',
+                name     => 'MyLabel',
+                color    => '#123123',
+                priority => 321
             }
         }
     );
@@ -401,20 +555,20 @@ subtest 'update: returns an error when new name already exists' => sub {
         project     => $project,
     );
 
-    TestSetup->create_label( name => 'OtherLabel', color => '#000000', seq => 123 );
+    TestSetup->create_label( name => 'OtherLabel', color => '#000000', priority => 123 );
 
-    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', seq => 123 );
+    my $label_id = TestSetup->create_label( name => 'MyLabel', color => '#000000', priority => 123 );
 
     my $controller = _build_controller();
-    my $c          = _build_c(
+    my $c = _build_c(
         username => $user->username,
         req      => {
             params => {
-                id     => $label_id,
-                action => 'update',
-                name   => 'OtherLabel',
-                color  => '#123123',
-                seq    => 321
+                id       => $label_id,
+                action   => 'update',
+                name     => 'OtherLabel',
+                color    => '#123123',
+                priority => 321
             }
         }
     );
@@ -470,6 +624,101 @@ subtest 'delete: removes a label properly' => sub {
     cmp_deeply( $c->stash, { json => { msg => re(qr/Labels deleted/), success => \1 } } );
 
     ok !(mdb->label->find_one({id => $label_id}));
+};
+
+subtest 'delete: updates topics priority' => sub {
+    _setup();
+
+    my $label_id  = TestSetup->create_label( name => "MyLabel", priority => 200 );
+    my $label_id2 = TestSetup->create_label( name => "MyLabel", priority => 100 );
+    my $project   = TestUtils->create_ci('project');
+    my $id_role   = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [ $label_id, $label_id2 ]
+    );
+    my $topic_mid2 = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [ $label_id, $label_id2 ]
+    );
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                color    => '000000',
+                action   => 'delete',
+                label    => 'MyLabel',
+                projects => $project,
+                ids      => $label_id
+            }
+        }
+    );
+    $controller->delete($c);
+    my $topic_doc1 = mdb->topic->find_one( { mid => $topic_mid } );
+    my $topic_doc2 = mdb->topic->find_one( { mid => $topic_mid2 } );
+
+    is( $topic_doc1->{_sort}->{labels_max_priority}, 100 );
+    is( $topic_doc2->{_sort}->{labels_max_priority}, 100 );
+};
+
+subtest 'delete: removes priority when last label' => sub {
+    _setup();
+
+    my $label_id = TestSetup->create_label( name => "MyLabel", priority => 200 );
+    my $project  = TestUtils->create_ci('project');
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [$label_id]
+    );
+    my $topic_mid2 = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+        labels      => [$label_id]
+    );
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                color    => '000000',
+                action   => 'delete',
+                label    => 'MyLabel',
+                projects => $project,
+                ids      => $label_id
+            }
+        }
+    );
+    $controller->delete($c);
+    my $topic_doc1 = mdb->topic->find_one( { mid => $topic_mid } );
+    my $topic_doc2 = mdb->topic->find_one( { mid => $topic_mid2 } );
+
+    ok( !exists $topic_doc1->{_sort}->{labels_max_priority} );
+    ok( !exists $topic_doc2->{_sort}->{labels_max_priority} );
 };
 
 done_testing;

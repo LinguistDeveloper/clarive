@@ -3655,6 +3655,163 @@ subtest 'bounds_fields: returns fields from category' => sub {
       ];
 };
 
+subtest 'topics_for_user: returns topics sorted by labels desc' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_category } ]
+            }
+        ]
+    );
+    my $user
+        = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    mdb->label->insert(
+        {   id    => '3',
+            name  => 'A_name',
+            color => 'red'
+        }
+    );
+
+    mdb->label->insert(
+        {   id    => '2',
+            name  => 'B_name',
+            color => 'blue'
+        }
+    );
+
+    mdb->label->insert(
+        {   id    => '4',
+            name  => 'C_name',
+            color => 'green'
+        }
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        title       => 'B_name',
+        labels      => 2,
+        status      => $status
+    );
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        title       => 'C_name',
+        labels      => 4,
+        status      => $status,
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        title       => 'A_name',
+        labels      => 3,
+        status      => $status
+    );
+    mdb->topic->update( { labels => 2 }, { '$set' => { _sort => { labels_max_priority => 40 } } } );
+    mdb->topic->update( { labels => 4 }, { '$set' => { _sort => { labels_max_priority => 50 } } } );
+    mdb->topic->update( { labels => 3 }, { '$set' => { _sort => { labels_max_priority => 30 } } } );
+
+    my $model = _build_model();
+
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, sort => 'labels', dir => 'DESC' } );
+
+    is($rows[0]->{labels}->[0],'4;C_name;green');
+    is($rows[1]->{labels}->[0],'2;B_name;blue');
+    is($rows[2]->{labels}->[0],'3;A_name;red');
+};
+
+subtest 'topics_for_user: returns topics sorted by labels asc' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form();
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+    my $id_category = TestSetup->create_category( name => 'Category', id_rule => $id_rule, id_status => $status->mid );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_category } ]
+            }
+        ]
+    );
+    my $user
+        = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    mdb->label->insert(
+        {   id    => '3',
+            name  => 'A_name',
+            color => 'red'
+        }
+    );
+
+    mdb->label->insert(
+        {   id    => '2',
+            name  => 'B_name',
+            color => 'blue'
+        }
+    );
+
+    mdb->label->insert(
+        {   id    => '4',
+            name  => 'C_name',
+            color => 'green'
+        }
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        title       => 'B_name',
+        labels      => 2,
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        title       => 'C_name',
+        labels      => 4,
+        status      => $status
+    );
+
+    TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        title       => 'A_name',
+        labels      => 3,
+        status      => $status
+    );
+
+    mdb->topic->update( { labels => 2 }, { '$set' => { _sort => { labels_max_priority => 40 } } } );
+    mdb->topic->update( { labels => 4 }, { '$set' => { _sort => { labels_max_priority => 50 } } } );
+    mdb->topic->update( { labels => 3 }, { '$set' => { _sort => { labels_max_priority => 30 } } } );
+
+    my $model = _build_model();
+
+    my ( $data, @rows ) = $model->topics_for_user( { username => $user->username, sort => 'labels', dir => 'ASC' } );
+
+    is($rows[0]->{labels}->[0],'3;A_name;red');
+    is($rows[1]->{labels}->[0],'2;B_name;blue');
+    is($rows[2]->{labels}->[0],'4;C_name;green');
+};
+
+subtest 'build_sort: builds correct condition when sort by label' => sub {
+    my $model = _build_model();
+
+    is_deeply $model->build_sort( 'labels', 1 ),  { '_sort.labels_max_priority' => 1 };
+    is_deeply $model->build_sort( 'labels', -1 ),  { '_sort.labels_max_priority' => -1 };
+};
+
 done_testing();
 
 sub _setup {
