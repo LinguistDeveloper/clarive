@@ -11,14 +11,17 @@ sub upgrade {
 
     my $map_category_name_id_to_id = {};
 
+    my %category_collisions;
+    my %status_collisions;
+
     my @categories = mdb->category->find->all;
     foreach my $category (@categories) {
         my $category_name_id = _name_to_id( $category->{name} );
 
         if ( exists $map_category_name_id_to_id->{$category_name_id} ) {
-            die sprintf
-              "Category '%s' collides with $category_name_id ($map_category_name_id_to_id->{$category_name_id})",
-              Encode::encode( 'UTF-8', $category->{name} );
+            my $key = Encode::encode( 'UTF-8', $category->{name} );
+            push @{ $category_collisions{"$key ($category->{id})"} },
+              "'$category_name_id' ($map_category_name_id_to_id->{$category_name_id})";
         }
 
         $map_category_name_id_to_id->{$category_name_id} = $category->{id};
@@ -31,11 +34,23 @@ sub upgrade {
         my $status_name_id = _name_to_id( $status->{name} );
 
         if ( exists $map_status_name_id_to_id->{$status_name_id} ) {
-            die sprintf "Status '%s' collides with $status_name_id ($map_status_name_id_to_id->{$status_name_id})",
-              Encode::encode( 'UTF-8', $status->{name} );
+            my $key = Encode::encode( 'UTF-8', $status->{name} );
+            push @{ $status_collisions{"$key ($status->{id_status})"} },
+              "'$status_name_id' ($map_status_name_id_to_id->{$status_name_id})";
         }
 
         $map_status_name_id_to_id->{$status_name_id} = $status->{id_status};
+    }
+
+    if ( %category_collisions || %status_collisions ) {
+        my $category_error = join "\n",
+          map { "'$_' and " . join( ' ', @{ $category_collisions{$_} } ) } sort keys %category_collisions;
+        $category_error = "Categories:\n$category_error\n\n" if $category_error;
+        my $status_error = join "\n",
+          map { "'$_' and " . join( ' ', @{ $status_collisions{$_} } ) } sort keys %status_collisions;
+        $status_error = "Statuses:\n$status_error\n\n" if $status_error;
+
+        die "Detected collisions:\n\n" . $category_error . $status_error;
     }
 
     mdb->$BACKUP_COLLECTION->drop;
@@ -153,18 +168,18 @@ sub upgrade {
                 if ( $action->{action} =~ m/^action\.job\.(.*?)$/ ) {
                     my $type = $1;
 
-                    if ($bl && $bl ne '*') {
+                    if ( $bl && $bl ne '*' ) {
                         push @{ $actions_map->{$action_key}->{bounds} }, { bl => $bl };
                     }
                     else {
-                        push @{ $actions_map->{$action_key}->{bounds} }, { };
+                        push @{ $actions_map->{$action_key}->{bounds} }, {};
                     }
                 }
                 elsif ( $action->{action} eq 'action.ci.admin' ) {
-                    push @{ $actions_map->{$action_key}->{bounds} }, { };
+                    push @{ $actions_map->{$action_key}->{bounds} }, {};
                 }
                 elsif ( $action->{action} eq 'action.admin.rules' ) {
-                    push @{ $actions_map->{$action_key}->{bounds} }, { };
+                    push @{ $actions_map->{$action_key}->{bounds} }, {};
                 }
             }
         }
