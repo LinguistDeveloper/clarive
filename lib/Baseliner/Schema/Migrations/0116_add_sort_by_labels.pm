@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::0115_add_sort_by_labels;
+package Baseliner::Schema::Migrations::0116_add_sort_by_labels;
 use Moose;
 
 use Baseliner::Utils qw(_array);
@@ -18,13 +18,16 @@ sub upgrade {
         mdb->label->update( { id => $label->{id} }, { '$set'   => { priority => $label->{priority} } } );
     }
 
-    my @topics = mdb->topic->find()->all;
+    my $topics = mdb->topic->find();
 
-    foreach my $topic (@topics) {
+    while (my $topic = $topics->next) {
         my @topic_labels = mdb->label->find( { id => mdb->in( _array $topic->{labels} ) } )->all;
-        @topic_labels = map { $_->{seq} } @topic_labels;
         next unless @topic_labels;
-        my $max_priority = max(@topic_labels) || 0;
+
+        my @topic_seqs = map { $_->{seq} // 0 } @topic_labels;
+
+        my $max_priority = max(@topic_seqs) || 0;
+
         mdb->topic->update( { mid => $topic->{mid} }, { '$set' => { "_sort.labels_max_priority" => $max_priority } } );
     }
 }
