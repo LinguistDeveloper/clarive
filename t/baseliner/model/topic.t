@@ -2164,6 +2164,33 @@ subtest 'get_categories_permissions: returns categories for user filtered by spe
     ok grep { $_->{name} eq 'Changeset' } @categories;
 };
 
+subtest 'get_categories_permissions: returns all categories if no bounds' => sub {
+    _setup();
+
+    my $id_category1 = TestSetup->create_category( name => 'Changeset' );
+    my $id_category2 = TestSetup->create_category( name => 'KB' );
+    my $id_category3 = TestSetup->create_category( name => 'Release' );
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ {} ]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my @categories = $model->get_categories_permissions( username => $user->username, type => 'view', id => $id_category3 );
+
+    is @categories, 3;
+};
+
 subtest 'get_categories_permissions: returns nothing for user filtered by specific category that is not allowed' => sub {
     _setup();
 
