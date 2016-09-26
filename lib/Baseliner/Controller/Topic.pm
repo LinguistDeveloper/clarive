@@ -545,7 +545,7 @@ sub view : Local {
 
     my $topic_mid = $p->{topic_mid} || $p->{action};
     ($topic_mid) = _array( $topic_mid ) if ref $topic_mid eq 'ARRAY';
-    my $id_category;
+    my $id_category = $p->{new_category_id} // $p->{category_id};
 
     my $category;
 
@@ -573,6 +573,7 @@ sub view : Local {
                 $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner::Model::Permissions->user_has_action(  $c->username, 'action.home.generate_docs' ));
                 $topic_doc = $topic_ci->get_doc;
 
+                $id_category = $topic_doc->{category}->{id};
             } catch {
                 my $err = shift;
                 $c->stash->{viewKanban} = 0;
@@ -591,12 +592,12 @@ sub view : Local {
             #$c->stash->{HTMLbuttons} = Baseliner::Model::Permissions->user_has_action( $c->username, 'action.GDI.HTMLbuttons' );
         #}
 
-        my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
-        my %categories_delete = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
-        my %categories_view = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
-        my %categories_comment = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
-        my %categories_activity = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'activity', topic_mid => $topic_mid );
-        my %categories_jobs = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'jobs', topic_mid => $topic_mid );
+        my %categories_edit = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'edit', id => $id_category );
+        my %categories_delete = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'delete', id => $id_category );
+        my %categories_view = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view', id => $id_category );
+        my %categories_comment = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'comment', id => $id_category );
+        my %categories_activity = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'activity', id => $id_category );
+        my %categories_jobs = map { $_->{id} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'jobs', id => $id_category );
 
         if($topic_mid || $c->stash->{topic_mid} ){
 
@@ -622,7 +623,7 @@ sub view : Local {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
             }
 
-            if ( !Baseliner::Model::Permissions->user_has_security( $c->username, $topic_doc->{project_security} ) ) {
+            if ( !Baseliner::Model::Permissions->user_has_security( $c->username, $topic_doc->{_project_security} ) ) {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
             }
 
@@ -693,7 +694,6 @@ sub view : Local {
             # used by the Change State menu in the topic
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
         } else {
-            $id_category = $p->{new_category_id} // $p->{category_id};
             $c->stash->{category_id} //= $id_category;
 
             my $category = mdb->category->find_one({ id=>"$id_category" });

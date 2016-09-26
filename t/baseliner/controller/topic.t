@@ -3139,6 +3139,141 @@ subtest 'report_csv: returns the list of the dashlet in serve_body' => sub {
     is_string $c->stash->{serve_body}, "\xEF\xBB\xBF" . qq{"ID"\n} . qq{"FT #2122"\n} . ( "\n" x 1006 );
 };
 
+subtest 'view: returns topic data' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_changeset_category}]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 1
+            }
+        }
+    );
+    $controller->view($c);
+
+    ok $c->stash->{topic_data};
+    ok $c->stash->{topic_meta};
+};
+
+subtest 'view: returns topic with category permissions' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+    $controller->view($c);
+
+    ok !$c->stash->{permissionEdit};
+    ok !$c->stash->{permissionDelete};
+};
+
+subtest 'view: denies view of topic not allowed by project security' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $project2 = TestUtils->create_ci('project');
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [{id_category => $id_changeset_category}]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project2
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+    $controller->view($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \0,
+        msg => re(qr/User developer is not allowed to access topic/)
+    };
+};
+
 subtest 'view: allows users with action to see job monitor to see it' => sub {
     _setup();
 

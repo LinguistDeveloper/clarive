@@ -2998,7 +2998,7 @@ sub get_categories_permissions {
 
     my @id_categories = _unique map { $_->{id_category} } _array $action->{bounds};
 
-    if ($id_category) {
+    if (@id_categories && $id_category) {
         if ( grep { $id_category eq $_ } @id_categories ) {
             @id_categories = ($id_category);
         }

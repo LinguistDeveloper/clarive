@@ -557,6 +557,7 @@ sub user_has_security ($self, $username, $security) {
             my @need = _array $security->{$dimension};
             my @have = _array $user_security->{$id_role}->{$dimension};
 
+
             my @intersect = intersect @have, @need;
 
             return 1 if @intersect;
