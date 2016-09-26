@@ -1376,7 +1376,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         self.getLayout().setActiveItem( self.detail );
         var info = Baseliner.tabInfo[self.id];
-        if( info!=undefined ) info.params.swEdit = 0;
+        if (info != undefined) info.params.swEdit = 0;
 
         if(self.status_menu.items.length > 0){
             self.btn_change_status.show();
@@ -1966,8 +1966,9 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                     data.forEach(function(value) {
                         if (value.id == args.id) {
                             data_ok = 1;
-                            Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title, {
+                            Baseliner.add_tabcomp('/topic/view', args.title, {
                                 title: args.title,
+                                swEdit: 1,
                                 new_category_id: args.id,
                                 new_category_name: args.name,
                                 _parent_box: id_combo_box,
