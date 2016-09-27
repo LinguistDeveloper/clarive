@@ -183,13 +183,14 @@ sub infodetail : Local {
 
             if (@jsonprojects) {
                 push @rows,
-                    {
-                    id          => $r->{id},
-                    id_role     => $r->{id},
-                    role        => $r->{role},
-                    description => $r->{description},
-                    projects    => $projects_txt
-                    };
+                  {
+                    id           => $r->{id},
+                    id_role      => $r->{id},
+                    role         => $r->{role},
+                    description  => $r->{description},
+                    projects     => $projects_txt,
+                    account_type => ( $r->{account_type} // 'regular' )
+                  };
             }
         }
     }
@@ -374,17 +375,16 @@ sub update : Local {
                     my $user_mid;
 
                     my $ci_data = {
-                        name     => $p->{username},
-                        bl       => '*',
-                        username => $p->{username},
-                        realname => $p->{realname},
-                        alias    => $p->{alias},
-                        email    => $p->{email},
-                        phone    => $p->{phone},
-                        active   => '1',
-                        password => ci->user->encrypt_password(
-                            $p->{username}, $p->{pass}
-                        )
+                        name         => $p->{username},
+                        bl           => '*',
+                        username     => $p->{username},
+                        realname     => $p->{realname},
+                        alias        => $p->{alias},
+                        email        => $p->{email},
+                        phone        => $p->{phone},
+                        account_type => $p->{account_type},
+                        active       => '1',
+                        password     => ci->user->encrypt_password( $p->{username}, $p->{pass} )
                     };
 
                     my $ci = ci->user->new(%$ci_data);
@@ -448,19 +448,17 @@ sub update : Local {
                             my $user_mid = $user_ci->{mid};
 
                             my $ci_data = {
-                                name     => $p->{username},
-                                bl       => '*',
-                                username => $p->{username},
-                                realname => $p->{realname},
-                                alias    => $p->{alias},
-                                email    => $p->{email},
-                                phone    => $p->{phone},
-                                active   => '1',
-                                password => ci->user->encrypt_password(
-                                    $p->{username}, $p->{pass}
-                                ),
-                                project_security =>
-                                    $user_ci->{project_security}
+                                name             => $p->{username},
+                                bl               => '*',
+                                username         => $p->{username},
+                                realname         => $p->{realname},
+                                alias            => $p->{alias},
+                                email            => $p->{email},
+                                phone            => $p->{phone},
+                                account_type     => $p->{account_type},
+                                active           => '1',
+                                password         => ci->user->encrypt_password( $p->{username}, $p->{pass} ),
+                                project_security => $user_ci->{project_security}
                             };
 
                             my $ci       = ci->user->new(%$ci_data);
@@ -491,6 +489,7 @@ sub update : Local {
                             );
                         }
                         $user->update( alias => $p->{alias} ) if $p->{alias};
+                        $user->update( account_type => $p->{account_type} );
                         $user->update( email => $p->{email} );
                         $user->update( phone => $p->{phone} ) if $p->{phone};
                         $user->update( active => $p->{active} )
@@ -885,6 +884,7 @@ sub list : Local : Does('Ajax') {
     my $rs = ci->user->find($where)->fields(
         {   username      => 1,
             realname      => 1,
+            account_type  => 1,
             alias         => 1,
             email         => 1,
             active        => 1,

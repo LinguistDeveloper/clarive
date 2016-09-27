@@ -2,6 +2,7 @@ package BaselinerX::CI::user;
 use Baseliner::Moose;
 use Baseliner::Utils;
 use Baseliner::Model::Permissions;
+use Moose::Util::TypeConstraints;
 use experimental 'autoderef';
 with 'Baseliner::Role::CI::Internal';
 
@@ -35,6 +36,8 @@ has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
 has prefs      => qw(is rw isa HashRef), default => sub { +{} };
 has dashlet_config => qw(is rw isa HashRef), default => sub { +{} };
+
+has account_type => qw(default regular is rw isa), enum [qw(regular system)];
 
 has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1,
     default=>sub{ [ Util->_array(Clarive->config->{default_lang} // 'en') ] });
@@ -279,7 +282,7 @@ sub combo_list {
     my $where = { active => mdb->true };
 
     if ($query) {
-        $where->{'$or'} = [ { username => qr/$query/ }, { realname => qr/$query/ } ];
+        $where->{'$or'} = [ { username => qr/$query/i }, { realname => qr/$query/i } ];
     }
 
     my @info =

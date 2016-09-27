@@ -507,6 +507,108 @@ subtest 'login: cannot log in with local/root user and user_case uc' => sub {
       };
 };
 
+subtest 'login: denies login for system users' => sub {
+    _setup();
+
+    TestSetup->create_user( username => 'foo', password => 'admin', account_type => 'system' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        config => { authentication => { default_realm => 'none' } },
+        authenticate => { id => 'foo', password => 'admin' },
+        req => { params => { login => 'foo', password => 'admin' } },
+    );
+
+    $controller->login($c);
+
+    cmp_deeply $c->stash->{json}->{success}, \0;
+};
+
+subtest 'surrogate: surrogates to another user' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'foo' );
+    my $root = TestSetup->create_user( username => 'root' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'root', req => { params => { login => 'foo' } } );
+
+    $controller->surrogate($c);
+
+    is $c->username, 'root';
+    is $c->session->{username}, 'foo';
+};
+
+subtest 'surrogate: returns an error when user not found' => sub {
+    _setup();
+
+    my $root = TestSetup->create_user( username => 'root' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'root', req => { params => { login => 'foo' } } );
+
+    $controller->surrogate($c);
+
+    is $c->username, 'root';
+
+    is_deeply $c->stash,
+      {
+        'json' => {
+            'success' => \0,
+            'msg'     => 'Invalid User'
+        }
+      };
+};
+
+subtest 'surrogate: returns an error when user not active' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'foo', active => 0 );
+    my $root = TestSetup->create_user( username => 'root' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'root', req => { params => { login => 'foo' } } );
+
+    $controller->surrogate($c);
+
+    is $c->username, 'root';
+
+    is_deeply $c->stash,
+      {
+        'json' => {
+            'success' => \0,
+            'msg'     => 'Invalid User'
+        }
+      };
+};
+
+subtest 'surrogate: returns an error when user is system' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'foo', account_type => 'system');
+    my $root = TestSetup->create_user( username => 'root' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'root', req => { params => { login => 'foo' } } );
+
+    $controller->surrogate($c);
+
+    is $c->username, 'root';
+
+    is_deeply $c->stash,
+      {
+        'json' => {
+            'success' => \0,
+            'msg'     => 'Invalid User'
+        }
+      };
+};
+
 done_testing;
 
 sub _setup {
