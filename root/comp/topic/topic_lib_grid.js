@@ -1211,11 +1211,11 @@ Cla.topic_grid = function(params){
         return ret;
     };
 
-    var topic_name_too_narrow = false;
     var render_topic_name = function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
         //var hc = grid_topics.view.getHeaderCell(colIndex);
         //var too_short = (hc && $(hc).width() < 80) ? true : false;
+        var topic_name_too_narrow = false;
         return Baseliner.topic_name({
             link: true,
             parent_id: grid_topics.id,
