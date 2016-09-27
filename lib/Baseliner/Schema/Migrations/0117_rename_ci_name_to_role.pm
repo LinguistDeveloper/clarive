@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::0116_rename_ci_name_to_role;
+package Baseliner::Schema::Migrations::0117_rename_ci_name_to_role;
 use Moose;
 
 use Baseliner::Utils qw(_encode_json _decode_json);
