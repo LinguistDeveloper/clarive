@@ -137,55 +137,84 @@
        return { count: 0, data:[] };
     };
 
-    var ci_delete = function(){
-        var checked = multi_check_data( check_sm, 'mid' );
-        if ( checked.count > 0 ) {
-            Baseliner.ajaxEval( '/ci/delete', { mids: checked.data, collection: checked.collection }, function(res) {
-                var resultHandler = function(res) {
-                    if (res.success) {
-                        Baseliner.message(_('CI'), res.msg );
-                        check_sm.clearSelections();  // otherwise it refreshes current selected nodes
-                        ci_grid.getStore().reload();
-                    } else {
-                        Ext.Msg.alert( _('CI'), res.msg );
+    var ci_delete = function() {
+        var checked = multi_check_data(check_sm, 'mid');
+        if (checked.count > 0) {
+            var message;
+            var collection = [];
+            if (checked.count == 1) {
+                var ciName = check_sm.selections.items[0].data.item;
+                message = _('Are you sure you want to delete %1?', '<b>' + ciName + '</b>');
+            } else {
+                message = _('Are you sure you want to delete %1 %2 items?', checked.count, '<b>' + checked.collection + '</b>');
+                for (var i = 0; i < check_sm.selections.items.length; i++) {
+                    collection[i] = check_sm.selections.items[i].data.collection;
+                    if (i != 0 && collection[i - 1] != collection[i]) {
+                        message = _('Are you sure you want to delete %1 items?', checked.count, '<b>' + checked.collection + '</b>');
+                        break;
                     }
                 };
-
-                if (res.success && res.needs_confirmation) {
-                    var num_ci = res.info.length;
-                    var message = '';
-
-                    for (var i = 0; i < num_ci && i < 10; i++) {
-                        if (res.info[i].number_user === 0) {
-                            message += _('The %1 %2 does not have users asigned, delete this %3?', checked.collection, res.info[i].ci_name.bold(), checked.collection) + '<br>';
-                        } else {
-                            message += _('The %1 %2 has %3 user(s) assigned, delete this %4?', checked.collection, res.info[i].ci_name.bold(), res.info[i].number_user, checked.collection) + '<br>';
-                        }
-                    }
-
-                    if ( num_ci > 10 ){
-                        message += '[...]' + '<br>';
-                    }
-
-                    message += '<br>';
-
-                    Ext.Msg.confirm(_('Confirmation'), message,
-                        function(btn) {
-                            if (btn == 'yes') {
-                                Baseliner.ajaxEval('/ci/delete', {
-                                    mids: checked.data,
-                                    collection: checked.collection,
-                                    delete_confirm: '1'
-                                }, function(res) {
-                                    resultHandler(res);
-                                });
+            }
+            Ext.Msg.confirm(_('Confirmation'), message,
+                function(btn) {
+                    if (btn == 'yes') {
+                        Baseliner.ajaxEval('/ci/delete', {
+                            mids: checked.data,
+                            collection: checked.collection
+                        }, function(res) {
+                            var resultHandler = function(res) {
+                                if (res.success) {
+                                    Baseliner.message(_('CI'), res.msg);
+                                    check_sm.clearSelections(); // otherwise it refreshes current selected nodes
+                                    ci_grid.getStore().reload();
+                                } else {
+                                    Ext.Msg.alert(_('CI'), res.msg);
+                                }
                             };
+
+                            if (res.success && res.needs_confirmation) {
+                                var cisChecked = res.info.length;
+                                var message = '';
+
+                                for (var i = 0; i < cisChecked && i < 10; i++) {
+                                    if (res.info[i].number_user === 0) {
+                                        message += _('The %1 %2 does not have users assigned, delete this %3?',
+                                            checked.collection,
+                                            res.info[i].ci_name.bold(),
+                                            checked.collection) + '<br>';
+                                    } else {
+                                        message += _('The %1 %2 has %3 user(s) assigned, delete this %4?',
+                                            checked.collection,
+                                            res.info[i].ci_name.bold(),
+                                            res.info[i].number_user,
+                                            checked.collection) + '<br>';
+                                    }
+                                }
+
+                                if (cisChecked > 10) {
+                                    message += '[...]' + '<br>';
+                                }
+
+                                message += '<br>';
+
+                                Ext.Msg.confirm(_('Confirmation'), message,
+                                    function(btn) {
+                                        if (btn == 'yes') {
+                                            Baseliner.ajaxEval('/ci/delete', {
+                                                mids: checked.data,
+                                                collection: checked.collection,
+                                                delete_confirm: '1'
+                                            }, function(res) {
+                                                resultHandler(res);
+                                            });
+                                        };
+                                    });
+                            } else {
+                                resultHandler(res);
+                            }
                         });
-                }
-                else {
-                    resultHandler(res);
-                }
-            });
+                    }
+                });
         }
     };
 

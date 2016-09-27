@@ -7371,12 +7371,16 @@ msgid "New: %1"
 msgstr "Nuevo: %1"
 
 #: root/comp/ci-gridtree.js
-msgid "The %1 %2 does not have users asigned, delete this %3?"
-msgstr "El %1 %2 no tiene usuarios asignados, ¿desea borrar el %3?"
+msgid "Are you sure you want to delete %1?"
+msgstr "¿Está seguro de querer borrar %1?"
 
 #: root/comp/ci-gridtree.js
-msgid "The %1 %2 has %3 user(s) assigned, delete this %4?"
-msgstr "El %1 %2 tiene %3 usuarios asignados, ¿desea borrar el %4?"
+msgid "Are you sure you want to delete %1 %2 items?"
+msgstr "¿Está seguro de querer borrar %1 %2?"
+
+#: root/comp/ci-gridtree.js
+msgid "Are you sure you want to delete %1 items?"
+msgstr "¿Está seguro de querer borrar %1 elementos?"
 
 #: root/comp/ci-gridtree.js root/comp/config/config_grid.mas
 #: root/comp/configlist/grid.mas root/comp/daemon_grid.js
@@ -7390,6 +7394,14 @@ msgstr "El %1 %2 tiene %3 usuarios asignados, ¿desea borrar el %4?"
 #: root/site/common.js root/site/kanban.js root/site/tabfu.js
 msgid "Confirmation"
 msgstr "Confirmación"
+
+#: root/comp/ci-gridtree.js
+msgid "The %1 %2 does not have users assigned, delete this %3?"
+msgstr ""
+
+#: root/comp/ci-gridtree.js
+msgid "The %1 %2 has %3 user(s) assigned, delete this %4?"
+msgstr "El %1 %2 tiene %3 usuarios asignados, ¿desea borrar el %4?"
 
 #: root/comp/ci-gridtree.js root/comp/rules.js
 msgid "Select rows first"
