@@ -271,6 +271,24 @@ method from_user_date( $date ) {
     return $cdate->to_tz( Util->_tz() );
 }
 
+sub combo_list {
+    my ( $self, $p ) = @_;
+
+    my $query = quotemeta($p->{query} // '');
+
+    my $where = { active => mdb->true };
+
+    if ($query) {
+        $where->{'$or'} = [ { username => qr/$query/ }, { realname => qr/$query/ } ];
+    }
+
+    my @info =
+      sort { lc $a->{realname} cmp lc $b->{realname} }
+      map { { username => $_->{username}, realname => ( $_->{realname} || $_->{username} ) } } $self->find($where)->all;
+
+    return { data => [@info] };
+}
+
 1;
 
 __END__

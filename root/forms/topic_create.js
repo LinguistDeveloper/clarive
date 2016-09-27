@@ -1,5 +1,8 @@
 (function(params) {
-    Cla.help_push({ title:_('Create a new topic'), path:'rules/palette/job/create-topic' });
+    Cla.help_push({
+        title: _('Create a new topic'),
+        path: 'rules/palette/job/create-topic'
+    });
     var data = params.data || {};
 
     return [{
@@ -22,13 +25,10 @@
             allowBlank: false,
             value: data.status,
             singleMode: true
-        }), {
-            xtype: 'textfield',
-            name: "username",
-            fieldLabel: _("Owner of the Topic (Blank for 'clarive')"),
-            allowBlank: true,
+        }),
+        new Baseliner.UserBox({
             value: data.username
-        },
+        }),
         new Baseliner.DataEditor({
             name: 'variables',
             title: _('Topic data. Type id_field in Key and string or variable (${variable}) in Value'),
