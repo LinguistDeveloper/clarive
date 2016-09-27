@@ -14,15 +14,18 @@ sub upgrade {
             next;
         };
 
-        foreach my $atribute (@$rule_tree) {
-            $atribute->{attributes}->{data}->{var_ci_role}[0] = 'Baseliner::Role::CI'
-              if (
-                ( exists $atribute->{attributes}->{data}->{var_ci_role} )
-                && (   ( $atribute->{attributes}->{data}->{var_ci_role}[0] eq "" )
-                    || ( $atribute->{attributes}->{data}->{var_ci_role}[0] eq "CI" )
-                    || ( $atribute->{attributes}->{data}->{var_ci_role}[0] eq "All" )
-                    || ( $atribute->{attributes}->{data}->{var_ci_role}[0] eq "Todos" ) )
-              );
+        foreach my $attribute (@$rule_tree) {
+            next unless my $role = $attribute->{attributes}->{data}->{var_ci_role};
+
+            if ( ref $role ne 'ARRAY' ) {
+                $role = [$role];
+            }
+
+            next unless grep { lc( $role->[0] ) eq $_ } ( '', 'ci', 'all', 'todos' );
+
+            $role->[0] = 'Baseliner::Role::CI';
+
+            $attribute->{attributes}->{data}->{var_ci_role} = $role;
         }
 
         $rule_tree = _encode_json($rule_tree);
