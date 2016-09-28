@@ -32,6 +32,11 @@ The following information needs to be provided for creation:
 
 - `User`: The Userid the user will use to logon to Clarive Software
 
+- `Account type`: Set the type of account. Two types:
+
+   * Regular - For all users, they can use Clarive with all their functionalities.
+   * System - Users that cannot login or surrogate but can be used in rules. These users are not counted for the user limit per license.
+
 - `Password`: The password the user will use in combination with the userid to logon to Clarive
 
 - `Confirm Password`: The password the user will use in combination with the userid to logon to Clarive

@@ -1,6 +1,8 @@
 (function(params) {
-
-    Cla.help_push({ title:_('Change topic status'), path:'rules/palette/job/change-status' });
+    Cla.help_push({
+        title: _('Change topic status'),
+        path: 'rules/palette/job/change-status'
+    });
 
     var data = params.data || {};
 
@@ -25,11 +27,9 @@
             value: data.topics
         },
         old_status,
-        new_status, {
-            xtype: 'textfield',
-            fieldLabel: _('User'),
-            name: 'username',
+        new_status,
+        new Baseliner.UserBox({
             value: data.username
-        }
+        }),
     ]
 })

@@ -19,7 +19,8 @@
             {  name: 'language_pref' },
             {  name: 'phone' },
             {  name: 'ts' },
-            {  name: 'active'}
+            {  name: 'active'},
+            {  name: 'account_type'}
         ],
         listeners: {
             'load': function(){
@@ -630,15 +631,34 @@
                         // left column
                         defaults:{anchor:'100%'}
                         ,items:[
-                            { fieldLabel: _('User'), name: 'username', emptyText: 'Usuario', allowBlank:false, xtype: 'textfield'}
+                            { fieldLabel: _('User'), name: 'username', emptyText: 'User', allowBlank:false, xtype: 'textfield'}
                             ]
                         },
                         {
                         // right column
                         defaults:{anchor:'100%'}
                         ,items:[
-                            //{ fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'}
-                            { fieldLabel: _('Password'), name: 'pass', id:'pass', emptyText: '********', xtype: 'textfield',  inputType: 'password'}
+                            new Ext.form.ComboBox({
+                                name: 'account_type',
+                                hiddenName: 'account_type',
+                                fieldLabel: _('Account Type'),
+                                editable: false,
+                                typeAhead: true,
+                                triggerAction: 'all',
+                                lazyRender: true,
+                                mode: 'local',
+                                allowBlank: false,
+                                store: new Ext.data.ArrayStore({
+                                    id: 0,
+                                    fields: ['accountType', 'displayText'],
+                                    data: [
+                                        ['regular', _('Regular')],
+                                        ['system', _('System')]
+                                    ]
+                                }),
+                                valueField: 'accountType',
+                                displayField: 'displayText'
+                            })
                             ]
                         }
                     ]
@@ -657,7 +677,7 @@
                         // left column
                         defaults:{anchor:'100%'}
                         ,items:[
-                            { fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'}
+                            { fieldLabel: _('Password'), name: 'pass', id:'pass', emptyText: '********', xtype: 'textfield',  inputType: 'password'},
                             ]
                         },
                         {
@@ -679,6 +699,7 @@
                     },
                     
                     { anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},                   
+                    { fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'},
                     {
                     // column layout with 2 columns
                     layout:'column'
@@ -773,18 +794,18 @@
         });     
         
         var username = '';
-        var title = 'Create user';
+        var title = _('Create user');
         
         if(rec){
             var ff = form_user.getForm();
             ff.loadRecord( rec );
             username = rec.get('username');
-            title = 'Edit user';
+            title = _('Edit user');
             //username_readonly = true;
         }
 
         win = new Ext.Window({
-            title: _(title),
+            title: title,
             height: 600,
             width: 730,
             closeAction: 'close',
@@ -959,7 +980,8 @@
                 { header: _('Language'), width: 60, dataIndex: 'language_pref', sortable: true },
                 { header: _('Modified On'), width: 120, dataIndex: 'ts', sortable: true, renderer: Cla.render_date },
                 { header: _('Email'), width: 150, dataIndex: 'email'  },
-                { header: _('Phone'), width: 100, dataIndex: 'phone' }
+                { header: _('Phone'), width: 100, dataIndex: 'phone' },
+                { header: _('Type'), width: 100, dataIndex: 'account_type' }
             ],
             autoSizeColumns: true,
             deferredRender:true,

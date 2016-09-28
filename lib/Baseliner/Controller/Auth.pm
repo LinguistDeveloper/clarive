@@ -119,12 +119,12 @@ sub login_basic : Local {
 sub surrogate : Local : Does('ACL') : ACL('action.surrogate') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $case = $c->config->{user_case};
+    my $case = $c->config->{user_case} // '';
     my $curr_user = $c->username;
     my $username= $case eq 'uc' ? uc($p->{login})
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
     try {
-        my $doc = ci->user->find_one({ name=>$username, active => mdb->true });
+        my $doc = ci->user->find_one({ name=>$username, active => mdb->true, account_type => {'$ne' => 'system'} });
         if ($doc){
             $c->authenticate({ id=>$username }, 'none');
             $c->session->{user} = $c->user_ci;
@@ -241,7 +241,7 @@ sub authenticate : Private {
                 $auth = undef;
             }
             else {
-                my $row = ci->user->find( { username => $login } )->next;
+                my $row = ci->user->find( { username => $login, account_type => { '$ne' => 'system' } } )->next;
                 if ($row) {
                     if ( !$row->{active} ) {
                         $c->stash->{auth_message} = _loc('User is not active');

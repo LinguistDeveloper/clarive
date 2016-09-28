@@ -5235,7 +5235,7 @@ msgstr "Cambios"
 msgid "bl"
 msgstr "entorno"
 
-#: lib/BaselinerX/Reports/listado_jobs.pm
+#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/user_grid.js
 #: root/fields/templates/config/generic_fields.js
 msgid "System"
 msgstr "Sistema"
@@ -6316,8 +6316,8 @@ msgstr "Elementos del pase"
 #: root/forms/retrieve_remote.js root/forms/script_local.js
 #: root/forms/script_remote.js root/forms/ship_remote.js
 #: root/forms/sync_remote.js root/forms/test_server_connect.js
-#: root/forms/topic_status.js root/forms/topic_status_deprecated.js
-#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
+#: root/forms/topic_status_deprecated.js root/forms/web_request.js
+#: root/reports/listado_jobs.js root/site/common.js root/site/model.js
 msgid "User"
 msgstr "Usuario"
 
@@ -6358,9 +6358,9 @@ msgstr "Esquema"
 #: root/comp/dashboard_job.html root/comp/job_calendar_slot_edit.js
 #: root/comp/monitor_grid.js root/comp/revision/grid.mas root/comp/rule_new.js
 #: root/comp/rules.js root/comp/topic/form_editor.js
-#: root/comp/topic/topic_admin.js root/forms/catalog_task.js
-#: root/forms/parse_config.js root/forms/write_config.js root/site/common.js
-#: root/site/model.js
+#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/forms/catalog_task.js root/forms/parse_config.js
+#: root/forms/write_config.js root/site/common.js root/site/model.js
 msgid "Type"
 msgstr "Tipo"
 
@@ -11129,6 +11129,14 @@ msgstr "Borrar Todos"
 msgid "Roles/Projects User"
 msgstr "Roles/Proyectos de usuario"
 
+#: root/comp/user_grid.js
+msgid "Account Type"
+msgstr "Tipo de cuenta"
+
+#: root/comp/user_grid.js
+msgid "Regular"
+msgstr "Regular"
+
 #: root/comp/user_grid.js root/site/tabfu.js
 msgid "Confirm Password"
 msgstr "Confirmar contraseña"
@@ -11136,6 +11144,10 @@ msgstr "Confirmar contraseña"
 #: root/comp/user_grid.js root/comp/user_info.mas
 msgid "Email address"
 msgstr "Correo electrónico"
+
+#: root/comp/user_grid.js
+msgid "Create user"
+msgstr "Crear usuario"
 
 #: root/comp/user_grid.js root/site/main.js root/site/prefs.js
 msgid "Preferences"
@@ -13286,10 +13298,6 @@ msgid "Create a new topic"
 msgstr "Crear un nuevo tópico"
 
 #: root/forms/topic_create.js
-msgid "Owner of the Topic (Blank for 'clarive')"
-msgstr "Propietario del tópico (En blanco para 'clarive')"
-
-#: root/forms/topic_create.js
 msgid ""
 "Topic data. Type id_field in Key and string or variable (${variable}) in "
 "Value"
@@ -14556,6 +14564,9 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "Owner of the Topic (Blank for 'clarive')"
+#~ msgstr "Propietario del tópico (En blanco para 'clarive')"
+
 #~ msgid "Calendar Info"
 #~ msgstr "Datos del Calendario"
 
@@ -15598,9 +15609,6 @@ msgstr "destino"
 
 #~ msgid "Time not valid"
 #~ msgstr "Hora no válida"
-
-#~ msgid "Create user"
-#~ msgstr "Crear usuario"
 
 #~ msgid "Error deleting User"
 #~ msgstr "Error borrando usuario1"

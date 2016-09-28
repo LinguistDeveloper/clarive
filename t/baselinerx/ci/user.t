@@ -50,13 +50,52 @@ subtest 'general_prefs_save: save prefs when user change it' => sub {
     is( $ci_user->{currency}, 'USD' );
     is( $ci_user->{decimal},  'Period' );
     is( $ci_user->{mid},      $ci_user->{mid} );
+};
 
+subtest 'combo_list: returns empty list when no users' => sub {
+    _setup();
+
+    my $res = BaselinerX::CI::user->combo_list();
+
+    is_deeply $res, { data => [] };
+};
+
+subtest 'combo_list: returns users list' => sub {
+    _setup();
+
+    TestSetup->create_user( username => 'developer', realname => 'Developer' );
+
+    my $res = BaselinerX::CI::user->combo_list();
+
+    is_deeply $res, { data => [ { username => 'developer', realname => 'Developer' } ] };
+};
+
+subtest 'combo_list: returns users list with query' => sub {
+    _setup();
+
+    TestSetup->create_user( username => 'developer', realname => 'Developer' );
+    TestSetup->create_user( username => 'user',      realname => 'User' );
+
+    my $res = BaselinerX::CI::user->combo_list( { query => 'ser' } );
+
+    is_deeply $res, { data => [ { username => 'user', realname => 'User' } ] };
+};
+
+subtest 'combo_list: returns only active users' => sub {
+    _setup();
+
+    TestSetup->create_user( username => 'developer', active => 1, realname => 'Developer' );
+    TestSetup->create_user( username => 'user',      active => 0, realname => 'User' );
+
+    my $res = BaselinerX::CI::user->combo_list();
+
+    is_deeply $res, { data => [ { username => 'developer', realname => 'Developer' } ] };
 };
 
 done_testing;
 
 sub _setup {
+    TestUtils->setup_registry( 'BaselinerX::CI', 'BaselinerX::Type::Event' );
 
     TestUtils->cleanup_cis;
-    TestUtils->setup_registry( 'BaselinerX::CI', 'BaselinerX::Type::Event' );
 }

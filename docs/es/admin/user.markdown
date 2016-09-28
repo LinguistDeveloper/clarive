@@ -26,6 +26,10 @@ icon: user.svg
 #### <img src="/static/images/icons/add.svg" /> Crear
 * Pulsando en crear, se abre una nueva ventana con las opciones necesarias para configurarlo:
     `Usuario`: El nombre del usuario con el que se dará el alta en la herramienta. Usado para acceder a Clarive y con el que se identifica la actividad del usuario dentro de la aplicación.
+    `Tipo de cuenta`: Establece el tipo de cuenta del usuario. Actualmente exiten dos tipos:
+       - Regular - La que se usa de manera general para los usuarios. Permite acceder a todas las funcionalidades de Clarive en función del rol de cada uno.
+       - Sistema - Usuarios que no pueden acceder a Clarive pero si interactuar con la herramienta a través, por ejemplo, de reglas. Este tipo de usuarios no cuenta para el limite de usuarios por licencia de Clarive.
+
     `Contraseña`: La contraseña con la que el usuario, accederá a la herramienta.
     `Confirmar contraseña`: Repetir la contraseña elegida en el campo anterior. Usado como medida de seguridad. Para continuar, tiene que ser obligatoriamente igual que la puesta en el campo anterior
     `Alias`: Un sobrenombre para el usuario.

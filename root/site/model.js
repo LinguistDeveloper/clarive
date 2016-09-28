@@ -1260,6 +1260,46 @@ Baseliner.CategoryBox = function(c) {
     }, c));
 };
 Ext.extend(Baseliner.CategoryBox, Ext.ux.form.SuperBoxSelect);
+
+Baseliner.UserBox = function(opt) {
+    if (!opt) opt = {};
+
+    var store = new Baseliner.JsonStore({
+        root: 'data',
+        remoteSort: true,
+        autoLoad: true,
+        id: 'username',
+        totalProperty: 'totalCount',
+        baseParams: opt.baseParams || {},
+        url: '/ci/user/combo_list',
+        fields: ['username', 'realname']
+    });
+
+    Baseliner.UserBox.superclass.constructor.call(this, Ext.apply({
+        name: opt.name || 'username',
+        hiddenName: opt.name || 'username',
+        displayField: 'realname',
+        valueField: 'username',
+        store: store,
+        minChars: 3,
+        allowBlank: false,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true,
+        triggerAction: 'all',
+        resizable: true,
+        singleMode: true,
+        mode: 'remote',
+        fieldLabel: opt.fieldLabel || _('User'),
+        typeAhead: true,
+        tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
+            + '<div style="float:left; margin-right: 5px"><img src={[ IC("user.svg") ]} />'
+            + '</div>{realname} ({username})</div></tpl>',
+        displayFieldTpl: '<tpl for=".">{realname} ({username})</tpl>',
+        extraItemCls: 'x-tag'
+    }, opt));
+};
+Ext.extend(Baseliner.UserBox, Ext.ux.form.SuperBoxSelect);
 /*
 
 A Revision draganddrop superbox inside a form-ready panel.
