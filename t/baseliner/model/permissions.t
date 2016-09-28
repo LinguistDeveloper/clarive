@@ -839,6 +839,21 @@ subtest 'user_action: returns action' => sub {
     ok $action;
 };
 
+subtest 'user_action: returns action ignoring bounds if no bounds supported' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.some' => {} );
+    Baseliner::Core::Registry->add( 'main', 'action.another' => { } );
+
+    my $user = _create_user_with_actions(
+        actions => [ { action => 'action.some' }, { action => 'action.another', bounds => [ { foo => 'bar' } ] } ] );
+
+    my $permissions = _build_permissions();
+
+    my $action = $permissions->user_action( $user->username, 'action.another' );
+    ok $action;
+};
+
 subtest 'user_action: returns action with bounds' => sub {
     _setup();
 
