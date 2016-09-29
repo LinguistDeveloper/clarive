@@ -356,10 +356,14 @@ sub user_action ($self, $username, $action_key, %options) {
         {
             '$match' => {
                 'actions.action' => mdb->in(@action_keys),
-                'actions.bounds._deny' => undef,
-                $bounds
-                ? ( '$or' => [ { @query_bounds }, @$query_empty_bounds ] )
-                : ( '$or' => $query_empty_bounds )
+                @bounds_available
+                ? (
+                    'actions.bounds._deny' => undef,
+                    $bounds
+                    ? ( '$or' => [ {@query_bounds}, @$query_empty_bounds ] )
+                    : ( '$or' => $query_empty_bounds )
+                  )
+                : ()
             }
         },
         {

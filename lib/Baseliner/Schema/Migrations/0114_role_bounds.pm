@@ -168,11 +168,13 @@ sub upgrade {
                 if ( $action->{action} =~ m/^action\.job\.(.*?)$/ ) {
                     my $type = $1;
 
-                    if ( $bl && $bl ne '*' ) {
-                        push @{ $actions_map->{$action_key}->{bounds} }, { bl => $bl };
-                    }
-                    else {
-                        push @{ $actions_map->{$action_key}->{bounds} }, {};
+                    if ( grep { $type eq $_ } qw/ viewall restart delete cancel resume / ) {
+                        if ( $bl && $bl ne '*' ) {
+                            push @{ $actions_map->{$action_key}->{bounds} }, { bl => $bl };
+                        }
+                        else {
+                            push @{ $actions_map->{$action_key}->{bounds} }, {};
+                        }
                     }
                 }
                 elsif ( $action->{action} eq 'action.ci.admin' ) {
