@@ -27,7 +27,8 @@
             singleMode: true
         }),
         new Baseliner.UserBox({
-            value: data.username
+            value: data.username,
+            withVars: true
         }),
         new Baseliner.DataEditor({
             name: 'variables',

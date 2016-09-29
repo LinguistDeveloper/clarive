@@ -1,11 +1,11 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
+use Test::Deep;
+
 use TestEnv;
 BEGIN { TestEnv->setup }
-
 use TestSetup;
 
 use_ok 'BaselinerX::CI::user';
@@ -90,6 +90,79 @@ subtest 'combo_list: returns only active users' => sub {
     my $res = BaselinerX::CI::user->combo_list();
 
     is_deeply $res, { data => [ { username => 'developer', realname => 'Developer' } ] };
+};
+
+subtest 'combo_list: returns variables' => sub {
+    _setup();
+
+    TestUtils->create_ci(
+        'variable',
+        var_type     => 'ci',
+        var_ci_role  => 'Baseliner::Role::CI',
+        var_ci_class => 'user',
+        name         => 'user'
+    );
+
+    my $res = BaselinerX::CI::user->combo_list( { with_vars => 1 } );
+
+    cmp_deeply $res,
+      {
+        'data' => [
+            {
+                'icon'     => ignore(),
+                'realname' => 'variable',
+                'username' => '${user}'
+            }
+        ]
+      };
+};
+
+subtest 'combo_list: returns variables by query' => sub {
+    _setup();
+
+    TestUtils->create_ci(
+        'variable',
+        var_type     => 'ci',
+        var_ci_role  => 'Baseliner::Role::CI',
+        var_ci_class => 'user',
+        name         => 'user'
+    );
+
+    TestUtils->create_ci(
+        'variable',
+        var_type     => 'ci',
+        var_ci_role  => 'Baseliner::Role::CI',
+        var_ci_class => 'user',
+        name         => 'client'
+    );
+
+    my $res = BaselinerX::CI::user->combo_list( { with_vars => 1, query => 'cli' } );
+
+    is $res->{data}->[0]->{username}, '${client}';
+};
+
+subtest 'combo_list: returns variables by query as value' => sub {
+    _setup();
+
+    TestUtils->create_ci(
+        'variable',
+        var_type     => 'ci',
+        var_ci_role  => 'Baseliner::Role::CI',
+        var_ci_class => 'user',
+        name         => 'user'
+    );
+
+    TestUtils->create_ci(
+        'variable',
+        var_type     => 'ci',
+        var_ci_role  => 'Baseliner::Role::CI',
+        var_ci_class => 'user',
+        name         => 'client'
+    );
+
+    my $res = BaselinerX::CI::user->combo_list( { with_vars => 1, valuesqry => 1, query => '${client}' } );
+
+    is $res->{data}->[0]->{username}, '${client}';
 };
 
 done_testing;
