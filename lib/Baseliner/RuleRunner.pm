@@ -3,13 +3,12 @@ use Baseliner::Moose;
 
 use Time::HiRes ();
 use Try::Tiny;
-use Capture::Tiny qw(tee_merged);
 use Baseliner::Sugar;
 use Baseliner::Sem;
 use BaselinerX::CI::variable;
 use Baseliner::Model::Rules;
 use Baseliner::RuleCompiler;
-use Baseliner::Utils qw(_fail _loc _debug _error);
+use Baseliner::Utils qw(_fail _loc _debug _error _capture_tee);
 
 has tidy_up => qw(is ro), default => sub { 1 };
 
@@ -54,7 +53,7 @@ sub run_rules {
         my ( $runner_output, $rc, $ret, $err );
         my $id_rule = $rule->{id};
         try {
-            ($runner_output) = tee_merged(
+            ($runner_output) = _capture_tee(
                 sub {
                     try {
                         $ret = $self->_dsl_run( rule => $rule, stash => $stash, simple_error => $simple_error );
@@ -227,7 +226,7 @@ sub run_dsl {
     $rule->compile;
 
     local $Baseliner::no_log_color = 1;
-    my ($output) = tee_merged( sub { $rule->run( stash => $stash ) } );
+    my ($output) = _capture_tee( sub { $rule->run( stash => $stash ) } );
 
     if ( my $err = $rule->errors ) {
         _fail $err;

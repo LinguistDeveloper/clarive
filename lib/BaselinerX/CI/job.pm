@@ -1,6 +1,6 @@
 package BaselinerX::CI::job;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _now :other _array);
+use Baseliner::Utils qw(:logging _now :other _array _capture_tee);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::JobLogger;
@@ -479,7 +479,7 @@ sub run_inproc {
     Util->_log(Util->_loc('************** Starting JOB IN-PROC %1 ***************', $self->name) );
     my ($err,$out);
     try {
-        ($out) = Capture::Tiny::tee_merged( sub {
+        ($out) = _capture_tee( sub {
             $self->run( same_exec=>1 );
         });
     } catch {

@@ -2,10 +2,9 @@ package Baseliner::Model::Scheduler;
 use Moose;
 
 use Try::Tiny;
-use Capture::Tiny qw(tee_merged);
 use Clarive::mdb;
 use Baseliner::Model::SchedulerCalendar;
-use Baseliner::Utils qw(_log _loc _fail);
+use Baseliner::Utils qw(_log _loc _fail _capture_tee);
 
 sub search_tasks {
     my $self = shift;
@@ -159,7 +158,7 @@ sub run_task {
     my $output;
 
     try {
-        $output = tee_merged {
+        $output = _capture_tee {
             $self->_run_rule($task);
         };
     }

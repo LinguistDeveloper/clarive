@@ -6,7 +6,7 @@ use Try::Tiny;
 require Baseliner::CI;
 use Baseliner::Core::Registry;
 use Baseliner::Types;
-use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any);
+use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any _capture_tee);
 use Baseliner::Sugar;
 use Data::Compare ();
 use experimental 'autoderef';
@@ -1008,10 +1008,9 @@ sub run_service {
     _log "running container for $key";
     my $stash = {};
     my $config = \%p;
-    require Capture::Tiny;
     my ($return_data, $output, $rc);
     try {
-        ($output) = Capture::Tiny::tee_merged( sub{
+        ($output) = _capture_tee( sub{
             $return_data = $reg->run_container( $stash, $config, $self_or_class );
         });
     } catch {

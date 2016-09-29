@@ -209,6 +209,7 @@ libcatalyst-view-tt-perl
 libcatalystx-features-perl
 libstarman-perl
 libsys-alarmcall-perl
+libperlio-util-perl
 
 # old
 libclass-load-perl
