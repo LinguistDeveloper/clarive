@@ -1,7 +1,9 @@
 package Baseliner::Role::CI::VariableStash;
 use Moose::Role;
-use Baseliner::Utils qw(_md5);
 with 'Baseliner::Role::CI';
+
+use Baseliner::Encryptor;
+use Baseliner::Utils qw(_md5);
 
 has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 
@@ -108,8 +110,8 @@ sub _encrypt_variable {
     my $self = shift;
     my ( $value ) = @_;
 
-    my $key = Baseliner->decrypt_key;
-    return Baseliner->encrypt(
+    my $key = Baseliner::Encryptor->decrypt_key;
+    return Baseliner::Encryptor->encrypt(
         substr( _md5(), 0, 10 ) . $value . substr( _md5(), 0, 10 ),
         $key
     );
@@ -119,8 +121,8 @@ sub _decrypt_variable {
     my $self = shift;
     my ( $value ) = @_;
 
-    my $key = Baseliner->decrypt_key;
-    return substr Baseliner->decrypt( $value, $key ), 10, -10;
+    my $key = Baseliner::Encryptor->decrypt_key;
+    return substr Baseliner::Encryptor->decrypt( $value, $key ), 10, -10;
 }
 
 1;

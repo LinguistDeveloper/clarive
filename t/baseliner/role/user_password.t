@@ -8,7 +8,7 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
 
-require Baseliner;
+use Baseliner::Encryptor;
 
 subtest 'save_data: encrypts' => sub {
     { package Clarive::TestUserPasswordRole;
@@ -18,10 +18,10 @@ subtest 'save_data: encrypts' => sub {
     }
 
     my $ci = Clarive::TestUserPasswordRole->new( user=>'foo', password=>'bar' );
-    Baseliner->config->{decrypt_key} = '11111';
+    Clarive->config->{decrypt_key} = '11111';
     $ci->save_data( $ci, $ci, {} );
 
-    is substr( Baseliner->decrypt( $ci->{db_data}->{password}, Baseliner::Role::UserPassword->_gen_user_key('foo') ), 10, -10 ), 'bar';
+    is substr( Baseliner::Encryptor->decrypt( $ci->{db_data}->{password}, Baseliner::Role::UserPassword->_gen_user_key('foo') ), 10, -10 ), 'bar';
 };
 
 subtest 'load_data: decrypts' => sub {
@@ -31,8 +31,8 @@ subtest 'load_data: decrypts' => sub {
         with 'Baseliner::Role::UserPassword';
     }
 
-    Baseliner->config->{decrypt_key} = '11111';
-    my $password = Baseliner->encrypt(( 'x' x 10 ) . 'bar' . ( 'x' x 10 ) , Baseliner::Role::UserPassword->_gen_user_key('foo') );
+    Clarive->config->{decrypt_key} = '11111';
+    my $password = Baseliner::Encryptor->encrypt(( 'x' x 10 ) . 'bar' . ( 'x' x 10 ) , Baseliner::Role::UserPassword->_gen_user_key('foo') );
     my $ci = Clarive::TestUserPasswordRole2->new( user=>'foo', password=>$password );
     $ci->load_data( '123', $ci );
 

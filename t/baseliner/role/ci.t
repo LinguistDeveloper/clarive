@@ -484,6 +484,7 @@ subtest 'save_data: gets old master doc when it exists' => sub {
     _setup();
 
     {
+
         package BaselinerX::CI::TestCIOld;
         use Baseliner::Moose;
         with 'Baseliner::Role::CI';
@@ -496,26 +497,26 @@ subtest 'save_data: gets old master doc when it exists' => sub {
             my ( $master_row, $data, $opts, $old ) = @_;
 
             $self->{__old} = $old;
-            $self->$orig( @_ );
+            $self->$orig(@_);
         };
 
-        sub icon {}
+        sub icon { }
     }
 
     my $mid = do {
-        my $ci = BaselinerX::CI::TestCIOld->new( name=>'foo', bl=>['DEV'], my=>123 );
+        my $ci = BaselinerX::CI::TestCIOld->new( name => 'foo', bl => ['DEV'], my => 123 );
         $ci->save;
     };
 
-    my $ci2 = ci->new( $mid );
-    $ci2->name( 'bar' );
+    my $ci2 = ci->new($mid);
+    $ci2->name('bar');
     $ci2->bl( ['TEST'] );
-    $ci2->my( 456 );
+    $ci2->my(456);
     $ci2->save;
 
     is $ci2->{__old}{name}, 'foo';
-    is $ci2->{__old}{bl}, 'DEV';
-    is $ci2->{__old}{my}, 123;
+    is $ci2->{__old}{bl},   'DEV';
+    is $ci2->{__old}{my},   123;
 
 };
 

@@ -816,6 +816,24 @@ subtest 'load: sets CI when user has admin permissions' => sub {
       };
 };
 
+subtest 'load: encrypts variables with passwords' => sub {
+    _setup();
+
+    Clarive->config->{decrypt_key} = '123';
+
+    my $var =
+      BaselinerX::CI::variable->new( name => 'var_pass', var_type => 'password', variables => { foo => 'bar' } );
+    $var->save;
+
+    my $c = _build_c( req => { params => { mid => $var->mid } }, username => 'root' );
+
+    my $controller = _build_controller();
+
+    $controller->load($c);
+
+    cmp_deeply $c->stash->{json}->{rec}->{variables}, { foo => re(qr/clarive_hidden_pass: /) };
+};
+
 subtest 'new_ci: loads ci when admin rights' => sub {
     _setup();
 

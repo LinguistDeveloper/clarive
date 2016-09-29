@@ -36,12 +36,13 @@ subtest 'variable default hash, some env' => sub {
 subtest 'encrypt variable on save' => sub {
     _setup_clear();
 
-    Baseliner->config->{decrypt_key} = '33333';
+    Clarive->config->{decrypt_key} = '33333';
 
-    my $var = BaselinerX::CI::variable->new( name=>'testing_var', var_type=>'password', variables=>{ '*'=>'bar' } );
+    my $var =
+      BaselinerX::CI::variable->new( name => 'testing_var', var_type => 'password', variables => { '*' => 'bar' } );
     my $mid = $var->save;
 
-    my $enc_pass = Baseliner::Role::CI::VariableStash->_encrypt_variable( 'bar' );
+    my $enc_pass = Baseliner::Role::CI::VariableStash->_encrypt_variable('bar');
 
     is(
         Baseliner::Role::CI::VariableStash->_decrypt_variable(
