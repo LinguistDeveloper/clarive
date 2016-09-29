@@ -1,13 +1,15 @@
 package Baseliner::Role::UserPassword;
 use Moose::Role;
+
 use Baseliner::Utils qw(_fail _md5);
+use Baseliner::Encryptor;
 
 has user => qw(is rw isa Str required 1);
 has password => qw(is rw isa Str required 1);
 
 sub _gen_user_key {
     my ($self, $user) = @_;
-    my $key = Baseliner->decrypt_key;
+    my $key = Baseliner::Encryptor->decrypt_key;
     my $user_key = $key . _md5( join '', reverse( split //, $user // $self->user ) );
     return $user_key;
 }
@@ -19,7 +21,7 @@ around save_data => sub {
     my ($master_row, $data, $opts, $old ) = @_;
     if( my $pass = $data->{password} ) {
         my $user_key = $self->_gen_user_key( $data->{user} );
-        my $enc_pass = Baseliner->encrypt( substr(_md5(),0,10) . $pass . substr(_md5(),0,10), $user_key );
+        my $enc_pass = Baseliner::Encryptor->encrypt( substr(_md5(),0,10) . $pass . substr(_md5(),0,10), $user_key );
         $data->{password} = $enc_pass;
     }
     $self->$orig( @_ );
@@ -31,7 +33,7 @@ after load_data => sub {
     my ($mid, $data ) = @_;
     if( my $pass = $data->{password} ) {
         my $user_key = $class->_gen_user_key( $data->{user} );
-        my $dec_pass = substr Baseliner->decrypt( $pass, $user_key ), 10, -10;
+        my $dec_pass = substr Baseliner::Encryptor->decrypt( $pass, $user_key ), 10, -10;
         $data->{password} = $dec_pass;
     }
 };

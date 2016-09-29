@@ -480,6 +480,46 @@ subtest 'save: check unique_keys are ok with empty' => sub {
     ok ! length $@, "verify fails on moniker";
 };
 
+subtest 'save_data: gets old master doc when it exists' => sub {
+    _setup();
+
+    {
+
+        package BaselinerX::CI::TestCIOld;
+        use Baseliner::Moose;
+        with 'Baseliner::Role::CI';
+
+        has my => qw(is rw);
+
+        around save_data => sub {
+            my $orig = shift;
+            my $self = shift;
+            my ( $master_row, $data, $opts, $old ) = @_;
+
+            $self->{__old} = $old;
+            $self->$orig(@_);
+        };
+
+        sub icon { }
+    }
+
+    my $mid = do {
+        my $ci = BaselinerX::CI::TestCIOld->new( name => 'foo', bl => ['DEV'], my => 123 );
+        $ci->save;
+    };
+
+    my $ci2 = ci->new($mid);
+    $ci2->name('bar');
+    $ci2->bl( ['TEST'] );
+    $ci2->my(456);
+    $ci2->save;
+
+    is $ci2->{__old}{name}, 'foo';
+    is $ci2->{__old}{bl},   'DEV';
+    is $ci2->{__old}{my},   123;
+
+};
+
 sub _setup {
     Baseliner::Core::Registry->clear;
     TestUtils->cleanup_cis;

@@ -80,7 +80,6 @@ after save_data => sub {
 
     }
     # create relationships with variables
-    _debug( $self->variables );
     my $allvars = $self->variables || {};
     mdb->master_rel->remove({ from_mid=>$self->mid, rel_field=>'variables', rel_type=>'project_variable' });
     my @var_cis;

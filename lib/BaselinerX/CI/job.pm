@@ -161,14 +161,6 @@ around exec => sub {
         : $self->$orig();
 };
 
-around update_ci => sub {
-    my $orig = shift;
-    my $self = shift;
-
-    $self->$orig( @_ );
-};
-
-
 ###### methods
 #
 

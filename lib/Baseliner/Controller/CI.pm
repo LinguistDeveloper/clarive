@@ -1201,6 +1201,10 @@ sub load : Local {
             cache->set( $cache_key, $rec );
         }
 
+        if( $obj->does('Baseliner::Role::CI::VariableStash') ) {
+            $rec->{variables} = $obj->cloak_password_variables;
+        }
+
         $c->stash->{json} = { success => \1, msg => _loc( 'CI %1 loaded ok', $mid ), rec => $rec };
     }
     catch {
