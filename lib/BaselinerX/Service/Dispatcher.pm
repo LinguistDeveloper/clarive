@@ -284,6 +284,7 @@ sub check_daemon {
         # bring it back up
         my $params = $config->{argv};
 
+        my $start_mode;
         my @started;
         if ( ref($reg) && exists $reg->{frequency_key} ) {
             _debug("Starting forked with frequency $reg->{frequency_key}");
@@ -304,6 +305,7 @@ sub check_daemon {
                 disp_id  => $self->disp_id,
                 params    => $params
               );
+            $start_mode = 'forked';
         }
         elsif ( exists $config->{fork} || exists $config->{forked} ) {
             _debug("Starting forked");
@@ -315,6 +317,7 @@ sub check_daemon {
                 disp_id  => $self->disp_id,
                 params  => $params
               );
+            $start_mode = 'forked';
         }
         else {
             # background proc
@@ -326,6 +329,7 @@ sub check_daemon {
                 params  => $params
             );
 
+            $start_mode = 'background';
         }
         my $started = shift @started;
         _debug($started);
@@ -335,6 +339,8 @@ sub check_daemon {
                     last_ping => mdb->ts,
                     pid => $started->{pid},
                     disp_id => $self->disp_id,
+                    start_mode => $start_mode,
+                    hostname => $self->hostname,
                     status => 'running'
                 }
             }
