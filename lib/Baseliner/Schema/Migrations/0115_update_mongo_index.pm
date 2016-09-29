@@ -15,6 +15,7 @@ sub upgrade {
 
     mdb->activity->ensure_index( { mid => 1, event_key => 1 } );
     mdb->event->ensure_index( { ts => 1, event_key => 1, event_status => 1 } );
+    mdb->event_log->ensure_index( { 'id' => 1 } );
     mdb->job_log->ensure_index( { mid => 1, ts => 1, t => 1, exec => 1 } );
     mdb->job_log->ensure_index( { ts=>1, t=>1 } );
     mdb->master_doc->ensure_index( { '$**' => "text" },

@@ -366,6 +366,7 @@ sub index_all {
         ],
         event_log =>[
             [{ 'id_event'=>1 }],
+            [{ 'id'=>1 }],
         ],
         'fs.files' =>[
             [{ parent_mid=>1 }],
