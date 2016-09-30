@@ -36,6 +36,7 @@ use Baseliner::Utils qw(
   _capture_tee
   zip_dir
 );
+use Capture::Tiny qw(capture_merged);
 use Clarive::mdb;
 
 ####### _pointer
@@ -1094,11 +1095,128 @@ subtest 'slice_page: returns slice page with limit bigger than number elements '
 };
 
 subtest 'capture_tee: captures stdout' => sub {
-    my $output = _capture_tee {
-        print 'OK';
+    my $output;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            print 'OK';
+            warn 'ERR';
+        };
     };
 
-    is $output, 'OK';
+    like $output, qr/OK/;
+    like $output, qr/ERR/;
+
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+subtest 'capture_tee: captures several times' => sub {
+    my $output;
+    my $output2;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            print 'OK';
+            warn 'ERR';
+        };
+
+        $output2 = _capture_tee {
+            print 'OK2';
+            warn 'ERR2';
+        };
+    };
+
+    like $output, qr/ERR/;
+    like $output, qr/OK/;
+
+    like $output2, qr/OK2/;
+    like $output2, qr/ERR2/;
+
+    like $tee_output, qr/OK2/;
+    like $tee_output, qr/ERR2/;
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+subtest 'capture_tee: captures recursively' => sub {
+    my $output;
+    my $output2;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            $output2 = _capture_tee {
+                print 'OK2';
+                warn 'ERR2';
+            };
+
+            print 'OK';
+            warn 'ERR';
+        };
+    };
+
+    like $output, qr/ERR/;
+    like $output, qr/OK/;
+
+    like $output2, qr/OK2/;
+    like $output2, qr/ERR2/;
+
+    like $tee_output, qr/OK2/;
+    like $tee_output, qr/ERR2/;
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+#subtest 'capture_tee: captures system output' => sub {
+#    my $output = _capture_tee {
+#        system("echo -n 'OK'; echo -n 'ERR' 2>&1");
+#    };
+#
+#    like $output, qr/OKERR/;
+#};
+
+subtest 'capture_tee: captures stdout from fork' => sub {
+    my $pid;
+    my $output;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            $pid = fork;
+            if ( !$pid ) {
+                print 'OK';
+                warn 'ERR';
+                exit;
+            }
+
+            sleep 1;
+        };
+
+        waitpid $pid, 0;
+    };
+
+    like $output, qr/OK/;
+    like $output, qr/ERR/;
+
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+subtest 'capture_tee: captures stdout from pipe' => sub {
+    my $output;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            open my $fh, "echo 'OK' |";
+
+            while (<$fh>) {
+                print;
+            }
+        };
+    };
+
+    like $output, qr/OK/;
+
+    like $tee_output, qr/OK/;
 };
 
 done_testing;
