@@ -220,8 +220,14 @@ sub notify_event {
     my $notify_scope = $stash->{notify};
     my @notify_default;
 
+    my $ev_reg  = Baseliner::Core::Registry->get($event_key);
+
+    my $topic = $stash->{mid}
+        ? mdb->topic->find_one({ mid => "$stash->{mid}"}, { _txt=>0 })
+        : {};
 
     my $config = config_get('config.notifications');
+
     if (!$config->{exclude_default}){
         push @notify_default, _array $stash->{notify_default} if $stash->{notify_default};
         push @notify_default, $stash->{created_by} if $stash->{created_by};
@@ -240,14 +246,14 @@ sub notify_event {
 
     if ($notification){
         foreach  my $template (  keys %$notification ){
-            my $topic = {};
-            $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
+
             my $subject_parse = $notification->{$template}->{subject} // $stash->{subject};
-            my $subject = parse_vars($subject_parse,{%$stash,%$topic} ) || try{
-                    my $ev = Baseliner->registry->get( $event_key );
-                    my $msg = Util->_strip_html($ev->event_text( $stash ));
-                    substr( $msg, 0, 120 ) . ( length($msg)>120 ? '...' : '' );
-                } || $event_key;
+
+            my $subject = parse_vars( $subject_parse, { %$stash, %$topic } ) || try {
+                my $msg = Util->_strip_html( $ev_reg->event_text($stash) );
+                substr( $msg, 0, 120 ) . ( length($msg) > 120 ? '...' : '' );
+            } || $event_key;
+
             my $model_messaging = {
                 subject         => $subject,
                 sender          => $config_email || 'clarive@clarive.com',
@@ -257,15 +263,21 @@ sub notify_event {
                 _fail_on_error  => 1,   # so that it fails on template errors
             };
 
-            $model_messaging->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
-            $model_messaging->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
-            $model_messaging->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
+            $model_messaging->{to} = { users => $notification->{$template}->{carrier}->{TO} }
+              if ( exists $notification->{$template}->{carrier}->{TO} );
+            $model_messaging->{cc} = { users => $notification->{$template}->{carrier}->{CC} }
+              if ( exists $notification->{$template}->{carrier}->{CC} );
+            $model_messaging->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} }
+              if ( exists $notification->{$template}->{carrier}->{BCC} );
 
-            $model_messaging->{vars} = {%$topic,%$stash};
+            $model_messaging->{vars} = { %$topic, %$stash };
             $model_messaging->{vars}->{subject} = $subject;
-            $model_messaging->{vars}->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
-            $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
-            $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
+            $model_messaging->{vars}->{to} = { users => $notification->{$template}->{carrier}->{TO} }
+              if ( exists $notification->{$template}->{carrier}->{TO} );
+            $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{carrier}->{CC} }
+              if ( exists $notification->{$template}->{carrier}->{CC} );
+            $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} }
+              if ( exists $notification->{$template}->{carrier}->{BCC} );
 
             my $rc_notify = 0;
             my $err = '';
@@ -277,10 +289,16 @@ sub notify_event {
                 $rc += $rc_notify;
             };
 
-            mdb->event_log->insert({
-                id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>$rc_notify,
-                ts=>mdb->ts, log_output => $err, dsl=>'',
-            });
+            mdb->event_log->insert( {
+                    id          => mdb->seq('event_log'),
+                    id_event    => $ev->{id},
+                    stash_data  => _dump($model_messaging),
+                    return_code => $rc_notify,
+                    ts          => mdb->ts,
+                    log_output  => $err,
+                    dsl         => '',
+                }
+            );
         }
     }
 
