@@ -65,7 +65,7 @@ sub launch {
     my $ret;
     if( $p{capture} ) {
         require Capture::Tiny;
-        my ($output) = Capture::Tiny::tee_merged(sub {
+        my ($output) = _capture_tee(sub {
             $ret = $service->run( $c, $config_data );
         });
         utf8::downgrade( $output );

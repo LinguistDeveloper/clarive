@@ -111,6 +111,7 @@ use Exporter::Tidy default => [
     _is_binary
     _chdir
     _timeout
+    _capture_tee
     _capture_pipe
     zip_dir
 )],
@@ -157,6 +158,7 @@ use Baseliner::I18N;
 use Baseliner::VarsParser;
 use Cwd qw(getcwd);
 use Sys::AlarmCall qw(alarm_call);
+use PerlIO::Util;
 
 BEGIN {
     # enable a TO_JSON converter
@@ -2531,6 +2533,30 @@ sub _chdir {
 
         die $error;
     };
+}
+
+sub _capture_tee (&) {
+    my ($cb) = @_;
+
+    my $output;
+    *STDOUT->push_layer( tee => \$output );
+    *STDERR->push_layer( tee => \$output );
+
+    my $error;
+    try {
+        $cb->();
+    } catch {
+        $error = $_;
+    };
+
+    *STDOUT->pop_layer();
+    *STDERR->pop_layer();
+
+    if (defined $error) {
+        die $error;
+    }
+
+    return $output;
 }
 
 sub _capture_pipe {

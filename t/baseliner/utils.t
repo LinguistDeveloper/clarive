@@ -33,6 +33,7 @@ use Baseliner::Utils qw(
   _chdir
   _timeout
   _capture_pipe
+  _capture_tee
   zip_dir
 );
 use Clarive::mdb;
@@ -1090,6 +1091,14 @@ subtest 'slice_page: returns slice page with limit bigger than number elements '
     my @info = Util->slice_page( start => '0', limit => '100', data => \@data );
 
     is scalar(@info),9;
+};
+
+subtest 'capture_tee: captures stdout' => sub {
+    my $output = _capture_tee {
+        print 'OK';
+    };
+
+    is $output, 'OK';
 };
 
 done_testing;
