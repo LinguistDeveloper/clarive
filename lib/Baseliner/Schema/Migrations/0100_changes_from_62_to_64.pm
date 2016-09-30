@@ -10,6 +10,8 @@ sub upgrade {
     mdb->migra->topic_categories_to_rules;
     mdb->migra->create_initial_dashboards;
     mdb->cache->drop;
+    mdb->migra->named_permissions_to_id_permissions;
+
 }
 
 sub downgrade {

@@ -66,151 +66,302 @@ sub create_initial_dashboards {
 
 sub topic_categories_to_rules {
     Util->_fail('System already has form rules. Remove them before migrating.')
-            if mdb->rule->find({rule_type=>mdb->in('form','fieldlets') })->count;
-    my @topic_category = mdb->category->find->all;
+      if mdb->rule->find( { rule_type => mdb->in( 'form', 'fieldlets' ) } )->count;
+    my @topic_category    = mdb->category->find->all;
     my $missing_fieldlets = 0;
-    my $filename = "FIELDLETS_TO_REGISTER_FEATURE";
+    my $filename          = "FIELDLETS_TO_REGISTER_FEATURE";
     my @pending_register_fieldlets;
-    foreach my $topic_category (@topic_category){
+    foreach my $topic_category (@topic_category) {
         my @fieldlets = _array $topic_category->{fieldlets};
-        map {$_->{params}{field_order} = $_->{params}{field_order} // -999999999999} @fieldlets;
-        @fieldlets = sort { 0+$a->{params}{field_order} <=> 0+$b->{params}{field_order}  ||
-                            0+$a->{params}{field_order_html} <=> 0+$b->{params}{field_order_html} } @fieldlets;
+        map { $_->{params}{field_order} = $_->{params}{field_order} // -999999999999 } @fieldlets;
+        @fieldlets = sort {
+                 0 + $a->{params}{field_order} <=> 0 + $b->{params}{field_order}
+              || 0 + $a->{params}{field_order_html} <=> 0 +
+              $b->{params}{field_order_html}
+        } @fieldlets;
+
         #map { _log "===>". $_->{params}{field_order} } @fieldlets;
         my @fields;
         my $registers = map_registors();
+
         #_log $registers;
-        foreach my $fieldlet (@fieldlets){
+        foreach my $fieldlet (@fieldlets) {
             my $f;
             my $attributes;
             my $data;
-            next if $fieldlet->{params}->{id_field} eq 'created_on' || $fieldlet->{params}->{id_field} eq 'created_by' ||
-                    $fieldlet->{params}->{id_field} eq 'modified_on' || $fieldlet->{params}->{id_field} eq 'modified_by' ||
-                    $fieldlet->{params}->{id_field} eq 'category' || $fieldlet->{params}->{id_field} eq 'labels' ||
-                    $fieldlet->{params}->{id_field} eq 'include_into' || $fieldlet->{params}->{id_field} eq 'progress' ||
-                    ($fieldlet->{params}->{id_field} eq 'description' && $fieldlet->{params}->{bd_field} eq 'description' &&
-                        $fieldlet->{params}->{hidden} eq '1' && $fieldlet->{params}->{name_field} eq 'Description') ||
-                    $fieldlet->{params}->{id_field} eq 'moniker';
-            foreach my $key (keys $fieldlet->{params}){
-                if($key eq '_html'){
+            next
+              if $fieldlet->{params}->{id_field} eq 'created_on'
+              || $fieldlet->{params}->{id_field} eq 'created_by'
+              || $fieldlet->{params}->{id_field} eq 'modified_on'
+              || $fieldlet->{params}->{id_field} eq 'modified_by'
+              || $fieldlet->{params}->{id_field} eq 'category'
+              || $fieldlet->{params}->{id_field} eq 'labels'
+              || $fieldlet->{params}->{id_field} eq 'include_into'
+              || $fieldlet->{params}->{id_field} eq 'progress'
+              || ( $fieldlet->{params}->{id_field} eq 'description'
+                && $fieldlet->{params}->{bd_field} eq 'description'
+                && $fieldlet->{params}->{hidden} eq '1'
+                && $fieldlet->{params}->{name_field} eq 'Description' )
+              || $fieldlet->{params}->{id_field} eq 'moniker';
+            delete $fieldlet->{params}->{field_order_html} if $fieldlet->{params}->{field_order_html};
+            delete $fieldlet->{params}->{field_order}      if $fieldlet->{params}->{field_order};
+            delete $fieldlet->{params}->{meta_type}        if $fieldlet->{params}->{meta_type};
+            foreach my $key ( keys $fieldlet->{params} ) {
+
+                if ( $key eq '_html' ) {
                     $data->{html} = $fieldlet->{params}->{$key};
                     $fieldlet->{params}->{html} = $fieldlet->{params}->{$key};
-                }elsif($key eq 'name_field'){
+                }
+                elsif ( $key eq 'name_field' ) {
                     $fieldlet->{params}->{$key} =~ s/\n//;
                     $data->{$key} = $fieldlet->{params}->{$key};
-                }else{
-                    $data->{$key} = $fieldlet->{params}->{$key} unless $key eq 'data' or $key eq 'readonly' or $key eq 'origin';
+                }
+                else {
+                    $data->{$key} = $fieldlet->{params}->{$key}
+                      unless $key eq 'data'
+                      or $key eq 'readonly'
+                      or $key eq 'origin';
                 }
             }
+
             #_log $fieldlet;
             my $reg_key;
-            if($fieldlet->{params}->{html} && $fieldlet->{params}->{js}){
-                $reg_key = $fieldlet->{params}->{html}.$fieldlet->{params}->{js};
-            }elsif($fieldlet->{params}->{html} && !$fieldlet->{params}->{js}){
-                $reg_key = $fieldlet->{params}->{html};
-            }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js}){
-                $reg_key = $fieldlet->{params}->{js};
-            }else{
-                  #_log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ;
-                  #next;
+            if ( $fieldlet->{params}->{html} && $fieldlet->{params}->{js} ) {
+                $reg_key = $fieldlet->{params}->{html} . $fieldlet->{params}->{js};
             }
+            elsif ( $fieldlet->{params}->{html} && !$fieldlet->{params}->{js} ) {
+                $reg_key = $fieldlet->{params}->{html};
+            }
+            elsif ( !$fieldlet->{params}->{html} && $fieldlet->{params}->{js} ) {
+                $reg_key = $fieldlet->{params}->{js};
+            }
+            else {
+                #_log ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD: html and js empty ==> ". _dump $fieldlet ;
+                #next;
+            }
+
             # _log _dump $fieldlet;
-            my $icon = $registers->{$reg_key} ? Baseliner::Core::Registry->get($registers->{$reg_key})->{icon} : '';
+            my $icon = $registers->{$reg_key} ? Baseliner::Core::Registry->get( $registers->{$reg_key} )->{icon} : '';
             if ( exists $fieldlet->{params}->{allowBlank} ) {
-                if ($fieldlet->{params}->{allowBlank} eq 'false' || $fieldlet->{params}->{allowBlank} eq '0') {
-                    $data->{allowBlank} = 'false';
+                if ( $fieldlet->{params}->{allowBlank} eq 'false' || $fieldlet->{params}->{allowBlank} eq '0' ) {
+                    $data->{allowBlank}   = 'false';
                     $data->{mandatory_cb} = '1';
-                } else {
-                    $data->{allowBlank} = 'true';
+                }
+                else {
+                    $data->{allowBlank}   = 'true';
                     $data->{mandatory_cb} = '0';
                 }
-            } else {
-                $data->{allowBlank} = 'true';
+            }
+            else {
+                $data->{allowBlank}   = 'true';
                 $data->{mandatory_cb} = '0';
             }
-            $data->{editable} = '1' if not $fieldlet->{params}->{editable};
-            $data->{hidden} = '0' if not $fieldlet->{params}->{hidden};
+            $data->{editable} = '1' if !$fieldlet->{params}->{editable};
+            $data->{hidden}   = '0' if !$fieldlet->{params}->{hidden};
+            if ( !$fieldlet->{params}->{js} ) {
+                $data->{hide_from_edit_cb} = '1';
+                $data->{active}            = "false";
+            }
 
-
-            $attributes->{active} = '1';
+            $attributes->{active}   = '1';
             $attributes->{disabled} = \0;
             $attributes->{expanded} = \0;
-            $attributes->{icon} = $icon; #;// '/static/images/icons/lock_small.png';
-            if($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
-                if($fieldlet->{params}->{bd_field} eq 'moniker'){
+            $attributes->{icon}     = $icon;    #;// '/static/images/icons/lock_small.png';
+            if (   $fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js' )
+            {
+                if ( $fieldlet->{params}->{bd_field} eq 'moniker' ) {
                     $attributes->{key} = 'fieldlet.system.moniker';
-                    $data->{editable} = '1';
-                    $data->{hidden} = '0';
-                }else{
+                    $data->{editable}  = '1';
+                    $data->{hidden}    = '0';
+                }
+                else {
                     $attributes->{key} = 'fieldlet.text';
                 }
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js' )
+            {
                 $attributes->{key} = 'fieldlet.milestones';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js' )
+            {
                 $attributes->{key} = 'fieldlet.html_editor';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{bd_field} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' && $fieldlet->{params}->{bd_field} eq 'hitos'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{bd_field}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'
+                && $fieldlet->{params}->{bd_field} eq 'hitos' )
+            {
                 $attributes->{key} = 'fieldlet.milestones';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js'){
-                if($fieldlet->{params}->{bd_field} eq 'progress'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/progress_bar.html'
+                and $fieldlet->{params}->{js} eq '/fields/templates/js/progress_bar.js' )
+            {
+                if ( $fieldlet->{params}->{bd_field} eq 'progress' ) {
                     $attributes->{key} = 'fieldlet.system.progress';
-                }else{
+                }
+                else {
                     $attributes->{key} = 'fieldlet.progressbar';
                 }
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && !$fieldlet->{params}->{js}){
-                if($fieldlet->{params}->{type} eq 'numberfield'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                && !$fieldlet->{params}->{js} )
+            {
+                if ( $fieldlet->{params}->{type} eq 'numberfield' ) {
                     $attributes->{key} = 'fieldlet.number';
-                }elsif($fieldlet->{params}->{type} eq 'datefield'){
+                }
+                elsif ( $fieldlet->{params}->{type} eq 'datefield' ) {
                     $attributes->{key} = 'fieldlet.datetime';
-                }elsif($fieldlet->{params}->{type} eq 'combo'){
+                    delete $data->{default_today} if $data->{default_today} eq 'false';
+                }
+                elsif ( $fieldlet->{params}->{type} eq 'combo' ) {
                     $attributes->{key} = 'fieldlet.combo';
-                }elsif($fieldlet->{params}->{type} eq 'textfield'){
+                }
+                elsif ( $fieldlet->{params}->{type} eq 'textfield' ) {
                     $attributes->{key} = 'fieldlet.text';
-                }elsif($fieldlet->{params}->{type} eq 'timefield'){
+                }
+                elsif ( $fieldlet->{params}->{type} eq 'timefield' ) {
                     $attributes->{key} = 'fieldlet.time';
                 }
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html' && !$fieldlet->{params}->{js}){
-              $attributes->{key} = 'fieldlet.system.list_topics';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_cis.html' && !$fieldlet->{params}->{js}){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html'
+                && !$fieldlet->{params}->{js} )
+            {
+                $attributes->{key} = 'fieldlet.system.list_topics';
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_cis.html'
+                && !$fieldlet->{params}->{js} )
+            {
                 $attributes->{key} = 'fieldlet.system.cis';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && !$fieldlet->{params}->{js}){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html'
+                && !$fieldlet->{params}->{js} )
+            {
                 $attributes->{key} = 'fieldlet.system.topics';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_users.html' && !$fieldlet->{params}->{js}){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_users.html'
+                && !$fieldlet->{params}->{js} )
+            {
                 $attributes->{key} = 'fieldlet.system.users';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_projects.html' && !$fieldlet->{params}->{js}){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_projects.html'
+                && !$fieldlet->{params}->{js} )
+            {
                 $attributes->{key} = 'fieldlet.system.projects';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_release.html' && !$fieldlet->{params}->{js}){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_release.html'
+                && !$fieldlet->{params}->{js} )
+            {
                 $attributes->{key} = 'fieldlet.system.release';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_revisions.html' && !$fieldlet->{params}->{js}){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_revisions.html'
+                && !$fieldlet->{params}->{js} )
+            {
                 $attributes->{key} = 'fieldlet.system.revisions';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
-                if($fieldlet->{params}->{bd_field} eq 'description'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html'
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js' )
+            {
+                if ( $fieldlet->{params}->{bd_field} eq 'description' ) {
                     $attributes->{key} = 'fieldlet.system.description';
-                }else{
+                }
+                else {
                     $attributes->{key} = 'fieldlet.html_editor';
                 }
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html' and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js'){
-              $attributes->{key} = 'fieldlet.text';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_ci.js'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/dbl_row_body.html'
+                and $fieldlet->{params}->{js} eq '/fields/templates/js/textfield.js' )
+            {
+                $attributes->{key} = 'fieldlet.text';
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html'
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_ci.js' )
+            {
                 $attributes->{key} = 'fieldlet.ci_grid';
-            }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics.js'){
+            }
+            elsif ( !$fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics.js' )
+            {
                 $attributes->{key} = 'fieldlet.system.topics';
-            }elsif(!$fieldlet->{params}->{js} && $fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/origin_issue_pie.html'){
+            }
+            elsif ( !$fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/origin_issue_pie.html' )
+            {
                 $attributes->{key} = 'fieldlet.status_chart_pie';
-            }elsif(!$fieldlet->{params}->{html} && $fieldlet->{params}->{js} &&  $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js'){
+            }
+            elsif ( !$fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/html_editor.js' )
+            {
                 $attributes->{key} = 'fieldlet.html_editor';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js' )
+            {
                 $attributes->{key} = 'fieldlet.ci_grid';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html' && $fieldlet->{params}->{js} eq '/fields/templates/js/combo.js'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/combo.js' )
+            {
                 $attributes->{key} = 'fieldlet.combo';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html' && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics_selector.js'){
-              $attributes->{key} = 'fieldlet.system.list_topics';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html' && $fieldlet->{params}->{js} && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics.js'){
-              $attributes->{key} = 'fieldlet.system.list_topics';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{js} && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html' && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/field_topics.html'
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics_selector.js' )
+            {
+                $attributes->{key} = 'fieldlet.system.list_topics';
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/system/html/list_topics.html'
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_topics.js' )
+            {
+                $attributes->{key} = 'fieldlet.system.list_topics';
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/ci_grid.html'
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_cis_selector.js' )
+            {
                 $attributes->{key} = 'fieldlet.ci_grid';
-            }elsif($fieldlet->{params}->{html} && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'){
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html' )
+            {
                 $attributes->{key} = 'fieldlet.grid_editor';
-            }else{
+            }
+            else {
                 $attributes->{key} = $registers->{$reg_key};
             }
 
@@ -219,118 +370,145 @@ sub topic_categories_to_rules {
                     && $fieldlet->{params}->{get_method} eq 'get_topics'
                     && $fieldlet->{params}->{set_method} eq 'set_topics' )
                 {
-                    $attributes->{icon}   = '/static/images/icons/listbox.svg';
-                    $attributes->{key}    = 'fieldlet.system.list_topics';
-                    $data->{hidden} = 1;
+                    $attributes->{icon} = '/static/images/icons/listbox.svg';
+                    $attributes->{key}  = 'fieldlet.system.list_topics';
+                    $data->{hidden}     = 1;
                 }
                 elsif ( $fieldlet->{params}->{type} eq 'textfield' ) {
-                    $attributes->{icon}   = '/static/images/icons/field.svg';
-                    $attributes->{key}    = 'fieldlet.text';
-                    $data->{hidden} = 1;
+                    $attributes->{icon} = '/static/images/icons/field.svg';
+                    $attributes->{key}  = 'fieldlet.text';
+                    $data->{hidden}     = 1;
                 }
             }
 
-            if($attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis'){
-                if ($data->{list_type} && $data->{list_type} eq 'grid') {
-                    $attributes->{key} = 'fieldlet.ci_grid';
+            if ( $attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis' ) {
+                if ( $data->{list_type} && $data->{list_type} eq 'grid' ) {
+                    $attributes->{key}  = 'fieldlet.ci_grid';
                     $attributes->{icon} = '/static/images/icons/grid.svg';
                 }
                 else {
-                    $attributes->{key} = 'fieldlet.system.cis';
+                    $attributes->{key}  = 'fieldlet.system.cis';
                     $attributes->{icon} = '/static/images/icons/combo_box.svg';
                 }
 
-                if ($data->{ci_class}){
-                    my @ar = split (',', $data->{ci_class});
+                if ( $data->{ci_class} ) {
+                    my @ar = split( ',', $data->{ci_class} );
                     $data->{ci_class_box} = \@ar;
-                    $data->{ci_class} =  'BaselinerX::CI::' . $data->{ci_class};
-                    $data->{var_ci_role} = 'CI';
+                    $data->{ci_class}     = 'BaselinerX::CI::' . $data->{ci_class};
+                    $data->{var_ci_role}  = 'CI';
                 }
-                if($data->{ci_role}){
+                if ( $data->{ci_role} ) {
                     my @elems = split ',', $data->{ci_role};
                     my @ret;
-                    my $b = _decode_json(roles(''))->{data};
-                    for my $name (@elems){
-                        map{ push @ret, $_->{name} if $_->{role} =~ /Baseliner::Role::.*::$name/} _array $b;
+                    my $b = _decode_json( roles('') )->{data};
+                    for my $name (@elems) {
+                        map { push @ret, $_->{name} if $_->{role} =~ /Baseliner::Role::.*::$name/ } _array $b;
                     }
                     $data->{var_ci_role} = \@ret;
                 }
             }
 
-            $data->{default_value} = 'off' if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
-            $data->{default_value} = $fieldlet->{params}->{default_value} if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
+            $data->{default_value} = 'off'
+              if not $fieldlet->{default_value} and $attributes->{key} eq 'fieldlet.checkbox';
+            $data->{default_value} = $fieldlet->{params}->{default_value}
+              if not $fieldlet->{params}->{default_value} and $attributes->{key} eq 'fieldlet.system.projects';
             $data->{fieldletType} = $attributes->{key};
+            delete $data->{type}             if $data->{type};
+            delete $data->{html}             if $data->{html};
+            delete $data->{js}               if $data->{js};
+            delete $data->{meta_type}        if $data->{name_field};
+            delete $data->{editable}         if $data->{editable};
+            delete $data->{name_field}       if $data->{name_field};
+            delete $data->{bd_field}         if $data->{bd_field};
+            delete $data->{field_order_html} if $data->{field_order_html};
+            delete $data->{field_order}      if $data->{field_order};
+            delete $data->{meta_type}        if $data->{meta_type};
 
-            if ( $attributes->{key} eq 'fieldlet.text' &&
-             (!$attributes->{icon}|| $attributes->{icon} eq '/static/images/icons/action.svg')) {
+            if ( $attributes->{key} eq 'fieldlet.text'
+                && ( !$attributes->{icon} || $attributes->{icon} eq '/static/images/icons/action.svg' ) )
+            {
                 $attributes->{icon} = '/static/images/icons/field.svg';
             }
 
-            if ( !$data->{fieldletType} || $data->{fieldletType} eq '1') {
-                _warn ">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
+            if ( !$data->{fieldletType} || $data->{fieldletType} eq '1' ) {
+                _warn
+">>>>>>>>>>>>>>>>>>>> WARNING MIGRATING FIELD ==> $data->{name_field} WITH CATEGORY $topic_category->{name} ";
                 _log $data;
 
                 #aqui es donde metemos ahora una nueva entrada al fichero
                 my $name_fieldlet = "fieldlet_customized_" . $missing_fieldlets;
                 my $html_fieldlet = $fieldlet->{params}->{html} // '';
-                my $js_fieldlet = $fieldlet->{params}->{js} // '';
+                my $js_fieldlet   = $fieldlet->{params}->{js} // '';
                 $missing_fieldlets++;
 
                 my $fieldlet_not_registed;
-                $fieldlet_not_registed->{name} = $name_fieldlet;
-                $fieldlet_not_registed->{html} = $html_fieldlet;
-                $fieldlet_not_registed->{js} = $js_fieldlet;
+                $fieldlet_not_registed->{name}     = $name_fieldlet;
+                $fieldlet_not_registed->{html}     = $html_fieldlet;
+                $fieldlet_not_registed->{js}       = $js_fieldlet;
                 $fieldlet_not_registed->{category} = $topic_category->{name};
                 push @pending_register_fieldlets, $fieldlet_not_registed;
 
-                $attributes->{key} = "fieldlet.". $name_fieldlet;
+                $attributes->{key}    = "fieldlet." . $name_fieldlet;
                 $attributes->{active} = '0';
+                $data->{fieldletType} = $attributes->{key};
             }
-            $attributes->{data} = $data;
-            $attributes->{leaf} = \1;
-            $attributes->{name} = $fieldlet->{params}->{name_field};
+            if ( !($icon) ) {
+                my $registed_icon;
+                my $default_icon = '/static/images/icons/lock_small.svg';
+                if ( $attributes->{key} ) {
+                    $registed_icon = Baseliner::Core::Registry->get( $attributes->{key} )->{icon};
+                }
+                else {
+                    $registed_icon = $default_icon;
+                }
+                $attributes->{icon} = $registed_icon ? $registed_icon : $default_icon;
+            }
+            $attributes->{data}    = $data;
+            $attributes->{leaf}    = \1;
+            $attributes->{name}    = $fieldlet->{params}->{name_field};
             $attributes->{palette} = \0;
-            $attributes->{text} = $fieldlet->{params}->{name_field};
-            $attributes->{ts} = mdb->ts;
-            $attributes->{who} = 'root';
-            $f->{attributes} = $attributes;
-            $f->{children} = [];
+            $attributes->{text}    = $fieldlet->{params}->{name_field};
+            $attributes->{ts}      = mdb->ts;
+            $attributes->{who}     = 'root';
+            $f->{attributes}       = $attributes;
+            $f->{children}         = [];
             push @fields, $f;
 
         }
         my $rule;
-        $rule->{id} = mdb->seq('rule');
+        $rule->{id}              = mdb->seq('rule');
         $rule->{detected_errors} = '';
-        $rule->{authtype} = 'required';
-        $rule->{rule_active} = '1';
-        $rule->{rule_desc} = '';
-        $rule->{rule_event} = '';
-        $rule->{rule_name} = $topic_category->{name};
-        $rule->{rule_sec} = mdb->seq('rule_seq');
-        $rule->{rule_tree} = _encode_json(\@fields);
-        $rule->{rule_type} = 'form';
-        $rule->{rule_when} = 'post-offline';
-        $rule->{subtype} = '-';
-        $rule->{ts} = mdb->ts;
-        $rule->{username} = 'root';
-        $rule->{wsdl} = '';
+        $rule->{authtype}        = 'required';
+        $rule->{rule_active}     = '1';
+        $rule->{rule_desc}       = '';
+        $rule->{rule_event}      = '';
+        $rule->{rule_name}       = $topic_category->{name};
+        $rule->{rule_sec}        = mdb->seq('rule_seq');
+        $rule->{rule_tree}       = _encode_json( \@fields );
+        $rule->{rule_type}       = 'form';
+        $rule->{rule_when}       = 'post-offline';
+        $rule->{subtype}         = '-';
+        $rule->{ts}              = mdb->ts;
+        $rule->{username}        = 'root';
+        $rule->{wsdl}            = '';
+
         #map{_log _dump $_->{attributes}->{key}}_array _decode_json($rule->{rule_tree});
         #_decode_json($rule->{rule_tree});
         #_log "LA REGLA "._dump $rule;
         mdb->rule->insert($rule);
-        mdb->category->update({ id=>"$topic_category->{id}" },{ '$set' => { default_form=>"$rule->{id}"} });
-        _warn "GENERANDO DSL DE CATEGORIA: ".$topic_category->{name};
+        mdb->category->update( { id => "$topic_category->{id}" }, { '$set' => { default_form => "$rule->{id}" } } );
+        _warn "GENERANDO DSL DE CATEGORIA: " . $topic_category->{name};
         generate_dsl($rule);
     }
-    if(@pending_register_fieldlets){
+    if (@pending_register_fieldlets) {
         my $fh;
-        open($fh, '>', $filename) or die "Could not create file '$filename' $!";
+        open( $fh, '>', $filename ) or die "Could not create file '$filename' $!";
         say $fh "# Add under your feature lib/BaselinerX/Fieldlets.pm";
         say $fh "# to register the fieldlet and restart Clarive";
         say $fh "";
         say $fh "# Change active to 1 in properties of each fieldlet of the followings if you want to use them";
         say $fh "";
-        foreach my $reg_fieldlet (@pending_register_fieldlets){
+        foreach my $reg_fieldlet (@pending_register_fieldlets) {
             say $fh "";
             say $fh "# Fieldlet: $reg_fieldlet->{name} in category: $reg_fieldlet->{category}";
             say $fh "register 'fieldlet." . $reg_fieldlet->{name} . "' => {";
@@ -341,6 +519,159 @@ sub topic_categories_to_rules {
             say $fh "};";
         }
         close $fh;
+    }
+}
+
+sub named_permissions_to_id_permissions {
+    my @categories = mdb->category->find->sort( { name => 1 } )->fields( { id => 1, name => 1 } )->all;
+    my %collisions;
+    my %actions_category_fields;
+    my %statuses = ci->status->statuses;
+    for ( values %statuses ) {
+        $$_{name_id} = _name_to_id( $$_{name} );
+    }
+    foreach my $category (@categories) {
+        my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );
+        my $cat_statuses = mdb->category->find_one( { id => '' . $category->{id} } )->{statuses};
+        my @statuses     = _array($cat_statuses);
+        my $cat_to_id    = _name_to_id( $category->{name} );
+
+        my $id_action;
+        my $name_action;
+
+        for my $field ( _array $meta) {
+            my $field_to_id   = $field->{id_field};
+            my $field_to_name = _name_to_id( $field->{name_field} );
+            if ( $field->{fields} ) {
+                my @fields_form = _array $field->{fields};
+                for my $field_form (@fields_form) {
+                    my $field_form_to_id = _name_to_id( $field_form->{id_field} );
+                    $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id, 'read';
+                    $name_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_name, $field_form_to_id,
+                      'read';
+                    if ( $id_action ne $name_action ) {
+                        if ( exists $collisions{$name_action} ) {
+                            $collisions{$name_action} = $id_action;
+                        }
+                        else {
+                            $actions_category_fields{$name_action} = $id_action;
+                        }
+                    }
+                    for my $status (@statuses) {
+                        $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id,
+                          $status->{name_id}, 'write';
+                        $name_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_name, $field_form_to_id,
+                          $status->{name_id}, 'write';
+                        if ( $id_action ne $name_action ) {
+                            if ( exists $collisions{$name_action} ) {
+                                $collisions{$name_action} = $id_action;
+                            }
+                            else {
+                                $actions_category_fields{$name_action} = $id_action;
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                $id_action   = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.read';
+                $name_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_name . '.read';
+                if ( $id_action ne $name_action ) {
+                    if ( exists $collisions{$name_action} ) {
+                        $collisions{$name_action} = $id_action;
+                    }
+                    else {
+                        $actions_category_fields{$name_action} = $id_action;
+                    }
+                }
+                for my $status (@statuses) {
+                    next unless length($cat_to_id) && length($field_to_id) && length( $status->{name_id} );
+                    $id_action =
+                      'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
+                    $name_action =
+                      'action.topicsfield.' . $cat_to_id . '.' . $field_to_name . '.' . $status->{name_id} . '.write';
+                    if ( $id_action ne $name_action ) {
+                        if ( exists $collisions{$name_action} ) {
+                            $collisions{$name_action} = $id_action;
+                        }
+                        else {
+                            $actions_category_fields{$name_action} = $id_action;
+                        }
+                    }
+                    $id_action =
+                      'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.read';
+                    $name_action =
+                      'action.topicsfield.' . $cat_to_id . '.' . $field_to_name . '.' . $status->{name_id} . '.read';
+                    if ( $id_action ne $name_action ) {
+                        if ( exists $collisions{$name_action} ) {
+                            $collisions{$name_action} = $id_action;
+                        }
+                        else {
+                            $actions_category_fields{$name_action} = $id_action;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (%collisions) {
+        my $collisions_error = join "\n", map {
+            "'$_' and " . join( ' ', @{ collisions { $_ } } )
+        } sort keys %collisions;
+        $collisions_error = "Permissions:\$collisions_error\n\n" if $collisions_error;
+
+        die "Detected collisions is topicsfield:\n\n" . $collisions_error;
+    }
+
+    my $name_transform = sub {
+        my $name = shift;
+        ($name) = $name =~ /^.*::CI::(.*)$/;
+        $name =~ s{::}{}g if $name;
+        $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name;
+        return $name || 'All';
+    };
+    my %cl= Class::MOP::get_all_metaclasses;
+    my @ci_roles = map {
+        my $role = $_;
+        +{
+            role => $role,
+            name => $name_transform->( $role ),
+        }
+    } grep /^Baseliner::Role::CI/, keys %cl;
+
+    my %actions_admin_cis;
+    for my $role ( @ci_roles ) {
+        my $role_name = $role->{name};
+        my $role_name_old = $role_name eq 'All' ? 'ci' : _name_to_id($role_name);
+        for my $class ( packages_that_do( $role->{role} ) ) {
+            my ($collection)      = $class =~ /::CI::(.*?)$/;
+            my $id_action_admin   = "action.ci.admin." . $role_name . "." . $collection;
+            my $name_action_admin = "action.ci.admin." . $role_name_old . "." . $collection;
+            $actions_admin_cis{$name_action_admin} = $id_action_admin;
+            my $id_action_view   = "action.ci.view." . $role_name . "." . $collection;
+            my $name_action_view = "action.ci.view." . $role_name_old . "." . $collection;
+            $actions_admin_cis{$name_action_view} = $id_action_view;
+        }
+    }
+
+    #Update roles
+    my @roles = mdb->role->find->all;
+    foreach my $role (@roles) {
+        my $role_id      = $role->{id};
+        my @role_actions = _array( $role->{actions} );
+        for my $act (@role_actions) {
+            my $key    = $act->{action};
+            my $action = Baseliner::Core::Registry->get($key);
+            if ( !( %{$action} ) ) {
+                if ( exists $actions_category_fields{$key} ) {
+                    $act->{action} = $actions_category_fields{$key};
+                }
+                elsif ( exists $actions_admin_cis{$key} ) {
+                    $act->{action} = $actions_admin_cis{$key};
+                }
+            }
+        }
+        mdb->role->update( { id => $role_id }, { '$set' => { actions => \@role_actions } } );
     }
 }
 
