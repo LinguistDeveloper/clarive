@@ -114,6 +114,7 @@ use Exporter::Tidy default => [
     _capture_tee
     _capture_pipe
     zip_dir
+    _retry
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2735,10 +2736,12 @@ sub _retry {
         }
         catch {
             $last_error = shift;
+
+            warn $last_error if $params{warn};
         };
 
         last if $ok;
-        sleep($pause) if $pause;
+        usleep($pause * 1_000_000) if $pause;
     }
 
     if ( !$ok ) {

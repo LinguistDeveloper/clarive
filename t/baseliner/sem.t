@@ -566,21 +566,6 @@ subtest 'take: removes dead granted semaphore' => sub {
     $sem2->release;
 };
 
-subtest 'take: removes sems without queues' => sub {
-    _setup();
-
-    mdb->sem->insert( { key => 'some key1' } );
-    mdb->sem->insert( { key => 'some key2', queue => undef } );
-    mdb->sem->insert( { key => 'some key3', queue => [] } );
-
-    my $sem = Baseliner::Sem->new( key => 'sem' );
-    $sem->take( timeout => 5 );
-
-    $sem->release;
-
-    is( mdb->sem->count, 1 );
-};
-
 subtest 'take: throws on timeout' => sub {
     _setup();
 
