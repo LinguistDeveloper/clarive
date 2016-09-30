@@ -6739,10 +6739,6 @@ msgid "Purge Daemon"
 msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "Job not ready to purge yet: %1 (%2)"
-msgstr ""
-
-#: lib/BaselinerX/Service/Purge.pm
 msgid "Purging %1 auth events"
 msgstr ""
 
