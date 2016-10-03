@@ -3,7 +3,7 @@ use Moose;
 
 use Try::Tiny;
 use Sys::Hostname ();
-use Baseliner::Utils qw(_loc _debug _fail _array);
+use Baseliner::Utils qw(_loc _debug _fail _array _retry);
 
 use constant DEBUG => !!$ENV{BASELINER_SEM_DEBUG};
 
@@ -43,17 +43,20 @@ sub BUILD {
     }
 
     my $doc;
-    while ( !$self->id_sem ) {
+
+    _retry sub {
         $doc = mdb->sem->find_one( { key => $self->key } );
 
         if ( !$doc ) {
             my $_id = $self->_create;
-            $self->id_sem($_id) if $_id;
+            $self->id_sem($_id);
         }
         else {
             $self->id_sem( $doc->{_id} );
         }
-    }
+      },
+      attempts => 10,
+      pause    => 0.5;
 
     return $doc;
 }
@@ -110,7 +113,7 @@ sub take {
 
         $time += $wait_interval;
 
-        if ($p{timeout} && $time > $p{timeout}) {
+        if ( $p{timeout} && $time > $p{timeout} ) {
             _fail _loc( 'Timeout waiting for semaphore: %1s', $p{timeout} );
         }
     }
@@ -128,41 +131,54 @@ sub release {
     return if $self->released;
     return if $self->pid != $$;    # fork protection: avoid child working on parent sems
 
+    my $res;
+
     # Release normal semaphore (not granted, nor cancelled)
-    my $res = mdb->sem->update(
-        {
-            key   => $self->key,
-            queue => {
-                '$elemMatch' =>
-                  { _id => $self->id_queue, status => { '$ne' => 'cancelled' }, granted => { '$exists' => 0 } }
-            }
-        },
-        { '$inc' => { slots => -1 }, '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } },
-        { safe   => 1 }
-    );
-    if ( $res->{updatedExisting} ) { _debug( _loc( 'Released semaphore %1 (%2)', $self->key, $self->who ) ); }
+    _retry sub {
+        mdb->sem->update(
+            {
+                key   => $self->key,
+                queue => {
+                    '$elemMatch' =>
+                      { _id => $self->id_queue, status => { '$ne' => 'cancelled' }, granted => { '$exists' => 0 } }
+                }
+            },
+            { '$inc' => { slots => -1 }, '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } },
+            { safe   => 1 }
+        );
+        if ( $res->{updatedExisting} ) { _debug( _loc( 'Released semaphore %1 (%2)', $self->key, $self->who ) ); }
 
-    warn "$self: [release] normal result=$res->{updatedExisting}\n" if DEBUG;
+        warn "$self: [release] normal result=$res->{updatedExisting}\n" if DEBUG;
 
-    # Release cancelled semaphore
-    $res = mdb->sem->update(
-        { key => $self->key, queue => { '$elemMatch' => { _id => $self->id_queue, status => 'cancelled' } } },
-        { '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } },
-        { safe    => 1 }
-    );
-    if ( $res->{updatedExisting} ) { _debug( _loc( 'Released cancelled semaphore %1 (%2)', $self->key, $self->who ) ); }
+        # Release cancelled semaphore
+        $res = mdb->sem->update(
+            { key => $self->key, queue => { '$elemMatch' => { _id => $self->id_queue, status => 'cancelled' } } },
+            { '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } },
+            { safe    => 1 }
+        );
+        if ( $res->{updatedExisting} ) {
+            _debug( _loc( 'Released cancelled semaphore %1 (%2)', $self->key, $self->who ) );
+        }
 
-    warn "$self: [release] cancelled result=$res->{updatedExisting}\n" if DEBUG;
+        warn "$self: [release] cancelled result=$res->{updatedExisting}\n" if DEBUG;
 
-    # Release granted semaphore
-    $res = mdb->sem->update(
-        { key => $self->key, queue => { '$elemMatch' => { _id => $self->id_queue, granted => { '$exists' => 1 } } } },
-        { '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } },
-        { safe    => 1 }
-    );
-    if ( $res->{updatedExisting} ) { _debug( _loc( 'Released granted semaphore %1 (%2)', $self->key, $self->who ) ); }
+        # Release granted semaphore
+        $res = mdb->sem->update(
+            {
+                key   => $self->key,
+                queue => { '$elemMatch' => { _id => $self->id_queue, granted => { '$exists' => 1 } } }
+            },
+            { '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } },
+            { safe    => 1 }
+        );
+        if ( $res->{updatedExisting} ) {
+            _debug( _loc( 'Released granted semaphore %1 (%2)', $self->key, $self->who ) );
+        }
 
-    warn "$self: [release] granted result=$res->{updatedExisting}\n" if DEBUG;
+        warn "$self: [release] granted result=$res->{updatedExisting}\n" if DEBUG;
+      },
+      attempts => 10,
+      pause    => 0.5;
 
     $self->released(1);
 }
@@ -176,29 +192,20 @@ sub purge {
 sub _create {
     my $self = shift;
 
-    my $id = '';
-
     warn "$self: [create] attempt\n" if DEBUG;
 
-    try {
-        $id = mdb->sem->insert(
-            {
-                key      => $self->key,
-                internal => '' . $self->internal,
-                slots    => 0,
-                active   => '1',
-                maxslots => 0 + $self->slots,
-            },
-            { safe => 1 }
-        );
+    my $id = mdb->sem->insert(
+        {
+            key      => $self->key,
+            internal => '' . $self->internal,
+            slots    => 0,
+            active   => '1',
+            maxslots => 0 + $self->slots,
+        },
+        { safe => 1 }
+    );
 
-        warn "$self: [create] OK\n" if DEBUG;
-    }
-    catch {
-        $id = '';
-
-        warn "$self: [create] failed\n" if DEBUG;
-    };
+    warn "$self: [create] OK\n" if DEBUG;
 
     return $id;
 }
@@ -228,7 +235,11 @@ sub _enqueue {
 
     warn "$self: [enqueue] id=$id_queue seq=$seq\n" if DEBUG;
 
-    mdb->sem->update( { key => $self->key }, { '$push' => { queue => $doc } }, { safe => 1 } );
+    _retry sub {
+        mdb->sem->update( { key => $self->key }, { '$push' => { queue => $doc } }, { safe => 1 } );
+      },
+      attempts => 10,
+      pause    => 0.5;
 
     $self->id_queue($id_queue);
 
@@ -245,7 +256,7 @@ sub _try_to_take {
             my $sem_doc = mdb->sem->find_one( { key => $self->key } );
             my ($item) = sort { $a->{seq} <=> $b->{seq} } grep { $_->{status} eq 'waiting' } @{ $sem_doc->{queue} };
 
-            unless ($item && $item->{seq}) {
+            unless ( $item && $item->{seq} ) {
                 warn "$self: [take] no seq found\n" if DEBUG;
                 return;
             }
@@ -327,8 +338,6 @@ sub _cleanup_dead_sessions {
 
     warn "$self: [cleanup] attempt connections=" . keys(%active_sessions) . "\n" if DEBUG;
 
-    mdb->sem->remove( { '$or' => [ { queue => { '$eq' => [] } }, { queue => undef } ] }, { multiple => 1 } );
-
     my @sems = mdb->sem->find( { queue => { '$ne' => [] } } )->all;
 
     $self->_debug_threshold( "Found " . scalar(@sems) . " running queues. Checking if they are alive.." );
@@ -392,7 +401,7 @@ sub _lock_queue {
 
     warn "$self: [queue] lock attempt\n" if DEBUG;
 
-    my $wait_interval = 0.1;
+    my $wait_interval = 0.5;
 
     my $time = 0;
     while (1) {
@@ -414,7 +423,8 @@ sub _lock_queue {
 
     warn "$self: [queue] lock OK\n" if DEBUG;
 
-    my $ret = $cb->();
+    my $error;
+    my $ret = try { $cb->() } catch { warn "$$ ERROR INSIDE OF LOCK: $_"; $error = $_ };
 
     warn "$self: [queue] unlock attempt\n" if DEBUG;
 
@@ -435,6 +445,8 @@ sub _lock_queue {
     }
 
     warn "$self: [queue] unlock OK\n" if DEBUG;
+
+    die $error if $error;
 
     return $ret;
 }
