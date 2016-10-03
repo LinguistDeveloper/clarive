@@ -1264,6 +1264,13 @@ Ext.extend(Baseliner.CategoryBox, Ext.ux.form.SuperBoxSelect);
 Baseliner.UserBox = function(opt) {
     if (!opt) opt = {};
 
+    if (opt.withVars) {
+        if (!opt.baseParams)
+            opt.baseParams = {}
+
+        opt.baseParams.with_vars = 1;
+    }
+
     var store = new Baseliner.JsonStore({
         root: 'data',
         remoteSort: true,
@@ -1272,7 +1279,7 @@ Baseliner.UserBox = function(opt) {
         totalProperty: 'totalCount',
         baseParams: opt.baseParams || {},
         url: '/ci/user/combo_list',
-        fields: ['username', 'realname']
+        fields: ['username', 'realname', 'icon']
     });
 
     Baseliner.UserBox.superclass.constructor.call(this, Ext.apply({
@@ -1293,9 +1300,9 @@ Baseliner.UserBox = function(opt) {
         fieldLabel: opt.fieldLabel || _('User'),
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
-            + '<div style="float:left; margin-right: 5px"><img src={[ IC("user.svg") ]} />'
+            + '<div style="float:left; margin-right: 5px"><img src="{[ values.icon || IC("user.svg") ]}" />'
             + '</div>{realname} ({username})</div></tpl>',
-        displayFieldTpl: '<tpl for=".">{realname} ({username})</tpl>',
+        displayFieldTpl: '<tpl for="."><img src="{[ values.icon || IC("user.svg")]}" /> {realname} ({username})</tpl>',
         extraItemCls: 'x-tag'
     }, opt));
 };

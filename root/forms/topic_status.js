@@ -29,7 +29,8 @@
         old_status,
         new_status,
         new Baseliner.UserBox({
-            value: data.username
+            value: data.username,
+            withVars: true
         }),
     ]
 })

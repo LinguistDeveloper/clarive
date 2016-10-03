@@ -277,7 +277,8 @@ method from_user_date( $date ) {
 sub combo_list {
     my ( $self, $p ) = @_;
 
-    my $query = quotemeta($p->{query} // '');
+    my $query = quotemeta( $p->{query} // '' );
+    $query = $p->{valuesqry} ? join( '|', map { quotemeta $_ } split /\|/, $query ) : quotemeta($query);
 
     my $where = { active => mdb->true };
 
@@ -286,8 +287,30 @@ sub combo_list {
     }
 
     my @info =
-      sort { lc $a->{realname} cmp lc $b->{realname} }
       map { { username => $_->{username}, realname => ( $_->{realname} || $_->{username} ) } } $self->find($where)->all;
+
+    if ( $p->{with_vars} ) {
+        my @vars = Baseliner::Role::CI->variables_like_me( classname => 'user' );
+
+        foreach my $var (@vars) {
+            if ($query) {
+                my $name = $var->name;
+
+                $name = "\\\$\\{$name\\}";
+
+                next unless $name =~ qr/$query/i;
+            }
+
+            push @info,
+              {
+                username => '${' . $var->name . '}',
+                realname => 'variable',
+                icon     => $var->icon,
+              };
+        }
+    }
+
+    @info = sort { lc $a->{realname} cmp lc $b->{realname} } @info;
 
     return { data => [@info] };
 }
