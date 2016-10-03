@@ -154,10 +154,30 @@ sub upgrade {
                   };
             }
             elsif ( $action->{action} =~ m/^action\.ci\.admin\.(.*?)\.(.*?)$/ ) {
-                push @{ $actions_map->{'action.admin.ci'}->{bounds} }, { role => $1, collection => $2 };
+                my $role       = $1;
+                my $collection = $2;
+
+                if ( lc($role) eq 'all' ) {
+                    $role = 'Baseliner::Role::CI';
+                }
+                else {
+                    $role = "Baseliner::Role::CI::$role";
+                }
+
+                push @{ $actions_map->{'action.ci.admin'}->{bounds} }, { role => $role, collection => $collection };
             }
             elsif ( $action->{action} =~ m/^action\.ci\.view\.(.*?)\.(.*?)$/ ) {
-                push @{ $actions_map->{'action.view.ci'}->{bounds} }, { role => $1, collection => $2 };
+                my $role       = $1;
+                my $collection = $2;
+
+                if ( lc($role) eq 'all' ) {
+                    $role = 'Baseliner::Role::CI';
+                }
+                else {
+                    $role = "Baseliner::Role::CI::$role";
+                }
+
+                push @{ $actions_map->{'action.ci.view'}->{bounds} }, { role => $role, collection => $collection };
             }
             elsif ( $action->{action} eq 'action.home.hide_project_repos' ) {
                 $hide_repos++;
