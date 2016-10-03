@@ -25,8 +25,8 @@ subtest 'combo_list: returns status when filter on status name' => sub {
     my $status_2 = TestUtils->create_ci( 'status', name => 'Active', type => 'I' );
     my $status_3 = TestUtils->create_ci( 'status', name => 'Finish', type => 'I' );
 
-    my $controller = _build_ci_status();
-    my $statuses = $controller->combo_list( { query => 'finish' } );
+    my $ci = _build_ci_status();
+    my $statuses = $ci->combo_list( { query => 'finish' } );
 
     is $statuses->{data}[0]->{name},      'Finish';
     is $statuses->{data}[0]->{id_status}, $status_3->{mid};
@@ -47,8 +47,8 @@ subtest 'combo_list: returns status when query is empty' => sub {
     my $status_2 = TestUtils->create_ci( 'status', name => 'Active', type => 'I' );
     my $status_3 = TestUtils->create_ci( 'status', name => 'Finish', type => 'I' );
 
-    my $controller = _build_ci_status();
-    my $statuses = $controller->combo_list( { query => '' } );
+    my $ci = _build_ci_status();
+    my $statuses = $ci->combo_list( { query => '' } );
 
     is $statuses->{data}[0]->{name}, 'Active';
     is $statuses->{data}[1]->{name}, 'Finish';
@@ -72,11 +72,20 @@ subtest 'combo_list: returns status when filter on id status' => sub {
 
     my $query = "$status_1->{id_status}" . "|" . "$status_2->{id_status}";
 
-    my $controller = _build_ci_status();
-    my $statuses = $controller->combo_list( { query => $query, valuesqry => 'true' } );
+    my $ci = _build_ci_status();
+    my $statuses = $ci->combo_list( { query => $query, valuesqry => 'true' } );
 
     is $statuses->{data}[0]->{name}, 'Active';
     is $statuses->{data}[1]->{name}, 'New';
+};
+
+subtest 'combo_list: returns query when extra values' => sub {
+    _setup();
+
+    my $ci = _build_ci_status();
+    my $statuses = $ci->combo_list( { query => 'custom value', valuesqry => 'true', with_extra_values => 'true' } );
+
+    is $statuses->{data}[0]->{name}, 'custom value';
 };
 
 done_testing;

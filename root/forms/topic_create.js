@@ -17,18 +17,21 @@
             fieldLabel: _('Category'),
             allowBlank: false,
             singleMode: true,
-            value: data.category
+            value: data.category,
+            withExtraValues: true
         }),
         new Baseliner.StatusBox({
             name: 'status',
             fieldLabel: _('Status'),
             allowBlank: false,
             value: data.status,
-            singleMode: true
+            singleMode: true,
+            withExtraValues: true
         }),
         new Baseliner.UserBox({
             value: data.username,
-            withVars: true
+            withVars: true,
+            withExtraValues: true
         }),
         new Baseliner.DataEditor({
             name: 'variables',

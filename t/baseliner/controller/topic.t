@@ -340,6 +340,32 @@ subtest 'category_list: returns categories when filter on category name with spe
     );
 };
 
+subtest 'category_list: returns query when extra values' => sub {
+    _setup();
+
+    my $c = _build_c(
+        username => 'root',
+        req      => { params => { query => 'custom value', valuesqry => 'true', with_extra_values => 'true' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->category_list($c);
+
+    cmp_deeply(
+        $c->stash->{json},
+        {
+            data => [
+                {
+                    'name' => 'custom value',
+                    'id'   => 'custom value'
+                }
+            ],
+            totalCount => 1
+        }
+    );
+};
+
 subtest 'kanban config save' => sub {
     _setup();
     TestSetup->_setup_user();

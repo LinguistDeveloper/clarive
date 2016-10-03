@@ -277,28 +277,36 @@ method from_user_date( $date ) {
 sub combo_list {
     my ( $self, $p ) = @_;
 
-    my $query = quotemeta( $p->{query} // '' );
-    $query = $p->{valuesqry} ? join( '|', map { quotemeta $_ } split /\|/, $query ) : quotemeta($query);
+    my $query             = $p->{query} // '';
+    my $query_as_values   = $p->{valuesqry};
+    my $with_vars         = $p->{with_vars};
+    my $with_extra_values = $p->{with_extra_values};
+
+    my $query_re;
+    if ($query) {
+        $query_re = quotemeta $query;
+        $query_re = qr/$query_re/i;
+    }
 
     my $where = { active => mdb->true };
 
-    if ($query) {
-        $where->{'$or'} = [ { username => qr/$query/i }, { realname => qr/$query/i } ];
+    if ($query_re) {
+        $where->{'$or'} = [ { username => $query_re }, { realname => $query_re } ];
     }
 
     my @info =
       map { { username => $_->{username}, realname => ( $_->{realname} || $_->{username} ) } } $self->find($where)->all;
 
-    if ( $p->{with_vars} ) {
+    if ( $with_vars ) {
         my @vars = Baseliner::Role::CI->variables_like_me( classname => 'user' );
 
         foreach my $var (@vars) {
-            if ($query) {
+            if ($query_re) {
                 my $name = $var->name;
 
-                $name = "\\\$\\{$name\\}";
+                $name = "\$\{$name\}";
 
-                next unless $name =~ qr/$query/i;
+                next unless $name =~ $query_re;
             }
 
             push @info,
@@ -311,6 +319,10 @@ sub combo_list {
     }
 
     @info = sort { lc $a->{realname} cmp lc $b->{realname} } @info;
+
+    if ( $with_extra_values && $query_as_values && !@info ) {
+        @info = ( { username => $query, realname => $query } );
+    }
 
     return { data => [@info] };
 }
