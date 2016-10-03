@@ -1193,22 +1193,49 @@ Baseliner.model.Status = function(c) {
 };
 Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
 
-Baseliner.StatusBox = function(c) {
-    var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
-    var store = new Baseliner.JsonStore({
-        root: 'data' , remoteSort: true, autoLoad: true,
-        id: 'id_status',
+Baseliner.SuperBoxSelect = function(opt) {
+    if (!opt) opt = {};
+
+    if (!opt.baseParams)
+        opt.baseParams = {}
+
+    if (opt.withVars) {
+        opt.baseParams.with_vars = 1;
+    }
+
+    if (opt.withExtraValues && (!opt.listeners || !opt.listeners.newitem)) {
+        opt.baseParams.with_extra_values = 1;
+
+        if (!opt.listeners) opt.listeners = {};
+
+        opt.listeners.newitem = function(self, v, f) {
+            var record = {};
+            record[this.valueField] = v;
+            record[this.displayField] = v;
+
+            self.setValueEx(record);
+        };
+    }
+
+    opt.store = new Baseliner.JsonStore(Ext.apply({
+        root: 'data',
+        remoteSort: true,
+        autoLoad: true,
         totalProperty: 'totalCount',
-        baseParams: c.baseParams || {},
-        url: '/ci/status/combo_list',
-        fields: ['id_status','name']
-    });
+        baseParams: opt.baseParams || {}
+    }, opt.store || {}));
+
+    Baseliner.SuperBoxSelect.superclass.constructor.call(this, opt);
+};
+Ext.extend(Baseliner.SuperBoxSelect, Ext.ux.form.SuperBoxSelect);
+
+Baseliner.StatusBox = function(opt) {
+    var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     Baseliner.StatusBox.superclass.constructor.call(this, Ext.apply({
-        name: c.name || 'status',
-        hiddenName: c.name || 'status',
+        name: opt.name || 'status',
+        hiddenName: opt.name || 'status',
         displayField: 'name',
         valueField: 'id_status',
-        store: store,
         minChars: 3,
         allowBlank: true,
         msgTarget: 'under',
@@ -1223,27 +1250,24 @@ Baseliner.StatusBox = function(c) {
         + '<div style="float:left; margin-right: 5px"><img src={[ IC("state.svg") ]} />'
         + '</div>{name}</div></tpl>',
         displayFieldTpl: tpl,
-        extraItemCls: 'x-tag'
-    }, c));
+        extraItemCls: 'x-tag',
+        store: {
+            id: 'id_status',
+            url: '/ci/status/combo_list',
+            fields: ['id_status','name']
+        }
+    }, opt));
 };
-Ext.extend(Baseliner.StatusBox, Ext.ux.form.SuperBoxSelect);
+Ext.extend(Baseliner.StatusBox, Baseliner.SuperBoxSelect);
 
-Baseliner.CategoryBox = function(c) {
+Baseliner.CategoryBox = function(opt) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
-    var store = new Baseliner.JsonStore({
-        root: 'data' , remoteSort: true, autoLoad: true,
-        id: 'id',
-        totalProperty: 'totalCount',
-        baseParams: c.baseParams || {},
-        url: '/topic/category_list',
-        fields: ['id','name']
-    });
+
     Baseliner.CategoryBox.superclass.constructor.call(this, Ext.apply({
-        name: c.name || 'categories',
-        hiddenName: c.name || 'categories',
+        name: opt.name || 'categories',
+        hiddenName: opt.name || 'categories',
         displayField: 'name',
         valueField: 'id',
-        store: store,
         minChars: 3,
         allowBlank: true,
         msgTarget: 'under',
@@ -1256,38 +1280,27 @@ Baseliner.CategoryBox = function(c) {
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
         displayFieldTpl: tpl,
-        extraItemCls: 'x-tag'
-    }, c));
+        extraItemCls: 'x-tag',
+        store: {
+            id: 'id',
+            url: '/topic/category_list',
+            fields: ['id','name']
+        }
+    }, opt));
 };
-Ext.extend(Baseliner.CategoryBox, Ext.ux.form.SuperBoxSelect);
+Ext.extend(Baseliner.CategoryBox, Baseliner.SuperBoxSelect);
 
 Baseliner.UserBox = function(opt) {
-    if (!opt) opt = {};
-
-    if (opt.withVars) {
-        if (!opt.baseParams)
-            opt.baseParams = {}
-
-        opt.baseParams.with_vars = 1;
-    }
-
-    var store = new Baseliner.JsonStore({
-        root: 'data',
-        remoteSort: true,
-        autoLoad: true,
-        id: 'username',
-        totalProperty: 'totalCount',
-        baseParams: opt.baseParams || {},
-        url: '/ci/user/combo_list',
-        fields: ['username', 'realname', 'icon']
-    });
+    var fieldTpl = '<div class="x-combo-list-item" style="margin-top: -2px">'
+        + '<img src="{[ values.icon || IC("user.svg")]}" /> '
+        + '{realname}{[ values.username != values.realname ? " (" + values.username  + ")" : "" ]}'
+        + '</div>';
 
     Baseliner.UserBox.superclass.constructor.call(this, Ext.apply({
         name: opt.name || 'username',
         hiddenName: opt.name || 'username',
         displayField: 'realname',
         valueField: 'username',
-        store: store,
         minChars: 3,
         allowBlank: false,
         msgTarget: 'under',
@@ -1299,14 +1312,17 @@ Baseliner.UserBox = function(opt) {
         mode: 'remote',
         fieldLabel: opt.fieldLabel || _('User'),
         typeAhead: true,
-        tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
-            + '<div style="float:left; margin-right: 5px"><img src="{[ values.icon || IC("user.svg") ]}" />'
-            + '</div>{realname} ({username})</div></tpl>',
-        displayFieldTpl: '<tpl for="."><img src="{[ values.icon || IC("user.svg")]}" /> {realname} ({username})</tpl>',
-        extraItemCls: 'x-tag'
+        tpl: '<tpl for=".">' + fieldTpl + '</tpl>',
+        displayFieldTpl: '<tpl for=".">' + fieldTpl + '</tpl>',
+        extraItemCls: 'x-tag',
+        store: {
+            id: 'username',
+            url: '/ci/user/combo_list',
+            fields: ['username', 'realname', 'icon']
+        }
     }, opt));
 };
-Ext.extend(Baseliner.UserBox, Ext.ux.form.SuperBoxSelect);
+Ext.extend(Baseliner.UserBox, Baseliner.SuperBoxSelect);
 /*
 
 A Revision draganddrop superbox inside a form-ready panel.

@@ -10,7 +10,8 @@
         },
         new Baseliner.UserBox({
             value: data.username,
-            withVars: true
+            withVars: true,
+            withExtraValues: true
         }),
         new Baseliner.DataEditor({
             name: 'variables',

@@ -165,6 +165,15 @@ subtest 'combo_list: returns variables by query as value' => sub {
     is $res->{data}->[0]->{username}, '${client}';
 };
 
+subtest 'combo_list: returns query when extra values' => sub {
+    _setup();
+
+    my $res =
+      BaselinerX::CI::user->combo_list( { valuesqry => 'true', query => 'custom value', with_extra_values => 'true' } );
+
+    is $res->{data}->[0]->{username}, 'custom value';
+};
+
 done_testing;
 
 sub _setup {

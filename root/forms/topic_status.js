@@ -6,17 +6,19 @@
 
     var data = params.data || {};
 
-    var old_status = new Baseliner.StatusBox({
+    var oldStatusBox = new Baseliner.StatusBox({
         name: 'old_status',
         fieldLabel: _('Old Statuses'),
-        value: data.old_status
+        value: data.old_status,
+        withExtraValues: true
     });
-    var new_status = new Baseliner.StatusBox({
+    var newStatusBox = new Baseliner.StatusBox({
         name: 'new_status',
         fieldLabel: _('New Status'),
         allowBlank: false,
         singleMode: true,
-        value: data.new_status
+        value: data.new_status,
+        withExtraValues: true
     });
 
     return [{
@@ -26,11 +28,12 @@
             allowBlank: false,
             value: data.topics
         },
-        old_status,
-        new_status,
+        oldStatusBox,
+        newStatusBox,
         new Baseliner.UserBox({
             value: data.username,
-            withVars: true
+            withVars: true,
+            withExtraValues: true
         }),
     ]
 })

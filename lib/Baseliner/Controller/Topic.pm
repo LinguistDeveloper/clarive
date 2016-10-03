@@ -1007,10 +1007,11 @@ sub category_list : Local {    #this is for ComboCategories
     my ( $self, $c ) = @_;
 
     my $p = $c->request->parameters;
-    my $query = $p->{query} // '';
-    my $is_release = $p->{is_release} ? '1' : '0';
 
-    $query = $p->{valuesqry} ? join('|', map {quotemeta $_} split /\|/, $query) : quotemeta ($query);
+    my $query             = $p->{query} // '';
+    my $query_as_values   = $p->{valuesqry};
+    my $with_extra_values = $p->{with_extra_values};
+    my $is_release        = $p->{is_release} ? '1' : '0';
 
     my @categories = Baseliner::Model::Topic->get_categories_permissions(
         username   => $c->username,
@@ -1021,9 +1022,16 @@ sub category_list : Local {    #this is for ComboCategories
     @categories = map { +{ id => $_->{id}, color => $_->{color}, name => $_->{name} } }
       sort { lc $a->{name} cmp lc $b->{name} } @categories;
 
-    if ($query){
-        my $query_key = $p->{valuesqry} ? 'id' : 'name' ;
-        @categories = grep { $_->{$query_key} =~ /$query/i } @categories;
+    if ($query) {
+        my $query_re = $query_as_values ? join( '|', map { quotemeta $_ } split /\|/, $query ) : quotemeta($query);
+        $query_re = qr/$query_re/i;
+
+        my $query_key = $query_as_values ? 'id' : 'name';
+        @categories = grep { $_->{$query_key} =~ $query_re } @categories;
+    }
+
+    if ( $with_extra_values && $query_as_values && !@categories ) {
+        @categories = ( { id => $query, name => $query } );
     }
 
     $c->stash->{json} = {
