@@ -2538,21 +2538,37 @@ sub _chdir {
 sub _capture_tee (&) {
     my ($cb) = @_;
 
+    my $filename = File::Temp::mktemp('captureXXXXXX');
+
+    local *OLDSTDOUT;
+    local *OLDSTDERR;
+
+    open(OLDSTDOUT, '>&', \*STDOUT) or die $!;
+    open(OLDSTDERR, '>&', \*STDERR) or die $!;
+
+    local *STDOUT;
+    local *STDERR;
+
     my $output;
-    *STDOUT->push_layer( tee => \$output );
-    *STDERR->push_layer( tee => \$output );
+
+    open STDOUT, '>>:tee', $filename, \*OLDSTDOUT or die $!;
+    open STDERR, '>>:tee', $filename, \*OLDSTDERR or die $!;
 
     my $error;
     try {
         $cb->();
-    } catch {
+    }
+    catch {
         $error = $_;
     };
 
     *STDOUT->pop_layer();
     *STDERR->pop_layer();
 
-    if (defined $error) {
+    $output = do { local $/; open my $fh, '<', $filename; <$fh> };
+    unlink $filename;
+
+    if ( defined $error ) {
         die $error;
     }
 

@@ -60,13 +60,11 @@ sub exec {
     }
     _debug "Running GIT command ".$cmd;
     #my @lines = `$cmd`;
-    require IO::CaptureOutput;
-    my ($stdout,$stderr);
-    my $rc;
-    IO::CaptureOutput::capture( sub {
+    #require IO::CaptureOutput;
+    require Capture::Tiny;
+    my ($stdout, $stderr, $rc) = Capture::Tiny::capture( sub {
         system $cmd;
-        $rc = $?;
-    }, \$stdout, \$stderr );
+    });
     #my @lines = $self->git->_cmd( @_ );
     my @lines = split /\n/, $stdout;
     #chomp @lines unless $opts->{no_chomp};
