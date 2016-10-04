@@ -141,6 +141,93 @@ subtest 'run_rules: runs rule when' => sub {
       };
 };
 
+subtest 'run_rules: runs rule when' => sub {
+    _setup();
+
+    _create_rule( rule_type => 'event', event => 'on.something' );
+
+    my $runner = _build_runner();
+
+    my $ret = $runner->run_rules( when => 'event', event => 'on.something' );
+
+    cmp_deeply $ret,
+      {
+        'stash' => {
+            'rules_exec' => {
+                'on.something' => {
+                    'event' => 0
+                }
+            }
+        },
+        'rule_log' => []
+      };
+};
+
+subtest 'run_rules: runs rule' => sub {
+    _setup();
+
+    _create_rule( rule_type => 'event', rule_event => 'on.something', rule_when => 'pre-online' );
+
+    my $runner = _build_runner();
+
+    my $ret = $runner->run_rules( when => 'pre-online', event => 'on.something' );
+
+    cmp_deeply $ret->{rule_log},
+      [
+        {
+            'ret'    => ignore(),
+            'output' => 'hello',
+            'rc'     => ignore(),
+            'stash'  => ignore(),
+            'id'     => ignore(),
+            'dsl'    => ignore()
+        }
+      ];
+};
+
+subtest 'run_rules: runs rule with semaphores' => sub {
+    _setup();
+
+    _create_rule( rule_type => 'event', rule_event => 'on.something', rule_when => 'pre-online' );
+
+    my $runner = _build_runner();
+
+    my $ret = $runner->run_rules(
+        when          => 'pre-online',
+        event         => 'on.something',
+        stash         => { mid => '123' },
+        use_semaphore => 1
+    );
+
+    my ($sem) = mdb->sem->find->all;
+
+    is $sem->{key}, 'event:123';
+};
+
+subtest 'run_rules: cleans up semaphore when error happens' => sub {
+    _setup();
+
+    TestSetup->create_rule_with_code(
+        rule_type  => 'event',
+        rule_event => 'on.something',
+        rule_when  => 'pre-online',
+        code       => 'qr{die "here"}'
+    );
+
+    my $runner = _build_runner();
+
+    my $ret = $runner->run_rules(
+        when          => 'pre-online',
+        event         => 'on.something',
+        stash         => { mid => '123' },
+        use_semaphore => 1
+    );
+
+    my ($sem) = mdb->sem->find->all;
+
+    is @{ $sem->{queue} }, 0;
+};
+
 subtest 'run_dsl: merges default vars' => sub {
     _setup();
 
@@ -189,7 +276,7 @@ sub _create_rule {
     mdb->rule->insert(
         {
             id            => '1',
-            "rule_active" => "1",
+            "rule_active" => '1',
             "rule_type"   => "chain",
             "rule_desc"   => "",
             "rule_name"   => "test",

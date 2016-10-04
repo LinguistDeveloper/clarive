@@ -19,20 +19,22 @@ sub run_rules {
     local $Baseliner::_no_cache = 0;
     local $ENV{BASELINER_LOGCOLOR} = 0;
 
-    my $when         = $p{when};
-    my $stash        = $p{stash} // {};
-    my $event        = $p{event};
-    my $rule_type    = $p{rule_type} // 'event';
-    my $onerror      = $p{onerror};
-    my $simple_error = $p{simple_error};
+    my $when          = $p{when};
+    my $stash         = $p{stash} // {};
+    my $event         = $p{event};
+    my $type          = $p{type} // 'event';
+    my $onerror       = $p{onerror};
+    my $simple_error  = $p{simple_error};
+    my $use_semaphore = $p{use_semaphore};
+    my $id_rule       = $p{id_rule};
 
     my @rules =
-        $p{id_rule}
-      ? $self->_find_rule_by_id_or_name( $p{id_rule} )
+        $id_rule
+      ? $self->_find_rule_by_id_or_name($id_rule)
       : mdb->rule->find(
         {
             rule_event  => $event,
-            rule_type   => $rule_type,
+            rule_type   => $type,
             rule_when   => $when,
             rule_active => mdb->true
         }
@@ -40,12 +42,14 @@ sub run_rules {
 
     my $mid = $stash->{mid};
     my $sem;
-    if ( defined $mid && @rules && $p{use_semaphore} ) {
-        $sem = Baseliner::Sem->new( key => 'event:' . $mid, who => "rules:$when", internal => 1 );
+    if ( defined $mid && @rules && $use_semaphore ) {
+        $sem = Baseliner::Sem->new( key => "event:$mid", who => "rules:$when", internal => 1 );
         $sem->take;
     }
 
     my @rule_log;
+
+    my $throw_error;
 
     $stash->{rules_exec}{$event}{$when} = 0;
     for my $rule (@rules) {
@@ -88,37 +92,47 @@ sub run_rules {
             }
         }
         catch {
-            my $err_global = shift;
+            my $error = shift;
+
             $rc = 1;
             if ( ref $onerror eq 'CODE' ) {
-                if ( $rule->{rule_when} !~ /online/ ) {
-                    event_new 'event.rule.failed' => {
-                        username  => 'internal',
-                        dsl       => $ret->{dsl},
-                        rc        => $rc,
-                        ret       => $ret->{stash},
-                        rule      => $id_rule,
-                        rule_name => $rule->{rule_name},
-                        stash     => $stash,
-                        output    => $runner_output
-                    } => sub { };
-                }
-                $onerror->(
-                    {
-                        err    => $err_global,
-                        ret    => $ret->{stash},
-                        id     => $id_rule,
-                        dsl    => $ret->{dsl},
-                        stash  => $stash,
-                        output => $runner_output,
-                        rc     => $rc
+                try {
+                    if ( $rule->{rule_when} !~ /online/ ) {
+                        event_new 'event.rule.failed' => {
+                            username  => 'internal',
+                            dsl       => $ret->{dsl},
+                            rc        => $rc,
+                            ret       => $ret->{stash},
+                            rule      => $id_rule,
+                            rule_name => $rule->{rule_name},
+                            stash     => $stash,
+                            output    => $runner_output
+                        } => sub { };
                     }
-                );
+                    $onerror->(
+                        {
+                            err    => $error,
+                            ret    => $ret->{stash},
+                            id     => $id_rule,
+                            dsl    => $ret->{dsl},
+                            stash  => $stash,
+                            output => $runner_output,
+                            rc     => $rc
+                        }
+                    );
+                } catch {
+                    my $error = shift;
+
+                    _error "Error during event onerror: $error";
+                };
             }
             elsif ( !$onerror ) {
-                _fail "(rule $id_rule): " . $err_global;
+                $throw_error = "(rule $id_rule): " . $error;
             }
         };
+
+        last if defined $throw_error;
+
         push @rule_log,
           {
             ret    => $ret->{stash},
@@ -133,6 +147,8 @@ sub run_rules {
     if ($sem) {
         $sem->release;
     }
+
+    _fail $throw_error if defined $throw_error;
 
     return { stash => $stash, rule_log => \@rule_log };
 }

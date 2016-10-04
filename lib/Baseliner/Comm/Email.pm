@@ -27,10 +27,21 @@ sub daemon {
     for( 1..1000 ) {
         my $sem = Baseliner::Sem->new( key=>'email_daemon', who=>"email_daemon", internal=>1 );
         $sem->take;
-        $self->process_queue( $c, $config );
+
+        my $error;
+
+        try {
+            $self->process_queue( $c, $config )
+        } catch {
+            $error = shift;
+        };
+
         if ( $sem ) {
             $sem->release;
         }
+
+        die $error if defined $error;
+
         sleep $frequency;
     }
     _log "Email daemon stopping.";
