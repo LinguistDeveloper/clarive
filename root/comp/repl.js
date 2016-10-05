@@ -396,6 +396,8 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table'; }
         else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor'; }
 
+        document.getElementById(output.getId()).style.color = "#10c000";
+
         if( lang == 'perl' || lang == 'js-server' || lang == 'sql' ) {
             Cla.tabpanel().changeTabIcon(panel, "/static/images/loading/loading-fast.gif");
 
