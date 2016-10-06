@@ -1127,12 +1127,6 @@ Cla.topic_grid = function(params){
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
         }
-        if (rec.data) {
-            swGo = true;
-            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.svg' style='height:16px;width:16px;'/> ");
-            actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
-            actions_html.push("</span>");
-        }
         if(rec.data.num_file){
             swGo = true;
             actions_html.push("<span style='float: left; color: #808080'><img border=0 src='/static/images/icons/paperclip.svg' style='height:16px;width:16px;'/> ");
