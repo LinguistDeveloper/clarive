@@ -1880,3 +1880,34 @@ div.x-panel-body .job-calendar {
     margin-right: 2px;
 }
 
+.x-form-focus, textarea.x-form-focus{
+    box-shadow: 0 0 3px #a46ec0 !important;
+    border-color:#a46ec0 !important ;
+}
+
+.x-form-focus.x-superboxselect-input-field, textarea.x-form-focus{
+    box-shadow: 0 0 0px #fff !important;
+    border-color:#a46ec0 !important ;
+}
+.x-form-invalid, textarea.x-form-invalid{
+    background-color: #fff !important;
+    box-shadow: 0 0 3px #a46ec0 !important;
+    border-color: #a46ec0 !important;
+}
+
+.x-form-invalid-msg {
+    font:normal 14px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+}
+
+.x-form-invalid-msg {
+    padding: 2px;
+    background: transparent no-repeat 0 2px;
+    line-height: 16px;
+    width: 200px;
+}
+
+.x-form-invalid-msg {
+    color: #c0272b;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-image: none !important;
+}
