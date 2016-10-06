@@ -1042,7 +1042,6 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;
     $rs->sort({ @sort });
-    #_debug \%meta;
     my %select_system = (
         mid            => 1,
         category    => 1,
@@ -1050,9 +1049,10 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
         modified_by    => 1,
         labels        => 1
     );
-    my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 ,'category.color' => 1};
-    # _log "FIELDS==================>" . _dump( $fields );
-    #_log "SORT==================>" . _dump( @sort );
+    my $fields =
+      { %select_system, map { $_ => 1 } keys +{@selects}, _id => 0, 'category.color' => 1, 'category.name' => 1 };
+
+
     my @data = $rs
       ->fields($fields)
       ->skip( $start )
