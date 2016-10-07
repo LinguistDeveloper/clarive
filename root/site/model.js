@@ -1217,13 +1217,15 @@ Baseliner.SuperBoxSelect = function(opt) {
         };
     }
 
-    opt.store = new Baseliner.JsonStore(Ext.apply({
-        root: 'data',
-        remoteSort: true,
-        autoLoad: true,
-        totalProperty: 'totalCount',
-        baseParams: opt.baseParams || {}
-    }, opt.store || {}));
+    if (!opt.store) {
+        opt.store = new Baseliner.JsonStore(Ext.apply({
+            root: 'data',
+            remoteSort: true,
+            autoLoad: true,
+            totalProperty: 'totalCount',
+            baseParams: opt.baseParams || {}
+        }, opt.storeParams || {}));
+    }
 
     Baseliner.SuperBoxSelect.superclass.constructor.call(this, opt);
 };
@@ -1251,7 +1253,7 @@ Baseliner.StatusBox = function(opt) {
         + '</div>{name}</div></tpl>',
         displayFieldTpl: tpl,
         extraItemCls: 'x-tag',
-        store: {
+        storeParams: {
             id: 'id_status',
             url: '/ci/status/combo_list',
             fields: ['id_status','name']
@@ -1281,7 +1283,7 @@ Baseliner.CategoryBox = function(opt) {
         tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
         displayFieldTpl: tpl,
         extraItemCls: 'x-tag',
-        store: {
+        storeParams: {
             id: 'id',
             url: '/topic/category_list',
             fields: ['id','name']
@@ -1315,7 +1317,7 @@ Baseliner.UserBox = function(opt) {
         tpl: '<tpl for=".">' + fieldTpl + '</tpl>',
         displayFieldTpl: '<tpl for=".">' + fieldTpl + '</tpl>',
         extraItemCls: 'x-tag',
-        store: {
+        storeParams: {
             id: 'username',
             url: '/ci/user/combo_list',
             fields: ['username', 'realname', 'icon']
