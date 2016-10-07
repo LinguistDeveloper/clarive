@@ -4,18 +4,18 @@ BEGIN { extends 'Catalyst::Controller' }
 
 use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(_loc);
+use Baseliner::Utils qw( _loc _locl );
 use Baseliner::Model::Scheduler;
 
 with 'Baseliner::Role::ControllerValidator';
 
-register 'action.admin.scheduler' => { name => 'Admin Scheduler' };
+register 'action.admin.scheduler' => { name => _locl('Admin Scheduler') };
 
 register 'menu.admin.scheduler' => {
-    label    => 'Scheduler',
+    label    => _locl('Scheduler'),
     url_comp => '/scheduler/grid',
     actions  => ['action.admin.scheduler'],
-    title    => 'Scheduler',
+    title    => _locl('Scheduler'),
     icon     => '/static/images/icons/clock.svg'
 };
 

@@ -11,7 +11,7 @@ use File::Path qw/mkpath remove_tree/;
 with 'Baseliner::Role::Service';
 
 register 'service.job.init' => {
-    name => 'Init Job Home',
+    name => _locl('Init Job Home'),
     job_service  => 1,
     handler => \&job_init,
 };

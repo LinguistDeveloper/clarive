@@ -28,7 +28,7 @@ register 'action.job.viewall' => {
     bounds => [
         {
             key     => 'bl',
-            name    => 'Environment',
+            name    => _locl('Environment'),
             handler => 'Baseliner::Model::Jobs=bounds_baselines',
         }
     ]
@@ -51,13 +51,13 @@ register 'action.job.force_rollback' => {
     bounds  => [
         {
             key     => 'bl',
-            name    => 'Environment',
+            name    => _locl('Environment'),
             handler => 'Baseliner::Model::Jobs=bounds_baselines',
         }
     ]
 };
 
-register 'action.job.chain_change'  => { name => _locl('Change default pipeline in job_new window') };
+register 'action.job.chain_change'  => { name => _locl('Change default pipeline in job new window') };
 register 'action.job.run_in_proc'   => { name => _locl('Run Jobs In-Proc, within the Web Server') };
 register 'action.job.no_cal'        => { name => _locl('Create a job outside of the available time slots') };
 register 'action.job.advanced_menu' => { name => _locl('Can access the advanced menu in job detailed log') };

@@ -9,7 +9,7 @@ with 'Baseliner::Role::Service';
 our $ICON_DEFAULT = '/static/images/icons/detail.svg';
 
 register 'service.parsing.parse_files' => {
-    name => 'Parse Files',
+    name => _locl('Parse Files'),
     form => '/forms/parse_files.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,

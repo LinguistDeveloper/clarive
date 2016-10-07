@@ -4,11 +4,11 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller' };
 
-register 'menu.tools' => { label => 'Tools', index=>20 };
+register 'menu.tools' => { label => _locl('Tools'), index=>20 };
 
 register 'config.global' => {
     metadata => [
-       { id=>'password_patterns', label=>'List of patterns to be hidden in user outputs', default => '' }
+       { id=>'password_patterns', label=>_locl('List of patterns to be hidden in user outputs'), default => '' }
     ]
 };
 

@@ -20,7 +20,7 @@ register 'action.admin.rules' => {
     bounds => [
         {
             key     => 'id_rule',
-            name    => 'Rule',
+            name    => _locl('Rule'),
             handler => 'Baseliner::Model::Rules=list_rules'
         }
     ]
@@ -29,10 +29,10 @@ register 'action.admin.rules' => {
 register 'config.rules' => {
     metadata => [
         {   id      => 'auto_rename_vars',
-            name    => 'Auto rename variables in rules',
+            name    => _locl('Auto rename variables in rules'),
             type    => 'text',
             default => '0',
-            label   => 'CAUTION: If activated, varible names will be changed in rules when renamed in cis. USE AT YOUR OWN RISK'
+            label   => _locl('CAUTION: If activated, variable names will be changed in rules when renamed in CIs. USE AT YOUR OWN RISK')
         }
     ]
 };
@@ -47,7 +47,7 @@ register 'menu.admin.rule' => {
 };
 
 register 'event.ws.soap_ready' => {
-    text => 'SOAP WS ready to return',
+    text => _locl('SOAP WS ready to return'),
     description => _locl('SOAP WS is ready'),
     vars => [],
 };

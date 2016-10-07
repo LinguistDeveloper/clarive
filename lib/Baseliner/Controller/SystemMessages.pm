@@ -6,9 +6,9 @@ use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 
-register 'action.admin.sms' => { name => 'System Messages' };
+register 'action.admin.sms' => { name => _locl('System Messages') };
 register 'menu.admin.sms' => {
-    label    => 'System Messages',
+    label    => _locl('System Messages'),
     icon     => '/static/images/icons/sms.svg',
     actions  => ['action.admin.sms'],
     url_eval => '/comp/sms.js',

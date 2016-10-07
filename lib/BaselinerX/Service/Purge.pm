@@ -15,40 +15,40 @@ with 'Baseliner::Role::Service';
 
 
 register 'config.daemon.purge' => {
-    name => 'Event daemon configuration',
+    name => _locl('Event daemon configuration'),
     metadata => [
-        { id=>'frequency', label=>'event purge daemon frequency (secs)', default=>86400 },
+        { id=>'frequency', label=>_locl('event purge daemon frequency (secs)'), default=>86400 },
     ]
 };
 
 
 register 'config.purge' => {
     metadata => [
-        { id => 'keep_job_files', default => 30, label=> 'Number of days to keep job files' },
-        { id => 'keep_jobs_ok', default => 30, label=> 'Number of days to keep OK job logs' },
-        { id => 'keep_jobs_ko', default => 30, label=> 'Number of days to keep KO job logs' },
-        #{ id => 'keep_log_size', default => (1024*1024*4), label=> 'Max size in Bytes to keep logs' },   # 4MB to start with
-        { id => 'keep_rotation_level', default => 7, label=> 'Number of compressed files  associated to a log file' },
-        { id => 'keep_nginx-error_log_size', default => 4, label=> 'Max size in MBytes to keep nginx-error log' },
-        { id => 'keep_nginx-access_log_size', default => 4, label=> 'Max size in MBytes to keep nginx-access log' },
-        { id => 'keep_mongod_log_size', default => 4, label=> 'Max size in MBytes to keep mongod log' },
-        { id => 'keep_redis_log_size', default => 4, label=> 'Max size in MBytes to keep redis log' },
-        { id => 'keep_disp_log_size', default => 4, label=> 'Max size in MBytes to keep cla-disp log' },
-        { id => 'keep_web_log_size', default => 4, label=> 'Max size in MBytes to keep cla-web log' },
-        { id => 'no_file_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging log files' },
-        { id => 'no_job_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging job logs' },
-        { id => 'keep_sent_messages', default =>'30D', label=> 'Keep sent messages in duration format: 1M, 2D, etc.' },
-        { id => 'event_log_keep', default =>'7D', label=> 'Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to blank to stop this purge.' },
-        { id => 'event_ko_purge', default =>'1', label=> 'Keep ko event log entries (0 or 1)' },
-        { id => 'event_ok_purge', default =>'1', label=> 'Keep ok event log entries (0 or 1)' },
-        { id => 'event_auth_purge', default =>'0', label=> 'Keep login event log entries (0 or 1)' },
+        { id => 'keep_job_files', default => 30, label=> _locl('Number of days to keep job files') },
+        { id => 'keep_jobs_ok', default => 30, label=> _locl('Number of days to keep OK job logs') },
+        { id => 'keep_jobs_ko', default => 30, label=> _locl('Number of days to keep KO job logs') },
+        #{ id => 'keep_log_size', default => (1024*1024*4), label=> _locl('Max size in Bytes to keep logs') },   # 4MB to start with
+        { id => 'keep_rotation_level', default => 7, label=> _locl('Number of compressed files  associated to a log file') },
+        { id => 'keep_nginx-error_log_size', default => 4, label=> _locl('Max size in MBytes to keep nginx-error log') },
+        { id => 'keep_nginx-access_log_size', default => 4, label=> _locl('Max size in MBytes to keep nginx-access log') },
+        { id => 'keep_mongod_log_size', default => 4, label=> _locl('Max size in MBytes to keep mongod log') },
+        { id => 'keep_redis_log_size', default => 4, label=> _locl('Max size in MBytes to keep redis log') },
+        { id => 'keep_disp_log_size', default => 4, label=> _locl('Max size in MBytes to keep cla-disp log') },
+        { id => 'keep_web_log_size', default => 4, label=> _locl('Max size in MBytes to keep cla-web log') },
+        { id => 'no_file_purge', default =>'0', label=> _locl('Set this to true (1) to prevent Clarive from purging log files') },
+        { id => 'no_job_purge', default =>'0', label=> _locl('Set this to true (1) to prevent Clarive from purging job logs') },
+        { id => 'keep_sent_messages', default =>'30D', label=> _locl('Keep sent messages in duration format: 1M, 2D, etc.') },
+        { id => 'event_log_keep', default =>'7D', label=> _locl('Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to blank to stop this purge.') },
+        { id => 'event_ko_purge', default =>'1', label=> _locl('Keep ko event log entries (0 or 1)') },
+        { id => 'event_ok_purge', default =>'1', label=> _locl('Keep ok event log entries (0 or 1)') },
+        { id => 'event_auth_purge', default =>'0', label=> _locl('Keep login event log entries (0 or 1)') },
     ]
 };
 
 
 register 'service.purge.daemon' => {
     daemon => 1,
-    name => 'Purge Daemon',
+    name => _locl('Purge Daemon'),
     icon => '/static/images/icons/daemon.svg',
     scheduled => 1,
     config => 'config.daemon.purge',

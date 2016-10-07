@@ -22,12 +22,12 @@ Checks the daemon table to see if they are active. Stops daemons when they are n
 =cut
 
 register 'config.dispatcher' => {
-    name     => 'Dispatcher configuration',
+    name     => _locl('Dispatcher configuration'),
     metadata => [ { id => 'frequency', default => 30 }, ],
 };
 
 register 'service.dispatcher' => {
-    name    => 'Dispatcher Service',
+    name    => _locl('Dispatcher Service'),
     config  => 'config.dispatcher',
     icon => '/static/images/icons/daemon.svg',
     daemon => 1,

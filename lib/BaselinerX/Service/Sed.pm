@@ -33,7 +33,7 @@ delete the whole file.
 =cut
 
 register 'service.sed' => {
-    name => 'Replace Strings',
+    name => _locl('Replace Strings'),
     form => '/forms/sed.js',
     icon => '/static/images/icons/rename_items.svg',
     job_service  => 1,

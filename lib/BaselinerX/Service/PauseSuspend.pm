@@ -9,7 +9,7 @@ use Path::Class;
 with 'Baseliner::Role::Service';
 
 register 'service.job.pause' => {
-    name => 'Pause a Job',
+    name => _locl('Pause a Job'),
     job_service  => 1,
     icon=>'/static/images/icons/job.svg',
     form => '/forms/pause_job.js',

@@ -16,26 +16,26 @@ register 'action.git.update_tags' => {name => _locl("Can update system tags in r
 
 register 'config.git' => {
     metadata => [
-        { id=>'gitcgi', label=>'Path to git-http-backend', default=>'/usr/local/libexec/git-core/git-http-backend' },
-        { id=>'no_auth', label=>'Allow unauthenticated users to access the repository URL', default=>0 },
-        { id=>'force_authorization', label=>'Check Auth Always', default=>1 },
-        #{ id=>'gitcgi', label=>'Path to git-http-backend', default=>'/usr/local/Cellar/git/1.7.6/libexec/git-core/git-http-backend' },
-        { id=>'home', label=>'Path to git repositories', default=>File::Spec->catdir($ENV{CLARIVE_HOME},'etc','repo')  },
-        { id=>'path', label=>'Path to git binary', default=>'/usr/bin/git'  },
-        { id=>'show_changes_in_tree', label=>'Show tags in the Lifecycle tree', default=>'1' },
-        { id=>'hide_used_commits', label=>'Hide commits already added to changeset', default=>'1' },
-        { id=>'max_diff_size', label=>'Truncate diff if its length exceeds this number', default=>500 * 1024 },
+        { id=>'gitcgi', label=>_locl('Path to git-http-backend'), default=>'/usr/local/libexec/git-core/git-http-backend' },
+        { id=>'no_auth', label=>_locl('Allow unauthenticated users to access the repository URL'), default=>0 },
+        { id=>'force_authorization', label=>_locl('Check Auth Always'), default=>1 },
+        #{ id=>'gitcgi', label=>_locl('Path to git-http-backend'), default=>'/usr/local/Cellar/git/1.7.6/libexec/git-core/git-http-backend' },
+        { id=>'home', label=>_locl('Path to git repositories'), default=>File::Spec->catdir($ENV{CLARIVE_HOME},'etc','repo')  },
+        { id=>'path', label=>_locl('Path to git binary'), default=>'/usr/bin/git'  },
+        { id=>'show_changes_in_tree', label=>_locl('Show tags in the Lifecycle tree'), default=>'1' },
+        { id=>'hide_used_commits', label=>_locl('Hide commits already added to changeset'), default=>'1' },
+        { id=>'max_diff_size', label=>_locl('Truncate diff if its length exceeds this number'), default=>500 * 1024 },
     ]
 };
 
 register 'service.git.newjob' => {
-    name    =>_loc('Create a Git Revision Job'),
+    name    =>_locl('Create a Git Revision Job'),
     icon    => '/static/images/icons/commite_new.svg',
     handler =>  \&newjob,
 };
 
 register 'service.git.checkout' => {
-    name    =>_loc('Checkout a Git Revision'),
+    name    =>_locl('Checkout a Git Revision'),
     icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
@@ -43,7 +43,7 @@ register 'service.git.checkout' => {
 };
 
 register 'service.git.job_elements' => {
-    name    =>_loc('Fill job_elements'),
+    name    =>_locl('Fill job_elements'),
     icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
@@ -51,7 +51,7 @@ register 'service.git.job_elements' => {
 };
 
 register 'service.git.link_revision_to_topic' => {
-    name    =>_loc('Link a git revision to the changesets in title'),
+    name    =>_locl('Link a git revision to the changesets in title'),
     icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
@@ -60,7 +60,7 @@ register 'service.git.link_revision_to_topic' => {
 };
 
 register 'service.git.create_tag' => {
-    name    => 'Create a tag in a Git repository',
+    name    => _locl('Create a tag in a Git repository'),
     icon    => '/static/images/icons/git.svg',
     #icon    => '/static/images/icons/git-repo.gif',
     form    => '/forms/git_create_tag.js',
@@ -68,7 +68,7 @@ register 'service.git.create_tag' => {
 };
 
 register 'service.git.create_branch' => {
-    name    => 'Create a branch in a Git repository',
+    name    => _locl('Create a branch in a Git repository'),
     icon    => '/static/images/icons/git.svg',
     form    => '/forms/git_create_branch.js',
     handler => \&create_branch,

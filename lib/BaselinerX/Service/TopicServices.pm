@@ -11,7 +11,7 @@ use Baseliner::Utils;
 with 'Baseliner::Role::Service';
 
 register 'service.topic.change_status' => {
-    name => 'Change topic status',
+    name => _locl('Change topic status'),
     handler => \&change_status,
     job_service  => 1,
     icon => '/static/images/icons/topic.svg',
@@ -19,7 +19,7 @@ register 'service.topic.change_status' => {
 };
 
 register 'service.topic.create' => {
-    name => 'Create a new topic',
+    name => _locl('Create a new topic'),
     handler => \&create,
     job_service  => 1,
     icon => '/static/images/icons/topic.svg',
@@ -27,7 +27,7 @@ register 'service.topic.create' => {
 };
 
 register 'service.topic.update' => {
-    name => 'Update topic data',
+    name => _locl('Update topic data'),
     handler => \&update,
     job_service  => 1,
     icon => '/static/images/icons/topic.svg',
@@ -35,7 +35,7 @@ register 'service.topic.update' => {
 };
 
 register 'service.topic.upload' => {
-    name => 'Attach file to a topic',
+    name => _locl('Attach file to a topic'),
     handler => \&upload,
     job_service  => 0,
     icon => '/static/images/icons/topic.svg',
@@ -51,7 +51,7 @@ register 'service.topic.remove_file' => {
 };
 
 register 'service.topic.load' => {
-    name => 'Load topic data',
+    name => _locl('Load topic data'),
     handler => \&load,
     job_service  => 0,
     icon => '/static/images/icons/topic.svg',
@@ -59,7 +59,7 @@ register 'service.topic.load' => {
 };
 
 register 'service.topic.related' => {
-    name => 'Load topic related',
+    name => _locl('Load topic related'),
     handler => \&related,
     job_service  => 0,
     icon => '/static/images/icons/topic.svg',
@@ -67,7 +67,7 @@ register 'service.topic.related' => {
 };
 
 register 'service.topic.inactivity_daemon' => {
-    name    => 'Watch for topics without activity in statuses',
+    name    => _locl('Watch for topics without activity in statuses'),
     icon => '/static/images/icons/daemon.svg',
     config  => 'config.job.daemon',
     daemon  => 1,
@@ -75,7 +75,7 @@ register 'service.topic.inactivity_daemon' => {
 };
 
 register 'service.topic.get_with_condition' => {
-    name => 'Get topics that matches conditions',
+    name => _locl('Get topics that match conditions'),
     handler => \&get_with_condition,
     job_service  => 0,
     icon => '/static/images/icons/topic.svg',
@@ -84,7 +84,7 @@ register 'service.topic.get_with_condition' => {
 
 register 'config.topic.inactivity_daemon' => {
     metadata=> [
-        {  id=>'frequency', label=>'Inactivity daemon Frequency', type=>'int', default=>600 }
+        {  id=>'frequency', label=>_locl('Inactivity daemon Frequency'), type=>'int', default=>600 }
     ]
 };
 

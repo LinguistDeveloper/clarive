@@ -10,8 +10,8 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
-register 'action.notify.admin' =>  { name=>'Receive General Admin Messages' };
-register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
+register 'action.notify.admin' =>  { name=>_locl('Receive General Admin Messages') };
+register 'action.notify.error' =>  { name=>_locl('Receive Error Notifications') };
 
 #     my $to = [ _unique(@users) ];
 
@@ -36,7 +36,7 @@ register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
 #     );
 
 register 'service.notify.create' => {
-    name => 'Send a Notification',
+    name => _locl('Send a Notification'),
     form => '/forms/notify_create.js',
     #migrar
     handler=>sub{

@@ -11,13 +11,13 @@ use Baseliner::Sugar;
 
 register 'config.search' => {
     metadata => [
-        { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>1 },
-        { id=>'provider_filter', text=>'Regex to filter provider packages', default=>'' },
-        { id=>'lucy_boolop', text=>'AND or OR default', default=>'OR' },
-        { id=>'max_results', text=>'Number of results to return to user', default=>100 },  # used by lucy only
-        { id=>'max_results_provider', text=>'Limit sent to provider', default=>200 },  # when no lucy, this is what goes to the user
-        { id=>'max_excerpt_size', text=>'Max length of excerpt string', default=>120 },
-        { id=>'max_excerpt_tokens', text=>'Max number of highlighted tokens excerpts', default=>5 },
+        { id=>'block_lucy', text=>_locl('Block the use of Lucy in searches'), default=>1 },
+        { id=>'provider_filter', text=>_locl('Regex to filter provider packages'), default=>'' },
+        { id=>'lucy_boolop', text=>_locl('AND or OR default'), default=>'OR' },
+        { id=>'max_results', text=>_locl('Number of results to return to user'), default=>100 },  # used by lucy only
+        { id=>'max_results_provider', text=>_locl('Limit sent to provider'), default=>200 },  # when no lucy, this is what goes to the user
+        { id=>'max_excerpt_size', text=>_locl('Max length of excerpt string'), default=>120 },
+        { id=>'max_excerpt_tokens', text=>_locl('Max number of highlighted tokens excerpts'), default=>5 },
     ]
 };
 

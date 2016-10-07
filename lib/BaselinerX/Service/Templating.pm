@@ -9,7 +9,7 @@ with 'Baseliner::Role::Service';
 our $ICON_DEFAULT = '/static/images/icons/edit.svg';
 
 register 'service.templating.transform' => {
-    name => 'Transform Template',
+    name => _locl('Transform Template'),
     form => '/forms/template_transform.js',
     icon => $ICON_DEFAULT,
     job_service  => 1,

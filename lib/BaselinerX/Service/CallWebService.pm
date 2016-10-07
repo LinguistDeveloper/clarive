@@ -13,7 +13,7 @@ use Encode ();
 with 'Baseliner::Role::Service';
 
 register 'service.web.request' => {
-    name => 'Web Request',
+    name => _locl('Web Request'),
     handler => \&web_request,
     job_service  => 1,
     icon => '/static/images/icons/webservice.svg',

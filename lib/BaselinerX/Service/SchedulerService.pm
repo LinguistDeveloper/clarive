@@ -5,7 +5,7 @@ use POSIX ":sys_wait_h";
 use Baseliner::Sem;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Scheduler;
-use Baseliner::Utils qw(_log);
+use Baseliner::Utils qw( _log _locl );
 use Clarive::mdb;
 
 with 'Baseliner::Role::Service';
@@ -14,8 +14,8 @@ has 'config' => ( is => 'rw', isa => 'Any' );
 
 register 'config.scheduler' => {
     metadata => [
-        { id => 'frequency',  label => 'SQA send_ju Daemon Frequency', default => 60 },
-        { id => 'iterations', label => 'Iteraciones del servicio',     default => 1000 }
+        { id => 'frequency',  label => _locl('SQA send_ju Daemon Frequency'), default => 60 },
+        { id => 'iterations', label => _locl('Service iterations'),     default => 1000 }
     ]
 };
 

@@ -596,7 +596,7 @@ register 'service.approval.request' => {
 };
 
 register 'event.job.approval_request' => {
-    text        => 'Approval requested for job %3 (user %1)',
+    text        => _locl('Approval requested for job %3 (user %1)'),
     description => _locl('approval requested for job'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step' ],
     notify      => {
@@ -604,13 +604,13 @@ register 'event.job.approval_request' => {
     },
 };
 register 'event.job.approved' => {
-    text        => 'Job %3 Approved',
+    text        => _locl('Job %3 Approved'),
     description => _locl('Job Approved'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
     notify => { scope => [ 'project', 'bl' ] },
 };
 register 'event.job.rejected' => {
-    text        => 'Job %3 Rejected',
+    text        => _locl('Job %3 Rejected'),
     description => _locl('Job Rejected'),
     vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
     notify => { scope => [ 'project', 'bl' ] },

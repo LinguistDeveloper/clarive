@@ -8,12 +8,12 @@ use experimental 'smartmatch';
 
 register 'config.reports.trending_requests_by_month' => {
     metadata=> [
-        { id=>'user_list', label => 'Usuarios que ven el informe (lista separada por comas)', default => 'root', type=>'text', width=>200 },
+        { id=>'user_list', label => _locl('Users who see the report (list separated by commas)'), default => 'root', type=>'text', width=>200 },
     ],
 };
 
 register 'report.clarive.trending_requests_by_month' => {
-    name => 'TRENDING: Requests by month',
+    name => _locl('TRENDING: Requests by month'),
     data => { },
     form => '/reports/trending.js',
     security_handler => sub{

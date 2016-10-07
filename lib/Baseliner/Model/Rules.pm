@@ -515,7 +515,7 @@ sub dsl_listing {
 ############################## STATEMENTS
 
 register 'statement.if.var' => {
-    text => 'IF var THEN',
+    text => _locl('IF var THEN'),
     type => 'if',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
@@ -531,7 +531,7 @@ register 'statement.if.var' => {
 };
 
 register 'statement.if_not.var' => {
-    text => 'IF var ne value THEN',
+    text => _locl('IF var ne value THEN'),
     type => 'if',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
@@ -547,7 +547,7 @@ register 'statement.if_not.var' => {
 };
 
 register 'statement.if.condition' => {
-    text => 'IF condition THEN',
+    text => _locl('IF condition THEN'),
     type => 'if',
     data => { condition =>'1' },
     dsl => sub {
@@ -562,7 +562,7 @@ register 'statement.if.condition' => {
 };
 
 register 'statement.if.else' => {
-    text => 'ELSE',
+    text => _locl('ELSE'),
     icon => '/static/images/icons/else.svg',
     type => 'if',
     nested => 1,   # avoids a "current_task" before
@@ -579,7 +579,7 @@ register 'statement.if.else' => {
 };
 
 register 'statement.if.elsif' => {
-    text => 'ELSIF condition THEN',
+    text => _locl('ELSIF condition THEN'),
     icon => '/static/images/icons/if_else.svg',
     type => 'if',
     nested => 1,
@@ -596,7 +596,7 @@ register 'statement.if.elsif' => {
 };
 
 register 'statement.if.var.list' => {
-    text => 'IF var in LIST THEN',
+    text => _locl('IF var in LIST THEN'),
     type => 'if',
     form => '/forms/variable_values.js',
     data => { variable=>'', values=>'' },
@@ -621,7 +621,7 @@ register 'statement.if.var.list' => {
 };
 
 register 'statement.try' => {
-    text => 'TRY statement (without catch)',
+    text => _locl('TRY statement (without catch)'),
     type => 'if',
     data => { },
     dsl => sub {
@@ -636,7 +636,7 @@ register 'statement.try' => {
 };
 
 register 'statement.try_with_catch' => {
-    text => 'TRY statement (needs a catch)',
+    text => _locl('TRY statement (needs a catch)'),
     type => 'if',
     data => { },
     dsl => sub {
@@ -651,7 +651,7 @@ register 'statement.try_with_catch' => {
 };
 
 register 'statement.catch' => {
-    text => 'CATCH statement (needs a try_with_catch)',
+    text => _locl('CATCH statement (needs a try_with_catch)'),
     type => 'if',
     data => { },
     nested => 1,
@@ -667,7 +667,7 @@ register 'statement.catch' => {
 };
 
 register 'statement.retry' => {
-    text => 'RETRY statement',
+    text => _locl('RETRY statement'),
     type => 'if',
     form => '/forms/retry.js',
     data => { attempts => 1, pause => 0 },
@@ -680,7 +680,7 @@ register 'statement.retry' => {
 };
 
 register 'statement.let.merge' => {
-    text => 'MERGE value INTO stash',
+    text => _locl('MERGE value INTO stash'),
     type => 'let',
     holds_children => 0,
     data => { value=>{} },
@@ -694,7 +694,7 @@ register 'statement.let.merge' => {
 };
 
 register 'statement.delete.key' => {
-    text => 'DELETE hashkey',
+    text => _locl('DELETE hashkey'),
     type => 'if',
     holds_children => 0,
     data => { key=>'' },
@@ -707,7 +707,7 @@ register 'statement.delete.key' => {
 };
 
 register 'statement.delete.trap_action' => {
-    text => 'DELETE last trap action',
+    text => _locl('DELETE last trap action'),
     type => 'if',
     holds_children => 0,
     dsl => sub {
@@ -719,7 +719,7 @@ register 'statement.delete.trap_action' => {
 };
 
 register 'statement.parallel.wait' => {
-    text => 'WAIT for children',
+    text => _locl('WAIT for children'),
     form => '/forms/wait_for_children.js',
     icon => '/static/images/icons/slot.svg',
     holds_children => 0,
@@ -743,7 +743,7 @@ register 'statement.parallel.wait' => {
 };
 
 register 'statement.foreach' => {
-    text => 'FOREACH stash[ variable ]',
+    text => _locl('FOREACH stash[ variable ]'),
     type => 'loop',
     data => { variable=>'stash_var', local_var=>'value' },
     dsl => sub {
@@ -759,7 +759,7 @@ register 'statement.foreach' => {
 };
 
 register 'statement.foreach.ci' => {
-    text => 'FOREACH CI',
+    text => _locl('FOREACH CI'),
     type => 'loop',
     data => { variable=>'stash_var', local_var=>'value' },
     dsl => sub {
@@ -775,7 +775,7 @@ register 'statement.foreach.ci' => {
 };
 
 register 'statement.foreach.split' => {
-    text => 'FOREACH SPLIT /re/',
+    text => _locl('FOREACH SPLIT /re/'),
     type => 'loop',
     data => { split=>',', variable=>'stash_var', local_var=>'value' },
     dsl => sub {
@@ -791,7 +791,7 @@ register 'statement.foreach.split' => {
 };
 
 register 'statement.step' => {
-    text => 'JOB STEP',
+    text => _locl('JOB STEP'),
     description=> _locl('a job step section: PRE,RUN,POST...'),
     icon => '/static/images/icons/job.svg',
     dsl=>sub{
@@ -805,7 +805,7 @@ register 'statement.step' => {
 };
 
 register 'statement.sub' => {
-    text => 'SUB',
+    text => _locl('SUB'),
     sub_mode => 'declare',
     description=> _locl('Just group tasks under this but do not run it'),
     on_drop_js => q{
@@ -821,7 +821,7 @@ register 'statement.sub' => {
 };
 
 register 'statement.fail' => {
-    text => 'FAIL',
+    text => _locl('FAIL'),
     data => { msg => 'abort here' },
     icon => '/static/images/icons/error_red.svg',
     dsl=>sub{
@@ -833,7 +833,7 @@ register 'statement.fail' => {
 };
 
 register 'statement.shortcut' => {
-    text => 'Task Shortcut',
+    text => _locl('Task Shortcut'),
     icon => '/static/images/icons/shortcut.svg',
     form => '/forms/shortcut.js',
     dsl=>sub{
@@ -862,7 +862,7 @@ register 'statement.shortcut' => {
 };
 
 register 'statement.log' => {
-    text => 'LOG message',
+    text => _locl('LOG message'),
     data => { text => 'Message', level=>'info' },
     icon => '/static/images/icons/log.svg',
     form => '/forms/log.js',
@@ -891,7 +891,7 @@ register 'service.get_date' => {
     data => { date => '' },
     form => '/forms/get_date.js',
     icon => '/static/images/icons/calendar.svg',
-    name => 'Get date',
+    name => _locl('Get date'),
     handler=>sub{
         my ($self, $c, $data ) = @_;
         my $return_date;
@@ -917,13 +917,13 @@ register 'service.fail' => {
 };
 
 register 'event.rule.tester' => {
-    text => '%1 posted a comment on %2: %3',
+    text => _locl('%1 posted a comment on %2: %3'),
     description => _locl('Dummy Event to Test a Rule'),
     vars => ['hello'],
 };
 
 register 'statement.var.set' => {
-    text => 'SET VAR', data => {},
+    text => _locl('SET VAR'), data => {},
     type => 'let',
     holds_children => 0,
     form => '/forms/set_var.js',
@@ -936,7 +936,7 @@ register 'statement.var.set' => {
 };
 
 register 'statement.var.set_expr' => {
-    text => 'SET EXPR', data => {},
+    text => _locl('SET EXPR'), data => {},
     type => 'let',
     holds_children => 0,
     form => '/forms/set_expr.js',
@@ -949,7 +949,7 @@ register 'statement.var.set_expr' => {
 };
 
 register 'statement.var.set_to_ci' => {
-    text => 'SET VAR to CI', data => {},
+    text => _locl('SET VAR to CI'), data => {},
     type => 'let',
     holds_children => 0,
     data => { variable=>'my_varname', from_code=>'', prepend=>'' },
@@ -962,7 +962,7 @@ register 'statement.var.set_to_ci' => {
 };
 
 register 'statement.nature.block' => {
-    text => 'APPLY NATURE', data => { nature=>'' },
+    text => _locl('APPLY NATURE'), data => { nature=>'' },
     type => 'loop',
     form => '/forms/nature_block.js',
     dsl => sub {
@@ -985,7 +985,7 @@ register 'statement.nature.block' => {
 };
 
 register 'statement.stash.local' => {
-    text => 'STASH LOCAL', data => {},
+    text => _locl('STASH LOCAL'), data => {},
     type => 'loop',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1000,7 +1000,7 @@ register 'statement.stash.local' => {
 };
 
 register 'statement.project.block' => {
-    text => 'APPLY PROJECT', data => { project=>'', bl=>'' },
+    text => _locl('APPLY PROJECT'), data => { project=>'', bl=>'' },
     type => 'loop',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1018,7 +1018,7 @@ register 'statement.project.block' => {
 };
 
 register 'statement.perl.eval' => {
-    text => 'EVAL', data => { code=>'' },
+    text => _locl('EVAL'), data => { code=>'' },
     form => '/forms/stmt_eval.js',
     icon => '/static/images/icons/cog_perl.svg',
     dsl => sub {
@@ -1035,7 +1035,7 @@ register 'statement.perl.eval' => {
 };
 
 register 'statement.perl.do' => {
-    text => 'DO', data => { code=>'' },
+    text => _locl('DO'), data => { code=>'' },
     icon => '/static/images/icons/cog_perl.svg',
     form => '/forms/stmt_eval.js',
     dsl => sub {
@@ -1051,7 +1051,7 @@ register 'statement.perl.do' => {
 };
 
 register 'statement.perl.group' => {
-    text => 'GROUP',data => { },
+    text => _locl('GROUP'),data => { },
     icon => '/static/images/icons/cog_gears.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1068,7 +1068,7 @@ register 'statement.perl.group' => {
 };
 
 register 'statement.perl.for' => {
-    text => 'FOR eval', data => { varname=>'x', code=>'()' },
+    text => _locl('FOR eval'), data => { varname=>'x', code=>'()' },
     type => 'loop',
     icon => '/static/images/icons/cog_perl.svg',
     form => '/forms/stmt_for.js',
@@ -1084,7 +1084,7 @@ register 'statement.perl.for' => {
 };
 
 register 'statement.code.server' => {
-    text           => 'Server CODE',
+    text           => _locl('Server CODE'),
     data           => {code => ''},
     type           => 'loop',
     icon           => '/static/images/icons/cog_perl.svg',
@@ -1109,7 +1109,7 @@ register 'statement.code.server' => {
 };
 
 register 'statement.perl.code' => {
-    text => 'CODE (Perl)', data => { code=>'' },
+    text => _locl('CODE (Perl)'), data => { code=>'' },
     type => 'loop',
     icon => '/static/images/icons/cog_perl.svg',
     holds_children => 0,
@@ -1123,7 +1123,7 @@ register 'statement.perl.code' => {
 };
 
 register 'statement.project.loop' => {
-    text => 'FOR projects with changes DO', data => { },
+    text => _locl('FOR projects with changes DO'), data => { },
     type => 'loop',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1152,7 +1152,7 @@ register 'statement.project.loop' => {
 
 # needs the changeset.nature service to fill the stash with natures (create a dependency check?)
 register 'statement.if.nature' => {
-    text => 'IF EXISTS nature THEN',
+    text => _locl('IF EXISTS nature THEN'),
     form => '/forms/if_nature.js',
     type => 'if',
     data => { nature=>'', },
@@ -1181,7 +1181,7 @@ register 'statement.if.nature' => {
 };
 
 register 'statement.if.any_nature' => {
-    text => 'IF ANY nature THEN',
+    text => _locl('IF ANY nature THEN'),
     form => '/forms/if_any_nature.js',
     type => 'if',
     data => { natures=>'', },
@@ -1196,7 +1196,7 @@ register 'statement.if.any_nature' => {
 };
 
 register 'statement.if.last_trap_action' => {
-    text => 'IF last trap status THEN',
+    text => _locl('IF last trap status THEN'),
     form => '/forms/if_last_trap_action.js',
     type => 'if',
     data => { job_trap_action => 'skip', },
@@ -1214,7 +1214,7 @@ register 'statement.if.last_trap_action' => {
 };
 
 register 'statement.if.rollback' => {
-    text => 'IF ROLLBACK',
+    text => _locl('IF ROLLBACK'),
     type => 'if',
     data => { rollback=>'1', },
     dsl => sub {
@@ -1228,7 +1228,7 @@ register 'statement.if.rollback' => {
 };
 
 register 'statement.include' => {
-    text => 'INCLUDE rule',
+    text => _locl('INCLUDE rule'),
     icon => '/static/images/icons/cog_perl.svg',
     holds_children => 0,
     data => { id_rule=>'', },
@@ -1242,7 +1242,7 @@ register 'statement.include' => {
 };
 
 register 'statement.call' => {
-    text => 'CALL rule',
+    text => _locl('CALL rule'),
     icon => '/static/images/icons/cog.svg',
     holds_children => 0,
     data => { id_rule=>'', },

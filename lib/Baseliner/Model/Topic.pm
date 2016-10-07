@@ -229,7 +229,7 @@ register 'action.topics.logical_change_status' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -241,7 +241,7 @@ register 'action.topics.create' => {
     bounds  => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -252,7 +252,7 @@ register 'action.topics.view' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -264,7 +264,7 @@ register 'action.topics.edit' => {
     bounds  => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -275,7 +275,7 @@ register 'action.topics.delete' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -286,7 +286,7 @@ register 'action.topics.comment' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -297,7 +297,7 @@ register 'action.topics.activity' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -308,7 +308,7 @@ register 'action.topics.jobs' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         }
     ]
@@ -319,18 +319,18 @@ register 'action.topicsfield.read' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         },
         {
             key     => 'id_status',
-            name    => 'Status',
+            name    => _locl('Status'),
             depends => ['id_category'],
             handler => 'Baseliner::Model::Topic=bounds_statuses',
         },
         {
             key     => 'id_field',
-            name    => 'Field',
+            name    => _locl('Field'),
             depends => ['id_category'],
             handler => 'Baseliner::Model::Topic=bounds_fields',
         }
@@ -343,18 +343,18 @@ register 'action.topicsfield.write' => {
     bounds => [
         {
             key     => 'id_category',
-            name    => 'Category',
+            name    => _locl('Category'),
             handler => 'Baseliner::Model::Topic=bounds_categories',
         },
         {
             key     => 'id_status',
-            name    => 'Status',
+            name    => _locl('Status'),
             depends => ['id_category'],
             handler => 'Baseliner::Model::Topic=bounds_statuses',
         },
         {
             key     => 'id_field',
-            name    => 'Field',
+            name    => _locl('Field'),
             depends => ['id_category'],
             handler => 'Baseliner::Model::Topic=bounds_fields',
         }

@@ -14,12 +14,12 @@ register 'action.ci.view' => {
     bounds => [
         {
             key     => 'role',
-            name    => 'Role',
+            name    => _locl('Role'),
             handler => 'Baseliner::Model::CI=bounds_role',
         },
         {
             key     => 'collection',
-            name    => 'Collection',
+            name    => _locl('Collection'),
             depends => ['role'],
             handler => 'Baseliner::Model::CI=bounds_collection',
         }
@@ -31,12 +31,12 @@ register 'action.ci.admin' => {
     bounds => [
         {
             key     => 'role',
-            name    => 'Role',
+            name    => _locl('Role'),
             handler => 'Baseliner::Model::CI=bounds_role',
         },
         {
             key     => 'collection',
-            name    => 'Collection',
+            name    => _locl('Collection'),
             depends => ['role'],
             handler => 'Baseliner::Model::CI=bounds_collection',
         }
@@ -52,7 +52,7 @@ register 'action.ci.admin' => {
 #     actions  => ['action.ci.admin']
 # };
 
-register 'action.search.ci' => { name => 'Search cis' };
+register 'action.search.ci' => { name => _locl('Search CIs') };
 
 # gridtree - the adjacency list treegrid
 sub gridtree : Local {
