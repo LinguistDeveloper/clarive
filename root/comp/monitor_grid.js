@@ -909,12 +909,10 @@
                 function(btn){
                     if(btn=='yes') {
                         Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, mid: sel.data.mid }, function(res){
-                            //console.log( res );
                             if( res.success ) {
                                 grid.getStore().reload();
                                 if(sel.data.can_cancel){
-                                    // cancelButton.enable();
-                                    cancelButton.setText( msg_cancel_delete[1] );
+                                    buttonCancel.setText( msg_cancel_delete[1] );
                                 }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
@@ -1165,14 +1163,12 @@
         var return_value = new Array();
         if ( rec.data.changeset_cis && rec.data.changeset_cis.length > 0 ) {
           Ext.each(rec.data.changeset_cis, function(cs) {
-            // console.log(cs);
             var link = '<a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer;">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
             return_value.push(link);
           });
         } else {
           return_value = value;
         }
-            // console.log(return_value[0]);
         if( return_value.length < 2 ) return return_value[0];
         var str = return_value.join('<li>');
         return '<li>' + str;

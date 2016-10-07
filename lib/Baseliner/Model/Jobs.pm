@@ -163,12 +163,27 @@ sub monitor {
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start) unless $limit eq -1;
 
-    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all;
+    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields( { id => 1, rule_name => 1 } )->all;
 
     my @rows;
     my $now = _dt();
-    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0);
-    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second );
+    my $today = DateTime->new(
+        year   => $now->year,
+        month  => $now->month,
+        day    => $now->day,
+        hour   => 0,
+        minute => 0,
+        second => 0
+    );
+    my $ahora = DateTime->new(
+        year   => $now->year,
+        month  => $now->month,
+        day    => $now->day,
+        hour   => $now->hour,
+        minute => $now->minute,
+        second => $now->second
+    );
+
 
     local $Baseliner::CI::mid_scope = {};
 
@@ -429,14 +444,24 @@ sub get_contents {
 } ## end sub get_contents
 
 sub user_can_search {
-    my ($self, $username) = @_;
-    return Baseliner::Model::Permissions->user_has_action( $username, 'action.search.job');
+    my ( $self, $username ) = @_;
+    return Baseliner::Model::Permissions->user_has_action( $username, 'action.search.job' );
 }
 
+
 sub build_field_query {
-    my ($self,$query,$where) = @_;
-    mdb->query_build( where=>$where, query=>$query, fields=>['name', 'bl','final_status', 'final_step', 'list_contents','username','job_contents.list_apps', 'job_contents.list_changesets', 'job_contents.list_natures', 'job_contents.list_releases'] );
+    my ( $self, $query, $where ) = @_;
+    mdb->query_build(
+        where  => $where,
+        query  => $query,
+        fields => [
+            'name',                      'bl',       'final_status',           'final_step',
+            'list_contents',             'username', 'job_contents.list_apps', 'job_contents.list_changesets',
+            'job_contents.list_natures', 'job_contents.list_releases'
+        ]
+    );
 }
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

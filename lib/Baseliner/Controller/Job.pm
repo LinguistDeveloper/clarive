@@ -424,7 +424,10 @@ sub refresh_now : Local {
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my @rows = ci->job->find({ mid=>mdb->in($p->{ids}) })->fields({ _id=>-1, status=>1, exec=>1, step=>1, last_log_message=>1 })->sort({ _seq=>-1 })->all;
+            my @rows
+                = ci->job->find( { mid => mdb->in( $p->{ids} ) } )
+                ->fields( { _id => -1, status => 1, exec => 1, step => 1, last_log_message => 1 } )
+                ->sort( { _seq => -1 } )->all;
             my $data ='';
             map { $data.= join(',', sort(%$_) ) } @rows;  # TODO should use step and exec also
             $magic = Util->_md5( $data );
@@ -741,9 +744,23 @@ sub jc_store : Local  {
 
         my @chi;
         if( $ci->is_release ) {
-            my @changesets = $ci->children( where=>{collection=>'topic'}, 'category.is_changeset' => 1, no_rels=>1, depth => 2, mids_only => 1 );
+            my @changesets = $ci->children(
+                where                   => { collection => 'topic' },
+                'category.is_changeset' => 1,
+                no_rels                 => 1,
+                depth                   => 2,
+                mids_only               => 1
+            );
             my @cs_mids = map { $_->{mid} } @changesets;
-            my ($info, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids, limit => 1000 });
+            my ( $info, @cs_user ) = model->Topic->topics_for_user(
+                {   username     => $c->username,
+                    clear_filter => 1,
+                    id_project   => $id_project,
+                    statuses     => [$status_from],
+                    topic_list   => \@cs_mids,
+                    limit        => 1000
+                }
+            );
             @chi = map {
                my $cs_data = $_;
                $children{ $$cs_data{mid} } = 1;
@@ -825,7 +842,7 @@ sub jc_store : Local  {
     }
 
     #@data = sort{ $$a{_id} <=> $$b{_id} } @data;
-    $c->stash->{json} = { data=>\@data, totalCount=>scalar(@data), success=>\1, deploys=>\%deploys };
+    $c->stash->{json} = { data => \@data, totalCount => scalar(@data), success => \1, deploys => \%deploys };
     $c->forward('View::JSON');
 }
 
@@ -896,7 +913,8 @@ sub burndown_new : Local {
         }
 
         if ( $topic_mid ) {
-            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            my @related_topics = map { $_->{mid} }
+                ci->new($topic_mid)->children( where => { collection => 'topic' }, mids_only => 1, depth => 5 );
             $where->{changesets} = mdb->in(@related_topics);
         }
 
@@ -970,11 +988,12 @@ sub burndown : Local {
             my %ret = map { $_ => 0 } 0..23;
             my $wh = $t ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
             my $tot = 0;
-            for my $job( ci->job->find($wh)->fields({ status=>1, endtime=>1, _id=>0 })->all ) {
-                my $hour = Class::Date->new($job->{endtime})->hour;
-                $ret{ $hour }++;
+            for my $job ( ci->job->find($wh)->fields( { status => 1, endtime => 1, _id => 0 } )->all ) {
+                my $hour = Class::Date->new( $job->{endtime} )->hour;
+                $ret{$hour}++;
                 $tot++;
             }
+
             for( sort { $a <=> $b } keys %ret ) {
                 my $diff = $tot - $ret{$_};
                 $ret{$_} = $diff;
