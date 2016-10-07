@@ -1145,7 +1145,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                    return;
                }
                else if( btn=='yes' && mode=='destroy' ) {
-                   self.save_topic({ return_on_save : true });
+                   self.save_topic();
                }
                else if( btn=='yes' ) {
                    self.close_answer = 'yes';  // avoid firing again on destroy
@@ -1154,6 +1154,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                else {
                    self.close_answer = 'no';
                    if( mode!='destroy' ) self.destroy(); // if its a beforedestroy, the form is gone by now
+                   Baseliner.refreshCurrentTab();
                }
            },
            animEl: 'elId',
@@ -1171,7 +1172,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             } else {
                 self.set_original_record(data,retry+1); // retry
             }
-        }, 5000);
+        }, 2000);
     },
     load_form : function(rec) {
         var self = this;
@@ -1435,12 +1436,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     save_topic: function(opts) {
         var self = this;
-
         self.form_topic.on_submit();
         if (!opts) opts = {};
 
         var form_data = self.form_topic.getValues();
-        self.original_record = form_data; // reset save status for is_dirty
         var form2 = self.form_topic.getForm();
         var action = form_data['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
@@ -1463,6 +1462,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     }
                     Baseliner.message(_('Success'), res.msg);
                     self.reload_parent_grid();
+                    self.original_record = form_data; // reset save status for is_dirty
                     if (opts.close_on_save) {
                         self.destroy();
                         return;

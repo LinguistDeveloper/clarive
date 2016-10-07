@@ -234,13 +234,19 @@ Ext.onReady(function(){
     if( Prefs.stash.show_js_reload && Cla.DEBUG )
         tbar_items.push( Cla.JSreload_button );
 
-     Cla.refresh_button = new Ext.Button({
-       icon: '/static/images/icons/refresh.svg',
-       cls: 'x-btn-icon',
-       tooltip: _('Refresh'),
-       handler: function(){
-               Cla.refreshCurrentTab();
+    Cla.refresh_button = new Ext.Button({
+        icon: '/static/images/icons/refresh.svg',
+        cls: 'x-btn-icon',
+        tooltip: _('Refresh'),
+        handler: function() {
+            var tabPanel = Ext.getCmp('main-panel');
+            var activeTab = tabPanel.getActiveTab();
+            if (activeTab && activeTab.form_topic && activeTab.is_dirty()) {
+                activeTab.fireEvent('beforedestroy');
+            } else {
+                Cla.refreshCurrentTab();
             }
+        }
     });
     tbar_items.push( Cla.refresh_button );
 
