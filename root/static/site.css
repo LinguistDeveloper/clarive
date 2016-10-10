@@ -722,15 +722,74 @@ body#login-page {
 
 #login-page .logo {
     padding: 8px;
+    margin-top: 50px !important;
 }
 
 #login-page .logo-powered {
     height: 30px;
+    margin-right: 0 !important;
     padding: 5px;
 }
 
 #login-page .logo-lower {
     padding: 5px;
+}
+
+
+#login-page .logos img {
+    max-width: 500px;
+    max-height: 121px;
+    display: block;
+    margin: auto;
+}
+
+#login-page .logos img[src$='.svg'] {
+    max-width: none;
+    max-height: none;
+}
+
+@media (max-width: 500px) {
+ #login-page .logos img[src$='.svg'] {
+        width: 65% !important;
+        margin-right: auto;
+        margin-left: 0;
+        transition: all .2s cubic-bezier(.55,.06,.68,.19) !important;
+    }
+
+    #login-page .logos img {
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    #login-page .logo-powered {
+        width: 30% !important;
+    }
+}
+
+@media (max-width: 360px) {
+   #login-page .logos img[src$='.svg'] {
+        width: 65%;
+        margin-right: auto;
+        margin-left: 0;
+        transition: all .2s cubic-bezier(.55,.06,.68,.19) !important;
+    }
+
+    #login-page .logo-powered {
+        width: 30% !important;
+    }
+}
+
+@media (max-width: 320px) {
+    #login-page .logos img[src$='.svg']{
+        width: 60%;
+        margin-right: auto;
+        margin-left: 0;
+        transition: all .2s cubic-bezier(.55,.06,.68,.19) !important;
+    }
+
+    #login-page .logo-powered {
+        width: 30% !important;
+    }
 }
 
 #login-page .bottom {
@@ -780,7 +839,7 @@ body#login-page {
     float: right;
     width: 190px !important;
     text-align: left;
-    padding: 5px 90px 5px 20px;
+    padding: 5px 69px 5px 20px;
 }
 
 #login-page .ext-webkit .x-form-invalid:focus {
@@ -819,25 +878,5 @@ body#login-page {
     }
     .copyright {
         width: 50% !important;
-    }
-}
-
-@media (max-width: 500px) {
-    #login-page .logos img {
-        width: auto;
-        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
-}
-
-@media (max-width: 360px) {
-    #login-page .logos img {
-        width: 65%;
-        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
-    }
-}
-
-@media (max-width: 320px) {
-    #login-page .logos img {
-        width: 60%;
-        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
     }
 }
