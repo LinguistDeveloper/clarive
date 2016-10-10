@@ -133,9 +133,10 @@ sub release {
 
     my $res;
 
-    # Release normal semaphore (not granted, nor cancelled)
     _retry sub {
-        mdb->sem->update(
+
+        # Release normal semaphore (not granted, nor cancelled)
+        $res = mdb->sem->update(
             {
                 key   => $self->key,
                 queue => {
@@ -150,6 +151,8 @@ sub release {
 
         warn "$self: [release] normal result=$res->{updatedExisting}\n" if DEBUG;
 
+        return $res->{updatedExisting} if $res->{updatedExisting};
+
         # Release cancelled semaphore
         $res = mdb->sem->update(
             { key => $self->key, queue => { '$elemMatch' => { _id => $self->id_queue, status => 'cancelled' } } },
@@ -161,6 +164,8 @@ sub release {
         }
 
         warn "$self: [release] cancelled result=$res->{updatedExisting}\n" if DEBUG;
+
+        return $res->{updatedExisting} if $res->{updatedExisting};
 
         # Release granted semaphore
         $res = mdb->sem->update(
@@ -176,6 +181,8 @@ sub release {
         }
 
         warn "$self: [release] granted result=$res->{updatedExisting}\n" if DEBUG;
+
+        return $res->{updatedExisting};
       },
       attempts => 10,
       pause    => 0.5;
