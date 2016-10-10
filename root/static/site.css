@@ -736,30 +736,29 @@ body#login-page {
 }
 
 
-#login-page .logos img{
+#login-page .logos img {
     max-width: 500px;
-    max-height:  121px;
+    max-height: 121px;
     display: block;
     margin: auto;
-   /* margin-right: 0;*/
 }
 
-#login-page .logos img[src$='.svg']{
+#login-page .logos img[src$='.svg'] {
     max-width: none;
-    max-height:  none;
+    max-height: none;
 }
 
 @media (max-width: 500px) {
- #login-page .logos img[src$='.svg']{
+ #login-page .logos img[src$='.svg'] {
         width: 65% !important;
-        margin-right:auto;
-        margin-left:0;
-        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
+        margin-right: auto;
+        margin-left: 0;
+        transition: all .2s cubic-bezier(.55,.06,.68,.19) !important;
     }
 
     #login-page .logos img {
-        margin-right:auto;
-        margin-left:auto;
+        margin-right: auto;
+        margin-left: auto;
     }
 
     #login-page .logo-powered {
@@ -768,14 +767,14 @@ body#login-page {
 }
 
 @media (max-width: 360px) {
-   #login-page .logos img[src$='.svg']{
+   #login-page .logos img[src$='.svg'] {
         width: 65%;
-        margin-right:auto;
-        margin-left:0;
-        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
+        margin-right: auto;
+        margin-left: 0;
+        transition: all .2s cubic-bezier(.55,.06,.68,.19) !important;
     }
 
-     #login-page .logo-powered {
+    #login-page .logo-powered {
         width: 30% !important;
     }
 }
@@ -783,12 +782,12 @@ body#login-page {
 @media (max-width: 320px) {
     #login-page .logos img[src$='.svg']{
         width: 60%;
-        margin-right:auto;
-        margin-left:0;
-        transition:all .2s cubic-bezier(.55,.06,.68,.19) !important;
+        margin-right: auto;
+        margin-left: 0;
+        transition: all .2s cubic-bezier(.55,.06,.68,.19) !important;
     }
 
-     #login-page .logo-powered {
+    #login-page .logo-powered {
         width: 30% !important;
     }
 }
