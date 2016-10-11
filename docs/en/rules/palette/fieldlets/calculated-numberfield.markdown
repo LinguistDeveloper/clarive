@@ -1,7 +1,7 @@
 ---
 title: Calculated numberfield
 index: 400
-icon: number.png
+icon: number
 ---
 
 Allows to calculate a value with operations between fields

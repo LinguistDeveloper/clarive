@@ -1,6 +1,6 @@
 ---
 title: SET VAR
-icon: let.gif
+icon: let
 ---
 
 Creates a new stash variable and set its value to a specific value.

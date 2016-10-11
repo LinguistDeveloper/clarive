@@ -1,7 +1,7 @@
 ---
 title: Include Into
 index: 400
-icon: detail.png
+icon: detail
 ---
 
 This fieldlet shows a list of topics that contain the current topic.

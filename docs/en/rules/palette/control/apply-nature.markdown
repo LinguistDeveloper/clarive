@@ -1,6 +1,6 @@
 ---
 title: APPLY NATURE
-icon: loop.gif
+icon: loop
 ---
 
 If nature applies to changeset, load config variables from the ci nature to the stash.

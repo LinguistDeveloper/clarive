@@ -1,6 +1,6 @@
 ---
 title: SET VAR to CI
-icon: let.gif
+icon: let
 ---
 
 Creates a new stash variable and set its value to a reference to a ci instance.

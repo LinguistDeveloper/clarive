@@ -1,6 +1,6 @@
 ---
 title: ELSIF condition THEN
-icon: if_else.gif
+icon: if_else
 ---
 
 Execute nested task if a condition is met.

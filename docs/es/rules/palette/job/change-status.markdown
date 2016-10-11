@@ -1,6 +1,6 @@
 ---
 title: Change Topic Status
-icon: topic.svg
+icon: topic
 ---
 * Servicio para cambiar el estado de un [tópico](concepts/topic).
 * La lista de configuración del elemento incluye las siguientes opciones:

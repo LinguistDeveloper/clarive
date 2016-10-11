@@ -1,7 +1,7 @@
 ---
 title: cla web - Administracion de servidores Web
 index: 10
-icon: console.svg
+icon: console
 ---
 * `cla web`: Realiza operaciones relacionadas con el servicio web Clarive.
 * Por sí mismo se inicia servicio web Clarive.

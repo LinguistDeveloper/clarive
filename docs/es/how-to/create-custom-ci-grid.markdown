@@ -1,7 +1,7 @@
 ---
 title: Grid Personalizado para CIs
 index: 1
-icon: class.svg
+icon: class
 ---
 
 Los CIs están formados al menos por un fichero perl en el que se define la funcionalidad y un fichero javascript que tiene todas las configuraciones visuales. Si se quiere personalizar  las columnas que se muestran en el grid para el listado de clases es necesario añadir un nuevo metodo llamado custom_grid en el fichero de perl que devuelve la ruta del grid customizado, como ejemplo :

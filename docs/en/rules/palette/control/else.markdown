@@ -1,6 +1,6 @@
 ---
 title: ELSE
-icon: else.gif
+icon: else
 ---
 
 Execute nested ops to this op as a block

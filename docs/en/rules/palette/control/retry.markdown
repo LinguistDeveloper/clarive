@@ -1,6 +1,6 @@
 ---
 title: RETRY
-icon: if.gif
+icon: if
 ---
 
 Action is retried several times.

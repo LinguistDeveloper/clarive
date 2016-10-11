@@ -1,7 +1,7 @@
 ---
 title: Attach files
 index: 400
-icon: file.gif
+icon: file
 ---
 
 Allows to attach files in the form.

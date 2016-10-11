@@ -1,6 +1,6 @@
 ---
 title: IF var ne value THEN
-icon: if.gif
+icon: if
 ---
 
 Checks if the value of specific stash variable is different from a defined value and if so, executes nested tasks.

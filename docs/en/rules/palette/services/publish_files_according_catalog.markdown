@@ -1,6 +1,6 @@
 ---
 title: Publish files according to the catalog
-icon: job.svg
+icon: job
 ---
 Service that allows to publish files in a repository. Form to configure has the following fields:
 

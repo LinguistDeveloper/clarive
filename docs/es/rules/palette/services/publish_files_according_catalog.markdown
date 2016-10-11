@@ -1,6 +1,6 @@
 ---
 title: Publish files according to the catalog
-icon: job.svg
+icon: job
 ---
 Servicio que permite publicar ficheros en un repositorio. Es necesario configurar los siguientes campos:
 

@@ -1,6 +1,6 @@
 ---
 title: APPLY PROJECT
-icon: loop.gif
+icon: loop
 ---
 
 Load config variables from the ci project to the stash for the proper environment.

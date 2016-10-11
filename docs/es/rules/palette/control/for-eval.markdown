@@ -1,6 +1,6 @@
 ---
 title: FOR eval
-icon: loop.gif
+icon: loop
 ---
 * Repite las operaciones anidadas tantas veces como se indica en una lista; el valor del stash se define para cada elemento de la lista.
 * Conceptualmente, este `for` iterativo es igual al que se puede encontrar en cualquier lenguaje de programación.

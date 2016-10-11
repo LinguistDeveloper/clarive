@@ -1,7 +1,7 @@
 ---
 title: cla disp - Gestion del Dispatcher
 index: 20
-icon: console.svg
+icon: console
 ---
 `cla disp`: Realiza operaciones relacionadas con el dispatcher.
 

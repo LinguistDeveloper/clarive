@@ -1,6 +1,6 @@
 ---
 title: Historial de commits por rama
-icon: static/images/icons/lc/branch_obj.svg
+icon: branch_obj
 ---
 
 El grid con el historial de commits por rama muestra el listado de commits que se han realizado en cada rama.

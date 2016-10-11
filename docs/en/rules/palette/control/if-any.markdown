@@ -1,6 +1,6 @@
 ---
 title: IF ANY nature THEN
-icon: if.gif
+icon: if
 ---
 
 Checks if changeset accomplish defined natures and if it meets any of them process nested op.

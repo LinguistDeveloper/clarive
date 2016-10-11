@@ -1,6 +1,6 @@
 ---
 title: Delete Local File
-icon: file.gif
+icon: file
 ---
 
 Removes given file.

@@ -1,6 +1,6 @@
 ---
 title: Get topics that matches conditions
-icon: topic.svg
+icon: topic
 ---
 
 Service that returns the topics that meet the conditions established. Form to configure has the following fields:

@@ -1,6 +1,6 @@
 ---
 title: Create a new topic
-icon: topic.svg
+icon: topic
 ---
 
 Create a new topic in Clarive with the parameters given in the form.

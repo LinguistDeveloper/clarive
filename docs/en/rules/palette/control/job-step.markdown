@@ -1,6 +1,6 @@
 ---
 title: JOB STEP
-icon: job.png
+icon: job
 ---
 
 Defines a job step section.

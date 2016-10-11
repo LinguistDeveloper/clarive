@@ -22,7 +22,7 @@ in YAML, JSON, HTML and CSV formats by clicking on the symbol YAML and CSV forma
 
 This is handy for sharing and exchanging of status information.
 
-### <img src="/static/images/icons/add.gif" /> Create a new Status
+### <img src="/static/images/icons/add.svg" /> Create a new Status
 
 The following information needs to be provided for creation:
 

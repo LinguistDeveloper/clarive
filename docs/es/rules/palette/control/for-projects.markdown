@@ -1,6 +1,6 @@
 ---
 title: FOR projects with changes DO
-icon: loop.gif
+icon: loop
 ---
 * Ejecuta operaciones anidadas para cada proyecto que contienen tópicos de categorías de tipo Cambio.
 * Las siguientes variables del proyecto están incluidas en el stash:

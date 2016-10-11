@@ -5,7 +5,7 @@ icon: grid
 ---
 Permite añadir una lista de tópicos en el tópico.
 
-Permite además crear tópicos desde el formulario pulsando el botón: <img src="/static/images/icons/add.gif" />
+Permite además crear tópicos desde el formulario pulsando el botón: <img src="/static/images/icons/add.svg" />
 
 La lista de elementos que pueden ser configurados dentro del fieldlet.
 

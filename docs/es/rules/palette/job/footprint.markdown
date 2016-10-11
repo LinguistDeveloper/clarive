@@ -1,6 +1,6 @@
 ---
 title: Footprint elements
-icon: job.svg
+icon: job
 ---
 Lista todos los archivos actualizados con los siguientes datos:
 

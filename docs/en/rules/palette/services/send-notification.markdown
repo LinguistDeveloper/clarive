@@ -1,6 +1,6 @@
 ---
 title: Send a notification
-icon: job.svg
+icon: job
 ---
 Service to send notifications. Form to configure has the following fields:
 

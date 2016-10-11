@@ -18,7 +18,7 @@ var rule = require("cla/rule");
 var ruleId = rule.create({ name: "myrule", type: "independent" }, [
     {
         attributes: {
-            icon: "/static/images/icons/code.png",
+            icon: "/static/images/icons/cog_perl.svg",
             key: "statement.code.server",
             name: "Server CODE",
             data: {

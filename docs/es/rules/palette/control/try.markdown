@@ -1,6 +1,6 @@
 ---
 title: TRY statement
-icon: if.gif
+icon: if
 ---
 * Intenta ejectuar las operaciones anindadas.
 * Esta operación no tiene ninguna opción de configuración.

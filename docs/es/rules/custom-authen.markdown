@@ -1,7 +1,7 @@
 ---
 title: Reglas de autenticacion personalizadas
 index: 200
-icon: rule.svg
+icon: rule
 ---
 * Es posible escribir reglas de autenticación personalizada usando el editor de reglas de Clarive.
 * Para crear su propia regla de autenticación es necesario hacer lo siguiente:
@@ -38,7 +38,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
         [{
         "attributes": {
             "palette": false,
-            "icon": "/static/images/icons/if.gif",
+            "icon": "/static/images/icons/if.svg",
             "disabled": false,
             "on_drop_js": null,
             "key": "statement.if.var",
@@ -58,7 +58,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
         },
         "children": [{
             "attributes": {
-                "icon": "/static/images/icons/user_delete.gif",
+                "icon": "/static/images/icons/user_delete.svg",
                 "palette": false,
                 "disabled": false,
                 "active": 1,
@@ -72,7 +72,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
             "children": []
         }, {
             "attributes": {
-                "icon": "/static/images/icons/user_delete.gif",
+                "icon": "/static/images/icons/user_delete.svg",
                 "palette": false,
                 "disabled": false,
                 "active": 1,
@@ -91,7 +91,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
         }, {
         "attributes": {
             "palette": false,
-            "icon": "/static/images/icons/if.gif",
+            "icon": "/static/images/icons/if.svg",
             "disabled": false,
             "on_drop_js": null,
             "key": "statement.if.else",
@@ -108,7 +108,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
         },
         "children": [{
             "attributes": {
-                "icon": "/static/images/icons/user_add.gif",
+                "icon": "/static/images/icons/user_add.svg",
                 "palette": false,
                 "disabled": false,
                 "active": 1,

@@ -1,6 +1,6 @@
 ---
 title: Rollback All Transactions
-icon: repo.gif
+icon: repo
 ---
 
 Rollback all transactions from database.

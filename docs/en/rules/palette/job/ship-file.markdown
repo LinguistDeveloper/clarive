@@ -1,6 +1,6 @@
 ---
 title: Ship File Remotely
-icon: file.gif
+icon: file
 ---
 
 Get files from a remote site according to user options from the configuration window.

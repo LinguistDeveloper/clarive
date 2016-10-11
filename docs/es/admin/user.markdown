@@ -1,6 +1,6 @@
 ---
 title: Administracion de usuarios
-icon: user.svg
+icon: user
 ---
 * Los usuarios de Clarive se almacenan directamente en la base de datos. Aunque el sistema de autentificación sea de tipo externo,los usuarios deben crearse en la base de datos de Clarive para que puedas ser usados.
 * El administrador de usuarios puede acceder a la configuración de los mismos a través de Administración → <img src="/static/images/icons/user.svg" /> Usuarios. Se abrirá una nueva pestaña con una tabla con todos los usuarios existentes en Clarive.
@@ -45,11 +45,11 @@ icon: user.svg
 * Para añadir uno o varios roles a un usuario, se marcan los roles deseados en la parte izquierda de la ventana y los proyectos en la parte derecha.
 * A continuación pulsar en `Asignar roles/proyectos`. El rol se mostrará en la tabla inferior de la ventana.
 * Para desasignar un rol o un proyecto a un usuario, se puede realizar de varias maneras:
-    Para desasignar un rol de todos los proyectos de Clarive a un usuario, hay que marcar la fila y pulsar <img src="/static/images/icons/delete_red.png" />.
-    Para desasignar un rol de un proyecto en concreto, hay que marcar el rol en la lista de Roles y marcar el proyecto en la lista de proyectos. A continuación pulsar <img src="/static/images/icons/key_delete.png" />.
-    Para desasignar todos los roles de un proyecto en concreto, hay que marcar el proyecto en la lista de proyectos y pulsar <img src="/static/images/icons/key_delete.png" />.
+    Para desasignar un rol de todos los proyectos de Clarive a un usuario, hay que marcar la fila y pulsar <img src="/static/images/icons/delete_red.svg" />.
+    Para desasignar un rol de un proyecto en concreto, hay que marcar el rol en la lista de Roles y marcar el proyecto en la lista de proyectos. A continuación pulsar <img src="/static/images/icons/key_delete.svg" />.
+    Para desasignar todos los roles de un proyecto en concreto, hay que marcar el proyecto en la lista de proyectos y pulsar <img src="/static/images/icons/key_delete.svg" />.
 
-    Para desasignar todos los roles de un usuario, hay que pulsar <img src="/static/images/icons/del_all.png" />.
+    Para desasignar todos los roles de un usuario, hay que pulsar <img src="/static/images/icons/del_all.svg" />.
 
 
 #### <img src="/static/images/icons/edit.svg" /> Editar
@@ -58,7 +58,7 @@ icon: user.svg
 * Al seleccionar un usuario, el botón `Editar` se habilitará. Una vez pulsado, se abrirá la ventana de creación de usuario con los datos del formulario completados.
 
 
-#### <img src="/static/images/icons/delete_.png" /> Borrar
+#### <img src="/static/images/icons/delete.svg" /> Borrar
 * Permite eliminar al usuario seleccionado.
 * El sistema notificará con un mensaje de confirmación antes de proceder al borrado.
 
@@ -69,16 +69,16 @@ icon: user.svg
 * Se creará un nuevo usuario con los mismos valores que el original así como los mismos roles. El nombre de usuario es el mismo pero con la cadena 'Duplicado de' al principio del nombre.
 * Tras duplicar un rol es **recomendable** cambiar el nombre y los valores del mismo.
 
-#### <img src="/static/images/icons/prefs.png" /> Preferencias
+#### <img src="/static/images/icons/prefs.svg" /> Preferencias
 * Permite al administrador cambiar las preferencias del usuario tales como el idioma o el avatar.
 * El menu de acceso es el que el usuario tiene a su disposición. Para saber más sobre este menú, puede consultar [la ayuda](getting-started/prefs).
 * El administrador puede cambiar preferencias del usuario tales como el lenguaje o el avatar, seleccionando al usuario y cliqueando en el botón Preferencias.
 
 
 
-#### <img src="/static/images/icons/surrogate.png" /> Impersonar
+#### <img src="/static/images/icons/surrogate.svg" /> Impersonar
 * Permite al administrador 'tomar' el perfil del usuario seleccionado.
 * Se trata de una funcionalidad muy útil para comprobar los permisos que tiene el usuario.
 
-#### <img src="/static/images/icons/envelope.png" /> Buzón
+#### <img src="/static/images/icons/envelope.svg" /> Buzón
 * Permite acceder al buzón de notificaciones del usuario.

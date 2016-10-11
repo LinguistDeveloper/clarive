@@ -1,7 +1,7 @@
 ---
 title: cla help - Ayuda de los comandos
 index: 10
-icon: console.svg
+icon: console
 ---
 * `cla help`: Clarive dispone de una serie de comandos que pueden ser ejecutados para poder administrar correctamente la aplicación.
 * Estos comandos son llamados a través del comando `cla`: `cla <comando><argumentos>`

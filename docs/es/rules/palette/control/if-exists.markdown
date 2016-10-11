@@ -1,6 +1,6 @@
 ---
 title: IF EXISTS nature THEN
-icon: if.gif
+icon: if
 ---
 * Comprueba si existe la naturaleza indicada y de ser así, continua la regla por los procesos anidados a este componente.
 * Las siguientes variables se incluyen dentro del stash:

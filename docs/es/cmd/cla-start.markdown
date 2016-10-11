@@ -1,6 +1,6 @@
 ---
 title: cla start - Inicia todos los procesos del servidor
-icon: console.svg
+icon: console
 ---
 * `cla start`: Comienza todas las tareas de servidor.
 * Intenta iniciar todos los sistemas que Clarive necesita para operar.

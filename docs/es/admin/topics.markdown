@@ -1,6 +1,6 @@
 ---
 title: Administracion de topicos
-icon: topic.svg
+icon: topic
 ---
 * La administración de tópicos se ubica dentro de las opciones de **Administración → <img src="/static/images/icons/topic.svg" /> Categorías**.
 
@@ -59,21 +59,21 @@ icon: topic.svg
 
 	- Tras ello, aparecerá en la lista los estados de la categoría disponibles y donde se elegirán los destinos de la transición.
 
-	 Para confirmar el flujo, pulsar <img src = "/static/images/icons/down.png"/>.
+	 Para confirmar el flujo, pulsar <img src = "/static/images/icons/down.svg"/>.
 
 	- En caso de desear eliminar una de las transiciones, se puede realizar de dos maneras diferentes:
-	- Para eliminar una transición, se selecciona la transición a borrar y se pulsa en <img src = "/static/images/icons/delete_.png"/> Borrar fila.
+	- Para eliminar una transición, se selecciona la transición a borrar y se pulsa en <img src = "/static/images/icons/delete.svg"/> Borrar fila.
 
-	- Para eliminar más de una transición de un rol especifico, se selecciona el rol en la lista de la izquierda y las transiciones a la derecha. A continuación pulsar el botón de desasignar <img src = "/static/images/icons/remove.png"/>.
+	- Para eliminar más de una transición de un rol especifico, se selecciona el rol en la lista de la izquierda y las transiciones a la derecha. A continuación pulsar el botón de desasignar <img src = "/static/images/icons/clear-all.svg"/>.
 
 
-### <img src = "/static/images/icons/delete_.png" alt='Borrar categoría' /> Borrar
+### <img src = "/static/images/icons/delete.svg" alt='Borrar categoría' /> Borrar
 * Permite eliminar todas las categorías que están seleccionadas.
 * El sistema alertará de la acción y pedirá confirmación para seguir con el borrado evitando así borrados accidentales.
 * Las categorías no se puede eliminar si hay instancias de ésta en la base de datos. Estos casos deben ser revisados primero y eliminados despues antes de borrar la categoría. De esta manera se garantiza la integridad de la base de datos
 
 
-### <img src = "/static/images/icons/copy.gif" alt='Duplicar categoría' /> Duplicar
+### <img src = "/static/images/icons/copy.svg" alt='Duplicar categoría' /> Duplicar
 * Permite duplicar la categoría seleccionada. 
 * Esta nueva categoría tendrá las mismas propiedades que la original, nombre, color, formulario, estados disponibles, flujos de trabajo etc..
 * Solo va a tener diferente el nombre que será el nombre de la categoría original seguido del ID generado para esta nueva categoría.
@@ -81,6 +81,6 @@ icon: topic.svg
 
 ### <img src = "/static/images/icons/wrench.svg" alt='Import_export' /> Importar/Exportar
 * El sistema permite importar y exportar los tópicos seleccionados en caso de que querer copiar las categorías existentes de un sistema a otro.
-* Al pulsar en  <img src = "/static/images/icons/export.png" alt='Exportar' /> Exportar, se abrirá una nueva ventana con el código YAML de las categorías seleccionadas.
-* Al pulsar en <img src = "/static/images/icons/import.png" alt='Import' /> Importar, se abrirá una nueva ventana donde pegar el código generado durante la exportación. 
+* Al pulsar en  <img src = "/static/images/icons/export.svg" alt='Exportar' /> Exportar, se abrirá una nueva ventana con el código YAML de las categorías seleccionadas.
+* Al pulsar en <img src = "/static/images/icons/import.svg" alt='Import' /> Importar, se abrirá una nueva ventana donde pegar el código generado durante la exportación. 
 * Una vez pulsado en `Importar` se podrá ver el progreso y estado de la importación en la parte inferior de la ventana.

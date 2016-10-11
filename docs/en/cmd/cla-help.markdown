@@ -1,7 +1,7 @@
 ---
 title: cla help - Help on cla commands
 index: 10
-icon: console.svg
+icon: console
 ---
 
 `cla help`: Clarive has a number of command lines that can be executed to manage the application.

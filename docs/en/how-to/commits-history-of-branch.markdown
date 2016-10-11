@@ -1,6 +1,6 @@
 ---
 title: Commits history of branch
-icon: static/images/icons/lc/branch_obj.svg
+icon: branch_obj
 ---
 
 Commits history grid shows all commits. To open the grid, click on branch node <img src="/static/images/icons/lc/branch_obj.svg" /> in lifecycle panel.

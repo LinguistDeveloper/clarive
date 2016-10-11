@@ -1,7 +1,7 @@
 ---
 title: Include into
 index: 400
-icon: detail.png
+icon: detail
 ---
 * Muestra una lista de tópicos que contienen al tópico actual
 * La lista permite saltar de un tópico padre al siguiente.

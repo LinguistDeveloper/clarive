@@ -1,6 +1,6 @@
 ---
 title: Writing Custom Authentication Rules
-icon: rule.svg
+icon: rule
 ---
 
 It's possible to write custom authentication rules
@@ -70,7 +70,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
         [{
         "attributes": {
             "palette": false,
-            "icon": "/static/images/icons/if.gif",
+            "icon": "/static/images/icons/if.svg",
             "disabled": false,
             "on_drop_js": null,
             "key": "statement.if.var",
@@ -90,7 +90,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
         },
         "children": [{
             "attributes": {
-                "icon": "/static/images/icons/user_delete.gif",
+                "icon": "/static/images/icons/user_delete.svg",
                 "palette": false,
                 "disabled": false,
                 "active": 1,
@@ -104,7 +104,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
             "children": []
         }, {
             "attributes": {
-                "icon": "/static/images/icons/user_delete.gif",
+                "icon": "/static/images/icons/user_delete.svg",
                 "palette": false,
                 "disabled": false,
                 "active": 1,
@@ -123,7 +123,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
         }, {
         "attributes": {
             "palette": false,
-            "icon": "/static/images/icons/if.gif",
+            "icon": "/static/images/icons/if.svg",
             "disabled": false,
             "on_drop_js": null,
             "key": "statement.if.else",
@@ -140,7 +140,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
         },
         "children": [{
             "attributes": {
-                "icon": "/static/images/icons/user_add.gif",
+                "icon": "/static/images/icons/user_add.svg",
                 "palette": false,
                 "disabled": false,
                 "active": 1,

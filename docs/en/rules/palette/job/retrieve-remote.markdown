@@ -1,6 +1,6 @@
 ---
 title: Retrieve a remote file
-icon: file.gif
+icon: file
 ---
 
 Get a remote file from a server according to a user configured parameters.

@@ -1,6 +1,6 @@
 ---
 title: Init Job Home
-icon: job.svg
+icon: job
 ---
 * Este servico es requerido para que arranque de manera correcta un job.
 * Es necesario crear o limpiar el directorio de trabajos

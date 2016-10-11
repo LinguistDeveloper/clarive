@@ -1,6 +1,6 @@
 ---
 title: DELETE hashkey
-icon: if.gif
+icon: if
 ---
 * Elimina una variable específica del hash.
 * Para ello hay que completar el siguiente campo de la configuración:

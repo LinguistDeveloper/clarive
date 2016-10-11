@@ -1,6 +1,6 @@
 ---
 title: IF var in LIST THEN
-icon: if.gif
+icon: if
 ---
 * Comprueba que existe el valor pasado en la variable *var* en la lista de valores indicada. si es correcto, se procesa los componentes anidados al IF.
 * Es necesario configurar los siguientes campos:

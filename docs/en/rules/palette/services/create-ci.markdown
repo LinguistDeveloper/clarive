@@ -1,6 +1,6 @@
 ---
 title: Create CI
-icon: class.svg
+icon: class
 ---
 
 Service that creates a new CI with provided attributes.

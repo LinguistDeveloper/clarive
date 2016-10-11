@@ -1,6 +1,6 @@
 ---
 title: Write local file
-icon: file.svg
+icon: file
 ---
 
 Write a new file in local machine.

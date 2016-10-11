@@ -49,13 +49,13 @@ icon: status
     **Datos**: Se muestran los elementos del estado tales como la clase, si está activo, el icono, etc...
     **Servicios*
 
-#### <img src="/static/images/icons/delete_.png" /> Borrar
+#### <img src="/static/images/icons/delete.svg" /> Borrar
 * Elimina uno o varios estados seleccionados.
 
-#### <img src="/static/images/icons/export.png" /> Exportar
+#### <img src="/static/images/icons/export.svg" /> Exportar
 * Permite exportar uno o varios estados.
 * Se pueden exportar en **YAML, JSON, HTML o CSV**.
 
-#### <img src="/static/images/icons/import.png" /> Importar
+#### <img src="/static/images/icons/import.svg" /> Importar
 * Permite importar uno o varios estados desde distintan fuentes.
 * Se pueden importar estados que estén en alguno de los siguientes formatos **YAML, JSON, HTML o CSV**.

@@ -1,6 +1,6 @@
 ---
 title: Crear CI
-icon: class.svg
+icon: class
 ---
 
 Servicio que permite crear un nuevo CI con los atributos especificados-

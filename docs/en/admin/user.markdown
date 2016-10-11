@@ -1,6 +1,6 @@
 ---
 title: User Administration
-icon: user.gif
+icon: user
 ---
 
 Clarive users are stored directly in the database. Even if
@@ -26,7 +26,7 @@ The list view contains the following columns:
 
 - `Phone`: Phone number of the user
 
-### <img src="/static/images/icons/add.gif" /> Creating a User
+### <img src="/static/images/icons/add.svg" /> Creating a User
 
 The following information needs to be provided for creation:
 
@@ -68,21 +68,21 @@ To Unassign roles/projects from a User, there are several options.
 
 A few examples:
 
-- To unassign the Role “Developer” for all Clarive Projects from the user, mark the row and click on <img src="/static/images/icons/delete_red.png" />
+- To unassign the Role “Developer” for all Clarive Projects from the user, mark the row and click on <img src="/static/images/icons/delete_red.svg" />
 
-- To unassign the Role “Developer” from the Clarive Project “ClientApp”  from  the user, mark the ckeckbox next to “Developer” in the left pane, mark the checkbox next to “ClientApp” in the right pane and click on  <img src="/static/images/icons/key_delete.png" />
+- To unassign the Role “Developer” from the Clarive Project “ClientApp”  from  the user, mark the ckeckbox next to “Developer” in the left pane, mark the checkbox next to “ClientApp” in the right pane and click on  <img src="/static/images/icons/key_delete.svg" />
 
-- To unassign all Roles for the Clarive Project “ClientApp” from  a user, mark the checkbox next to “ClientApp” in the right pane, click on <img src="/static/images/icons/key_delete.png" />
+- To unassign all Roles for the Clarive Project “ClientApp” from  a user, mark the checkbox next to “ClientApp” in the right pane, click on <img src="/static/images/icons/key_delete.svg" />
 
-- To unassign all Roles from  a user, click on <img src="/static/images/icons/del_all.png" />
+- To unassign all Roles from  a user, click on <img src="/static/images/icons/del_all.svg" />
 
 
-### <img src="/static/images/icons/edit.gif" /> Editing a User
+### <img src="/static/images/icons/edit.svg" /> Editing a User
 
 Allows the Administrator can modify existing data of the selected user.
 
 
-### <img src="/static/images/icons/delete_.png" /> Deleting a User
+### <img src="/static/images/icons/delete.svg" /> Deleting a User
 
 The selected user will be deleted. The system will provide a confirmation message before deleting the user.
 
@@ -92,20 +92,20 @@ The selected user will be deleted. The system will provide a confirmation messag
 Allows duplication of the selected user. A new User is created with the same values as the original.
 
 
-### <img src="/static/images/icons/prefs.png" /> User Preferences
+### <img src="/static/images/icons/prefs.svg" /> User Preferences
 
 The administrator can change user preferences, such as language or avatar by selecting a user and clicking on the Preferences button.
 
 
-### <img src="/static/images/icons/surrogate.png" /> Surrogate
+### <img src="/static/images/icons/surrogate.svg" /> Surrogate
 
 The administrator can take the user profile
 
-### <img src="/static/images/icons/envelope.png" /> Inbox
+### <img src="/static/images/icons/envelope.svg" /> Inbox
 
 Allows access to the user mailbox.
 
-### <img src = "/static/images/icons/about.png" alt='Licensing' /> Licensing
+### <img src = "/static/images/icons/about.svg" alt='Licensing' /> Licensing
 
 Clarive is generally licensed on a named-user base, except for ELA (Enterprise Level Agreements) licenses.
 

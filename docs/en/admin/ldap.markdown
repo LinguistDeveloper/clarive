@@ -1,7 +1,7 @@
 ---
 title: LDAP Authentication
 index: 5
-icon: users.gif
+icon: users
 ---
 
 LDAP authentication is the mechanism that allows

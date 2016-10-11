@@ -1,7 +1,7 @@
 ---
 title: Edit Calendar
 index: 1
-icon: wrench.svg
+icon: wrench
 ---
 Select <img src="/static/images/icons/slot.svg" /> **Jobs Slots** in the menu
 

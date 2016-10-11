@@ -1,6 +1,6 @@
 ---
 title: Administracion de roles
-icon: role.svg
+icon: role
 ---
 * La seguridad de Clarive se gestiona a través del [sistema de roles](concepts/roles).
 * Todos los accesos y funciones que puede desempeñar un usuario o administrador se definen a través de roles.
@@ -59,18 +59,18 @@ icon: role.svg
 
 * **Panel derecho** - Indica las acciones que el rol tiene asignadas. Se puede borrar con los dos botones que hay  en la parte derecha del panel:
 
-    <img src="/static/images/icons/delete_red.png" /> *Descartar selección* - Elimina las acciones seleccionadas.
-    <img src="/static/images/icons/del_all.png" />  *Descartar todas* - Elimina todas las acciones asociadas al rol.
+    <img src="/static/images/icons/delete_red.svg" /> *Descartar selección* - Elimina las acciones seleccionadas.
+    <img src="/static/images/icons/del_all.svg" />  *Descartar todas* - Elimina todas las acciones asociadas al rol.
 
 #### <img src="/static/images/icons/edit.svg" /> Editar
 * Permite editar el rol selecionado. Una vez realizados los cambios, seleccionar `Aceptar`.
 * Si no desea guardar tras editar un rol, seleccione `Cerrar`.
 
-#### <img src="/static/images/icons/copy.gif" /> Duplicar
+#### <img src="/static/images/icons/copy.svg" /> Duplicar
 * Permite duplicar el rol seleccionado.
 * Se creará un nuevo rol con los mismos valores que el original. Es decir, mismas acciones y dashboards asi como la descripción. El nombre es el mismo pero con un número entero concatenado al final del nombre.
 * Tras duplicar un rol es **recomendable** cambiar el nombre y la descripción del mismo.
 
-#### <img src="/static/images/icons/delete_.png" /> Eliminar
+#### <img src="/static/images/icons/delete.svg" /> Eliminar
 * Elimina uno o varios roles seleccionados. El sistema pedirá confirmación de ello antes de eliminarlo.
 * Si se borrar un rol que está asignado a un usuario, el rol también se eliminará del usuario.

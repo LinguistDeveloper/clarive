@@ -35,7 +35,7 @@ The list view contains the following columns:
 ## Role List Options
 
 
-## <img src="/static/images/icons/add.gif" /> Creating a new Role
+## <img src="/static/images/icons/add.svg" /> Creating a new Role
 
 The following information needs to be provided for creation:
 
@@ -55,9 +55,9 @@ All available actions are displayed in the left panel, Actions attributed to the
 are displayed in the left pane. A Group of actions or a specific action can be added by
 selecting and dragging the action of group from the left pane to the right pane.
 
-- `Remove Selection` <img src="/static/images/icons/delete_red.png" /> - Removes the currently selected action from the Role. </br>
+- `Remove Selection` <img src="/static/images/icons/delete_red.svg" /> - Removes the currently selected action from the Role. </br>
 
-- `Remove All` <img src="/static/images/icons/del_all.png" /> - Removes all selections
+- `Remove All` <img src="/static/images/icons/del_all.svg" /> - Removes all selections
 
 
 ## Users that Have a Role
@@ -118,7 +118,7 @@ when an instance of that topic has the status “Deployed”.
 For each field of each topic in any status, this action has to be added for those role that need to edit this field.
 
 
-### <img src="/static/images/icons/edit.gif" /> Edit the selected Role
+### <img src="/static/images/icons/edit.svg" /> Edit the selected Role
 
 Allows editing the selected Role. Once changes have been made, select the “Accept”. To avoid
 any changes, select the “Close” button instead.
@@ -130,7 +130,7 @@ Allows duplication of the selected Role. A new Role is created with the same val
 original Role. Its initial name will be the name of the original Role with a number concatenated.
 
 
-### <img src="/static/images/icons/delete_.png" /> Delete the selected Role
+### <img src="/static/images/icons/delete.svg" /> Delete the selected Role
 
 The selected role will be deleted. The system will provide a confirmation message before actually
 deleting the Role. If Users exist with that role, the role will be removed from the user.

@@ -1,6 +1,6 @@
 ---
 title: Planificador
-icon: calendar.svg
+icon: calendar
 ---
 * El planificador es una utilidad que permite al administrador a planificar de manera sencilla la ejecución de las reglas en intervalos establecidos.
 * Permite planificar, habilitar, deshabilitar o ejecutar reglas independientes en segundo plano, por frecuencia de tiempo o ejecutar a una hora de un día determinado.
@@ -8,7 +8,7 @@ icon: calendar.svg
 
 ## Columnas
 * Las columnas, al igual que el resto de tablas de Clarive, permiten cambiar el orden ascendente/descendente haciendo click en la columna que se quiera ordenar asi como mostrar u ocultar las columnas deseadas-
-    `Nombre` - El nombre del plan con el log asociado <img src="/static/images/icons/moredata.gif" />.
+    `Nombre` - El nombre del plan con el log asociado <img src="/static/images/icons/moredata.svg" />.
     `Estado` - Describe el estado actual en el que se encuentra la tarea. Los estados posibles son:
         *Inactivo* - El plan está desactivado. No se ejecuta.
         *Idle* - El plan está activo, se ejecutará la próxima vez que esté programado.
@@ -43,19 +43,19 @@ icon: calendar.svg
 * Permite editar la tarea seleccionada.
 * La ventana de edición es la misma que la de creación de tarea.
 
-#### <img src="/static/images/icons/delete_.png" /> Borrar
+#### <img src="/static/images/icons/delete.svg" /> Borrar
 * Permite borrar la tarea seleccionada.
 
 #### <img src="/static/images/icons/copy.svg" /> Duplicar
 * Permite duplicar con los mismos datos la tarea seleccionada.
 
-### <img src="/static/images/icons/start.png" />  Activar
+### <img src="/static/images/icons/start.svg" />  Activar
 * En caso de que la tarea esté inactiva, será posible activar la tarea a través de esta acción.
 * De esta manera la tarea pasará a estar activa y se ejecutará la próxima vez en función a su planificación.
 
-### <img src="/static/images/icons/stop.png" />  Desactivar
+### <img src="/static/images/icons/stop.svg" />  Desactivar
 * Si la tarea está activa, es posible desactivarla para que no se vuelva a ejecutar de forma automática.
 
-### <img src="/static/images/icons/start.png" />  Ejecutar ahora
+### <img src="/static/images/icons/start.svg" />  Ejecutar ahora
 * La tarea se ejecutará en ese mismo momento, sin esperar a la próxima fecha estimada.
 * Esta opción está disponible independientemente del estado de la tarea.

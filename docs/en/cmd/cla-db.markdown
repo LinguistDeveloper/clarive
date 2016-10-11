@@ -1,6 +1,6 @@
 ---
 title: cla db - Database utilities
-icon: console.svg
+icon: console
 ---
 
 `cla db`: Database diff and deploy tool.

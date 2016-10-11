@@ -1,6 +1,6 @@
 ---
 title: Sync a Remote Directory
-icon: file.svg
+icon: file
 ---
 
 Sync two directories.
