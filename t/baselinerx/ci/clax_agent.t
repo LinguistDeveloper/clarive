@@ -227,7 +227,39 @@ subtest 'execute: sends correct request with proxy' => sub {
     my ( $url, $data, $options ) = $ua->mocked_call_args('post_form');
 
     is $url, 'http://proxy:11801/command';
-    is_deeply $options->{headers}, { 'X-Hops' => 'destination:8888' };
+    is_deeply $options->{headers}, { 'X-Hops' => 'destination:8888', 'X-Hop-Timeout' => 15 };
+};
+
+subtest 'execute: sends correct request with proxy and timeout' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent(
+        ua     => $ua,
+        server => {
+            hostname      => 'destination',
+            proxy_timeout => 10
+        },
+        proxy => _build_server(
+            hostname => 'proxy',
+        ),
+    );
+
+    my $ret = $clax_agent->execute( 'echo', 'bar' );
+
+    my ( $url, $data, $options ) = $ua->mocked_call_args('post_form');
+
+    is_deeply $options->{headers}, { 'X-Hops' => 'destination:8888', 'X-Hop-Timeout' => 10 };
 };
 
 subtest 'execute: sends correct request with deep nested proxy' => sub {
@@ -263,7 +295,7 @@ subtest 'execute: sends correct request with deep nested proxy' => sub {
     my ( $url, $data, $options ) = $ua->mocked_call_args('post_form');
 
     is $url, 'http://proxy1:11801/command';
-    is_deeply $options->{headers}, { 'X-Hops' => 'proxy2:11801,proxy3:11801,destination:8888' };
+    is_deeply $options->{headers}, { 'X-Hops' => 'proxy2:11801,proxy3:11801,destination:8888', 'X-Hop-Timeout' => 15 };
 };
 
 subtest 'execute: throws when recursive proxies' => sub {

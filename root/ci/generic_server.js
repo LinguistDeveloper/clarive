@@ -3,6 +3,7 @@
         { xtype: 'textfield', fieldLabel: _('Hostname or IP'), name:'hostname', anchor:'100%', allowBlank: false },
         Baseliner.ci_box({ name:'proxy', fieldLabel:_('Proxy Server'), allowBlank: true,
             role:'Server', value: params.rec.proxy, force_set_value: true, singleMode: true }),
+        { xtype: 'textfield', fieldLabel: _('Proxy Timeout (s)'), name:'proxy_timeout', anchor:'10%', allowBlank: true },
         new Baseliner.ComboSingle({ name:'os', data:['unix', 'win', 'mvs'], fieldLabel:_('OS') }),
         { xtype: 'textfield', fieldLabel: _('OS Version'), name:'osver', anchor:'100%', allowBlank: true },
         new Baseliner.ComboSingle({ name:'arch', data:['x86_64', 'x86'], fieldLabel:_('Architecture') }),

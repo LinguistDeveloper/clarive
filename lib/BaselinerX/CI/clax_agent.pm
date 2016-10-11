@@ -384,7 +384,7 @@ sub _build_url {
     my $hops = $self->hops;
 
     if (@$hops) {
-        $url = $hops->[0];
+        $url = $hops->[0]->{address};
     }
 
     my $schema = 'http';
@@ -401,10 +401,12 @@ sub _calculate_hops {
     my $agent = $self;
 
     my @hops;
-    push @hops, join( ':', $self->hostname, $self->port );
-    my %hops_seen = ( $hops[0] => 1 );
+    push @hops, { address => join( ':', $self->hostname, $self->port ) };
+    my %hops_seen = ( $hops[0]->{address} => 1 );
 
     while ( $agent->proxy && !$agent->proxy->isa('BaselinerX::CI::Empty') ) {
+        my $timeout = $agent->server->proxy_timeout;
+
         $agent = $agent->proxy->connect;
 
         die 'Proxy configuration only supported in Clax' unless $agent->isa('BaselinerX::CI::clax_agent');
@@ -415,7 +417,7 @@ sub _calculate_hops {
         }
 
         $hops_seen{$proxy}++;
-        unshift @hops, $proxy;
+        unshift @hops, { address => $proxy, timeout => $timeout };
     }
 
     return \@hops;
@@ -428,11 +430,12 @@ sub _build_options {
 
     my $hops = $self->hops;
 
-    if ($hops && @$hops) {
-        shift @$hops;
+    if ( $hops && @$hops ) {
+        my $hop = shift @$hops;
 
         if (@$hops) {
-            $options->{headers}->{'X-Hops'} = join ',', @$hops;
+            $options->{headers}->{'X-Hops'} = join ',', map { $_->{address} } @$hops;
+            $options->{headers}->{'X-Hop-Timeout'} = $hop->{timeout};
         }
     }
 

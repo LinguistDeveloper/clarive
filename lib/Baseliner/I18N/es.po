@@ -6616,6 +6616,14 @@ msgid "Hostname or IP"
 msgstr "Nombre o IP de Host"
 
 #: root/ci/generic_server.js
+msgid "Proxy Server"
+msgstr "Servidor proxy"
+
+#: root/ci/generic_server.js
+msgid "Proxy Timeout (s)"
+msgstr "Timeout para el proxy (s)"
+
+#: root/ci/generic_server.js
 msgid "OS Version"
 msgstr "Versión de SO"
 
