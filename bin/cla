@@ -62,7 +62,7 @@ elif [ "$1" == "prove" ]; then
         ARGV[0]=t;
     fi
 
-    perl $LOCALDIR/bin/prove -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "${ARGV[@]}"
+    perl $LOCALDIR/bin/forkprove -MCatalyst -MMongoDB -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "${ARGV[@]}"
 elif [ "$1" == "proveui" ]; then
     shift
 

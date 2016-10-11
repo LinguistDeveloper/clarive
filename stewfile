@@ -226,6 +226,7 @@ libtest-mocktime-perl
 libtest-deep-perl
 libtest-tempdir-tiny-perl
 libtest-whitespaces-perl
+libforkprove-perl
 
 # utils
 liback-perl
