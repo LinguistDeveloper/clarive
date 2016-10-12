@@ -92,15 +92,20 @@ sub clear_registry {
     Baseliner::Core::Registry->clear();
 }
 
+my $registry = {};
 sub setup_registry {
     my $class = shift;
     my (@modules) = @_;
 
-    $class->clear_registry;
-    Class::Load::load_class($_) for @modules;
-    $class->reload_module($_) for @modules;
+    my ( undef, $test_file ) = caller;
 
-    Baseliner::Core::Registry->initialize;
+    if ( !$registry->{$test_file}++ ) {
+        $class->clear_registry;
+        Class::Load::load_class($_) for @modules;
+        $class->reload_module($_) for @modules;
+
+        Baseliner::Core::Registry->initialize;
+    }
 }
 
 sub random_string {
