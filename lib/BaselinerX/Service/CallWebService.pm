@@ -5,6 +5,11 @@ use Baseliner::Utils;
 use Path::Class;
 #use Try::Tiny;
 
+use URI;
+use LWP::UserAgent;
+use HTTP::Request;
+use Encode ();
+
 with 'Baseliner::Role::Service';
 
 register 'service.web.request' => {
@@ -18,13 +23,9 @@ register 'service.web.request' => {
 sub web_request {
     my ( $self, $c, $config ) = @_;
 
-    require LWP::UserAgent;
-    require HTTP::Request;
-    require Encode;
-
     my $method = $config->{method} // 'GET';
     my $url    = $config->{url};
-    my $args   = $config->{args};
+    my $args   = $config->{args} // {};
     my $headers = $config->{headers} || {};
     my $body = $config->{body} || '';
     my $timeout = $config->{timeout};
@@ -49,7 +50,7 @@ sub web_request {
     $uri->query_form( $args );
     my $request = HTTP::Request->new( $method => $uri );
     $request->authorization_basic($config->{username}, $config->{password}) if $config->{username};
-    my $ua = LWP::UserAgent->new();
+    my $ua = $self->_build_ua();
     if($accept_any_cert){
         $ua->ssl_opts( verify_hostname => 0 );
     }
@@ -59,12 +60,13 @@ sub web_request {
     }
     $ua->env_proxy;
 
-    if( length $body ) {
-        $request->content( $body );
+    if ( length $body ) {
+        $request->content( Encode::encode( 'UTF-8', $body ) );
     }
 
     my $response = $ua->request( $request );
 
+    $c->stash->{_ws_code} = $response->code;
     $c->stash->{_ws_body} = $response->decoded_content;
 
     if( ! $response->is_success ) {
@@ -78,6 +80,11 @@ sub web_request {
     return { response=>$response, content=>$content };
 }
 
+sub _build_ua {
+    my $self = shift;
+
+    return LWP::UserAgent->new();
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
