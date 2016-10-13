@@ -1912,15 +1912,47 @@ msgid "Namespace Description"
 msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
+msgid "created"
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "creating"
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
 msgid "A calendar (%1) already exists for namespace %2 and baseline %3"
 msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
-msgid "Calendar with id '%1' $msgs[0]"
+msgid "deleted"
 msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
-msgid "Error $msgs[1] the calendar: "
+msgid "deleting"
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "modified"
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "modifying"
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "Calendar with id '%1' %2"
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "Error %1 the calendar: "
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "Error: Window with id not found."
+msgstr ""
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "Error: Unknown or incomplete command."
 msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm

@@ -288,7 +288,7 @@ sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {
 sub calendar_submit : Path('/job/calendar_submit') {
     my ( $self, $c ) = @_;
 
-    my $p           = $c->req->params;
+    my $p = $c->req->params;
 
     my $id_cal      = $p->{ id_cal };
     my $id          = $p->{ id };
@@ -301,6 +301,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
     my $currentDate;
     $currentDate = $self->parseDateTime( $date_str ) if ( $date_str );
     my $new_id;
+    my $current_date = $self->parseDateTime($date_str) if ($date_str);
 
     try {
         my @diaList;
@@ -313,51 +314,53 @@ sub calendar_submit : Path('/job/calendar_submit') {
         else {
             push @diaList, $ven_dia;
         }
-        foreach my $ven_dia ( @diaList ) {
+        foreach my $day (@list_day) {
             if ( $cmd eq "B" ) {
                 #delete row
                 if ( $id ) {
                     mdb->calendar_window->remove({ id => $id });
                 }
                 else {
-                    _fail( "<H5>Error: id '$id' de ventana no encontrado.</H5>" );
+                    _fail( "<H5>" . _loc("Error: Window with id not found.") . "</H5>" );
                 }
             }
             elsif ( $cmd eq "A" or $cmd eq "AD" ) {
                 my $active = ( $cmd eq "A" );
-                $new_id = ''.mdb->seq('calendar_window');
-                if($cmd eq "A" and $id){
-                    mdb->calendar_window->remove({ id => $id });
+                $new_id = '' . mdb->seq('calendar_window');
+                if ( $cmd eq "A" and $id ) {
+                    mdb->calendar_window->remove( { id => $id } );
                 }
-                mdb->calendar_window->insert({
-                    id         => $new_id,
-                    id_cal     => "$id_cal",
-                    day        => $ven_dia,
-                    type       => $ven_tipo,
-                    active     => $active,
-                    start_time => $ven_ini,
-                    end_time   => $ven_fin,
-                    start_date => $self->parseDateTimeToDbix( $currentDate ),
-                    end_date   => $self->parseDateTimeToDbix( $currentDate )
-                });
-                $self->db_merge_slots( $id_cal ) if defined $id_cal;
+                mdb->calendar_window->insert(
+                    {   id         => $new_id,
+                        id_cal     => "$id_cal",
+                        day        => $day,
+                        type       => $type,
+                        active     => $active,
+                        start_time => $start_time,
+                        end_time   => $end_time,
+                        start_date => $self->parseDateTimeToDbix($current_date),
+                        end_date   => $self->parseDateTimeToDbix($current_date)
+                    }
+                );
+                $self->db_merge_slots($id_cal) if defined $id_cal;
             }
             elsif ( $cmd eq "C1" || $cmd eq "C0" ) {
 
                 #Activar
-                mdb->calendar_window->update({ id => $id }, { '$set'=>{ active=>substr($cmd, 1) } });
+                mdb->calendar_window->update( { id => $id }, { '$set' => { active => substr( $cmd, 1 ) } } );
             }
             else {
                 _fail( "<h5>Error: Comando desconocido o incompleto.</h5>" );
             }
         }
-        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar modified." ), cal_window => $id // $new_id };
-    } catch {
+        $c->stash->{json} = { success => \1, msg => _loc("Calendar modified."), cal_window => $id // $new_id };
+    }
+    catch {
         my $err = shift;
         _error $err;
-        $c->stash->{ json } = { success => \0, msg => _loc( "Error modifying the calendar: %1", $err ) };
+        $c->stash->{json} = { success => \0, msg => _loc( "Error modifying the calendar: %1", $err ) };
     };
-    $c->forward( 'View::JSON' );
+    $c->forward('View::JSON');
 }
 
 sub calendar_delete :
