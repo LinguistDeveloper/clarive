@@ -6,6 +6,7 @@ use HTTP::Tiny;
 use File::Basename qw(basename dirname);
 use String::CRC32 ();
 use IO::Socket::SSL;
+use Try::Tiny;
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils qw(:logging _file _dir _array);
 
@@ -36,6 +37,27 @@ sub BUILD {
 };
 
 sub error;
+
+method ping {
+    my $ua = $self->_build_ua( timeout => 15 );
+
+    my $url = $self->_build_url('/');
+
+    my $response = $ua->get( $url );
+
+    if ( !$response->{success} ) {
+        _fail _loc('Ping failed: %1', $self->_parse_reason($response));
+    }
+
+    my $content = try { JSON::decode_json( $response->{content} ) };
+    die 'Unknown response from agent' unless $content->{message} && $content->{message} =~ m/Hello, world!/;
+
+    $self->rc( 0 );
+    $self->ret( '' );
+    $self->output( $response->{content} );
+
+    return $self->tuple;
+}
 
 method mkpath ( $path ) {
     my $ua = $self->_build_ua;
@@ -348,9 +370,12 @@ sub _build_url {
 
 sub _build_ua {
     my $self = shift;
+    my (%params) = @_;
+
+    my $timeout = $params{timeout} ? $params{timeout} : $self->timeout ? $self->timeout : undef;
 
     return HTTP::Tiny->new(
-        timeout => $self->timeout ? $self->timeout : undef,
+        timeout => $timeout,
         $self->ssl_enabled
         ? (
             SSL_verify => $self->ssl_verify ? 1 : 0,

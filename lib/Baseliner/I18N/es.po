@@ -3988,6 +3988,10 @@ msgid "CAPTURE for item %1 with regex %2"
 msgstr "CAPTURA del elemento %1 con la expresión regular %2"
 
 #: lib/BaselinerX/CI/clax_agent.pm
+msgid "Ping failed: %1"
+msgstr ""
+
+#: lib/BaselinerX/CI/clax_agent.pm
 msgid "Error while creating a directory: %1"
 msgstr ""
 
@@ -4078,7 +4082,7 @@ msgstr "ERROR: Servidor no es accesible: %1"
 
 #: lib/BaselinerX/CI/generic_server.pm
 msgid "ERROR: Could not connect: %1"
-msgstr "ERROR: No podía conectar"
+msgstr "ERROR: No se ha podido conectar: %1"
 
 #: lib/BaselinerX/CI/generic_server.pm
 msgid "Agent connection timeout (> %1 sec)"

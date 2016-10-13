@@ -55,9 +55,9 @@ has ftp => (
 sub ping {
     my $self = shift;
 
-    my @ls = $self->ls;
+    $self->ls;
 
-    return @ls ? 'OK' : 'KO';
+    return 1;
 }
 
 sub error {
@@ -183,7 +183,7 @@ sub _build_ftp {
     my ($hostname) = @_;
 
     require Net::FTP;
-    return Net::FTP->new( $hostname )
+    return Net::FTP->new( $hostname, Timeout => 15 )
 }
 
 sub _netrc_lookup {

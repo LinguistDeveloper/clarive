@@ -10,9 +10,61 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 
 use File::Temp qw(tempfile);
+use JSON ();
 use Baseliner::Role::CI;    # WTF this is needed for CI
 use BaselinerX::CI::generic_server;
 use BaselinerX::CI::clax_agent;
+
+subtest 'ping: returns ok when pingable' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        get => sub {
+            shift;
+
+            { success => 1, content => JSON::encode_json( { message => 'Hello, world!' } ) };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    my $ret = $clax_agent->ping;
+
+    is $ret->{rc}, 0;
+    like $ret->{output}, qr/Hello, world/;
+};
+
+subtest 'ping: fails when cannot connect' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        get => sub {
+            shift;
+
+            { success => 0 };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    like exception {  $clax_agent->ping }, qr/Ping failed/;
+};
+
+subtest 'ping: fails when unknown response' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        get => sub {
+            shift;
+
+            { success => 1, content => 'Unexpected' };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent( ua => $ua );
+
+    like exception {  $clax_agent->ping }, qr/Unknown response/;
+};
 
 subtest 'execute: sends correct request' => sub {
     my $ua = _mock_ua();
