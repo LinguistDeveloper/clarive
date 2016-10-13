@@ -110,8 +110,14 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                                 row_table[ table.columns[i].id ] = columns[i].getElementsByTagName("span")[0].innerHTML;
                             } else if ( columns[i].getElementsByTagName("div").length > 0 ){
                                 var div_content = columns[i].getElementsByTagName("div")[0];
-                                row_table[ table.columns[i].id ] = type === 'html' ? div_content.innerHTML : 
-                                (div_content.getElementsByTagName("img")[0].getAttribute("class") === "img-non-checked") ? _("No") : _("Yes");
+                                if (type === 'html') {
+                                    row_table[table.columns[i].id] = div_content.innerHTML;
+                                } else if (div_content.getElementsByTagName("img")[0]) {
+                                    row_table[table.columns[i].id] =
+                                        (div_content.getElementsByTagName("img")[0].getAttribute("class") === "img-non-checked") ?
+                                        _("No") :
+                                        _("Yes");
+                                }
                             } else {
                                 row_table[ table.columns[i].id ] = columns[i].innerHTML;
                             }
