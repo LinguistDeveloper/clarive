@@ -231,10 +231,16 @@ sub build_app {
     };
 
     # clear cache on restart
-    if( Clarive->debug ) {
-        cache->clear;
-        mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
-        Util->_debug( "Cache cleared" );
+    if ( Clarive->debug ) {
+        if ( $ENV{CLARIVE_CACHE_RESET} ) {
+            cache->clear;
+            mdb->grid->remove( { id_rule => { '$exists' => 1 } } );
+
+            Util->_debug("Cache cleared. If you DON'T want to remove cache, unset CLARIVE_CACHE_RESET");
+        }
+        else {
+            Util->_debug("Cache NOT cleared. If you WANT to remove cache, set CLARIVE_CACHE_RESET=1");
+        }
     }
 
     # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
