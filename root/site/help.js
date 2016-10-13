@@ -213,6 +213,14 @@ Cla.help_show = function(params) {
         ],
         items: [ docs_tree, doc_reader ]
     });
+
+    if (help_win.height >= window.innerHeight) {
+        help_win.setSize(help_win.width, window.innerHeight - Cla.constants.MARGIN_BOTTOM_SIZE);
+    }
+    if (help_win.width >= window.innerWidth) {
+        help_win.setSize(window.innerWidth - Cla.constants.MARGIN_BOTTOM_SIZE, help_win.height);
+    }
+
     help_win.mask = function(){
         help_win.body.mask('');
      };

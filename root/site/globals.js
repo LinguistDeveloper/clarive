@@ -111,5 +111,6 @@ Cla.constants = {
     DASHLET_ROW_SIZE: 1,
     DASHLET_COLUMN_SIZE: 6,
     PAGE_SIZE: 10,
-    SERVER_TIME_FORMAT : 'H:i'
+    SERVER_TIME_FORMAT : 'H:i',
+    MARGIN_BOTTOM_SIZE: 30
 };
