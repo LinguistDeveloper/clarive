@@ -101,20 +101,129 @@ subtest 'calendar_submit: updates correct slots' => sub {
     cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
 };
 
-subtest 'calendar_submit: removes correct slots' => sub {
+subtest 'calendar_submit: modifies range of slot with other type' => sub {
     _setup();
 
     my $id_cal = TestSetup->create_calendar();
-
-    my @id_win = _create_initial_slots( id_cal => $id_cal );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
 
     my $controller = _build_controller();
 
     my $params = {
         id       => $id_win[4],
         id_cal   => $id_cal,
-        cmd      => 'B',
+        cmd      => 'A',
         ven_dia  => '4',
+        ven_tipo => 'U',
+        ven_ini  => '00:00',
+        ven_fin  => '10:00',
+        date     => ''
+    };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->calendar_submit($c);
+
+    my @win = mdb->calendar_window->find->all;
+    my @win_day = mdb->calendar_window->find({day => 4})->all;
+
+    is scalar @win, 8;
+    cmp_deeply $win_day[0],
+        {
+        '_id'        => ignore(),
+        'id'         => ignore(),
+        'id_cal'     => $id_cal,
+        'active'     => 1,
+        'day'        => 4,
+        'start_date' => undef,
+        'end_date'   => undef,
+        'start_time' => '00:00',
+        'end_time'   => '10:00',
+        'type'       => 'U'
+        };
+    cmp_deeply $win_day[1],
+        {
+        '_id'        => ignore(),
+        'id'         => ignore(),
+        'id_cal'     => $id_cal,
+        'active'     => 1,
+        'day'        => 4,
+        'start_date' => undef,
+        'end_date'   => undef,
+        'start_time' => '10:00',
+        'end_time'   => '24:00',
+        'type'       => 'B'
+        };
+    cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
+};
+
+subtest 'calendar_submit: overwrites range of the slot with other type' => sub {
+    _setup();
+
+    my $id_cal = TestSetup->create_calendar();
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $controller = _build_controller();
+
+    my $params = {
+        id_cal   => $id_cal,
+        cmd      => 'A',
+        ven_dia  => '4',
+        ven_tipo => 'U',
+        ven_ini  => '00:00',
+        ven_fin  => '05:00',
+        date     => ''
+    };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->calendar_submit($c);
+
+    my @win = mdb->calendar_window->find->all;
+    my @win_day = mdb->calendar_window->find( { day => 4 } )->all;
+
+    is scalar @win, 8;
+    cmp_deeply $win_day[0],
+        {
+        '_id'        => ignore(),
+        'id'         => ignore(),
+        'id_cal'     => $id_cal,
+        'active'     => 1,
+        'day'        => 4,
+        'start_date' => undef,
+        'end_date'   => undef,
+        'start_time' => '00:00',
+        'end_time'   => '05:00',
+        'type'       => 'U'
+        };
+    cmp_deeply $win_day[1],
+        {
+        '_id'        => ignore(),
+        'id'         => ignore(),
+        'id_cal'     => $id_cal,
+        'active'     => 1,
+        'day'        => 4,
+        'start_date' => undef,
+        'end_date'   => undef,
+        'start_time' => '05:00',
+        'end_time'   => '24:00',
+        'type'       => 'N'
+        };
+    cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
+};
+
+subtest 'calendar_submit: updates slot to empty when remove slot' => sub {
+    _setup();
+
+    my $id_cal = TestSetup->create_calendar();
+
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $controller = _build_controller();
+
+    my $params = {
+        id       => $id_win[0],
+        id_cal   => $id_cal,
+        cmd      => 'B',
+        ven_dia  => '0',
         ven_tipo => 'N',
         ven_ini  => '00:00',
         ven_fin  => '24:00',
@@ -125,12 +234,90 @@ subtest 'calendar_submit: removes correct slots' => sub {
     $controller->calendar_submit($c);
 
     my @win = mdb->calendar_window->find->all;
-    is scalar @win, 6;
 
-    for my $day ( 0 .. 3, 5 .. 6 ) {
+    is scalar @win, 7;
+
+    cmp_deeply $win[0],
+        {
+        '_id'        => ignore(),
+        'id'         => ignore(),
+        'id_cal'     => $id_cal,
+        'active'     => 1,
+        'day'        => '0',
+        'end_date'   => undef,
+        'end_time'   => '24:00',
+        'start_date' => undef,
+        'start_time' => '00:00',
+        'type'       => 'B'
+        };
+
+    for my $day ( 1 .. 6 ) {
+        my $win = $win[$day];
+        cmp_deeply $win,
+            {
+            '_id'        => ignore(),
+            'id'         => ignore(),
+            'id_cal'     => $id_cal,
+            'active'     => 1,
+            'day'        => $day,
+            'end_date'   => undef,
+            'end_time'   => '24:00',
+            'start_date' => undef,
+            'start_time' => '00:00',
+            'type'       => 'N'
+            };
+    }
+
+    cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
+};
+
+subtest 'calendar_submit: merges slots when remove slot' => sub {
+    _setup();
+
+    my $id_cal = TestSetup->create_calendar();
+
+    my @id_win = _create_initial_slots( id_cal => $id_cal );
+
+    my $controller = _build_controller();
+
+    my $params = {
+        id       => '',
+        id_cal   => $id_cal,
+        cmd      => 'A',
+        ven_dia  => '0',
+        ven_tipo => 'N',
+        ven_ini  => '00:00',
+        ven_fin  => '10:00',
+        date     => ''
+    };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->calendar_submit($c);
+
+    my @new_win = mdb->calendar_window->find->all;
+
+    $params = {
+        id       => $new_win[0]->{id},
+        id_cal   => $id_cal,
+        cmd      => 'B',
+        ven_dia  => '0',
+        ven_tipo => 'N',
+        ven_ini  => '00:00',
+        ven_fin  => '10:00',
+        date     => ''
+    };
+    $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->calendar_submit($c);
+
+    my @win = mdb->calendar_window->find->all;
+
+    is scalar @win, 7;
+
+    for my $day ( 0 .. 6 ) {
         my $win = shift @win;
         cmp_deeply $win,
-          {
+            {
             '_id'        => ignore(),
             'id'         => ignore(),
             'id_cal'     => $id_cal,
@@ -141,12 +328,40 @@ subtest 'calendar_submit: removes correct slots' => sub {
             'start_date' => undef,
             'start_time' => '00:00',
             'type'       => 'B'
-          };
+            };
     }
 
     cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
 };
 
+subtest 'calendar_submit: fails when delete slot without id' => sub {
+    _setup();
+
+    my $id_cal = TestSetup->create_calendar();
+
+    my @id_win = _create_initial_slots( id_cal => $id_cal );
+
+    my $controller = _build_controller();
+
+    my $params = {
+        id_cal   => $id_cal,
+        cmd      => 'B',
+        ven_dia  => '0',
+        ven_tipo => 'N',
+        ven_ini  => '00:00',
+        ven_fin  => '10:00',
+        date     => ''
+    };
+    my $c = mock_catalyst_c( req => { params => $params } );
+
+    $controller->calendar_submit($c);
+
+    cmp_deeply $c->stash->{json},
+        {
+        success => \0,
+        msg     => re(qr/Error modifying the calendar: <H5>Error: Window with id not found.<\/H5>/)
+        };
+};
 
 subtest 'calendar_submit: updates correct slots if new one finish before' => sub {
     _setup();
@@ -390,6 +605,66 @@ subtest 'calendar_submit: merges slots with specific date' => sub {
 
     cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
 };
+
+TODO: {
+        local $TODO = "delete part of slot selecting the range of the date to delete";
+
+        subtest 'calendar_submit: delete slot selecting the range of the date to delete' => sub {
+            _setup();
+
+            my $id_cal = TestSetup->create_calendar();
+
+            my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+            my $controller = _build_controller();
+
+            my $params = {
+                id       => $id_win[0],
+                id_cal   => $id_cal,
+                cmd      => 'B',
+                ven_dia  => '0',
+                ven_tipo => 'N',
+                ven_ini  => '00:00',
+                ven_fin  => '10:00',
+                date     => ''
+            };
+            my $c = mock_catalyst_c( req => { params => $params } );
+
+            $controller->calendar_submit($c);
+
+            my @win = mdb->calendar_window->find( { day => 0 } )->all;
+
+            is scalar @win, 2;
+
+            cmp_deeply $win[0],
+                {
+                '_id'        => ignore(),
+                'id'         => ignore(),
+                'id_cal'     => $id_cal,
+                'active'     => 1,
+                'day'        => '0',
+                'end_date'   => undef,
+                'end_time'   => '10:00',
+                'start_date' => undef,
+                'start_time' => '00:00',
+                'type'       => 'B'
+                };
+            cmp_deeply $win[1],
+                {
+                '_id'        => ignore(),
+                'id'         => ignore(),
+                'id_cal'     => $id_cal,
+                'active'     => 1,
+                'day'        => '0',
+                'end_date'   => undef,
+                'end_time'   => '24:00',
+                'start_date' => undef,
+                'start_time' => '10:00',
+                'type'       => 'N'
+                };
+            cmp_deeply $c->stash, { json => { success => \1, msg => 'Calendar modified.', cal_window => ignore() } };
+        };
+    }
 
 subtest 'calendar_grid: check permissions in the stash to edit calendar' => sub {
     _setup();
@@ -718,7 +993,7 @@ subtest 'build_job_window: get first slot from higher priority calendar' => sub 
     cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'TEST (U)', 'U', ignore(), ];
 };
 
-subtest 'build_job_window: no slot available if higher priority is blocking' => sub {
+subtest 'build_job_window: skips empty slot despite of the priority is higher' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project();
@@ -745,13 +1020,70 @@ subtest 'build_job_window: no slot available if higher priority is blocking' => 
     my $controller = _build_controller();
     $controller->build_job_window($c);
 
-    is @{ $c->stash->{json}->{data}[0] }, 0;
+    cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'Common (N)', 'N', ignore(), ];
 };
 
-TODO: {
-    local $TODO = "Fix priority check in slots";
+subtest 'build_job_window: calendar available when priority has the same value and one slot undefined' => sub {
+    _setup();
 
-    subtest 'build_job_window: slot available if higher priority is allowing' => sub {
+    my $project = TestUtils->create_ci_project();
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $date = DateTime->now;
+
+    my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => '*' );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '100', bl => 'TEST' );
+    my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B' );
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'Common (N)', 'N', ignore(), ];
+};
+
+subtest 'build_job_window: no calendar available when slots are undefined' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+
+    my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+    my $date = DateTime->now;
+
+    my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => 'PROD' );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '200', bl => 'TEST' );
+    my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B' );
+
+    my $params = {
+        bl           => 'TEST',
+        date_format  => '%Y-%m-%d',
+        job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+        job_date     => $date
+    };
+
+    my $c = _build_c( req => { params => $params }, username => 'root' );
+
+    my $controller = _build_controller();
+    $controller->build_job_window($c);
+
+    is @{ $c->stash->{json}->{data} }, 0;
+};
+
+subtest 'build_job_window: slot available if higher priority is allowing' => sub {
         _setup();
 
         my $project = TestUtils->create_ci_project();
@@ -779,8 +1111,41 @@ TODO: {
         $controller->build_job_window($c);
 
         cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'Common (N)', 'N', ignore(), ];
-    };
-}
+};
+
+TODO: {
+        local $TODO = "check first the priority than the type of the slot";
+
+        subtest 'build_job_window: get first slot from higher priority calendar' => sub {
+            _setup();
+
+            my $project = TestUtils->create_ci_project();
+
+            my $changeset_mid = TestSetup->create_changeset( project => $project );
+
+            my $date = DateTime->now;
+
+            my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '200', bl => '*' );
+            my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'X' );
+
+            my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '100', bl => 'TEST' );
+            my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'U' );
+
+            my $params = {
+                bl           => 'TEST',
+                date_format  => '%Y-%m-%d',
+                job_contents => _encode_json( [ { mid => $changeset_mid } ] ),
+                job_date     => $date
+            };
+
+            my $c = _build_c( req => { params => $params }, username => 'root' );
+
+            my $controller = _build_controller();
+            $controller->build_job_window($c);
+
+            cmp_deeply $c->stash->{json}->{data}[0], [ ignore(), 'Common (X)', 'X', ignore(), ];
+        };
+    }
 
 done_testing;
 
