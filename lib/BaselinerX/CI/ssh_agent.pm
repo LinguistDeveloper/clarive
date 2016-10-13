@@ -61,6 +61,36 @@ sub rc {
     $self->error ? 1 : 0;
 }
 
+sub ping {
+    my $self = shift;
+
+    my $timeout = 15;
+
+    my $ret;
+    my $rc = 255;
+    try {
+        local $SIG{ALRM} = sub { die "timeout\n" };
+        alarm $timeout;
+
+        $ret = $self->ssh->system( {}, 'id' );
+        $rc = $?;
+
+        alarm 0;
+    } catch {
+        my $err = shift;
+
+        alarm 0;
+
+        _fail $err;
+    };
+
+    if ($rc) {
+        die $ret;
+    }
+
+    return 1;
+}
+
 sub mkpath {
     my $self = shift;
     if( $self->os eq 'Win32' ) {

@@ -29,8 +29,9 @@ service 'connect' => {
         try {
             my $agent = $self->connect( user => $config->{user} );
 
-            my ($status, $output) = $agent->ping;
-            _fail( $output || 'Unknown error' ) unless $status eq 'OK';
+            if ( $agent->can('ping') ) {
+                $agent->ping;
+            }
 
             _log("OK. Connected.");
         }
@@ -39,6 +40,8 @@ service 'connect' => {
 
             _fail _loc("ERROR: Could not connect: %1", $error);
         };
+
+        return 1;
     },
 };
 

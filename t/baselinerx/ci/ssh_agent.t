@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::MonkeyMock;
+use Test::Fatal;
 use Test::Deep;
 
 use TestEnv;
@@ -12,6 +13,29 @@ use Baseliner::Role::CI;    # WTF this is needed for CI
 use BaselinerX::CI::generic_server;
 use BaselinerX::CI::ssh_agent;
 use File::Temp qw(tempfile);
+
+subtest 'ping: tests connection' => sub {
+    my $openssh = _mock_openssh();
+    $openssh->mock( system => sub { } );
+
+    my $ssh_agent =
+      _build_ssh_agent( user => 'foo', server => BaselinerX::CI::generic_server->new( hostname => 'bar' ), openssh => $openssh );
+
+    my $rv = $ssh_agent->ping;
+
+    ok $rv;
+};
+
+subtest 'ping: fails when cannot ping' => sub {
+    my $openssh = _mock_openssh();
+    $openssh->mock( system => sub { die 'timeout' } );
+
+    my $ssh_agent =
+      _build_ssh_agent( user => 'foo', server => BaselinerX::CI::generic_server->new( hostname => 'bar' ), openssh => $openssh );
+    $ssh_agent->mock( execute => sub { ( 255, 'connection failed' ) } );
+
+    like exception { $ssh_agent->ping }, qr/timeout/;
+};
 
 subtest 'builds openssh with correct params' => sub {
     my $ssh_agent =

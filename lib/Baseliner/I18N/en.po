@@ -3937,6 +3937,10 @@ msgid "CAPTURE for item %1 with regex %2"
 msgstr ""
 
 #: lib/BaselinerX/CI/clax_agent.pm
+msgid "Ping failed: %1"
+msgstr ""
+
+#: lib/BaselinerX/CI/clax_agent.pm
 msgid "Error while creating a directory: %1"
 msgstr ""
 
