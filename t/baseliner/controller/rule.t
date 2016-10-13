@@ -35,7 +35,7 @@ subtest 'palette: returns fieldlets with active set to true' => sub {
 subtest 'palette: returns one element when show_in_palette = 1' => sub {
     _setup();
 
-    _register_fieldlet(show_in_palette => 1);
+    #_register_fieldlet(show_in_palette => 1);
 
     my $c = mock_catalyst_c( req => {} );
 
@@ -45,13 +45,11 @@ subtest 'palette: returns one element when show_in_palette = 1' => sub {
 
     my @elements = grep { $_->{text} eq 'Fieldlets' } @{ $c->stash->{json} };
 
-    cmp_deeply $elements[0]->{'children'}[0]->{active}, \1;
+    ok grep { $_->{key} eq 'fieldlet.in_palette' } @{$elements[0]->{children}};
 };
 
 subtest 'palette: returns no elements when show_in_palette = 0' => sub {
     _setup();
-
-    _register_fieldlet(show_in_palette => 0);
 
     my $c = mock_catalyst_c();
 
@@ -60,7 +58,8 @@ subtest 'palette: returns no elements when show_in_palette = 0' => sub {
     $controller->palette($c);
 
     my @elements = grep { $_->{text} eq 'Fieldlets' } @{ $c->stash->{json} };
-    cmp_deeply $elements[0]->{'children'}, [];
+
+    ok !grep { $_->{key} eq 'fieldlet.not_in_palette' } @{$elements[0]->{children}};
 };
 
 subtest 'stmts_load: returns error when no rule id' => sub {
@@ -995,6 +994,13 @@ sub _setup {
     );
 
     TestUtils->cleanup_cis;
+
+    Baseliner::Core::Registry->add('BaselinerX::Fieldlet',
+        'fieldlet.in_palette' =>
+          {name => 'fieldlet.in_palette', show_in_palette => 1});
+    Baseliner::Core::Registry->add('BaselinerX::Fieldlet',
+        'fieldlet.not_in_palette' =>
+          {name => 'fieldlet.not_in_palette', show_in_palette => 0});
 
     mdb->rule->drop;
     mdb->rule_version->drop;

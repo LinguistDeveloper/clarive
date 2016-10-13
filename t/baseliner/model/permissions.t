@@ -693,15 +693,8 @@ subtest 'user_actions: returns all actions for root' => sub {
 
     my $actions = $permissions->user_actions('root');
 
-    is_deeply $actions,
-      [
-        {
-            action => 'action.another'
-        },
-        {
-            action => 'action.some'
-        },
-      ];
+    ok grep { $_->{action} eq 'action.some' } @$actions;
+    ok grep { $_->{action} eq 'action.another' } @$actions;
 };
 
 subtest 'user_actions: returns no actions for user' => sub {

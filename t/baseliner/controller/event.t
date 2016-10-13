@@ -31,8 +31,6 @@ subtest 'log: returns events' => sub {
         }
     );
 
-    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.topic.change_status', {} );
-
     my $c = _build_c( req => { params => {} } );
 
     $controller->log($c);
@@ -45,6 +43,8 @@ subtest 'log: catches exception when registry is not loaded' => sub {
     _setup();
 
     my $controller = _build_controller();
+
+    Baseliner::Core::Registry->clear;
 
     mdb->event->insert(
         {
@@ -81,6 +81,7 @@ sub _setup {
         'BaselinerX::Type::Action',
         'BaselinerX::Type::Event',
         'BaselinerX::Type::Menu',
+        'Baseliner::Model::Topic',
         'Baseliner::Controller::Event',
     );
 
