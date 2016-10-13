@@ -31,21 +31,21 @@ sub setup {
         my $cache_config = ref $cache_type eq 'ARRAY'
             ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
         my %user_config = %{ Clarive->config->{cache_config} || {} } ;
-        $ccache = eval {
+
+        try {
+
             if( $cache_type eq 'mongo' ) {
                 require Baseliner::Cache;
-                Baseliner::Cache->new( @$cache_config, %user_config );
+                $ccache = Baseliner::Cache->new( @$cache_config, %user_config );
             } else {
                 require CHI;
-                CHI->new( @$cache_config, %user_config );
+                $ccache = CHI->new( @$cache_config, %user_config );
             }
-        };
-        if( $@ ) {
-            Util->_error( Util->_loc( 'Error configuring cache: %1', "$@" ) );
-            $setup_fake_cache->();
-        } else {
             Util->_debug( "CACHE Setup ok: " . join' ', %{ +{ @$cache_config, %user_config } } );
-        }
+        } catch {
+            Util->_error( Util->_loc( "Error configuring cache: %1", shift ) );
+            $ccache = $setup_fake_cache->();
+        };
     }
 
     return 1;
