@@ -11,20 +11,18 @@ params:
 ---
 */
 
-(function(params){
-	var meta = params.topic_meta;
-	var data = params.topic_data;
-	
-    return [
-		{
-			xtype:'timefield',
-			fieldLabel: _(meta.name_field),
-			name: meta.id_field,
-			format: meta.format,
-			value: data ? eval('data.' + meta.bd_field): '',
-			readOnly: Baseliner.eval_boolean(meta.readonly),
-			hidden: Baseliner.eval_boolean(!meta.active)
-		}
-    ]
-})
+(function(params) {
+    var meta = params.topic_meta;
+    var data = params.topic_data;
 
+    return [{
+        xtype: 'timefield',
+        fieldLabel: _(meta.name_field),
+        name: meta.id_field,
+        format: meta.format || Cla.constants.SERVER_TIME_FORMAT,
+        value: data ? eval('data.' + meta.bd_field) : '',
+        readOnly: Baseliner.eval_boolean(meta.readonly),
+        allowBlank: Baseliner.eval_boolean(meta.allowBlank, true),
+        hidden: Baseliner.eval_boolean(!meta.active)
+    }]
+})
