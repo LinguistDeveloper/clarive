@@ -1,5 +1,6 @@
 ---
 title: Extending cla wth commands
+icon: page
 ---
 
 It's posible to write programs that

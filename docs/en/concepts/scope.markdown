@@ -1,5 +1,6 @@
 ---
 title: Scope
+icon: page
 ---
 
 A Clarive Scope is a security grouping used to limit user access to certain parts

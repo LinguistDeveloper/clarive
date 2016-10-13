@@ -1,5 +1,6 @@
 ---
 title: Clarive Plugins and Features
+icon: page
 ---
 
 In this folder you will find all plugins, features

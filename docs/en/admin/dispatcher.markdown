@@ -1,6 +1,7 @@
 ---
 title: Dispatcher
 index: 5000
+icon: daemon
 ---
 
 The dispatcher is the process responsible for keeping all the Clarive [daemons](admin/daemon) started and running.  

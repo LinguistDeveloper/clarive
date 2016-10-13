@@ -1,5 +1,6 @@
 ---
 title: cla/util - general utilities namespace
+icon: page
 ---
 
 General utilities.

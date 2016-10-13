@@ -1,6 +1,7 @@
 ---
 title: REPL
 index: 150
+icon: page
 ---
 
 REPL significa Read Eval Print Loop, es decir,

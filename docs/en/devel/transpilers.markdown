@@ -1,5 +1,6 @@
 ---
 title: Transpilers, Babel, CoffeeScript and TypeScript
+icon: page
 ---
 
 JavaScript transpilers (or transcompilers) are tools that convert a specific

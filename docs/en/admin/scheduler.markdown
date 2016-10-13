@@ -1,6 +1,6 @@
 ---
 title: Scheduler
-icon: calendar
+icon: clock
 ---
 
 The Scheduler is an administrator facility for scheduling the execution rules in set intervals.

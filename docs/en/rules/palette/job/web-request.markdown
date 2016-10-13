@@ -1,5 +1,6 @@
 ---
 title: Web Request
+icon: webservice
 ---
 
 Generates a request to webservices, URLs

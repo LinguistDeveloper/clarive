@@ -1,5 +1,6 @@
 ---
 title: Using the Command-line
+icon: console
 index: 1
 ---
 

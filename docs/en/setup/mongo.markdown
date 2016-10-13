@@ -1,6 +1,7 @@
 ---
 title: MongoDB
 index: 250
+icon: page
 ---
 
 ## Recommendations

@@ -1,5 +1,6 @@
 ---
 title: cla/ws - webservice namespace
+icon: page
 ---
 
 This namespace holds Clarive webservice call

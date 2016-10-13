@@ -1,6 +1,7 @@
 ---
 title: Architecture and Requirements
 index: 200
+icon: page
 ---
 
 # Components

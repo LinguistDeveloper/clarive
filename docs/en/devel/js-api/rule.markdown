@@ -1,5 +1,6 @@
 ---
 title: cla/rule - rule execution
+icon: page
 ---
 
 This namespace contains functions 

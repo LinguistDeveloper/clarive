@@ -37,7 +37,7 @@ static/images/icons/export.svg" /> Exporta la regla seleccionada en formato YAML
 
 <img src="/static/images/icons/refresh.svg" /> **Refresca** - Refresca la regla.
 
-<img src="/static/images/icons/save.svg" /> **Guardar** - Guarda la regla.
+<img src="/static/images/icons/action_save.svg" /> **Guardar** - Guarda la regla.
 
 <img src="/static/images/icons/edit.svg" /> **DSL** - Se abre una nueva ventana con el código DSL de la regla seleccionada. Este código puede ser ejecutado. El funcionamiento de esta opción está descrito en la [Paleta de reglas](rules/rule-menu).
 

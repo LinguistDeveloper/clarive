@@ -1,5 +1,6 @@
 ---
 title: MID
+icon: page
 ---
 
 The MID is short for Master ID.

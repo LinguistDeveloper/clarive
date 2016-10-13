@@ -1,5 +1,6 @@
 ---
 title: cla/log - Logging Classes
+icon: page
 ---
 
 Logging is useful to correctly print and report messages to 

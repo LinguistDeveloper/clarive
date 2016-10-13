@@ -1,5 +1,6 @@
 ---
 title: Common Command-Line Options
+icon: console
 index: 5
 ---
 

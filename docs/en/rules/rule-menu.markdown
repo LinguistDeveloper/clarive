@@ -63,7 +63,7 @@ icon: rule
 
 * To refresh the rule
 
-- <img src="/static/images/icons/save.svg" /> **Save**
+- <img src="/static/images/icons/action_save.svg" /> **Save**
 
 * To save rule.
 

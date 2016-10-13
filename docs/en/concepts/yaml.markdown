@@ -1,5 +1,6 @@
 ---
 title: YAML
+icon: yaml
 ---
 
 YAML is a human-readable markup format used for data serialization.

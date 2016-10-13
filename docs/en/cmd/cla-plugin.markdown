@@ -1,5 +1,6 @@
 ---
 title: cla plugin - plugin helper
+icon: console
 ---
 
 This command offers options to support the Clarive

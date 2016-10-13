@@ -1,6 +1,6 @@
 ---
 title: Planificador
-icon: calendar
+icon: clock
 ---
 * El planificador es una utilidad que permite al administrador a planificar de manera sencilla la ejecución de las reglas en intervalos establecidos.
 * Permite planificar, habilitar, deshabilitar o ejecutar reglas independientes en segundo plano, por frecuencia de tiempo o ejecutar a una hora de un día determinado.

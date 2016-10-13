@@ -1,5 +1,6 @@
 ---
 title: Config Table
+icon: page
 ---
 
 The config table is where global __dynamic__ configuration parameters are stored in

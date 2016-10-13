@@ -1,6 +1,7 @@
 ---
 title: Clarive Configuration File
 index: 500
+icon: page
 ---
 
 The Clarive configuration file is an

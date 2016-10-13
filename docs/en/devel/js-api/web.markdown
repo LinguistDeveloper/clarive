@@ -1,5 +1,6 @@
 ---
 title: cla/web - Web tools
+icon: page
 ---
 
 This namespace contains useful functions

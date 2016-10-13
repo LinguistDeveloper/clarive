@@ -1,5 +1,6 @@
 ---
 title: YAML
+icon: yaml
 ---
 
 YAML es un formato tipado legible por personas usado para la serialización de datos

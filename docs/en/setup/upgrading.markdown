@@ -1,6 +1,7 @@
 ---
 title: Upgrading from previous versions
 index: 300
+icon: page
 ---
 
 After downloading the software, it is recommended to unzip

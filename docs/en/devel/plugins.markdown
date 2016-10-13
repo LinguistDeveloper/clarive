@@ -1,5 +1,6 @@
 ---
 title: Plugins
+icon: page
 ---
 
 The Clarive plugin system is the official way of
