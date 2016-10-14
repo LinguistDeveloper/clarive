@@ -5,7 +5,7 @@ use Try::Tiny;
 our $ccache;
 
 sub setup {
-    my ($self,$cache_type) = @_;
+    my ( $self, $cache_type ) = @_;
 
     local $@;
 
@@ -14,42 +14,55 @@ sub setup {
     # CHI cache setup
     require Baseliner::Utils;
     my $setup_fake_cache = sub {
-       { package Nop; sub AUTOLOAD{ } };
-       $ccache = bless {} => 'Nop';
+        {
+
+            package Nop;
+            sub AUTOLOAD { }
+        };
+        $ccache = bless {} => 'Nop';
     };
-    if( !$cache_type ) {
+    if ( !$cache_type ) {
         $setup_fake_cache->();
-    } else {
+    }
+    else {
         my $cache_defaults = {
-                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/clarive-cache', cache_size => '256m' ],
-                memory    => [ driver => 'Memory' ],
-                rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
-                sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
-                redis     => [ driver => 'BaselinerRedis', namespace => 'cache', server => ( Clarive->config->{redis}{server} // 'localhost:6379' ), debug => 0 ],
-                mongo     => [ driver => 'Mongo' ] # not CHI
+            fastmmap => [ driver => 'FastMmap', root_dir => Util->_tmp_dir . '/clarive-cache', cache_size => '256m' ],
+            memory   => [ driver => 'Memory' ],
+            rawmemory => [ driver => 'RawMemory', datastore => {},        max_size => 1000 ],
+            sharedmem => [ driver => 'SharedMem', size      => 1_000_000, shmkey   => 93894384 ],
+            redis     => [
+                driver    => 'BaselinerRedis',
+                namespace => 'cache',
+                server    => ( Clarive->config->{redis}{server} // 'localhost:6379' ),
+                debug     => 0
+            ],
+            mongo => [ driver => 'Mongo' ]    # not CHI
         };
-        my $cache_config = ref $cache_type eq 'ARRAY'
-            ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
-        my %user_config = %{ Clarive->config->{cache_config} || {} } ;
-        $ccache = eval {
-            if( $cache_type eq 'mongo' ) {
+        my $cache_config =
+          ref $cache_type eq 'ARRAY' ? $cache_type : ( $cache_defaults->{$cache_type} // $cache_defaults->{fastmmap} );
+        my %user_config = %{ Clarive->config->{cache_config} || {} };
+
+        try {
+
+            if ( $cache_type eq 'mongo' ) {
                 require Baseliner::Cache;
-                Baseliner::Cache->new( @$cache_config, %user_config );
-            } else {
-                require CHI;
-                CHI->new( @$cache_config, %user_config );
+                $ccache = Baseliner::Cache->new( @$cache_config, %user_config );
             }
-        };
-        if( $@ ) {
-            Util->_error( Util->_loc( 'Error configuring cache: %1', "$@" ) );
-            $setup_fake_cache->();
-        } else {
-            Util->_debug( "CACHE Setup ok: " . join' ', %{ +{ @$cache_config, %user_config } } );
+            else {
+                require CHI;
+                $ccache = CHI->new( @$cache_config, %user_config );
+            }
+            Util->_debug( "CACHE Setup ok: " . join ' ', %{ +{ @$cache_config, %user_config } } );
         }
+        catch {
+            Util->_error( Util->_loc( "Error configuring cache: %1", shift ) );
+            $ccache = $setup_fake_cache->();
+        };
     }
 
     return 1;
 }
+
 
 sub keyify {
     my ($self,$key)=@_;

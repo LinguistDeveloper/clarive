@@ -24,6 +24,14 @@ msgid "CI record not found for mid %1"
 msgstr "El registro CI no encontrado para el mid %1"
 
 #: lib/Baseliner/Cache.pm
+msgid ""
+"Retrying write in cache because of duplicate key bug in mongo 3.2 upsert. "
+"Key: %1"
+msgstr ""
+"Reintento de escritura en cache a causa del bug de clave duplicada en mongo "
+"3.2 para el upset. Clave: %1"
+
+#: lib/Baseliner/Cache.pm
 msgid "Cache set error %1 for key %2"
 msgstr "Error de Caché %1 para la clave %2"
 
