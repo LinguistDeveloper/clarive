@@ -19,7 +19,7 @@ workers: 5
 max_requests: 100
 
 # frequency of semaphore attempts
-semaphore_wait_interval: .1
+semaphore_wait_interval: .5
     
 # cache configure
 cache: mongo 
