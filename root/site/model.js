@@ -39,8 +39,23 @@ Baseliner.SuperBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     }
 });
 
-Baseliner.DefaultBox = Ext.extend( Baseliner.SuperBox, {
-
+Baseliner.DefaultBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+    minChars: 2,
+    pageSize: 20,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    lazyRender: false,
+    triggerAction: 'all',
+    msgTarget: 'under',
+    emptyText: _('Select one'),
+    displayField: 'name',
+    valueField: 'mid',
+    extraItemCls: 'x-tag',
+    queryValuesDelimiter: ' ', // important, so that the query parameter gets all mids in a searcheable manner, otherwise multivalues do not load
+    name: 'default_value',
+    xtype: 'combo',
     fieldLabel: _('Default Value'),
     singleMode: true,
     mode: 'remote',
@@ -50,6 +65,120 @@ Baseliner.DefaultBox = Ext.extend( Baseliner.SuperBox, {
     tpl: Cla.iconTplList,
     displayFieldTpl: Cla.iconTplField
 });
+
+Baseliner.FilterFieldBox = Ext.extend(Cla.SuperBox, {
+    displayField: 'id_field',
+    valueField: 'id_field',
+    minChars: 2,
+    msgTarget: 'under',
+    forceSelection: true,
+    typeAhead: false,
+    fieldLabel: _('Filter field'),
+    name: 'filter_field',
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    autoLoad: true,
+    mode: 'local',
+    singleMode: true,
+    triggerAction: 'all',
+    baseParams: Ext.apply({
+        start: 0,
+        limit: 200
+    }, this.baseParams),
+    pageSize: 0,
+    initComponent: function() {
+        var self = this;
+
+        if (self.name) {
+            self.hiddenName = self.name;
+        }
+        self.store = new Baseliner.JsonStore({
+            root: 'data',
+            remoteSort: false,
+            id: 'id_uniq',
+            totalProperty: 'totalCount',
+            baseParams: Ext.apply({
+                id_category: self.id_category,
+                id_rule: self.id_rule,
+            }, this.baseParams),
+            url: '/topic/topic_fieldlet_nodes',
+            fields: ['id', 'id_uniq', 'id_field', 'key', 'name_field', 'fieldlet_name', 'category_name']
+        });
+
+        self.store.load({
+            callback: function(store) {
+                var ix = self.store.find(self.valueField, self.value);
+                if (ix > -1) self.setValue(self.store.getAt(ix).get(self.valueField));
+            }
+        });
+        Baseliner.FilterFieldBox.superclass.initComponent.call(this);
+    },
+    listeners: {
+        'additem': function(obj) {
+            this.enableOrDisable(obj)
+        },
+        'removeitem': function(obj) {
+            this.enableOrDisable(obj)
+        }
+    }
+});
+
+Baseliner.FilterDataTextField = Ext.extend(Ext.form.TextField, {
+    name: 'filter_data',
+    xtype: 'textfield',
+    fieldLabel: _('Filter data'),
+    allowBlank: true
+});
+
+Baseliner.LogicField = function(params, data) {
+    var filterFieldBox = new Baseliner.FilterFieldBox({
+        enableOrDisable: function(obj) {
+            if (this.getValue().length == 0 && filterDataTextField.getValue().length == 0) {
+                filterDataTextField.allowBlank = true;
+                this.allowBlank = true;
+            } else {
+                filterDataTextField.allowBlank = false;
+                this.allowBlank = false;
+            }
+        },
+        id_rule: params.common_options[0]['id_rule'],
+        value: data.filter_field,
+    });
+
+    var filterDataTextField = new Baseliner.FilterDataTextField({
+        value: data.filter_data,
+        listeners: {
+            'change': function(obj) {
+                if (this.getValue().length == 0 && filterFieldBox.getValue().length == 0) {
+                    filterFieldBox.allowBlank = true;
+                    this.allowBlank = true;
+                } else {
+                    filterFieldBox.allowBlank = false;
+                    this.allowBlank = false;
+                }
+            }
+        }
+    });
+
+    var logicItems = new Baseliner.LogicGroup({
+        value: data.logic,
+        initComponent: function() {
+            this.setValue(data.logic ? data.logic : 'OR');
+        }
+    });
+
+    var logicContainer = new Ext.Container({
+        layout: 'hbox',
+        fieldLabel: _('Filter type'),
+        items: logicItems
+    });
+    return [
+        filterFieldBox,
+        filterDataTextField,
+        logicContainer
+    ]
+}
 
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
@@ -204,6 +333,21 @@ Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.cr
     });
 });
 */
+
+Baseliner.LogicGroup = Ext.extend(Ext.form.RadioGroup, {
+    items: [{
+        boxLabel: _('OR'),
+        name: 'logic',
+        inputValue: 'OR',
+        width: 20,
+        checked: true
+    }, {
+        boxLabel: _('AND'),
+        name: 'logic',
+        width: 20,
+        inputValue: 'AND',
+    }]
+});
 
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
@@ -862,8 +1006,8 @@ Baseliner.ci_box = function(c) {
         allowBlank: true,
         tpl: tpl,
         displayFieldTpl: displayFieldTpl,
-        showClass: show_class
-    }, c ));
+        showClass: show_class,
+        }, c ));
     store.on('load', function(){
         if( c.force_set_value && firstload ) { // For default value purpose
             firstload = false;

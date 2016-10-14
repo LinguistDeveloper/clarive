@@ -22,6 +22,9 @@
     var value_type = Baseliner.generic_list_fields(data, {
         list_type: 'single'
     });
+
+    var logicField = Baseliner.LogicField(params, data);
+
     ret.push([
         ccategory,
         cstatus, {
@@ -32,12 +35,13 @@
         },
         value_type
     ]);
-
     ret.push([{
-        xtype: 'textfield',
-        name: 'release_field',
-        fieldLabel: _('Release field'),
-        value: data.release_field
-    }]);
+            xtype: 'textfield',
+            name: 'release_field',
+            fieldLabel: _('Release field'),
+            value: data.release_field
+        },
+        logicField
+    ]);
     return ret;
 })

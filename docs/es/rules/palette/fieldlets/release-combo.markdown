@@ -57,3 +57,23 @@ Donde id es el [MID](concepts/mid) de la categoría.
 ### Campo Release
 * Establece la dependencia entre este tópico de tipo Release y los tópicos dependientes.
 * Se realiza a través de este campo que se completa con el ID del campo del formulario de dichos tópicos dependientes.
+
+### Campo para filtrar
+
+Permite filtrar la lista de los tópicos en función de un campo de este mismo formulario.
+ 
+Este campo es obligatorio si el siguiente campo no está vacio.
+
+### Datos para filtrar
+
+Indica el campo por el que realizar el filtro.
+
+Este campo es obligatorio si el campo anterior no está vacio.
+
+### Tipo de filtro
+
+Indica la lógica del filtro.
+
+Por defecto, el tipo es OR.
+
+Para más información, hay un how-to llamado [Filtros es fieldlets](how-to/filter-fieldlet).

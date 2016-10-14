@@ -2235,11 +2235,23 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     Baseliner.field_cache[ field.body[0] ] = func;
                 }
                 if( !func ) continue;
+
+                if (!self.fieldletMap)
+                    self.fieldletMap = {};
+
                 var fieldlet = func({
-                    form: self, topic_data: data, topic_meta:  field, value: '',
-                    _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin,
+                    form: self,
+                    fieldletMap: self.fieldletMap,
+                    topic_data: data,
+                    topic_meta: field,
+                    value: '',
+                    _cis: rec._cis,
+                    id_panel: rec.id_panel,
+                    admin: rec.can_admin,
                     html_buttons: rec.html_buttons
                 });
+
+                self.fieldletMap[field.id_field] = fieldlet;
 
                 if( !fieldlet ) continue; // invalid field?
 

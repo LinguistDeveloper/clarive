@@ -3012,6 +3012,10 @@ msgid "One or more categories not found: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "Id not provided"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "unassigned"
 msgstr ""
 
@@ -4541,7 +4545,7 @@ msgstr ""
 msgid "Timefield"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/ci_list.js
 msgid "CI List"
 msgstr ""
 
@@ -4700,7 +4704,7 @@ msgid "Topic Selector"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
+#: root/fields/templates/config/cis.js
 msgid "CI Combo"
 msgstr ""
 
@@ -12380,14 +12384,6 @@ msgstr ""
 msgid "Table format?"
 msgstr ""
 
-#: root/fields/templates/config/list_topics_selector.js
-msgid "Filter field"
-msgstr ""
-
-#: root/fields/templates/config/list_topics_selector.js
-msgid "Filter data"
-msgstr ""
-
 #: root/fields/templates/config/listbox.js
 msgid "Apply role filter"
 msgstr ""
@@ -14099,11 +14095,31 @@ msgid "Please, refresh the page as soon as possible"
 msgstr ""
 
 #: root/site/model.js
+msgid "Filter field"
+msgstr ""
+
+#: root/site/model.js
+msgid "Filter data"
+msgstr ""
+
+#: root/site/model.js
+msgid "Filter type"
+msgstr ""
+
+#: root/site/model.js
 msgid "Select a project"
 msgstr ""
 
 #: root/site/model.js
 msgid "Assign to"
+msgstr ""
+
+#: root/site/model.js
+msgid "OR"
+msgstr ""
+
+#: root/site/model.js
+msgid "AND"
 msgstr ""
 
 #: root/site/model.js

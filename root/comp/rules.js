@@ -907,17 +907,26 @@
                     var is_dashlet = /^dashlet\./.test(key);
                     var is_dashboard = true;
                     var common_options = undefined;
-                    if( is_dashlet && node.getOwnerTree().rule_type == 'form' ) {
+                    if (is_dashlet && node.getOwnerTree().rule_type == 'form') {
                         common_options = [{
                             xtype: 'fieldset',
                             collapsible: true,
                             title: _('Common Dashlet as a Field Options'),
-                            items: [
-                                { xtype:'textfield', fieldLabel:_('Width'), name:'field_width',
-                                    value: data.field_width||reg_params.field_width||'100%' },
-                                { xtype:'textfield', fieldLabel:_('Height'), name:'field_height',
-                                    value: data.field_height||reg_params.field_height||'220px' }
-                            ]
+                            items: [{
+                                xtype: 'textfield',
+                                fieldLabel: _('Width'),
+                                name: 'field_width',
+                                value: data.field_width || reg_params.field_width || '100%'
+                            }, {
+                                xtype: 'textfield',
+                                fieldLabel: _('Height'),
+                                name: 'field_height',
+                                value: data.field_height || reg_params.field_height || '220px'
+                            }]
+                        }];
+                    } else {
+                        common_options = [{
+                            id_rule: node.id_rule
                         }];
                     }
                     Baseliner.ajaxEval( res.form, { common_options: common_options, data: data || {}, attributes: node.attributes }, function(comp){
@@ -1304,6 +1313,7 @@
                 };
                 show_rules(params);
             } else {
+                node.id_rule = id_rule;
                 edit_node(node);
             }
         };

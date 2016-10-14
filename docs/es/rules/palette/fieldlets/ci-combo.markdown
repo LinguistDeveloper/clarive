@@ -71,6 +71,25 @@ Donde id es el [MID](concepts/mid) de la categoría.
 * Permite mostrar un valor por defecto en el combo.
 * El o los proyectos que se quieran poner por defecto tienen que estar especficados por el ID del CI.
 
+### Campo para filtrar
+
+Permite filtrar la lista de los tópicos en función de un campo de este mismo formulario.
+ 
+Este campo es obligatorio si el siguiente campo no está vacio.
+
+### Datos para filtrar
+
+Indica el campo por el que realizar el filtro.
+
+Este campo es obligatorio si el campo anterior no está vacio.
+
+### Tipo de filtro
+
+Indica la lógica del filtro.
+
+Por defecto, el tipo es OR.
+
+Para más información, hay un how-to llamado [Filtros en fieldlets](how-to/filter-fieldlet).
 
 ### Roles
 * Selecciona los roles que se mostrarán en el grid.
@@ -80,7 +99,7 @@ Donde id es el [MID](concepts/mid) de la categoría.
 Selection of type of description to show in the list.
 Selecciona la descripción que será mostrada al mostrar el listado de opciones.
 
-* Nombre: Muestra el nombre del elemento.
-* Entorno: Muestra los entornos separados por comas.
-* Clase: Muestra el tipo de objeto que es.
-* Nemónico: Muestra el nemónico especificado en la configuración del CI.
+* Nombre - Muestra el nombre del elemento.
+* Entorno - Muestra los entornos separados por comas.
+* Clase - Muestra el tipo de objeto que es.
+* Nemónico - Muestra el nemónico especificado en la configuración del CI.

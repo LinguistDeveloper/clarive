@@ -18,9 +18,10 @@ params:
     meta_type: 'ci'
 ---
 */
-(function(params){
+(function(params) {
     var meta = params.topic_meta;
     var data = params.topic_data;
+    var form = params.form.getForm();
 
     var single_mode = !Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 
@@ -44,22 +45,53 @@ params:
     );
 
     var ci = {};
-    if( meta.ci_role ) ci['role'] = meta.ci_role;
-    else if( meta.ci_class ) ci['class'] = meta.ci_class;
+    if (meta.ci_role) ci['role'] = meta.ci_role;
+    else if (meta.ci_class) ci['class'] = meta.ci_class;
+    var ciBox = Baseliner.ci_box(Ext.apply({
+        fieldLabel: _(meta.name_field),
+        name: meta.id_field,
+        baseParams: {
+            logic: meta.logic
+        },
+        mode: 'remote',
+        singleMode: single_mode,
+        force_set_value: true,
+        value: data[meta.id_field] != undefined ? data[meta.id_field] : (meta.default_value != undefined ? meta.default_value : data[meta.id_field]),
+        allowBlank: Baseliner.eval_boolean(meta.allowBlank),
+        disabled: Baseliner.eval_boolean(meta.readonly),
+        filter: meta.filter ? meta.filter : '',
+        showClass: Baseliner.eval_boolean(meta.show_class),
+        order_by: meta.order_by ? meta.order_by : undefined,
+        tpl: tpl,
+        listeners: {
+            additem: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            },
+            removeitem: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            },
+            render: function(combo) {
+                this.fireEvent('filter', combo, this.getValue().split(","));
+            }
+        }
+    }, ci));
+
+    params.form.on('afterrender', function() {
+        if (!meta.filter_field)
+            return;
+        var filterField = meta.filter_field ? (meta.filter_field.length ? params.fieldletMap[meta.filter_field[0]][0] : form.findField(meta.filter_field)) : '';
+        if (filterField) {
+            filterField.addListener('filter', function(parent, values) {
+                ciBox.store.jsonData['filter'] = Cla.generateFieldletFilter(meta, values);
+                if (meta.filter_data == 'collection' && values.split(',').length == 1) {
+                    ciBox.store.jsonData.class = "BaselinerX::CI::" + values;
+                }
+                ciBox.store.load();
+            });
+        }
+    });
+
   return [
-       Baseliner.ci_box(Ext.apply({
-           fieldLabel: _(meta.name_field),
-           name: meta.id_field,
-           mode: 'remote',
-           singleMode: single_mode,
-           force_set_value: true,
-           value: data[meta.id_field]!=undefined ? data[meta.id_field] : (meta.default_value!=undefined? meta.default_value: data[meta.id_field]),
-           allowBlank: Baseliner.eval_boolean(meta.allowBlank),
-           disabled: Baseliner.eval_boolean(meta.readonly),
-           filter: meta.filter ? meta.filter : '',
-           showClass: Baseliner.eval_boolean(meta.show_class),
-           order_by: meta.order_by ? meta.order_by : undefined,
-           tpl: tpl,
-       }, ci) )
-    ]
+    ciBox
+  ]
 })

@@ -31,6 +31,8 @@
         store: default_store
     });
 
+    var logicField = Baseliner.LogicField(params, data);
+
     var firstRoleChange = false;
     var role_box_multiselect = new Baseliner.CIRoleCombo({
         value: data.var_ci_role || 'Baseliner::Role::CI',
@@ -182,6 +184,7 @@
         ci_role_field,
         ci_class_field,
         default_box,
+        logicField,
         display_mode, {
             xtype: 'numberfield',
             name: 'height',

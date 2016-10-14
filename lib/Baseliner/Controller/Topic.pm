@@ -345,6 +345,7 @@ sub related : Local {
     my $statuses      = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
     my $show_release  = $p->{show_release};
+    my $logic         = $p->{logic};
 
     my $where;
     my $valuesqry = $p->{valuesqry};
@@ -355,6 +356,17 @@ sub related : Local {
 
     my $filter = $p->{filter};
 
+    if ($filter) {
+        my $filter_json = _decode_json($filter);
+        for my $key_filter ( keys %$filter_json ) {
+            my @values = _array_or_commas( $filter_json->{$key_filter} );
+            if ( scalar @values > 1 ) {
+                my $operator = $logic eq 'AND' ? '$all' : '$in';
+                $filter_json->{$key_filter} = { $operator => [@values] };
+                $filter = _encode_json($filter_json);
+            }
+        }
+    }
     my $start = $p->{start} //= 0;
     my $limit = $p->{limit} //= 20;
     my $sort  = $p->{sort_field};
@@ -2241,23 +2253,39 @@ sub get_files : Local {
 }
 
 sub topic_fieldlet_nodes : Local {
-     my ( $self, $c ) = @_;
-     my $p = $c->request->parameters;
-     my $id_category = $p->{id_category};
-     my $query = $p->{query};
+    my ( $self, $c ) = @_;
+    my $p            = $c->request->parameters;
+    my $id_category  = $p->{id_category};
+    my $query        = $p->{query};
+    my $default_form = $p->{id_rule};
+    my @nodes;
 
-     my @nodes = model->Topic->get_fieldlet_nodes( $id_category );
-     @nodes = map {
-        my $id = $$_{id_field} || $$_{id};
-        $$_{fieldlet_name} = _array($id_category)==1 ? "$$_{name_field} [$id]" : "$$_{category_name}: $$_{name_field} [$id]";
-        $$_{id_uniq} = Util->_md5();
-        $_;
-     } @nodes;
+    if ( !$id_category && $default_form ) {
+        @nodes = Baseliner::Model::Topic->new->get_fieldlets_from_default_form($default_form);
+    }
+    else {
+        my @fieldlet_nodes = Baseliner::Model::Topic->new->get_fieldlet_nodes($id_category);
+        foreach my $fieldlet (@fieldlet_nodes) {
+            my $id = $fieldlet->{id_field} || $fieldlet->{id};
+            $fieldlet->{fieldlet_name}
+                = _array($id_category) == 1
+                ? "$fieldlet->{name_field} [$id]"
+                : "$fieldlet->{category_name} : $fieldlet->{name_field} [$id]";
+            $fieldlet->{id_uniq} = Util->_md5();
+            push @nodes, $fieldlet;
+        }
+        @nodes = Util->query_grep(
+            query  => $query,
+            fields => [ 'id_field', 'name_field', 'category_name' ],
+            rows   => \@nodes
+        ) if length $query;
+    }
 
-     @nodes = grep { $$_{key} !~ /^fieldlet\.separator/ } @nodes;
-     @nodes = Util->query_grep( query=>$query, fields=>['id_field','name_field','category_name'], rows=>\@nodes ) if length $query;
-     $c->stash->{json} = { data=>\@nodes, totalCount=>scalar(@nodes) };
-     $c->forward('View::JSON');
+    @nodes = grep { $$_{key} !~ /^fieldlet\.separator/ } @nodes;
+    my $total = scalar @nodes;
+
+    $c->stash->{json} = { data => \@nodes, totalCount => $total };
+    $c->forward('View::JSON');
 }
 
 =pod

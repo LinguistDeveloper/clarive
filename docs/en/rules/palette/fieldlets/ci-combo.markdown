@@ -66,6 +66,28 @@ To show a default project in the box.
 
 The value indicated will be the ID of the CI.
 
+### Filter field
+
+Specify a condition to the CI combo.
+
+This is a combo with every fieldlets that are in the form. 
+
+This field is required if next field is not empty.
+
+### Filter data
+
+Specify a condition to the data.
+
+This field is required if previous field is not empty.
+
+### Filter type
+
+Specify the logic of the filter.
+
+By default, filter type is OR.
+
+For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).
+
 ### Roles
 
 Selection of roles to show in the grid.
@@ -74,7 +96,7 @@ Selection of roles to show in the grid.
 
 Selection of type of description to show in the list.
 
-* Name: Show the name.
-* Environment: Show the Environment separated by commas.
-* Class: Show the type object.
-* Moniker: Show the moniker specified in CI configuration.
+* Name - Show the name.
+* Environment - Show the Environment separated by commas.
+* Class - Show the type object.
+* Moniker - Show the moniker specified in CI configuration.

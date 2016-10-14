@@ -125,6 +125,7 @@ sub dispatch {
             limit  => $p->{limit},
             pretty => $p->{pretty},
             query  => $p->{query},
+            logic  => $p->{logic},
             sort   => $p->{sort},
             dir     => $p->{dir}
         );
@@ -289,6 +290,7 @@ sub tree_objects {
     my $class       = $p{class};
     my $collection  = $p{collection};
     my $json_filter = $p{filter};
+    my ($logic)     = _array $p{logic};
     my $mids        = $p{mids};
 
     my $dir = $p{dir};
@@ -298,8 +300,36 @@ sub tree_objects {
     else {
         $dir = 1;
     }
-
+    my $where = {};
     my %class_coll;
+    if ($json_filter) {
+        my $filter = _decode_json($json_filter);
+        for my $key_filter ( keys %$filter ) {
+            my @values = _array_or_commas( $filter->{$key_filter} );
+            if ( scalar @values > 1 ) {
+                my $operator = $logic eq 'AND' ? '$all' : '$in';
+                $where->{$key_filter}->{$operator} = [@values];
+            }
+            else {
+                $where->{$key_filter} = $filter->{$key_filter};
+            }
+            if ( $key_filter eq 'collection' ) {
+                if ( defined $class && $logic && scalar @$class > 1 ) {
+                    $class = [];
+                    $class->[0] = "BaselinerX::CI::" . $filter->{$key_filter};
+                }
+                $collection = {
+                    '$in' => [
+                        map {
+                            my $coll = $filter->{$key_filter};
+                            $class_coll{$coll} = $_;    # for later decoding it from a table
+                            $coll
+                        } @$class
+                    ]
+                };
+            }
+        }
+    }
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
 
@@ -337,13 +367,6 @@ sub tree_objects {
     if( length $p{start} && length $p{limit} && $p{limit}>-1 ) {
          $limit->{limit} = $p{limit};
          $limit->{skip} = $p{start};
-    }
-    my $where = {};
-    if($json_filter){
-        my $filter_js = _decode_json($json_filter);
-        for my $other_filter ( keys %$filter_js ) {
-            $where->{$other_filter} = $filter_js->{$other_filter};
-        }
     }
 
     if( length $p{query} ) {
@@ -820,6 +843,7 @@ sub store : Local : Does('Ajax') {
         where    => $where,
         mids     => $mids,
         pretty   => $p->{pretty},
+        logic    => $p->{logic},
         filter   => $p->{filter},
         no_yaml  => $p->{with_data} ? 0 : 1
     );

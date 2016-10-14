@@ -1587,6 +1587,31 @@ sub get_fieldlet_nodes {
     return @all_nodes;
 }
 
+sub get_fieldlets_from_default_form {
+    my ( $self, $id_rule ) = @_;
+
+    my @nodes;
+    _fail _loc('Id not provided') unless length $id_rule;
+    try {
+        @nodes = Baseliner::Model::Rules->new->all_nodes( id_rule => $id_rule );
+    };
+    @nodes = grep { $_->{key} =~ /^(fieldlet)/ } @nodes;
+
+    my @fieldlets = $self->rule_node_to_fieldlet(
+        map {
+            +{  %{ $$_{data} || {} },
+                name_field => $$_{text},
+                key        => $$_{key}
+                }
+        } @nodes
+    );
+    @fieldlets = map {
+        $$_{name_field} ||= $$_{text};
+        $_;
+    } @fieldlets;
+    return @fieldlets;
+}
+
 sub get_data {
     my ($self, $meta, $topic_mid, %opts ) = @_;
 

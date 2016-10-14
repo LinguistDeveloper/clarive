@@ -3686,6 +3686,28 @@ subtest 'generate_menus: generates view by status menu for user' => sub {
       };
 };
 
+subtest 'topic_fieldlet_nodes: returns fieldlets of a form' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic( project => $project );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => $user->username, );
+
+    $controller->topic_fieldlet_nodes($c);
+
+    my $fieldlets = $c->stash->{json}->{data};
+    my @check_fieldlets = grep { $_->{key} =~ /fieldlet/ } @{$fieldlets};
+
+    is( scalar @{$fieldlets}, scalar @check_fieldlets );
+};
+
 done_testing;
 
 sub _create_user_with_drop_rules {

@@ -105,7 +105,9 @@ Select the parent field of the topics.
 
 ### Filter field
 
-Specify a condition to the topic selector.
+Specify a condition to the selector.
+
+This is a combo with every fieldlets that are in the form. 
 
 This field is required if next field is not empty.
 
@@ -114,6 +116,14 @@ This field is required if next field is not empty.
 Specify a condition to the data.
 
 This field is required if previous field is not empty.
+
+### Filter type
+
+Specify the logic of the filter.
+
+By default, filter type is OR.
+
+For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).
 
 
 ### Table format
