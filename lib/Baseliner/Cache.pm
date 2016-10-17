@@ -81,7 +81,7 @@ sub set {
         while ( $err =~ /^E11000/ ) {    # E11000 duplicate: MONGO 3.2 Bug in upsert
             _debug(
                 _loc(
-                    "Retrying write in cache because of duplicate key bug in mongo 3.2 upsert. Key: %1", _dump($key)
+                    "Retrying write in cache because of duplicate key bug in mongo 3.2 upsert. Key: %1", Util->_dump($key)
                 )
             );
             $retries++;
