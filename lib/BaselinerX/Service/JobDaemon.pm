@@ -98,15 +98,15 @@ sub job_daemon {
                     disp_id  => $config->{id}
                 );
                 $sem->take;
-                ($job_doc) = ci->job->find($roll)->limit(1)->all;
-                if ($job_doc) {
-                    local $Baseliner::_no_cache = 1;    # make sure we get a fresh CI
-                    my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
-                    if ( $job->status ne $job_doc->{status} ) {
-                        _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3",
-                            $job->name, $job->status, $job_doc->{status} );
-                        if ( $discrepancies{ $job->mid } > 10 ) {
-
+                ($job_doc) = ci->job->find( $roll )->limit(1)->all;
+                if ( $job_doc ) {
+                    my $job = do {
+                        local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI
+                        ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
+                    };
+                    if( $job->status ne $job_doc->{status} ) {
+                        _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
+                        if( $discrepancies{ $job->mid } > 10 ) {
                             #$job->save; # fixes the discrepancy
                             delete $discrepancies{ $job->mid };
                         }
