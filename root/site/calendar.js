@@ -29,6 +29,7 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
             xtype: 'button',
             iconCls: 'x-btn-icon',
             icon: '/static/images/icons/arrow_left.svg',
+            tooltip: _('Back'),
             handler: function() {
               cal.fullCalendar("prev");
               load_cal_events();
@@ -37,6 +38,7 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
             xtype: 'button',
             iconCls: 'x-btn-icon',
             icon: '/static/images/icons/arrow_right.svg',
+            tooltip: _('Forward'),
             handler: function() {
               cal.fullCalendar("next");
               load_cal_events();
@@ -101,6 +103,7 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
             xtype: 'button',
             iconCls: 'x-btn-icon',
             icon: '/static/images/icons/refresh.svg',
+            tooltip: _('Refresh'),
             handler: function() {
               // cal.fullCalendar("refetchEvents")
               // refresh: delete everything and start over
@@ -228,12 +231,25 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
 
             cal = $( el.dom );
             cal.fullCalendar( Ext.apply({
-                header: false,
+                header: {
+                  left: false,
+                  center: 'title',
+                  right: false,
+                },
                 timeFormat: 'H(:mm)',
+                monthNames: [_('January'), _('February'), _('March'), _('April'), _('May'), _('June'), _('July'),
+                  _('August'), _('September'), _('October'), _('November'), _('December')
+                ],
+                monthNamesShort: [_('Jan'), _('Feb'), _('Mar'), _('Apr'), _('May'), _('Jun'),
+                  _('Jul'), _('Aug'), _('Sep'), _('Oct'), _('Nov'), _('Dec')
+                ],
                 dayNames: [_('Sunday'), _('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), _('Friday'), _('Saturday')],
                 dayNamesShort: [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')],
                 selectable: true,
                 selectHelper: true,
+                columnFormat: {
+                  day: 'dddd'
+                },
                 drop: function( date, allday, jsEvent, ui  ) {
                      var opts = jsEvent.data;
                      opts.date = date;

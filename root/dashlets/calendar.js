@@ -16,6 +16,7 @@
         tbar_end: ['->', {
             xtype: 'button',
             icon: IC('tab.svg'),
+            tooltip: _('Maximize'),
             handler: function() {
                 Baseliner.tabCalendar()
             }

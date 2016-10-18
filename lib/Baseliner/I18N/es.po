@@ -8832,7 +8832,7 @@ msgstr "Debug"
 
 #: root/comp/log_grid.js root/comp/monitor_grid.js root/comp/rules.js
 #: root/comp/sem.js root/comp/sequences.js root/comp/topic/topic_lib.js
-#: root/site/help.js root/site/main.js
+#: root/site/calendar.js root/site/help.js root/site/main.js
 msgid "Refresh"
 msgstr "Refresco"
 
@@ -9488,7 +9488,7 @@ msgstr "Historial"
 msgid "Refresh Node"
 msgstr "Refrescar"
 
-#: root/comp/repl.js
+#: root/comp/repl.js root/dashlets/calendar.js
 msgid "Maximize"
 msgstr "Maximizar"
 
@@ -11329,7 +11329,7 @@ msgstr "Tópicos abiertos (desde Creado hasta Cerrado)"
 
 #: root/dashlets/calendar_config.js
 msgid "Select Your Own Fields"
-msgstr ""
+msgstr "Seleccionar tus propios campos"
 
 #: root/dashlets/calendar_config.js
 msgid "Calendar Field (like Milestones or Environment Planner)"
@@ -11349,7 +11349,7 @@ msgstr ""
 
 #: root/dashlets/calendar_config.js
 msgid "Default View"
-msgstr ""
+msgstr "Vista por Defecto"
 
 #: root/dashlets/calendar_config.js
 msgid "Basic Week"
@@ -13517,6 +13517,14 @@ msgstr "Notificaciones de Copyright"
 msgid "Third Party Notices"
 msgstr "Noticias de terceros"
 
+#: root/site/calendar.js root/site/help.js root/site/model.js
+msgid "Back"
+msgstr "Atrás"
+
+#: root/site/calendar.js root/site/help.js
+msgid "Forward"
+msgstr "Adelante"
+
 #: root/site/calendar.js
 msgid "Day1"
 msgstr "Día"
@@ -13540,6 +13548,98 @@ msgstr ""
 #: root/site/calendar.js
 msgid "%1 #%2"
 msgstr ""
+
+#: root/site/calendar.js
+msgid "January"
+msgstr "Enero"
+
+#: root/site/calendar.js
+msgid "February"
+msgstr "Febrero"
+
+#: root/site/calendar.js
+msgid "March"
+msgstr "Marzo"
+
+#: root/site/calendar.js
+msgid "April"
+msgstr "Abril"
+
+#: root/site/calendar.js
+msgid "May"
+msgstr "Mayo"
+
+#: root/site/calendar.js
+msgid "June"
+msgstr "Junio"
+
+#: root/site/calendar.js
+msgid "July"
+msgstr "Julio"
+
+#: root/site/calendar.js
+msgid "August"
+msgstr "Agosto"
+
+#: root/site/calendar.js
+msgid "September"
+msgstr "Septiembre"
+
+#: root/site/calendar.js
+msgid "October"
+msgstr "Octubre"
+
+#: root/site/calendar.js
+msgid "November"
+msgstr "Noviembre"
+
+#: root/site/calendar.js
+msgid "December"
+msgstr "Diciembre"
+
+#: root/site/calendar.js
+msgid "Jan"
+msgstr "Ene"
+
+#: root/site/calendar.js
+msgid "Feb"
+msgstr "Feb"
+
+#: root/site/calendar.js
+msgid "Mar"
+msgstr "Mar"
+
+#: root/site/calendar.js
+msgid "Apr"
+msgstr "Abr"
+
+#: root/site/calendar.js
+msgid "Jun"
+msgstr "Jun"
+
+#: root/site/calendar.js
+msgid "Jul"
+msgstr "Jul"
+
+#: root/site/calendar.js
+msgid "Aug"
+msgstr "Ago"
+
+#: root/site/calendar.js
+msgid "Sep"
+msgstr "Sep"
+
+#: root/site/calendar.js
+msgid "Oct"
+msgstr "Oct"
+
+#: root/site/calendar.js
+msgid "Nov"
+msgstr "Nov"
+
+#: root/site/calendar.js
+msgid "Dec"
+msgstr "Dic"
 
 #: root/site/calendar.js
 msgid "Sun"
@@ -14107,14 +14207,6 @@ msgstr "Este navegador no es soportado por %1"
 #: root/site/help.js
 msgid "Show Help Index"
 msgstr "Mostrar Índice"
-
-#: root/site/help.js root/site/model.js
-msgid "Back"
-msgstr "Atrás"
-
-#: root/site/help.js
-msgid "Forward"
-msgstr "Adelante"
 
 #: root/site/help.js
 msgid "Help not available for this item."
