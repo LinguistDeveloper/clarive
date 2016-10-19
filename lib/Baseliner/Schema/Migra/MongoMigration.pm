@@ -197,8 +197,10 @@ sub topic_categories_to_rules {
             }
             elsif ($fieldlet->{params}->{html}
                 && $fieldlet->{params}->{bd_field}
+                && $fieldlet->{params}->{meta_type}
                 && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'
-                && $fieldlet->{params}->{bd_field} eq 'hitos' )
+                && $fieldlet->{params}->{bd_field} eq 'hitos'
+                && $fieldlet->{params}->{meta_type} eq 'calendar')
             {
                 $attributes->{key} = 'fieldlet.milestones';
             }
