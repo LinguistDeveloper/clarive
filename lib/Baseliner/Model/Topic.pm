@@ -3061,8 +3061,6 @@ sub get_meta_permissions {
 
     my %hidden_fields;
 
-    my @projects = _array $data->{_project_security}->{project};
-
     my @fields_always_readable = qw(title status_new category);
 
     for my $meta_field ( _array $meta) {
@@ -3082,7 +3080,7 @@ sub get_meta_permissions {
                 $permissions->user_has_action(
                     $username, 'action.topicsfield.write',
                     bounds   => $bounds,
-                    projects => \@projects
+                    security => $data->{_project_security}
                 )
               )
             {
@@ -3093,7 +3091,7 @@ sub get_meta_permissions {
                 || $permissions->user_has_action(
                     $username, 'action.topicsfield.read',
                     bounds   => $bounds,
-                    projects => \@projects
+                    security => $data->{_project_security}
                 )
               )
             {

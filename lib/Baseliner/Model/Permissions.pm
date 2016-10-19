@@ -118,8 +118,8 @@ sub user_roles_ids ($self, $username, %options) {
 
     my $user_security = $user->{project_security} || {};
 
-    my @want_projects;
-    push @want_projects, _array $options{projects};
+    my @want_security;
+    push @want_security, $options{security} if $options{security};
 
     if ( my @topics_mids = _array $options{topics} ) {
         my @topics =
@@ -128,19 +128,18 @@ sub user_roles_ids ($self, $username, %options) {
 
         foreach my $topic (@topics) {
             if ( my $topic_security = $topic->{_project_security} ) {
-                push @want_projects, _array $topic_security->{project};
+                push @want_security, $topic_security;
             }
         }
     }
 
     my @roles;
 
-    foreach my $id_role ( keys %$user_security ) {
-        if (@want_projects) {
-            my @have_projects = _array $user_security->{$id_role}->{project};
-
-            my @intersect = intersect @want_projects, @have_projects;
-            next unless @intersect;
+  ROLE: foreach my $id_role ( keys %$user_security ) {
+        foreach my $want_security (@want_security) {
+            if ( !$self->match_security( $user_security->{$id_role}, $want_security ) ) {
+                next ROLE;
+            }
         }
 
         push @roles, $id_role;
@@ -542,6 +541,28 @@ sub user_has_any_action ($self, $username, $action_pattern, %options) {
     return $self->user_has_action( $username, $action_pattern, %options );
 }
 
+sub match_security ($self, $have_security, $need_security) {
+    return 1 unless defined $need_security && %$need_security;
+
+    my @dimensions = sort keys %{$have_security};
+    return 0 unless @dimensions;
+
+    foreach my $dimension (@dimensions) {
+        my @need = _array $need_security->{$dimension};
+        my @have = _array $have_security->{$dimension};
+
+        if ( $dimension eq 'project' && @need == 0 ) {
+            return 1;
+        }
+
+        my @intersect = intersect @have, @need;
+
+        return 0 unless @intersect;
+    }
+
+    return 1;
+}
+
 sub user_has_security ($self, $username, $security) {
     if ( $self->is_root($username) ) {
         return 1;
@@ -555,17 +576,9 @@ sub user_has_security ($self, $username, $security) {
     my $user_security = $user->{project_security};
 
     foreach my $id_role ( keys %$user_security ) {
-        my @dimensions = sort keys %{ $user_security->{$id_role} };
+        my $role_security = $user_security->{$id_role};
 
-        foreach my $dimension (@dimensions) {
-            my @need = _array $security->{$dimension};
-            my @have = _array $user_security->{$id_role}->{$dimension};
-
-
-            my @intersect = intersect @have, @need;
-
-            return 1 if @intersect;
-        }
+        return 1 if $self->match_security($role_security, $security);
     }
 
     return 0;
@@ -610,10 +623,7 @@ sub inject_security_filter ($self, $username, $where) {
 
 sub inject_project_filter ($self, $username, $action_key, $where, %options) {
     if ( $self->is_root($username) ) {
-        if (my $filter = $options{filter}) {
-            my @values = _array $filter;
-            next unless @values;
-
+        if (my @values = _array $options{filter}) {
             $where->{projects} = mdb->in(@values);
         }
 
