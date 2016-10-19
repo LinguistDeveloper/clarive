@@ -1,183 +1,184 @@
 (function(){
     var ps = 100; //page_size
     var store=new Baseliner.JsonStore({
-	    root: 'data' , 
-	    remoteSort: true,
-	    totalProperty:"totalCount", 
-	    id: 'id', 
-	    url: '/daemon/list',
-	    fields: [ 
-		    {  name: 'id' },
-		    {  name: 'service' },
-		    {  name: 'pid' },
-		    {  name: 'instances' },
-		    {  name: 'active_instances' },
-		    {  name: 'exists' },
-		    {  name: 'active' },
-		    {  name: 'config' },
-		    {  name: 'params' },
-	    ]
+        root: 'data' ,
+        remoteSort: true,
+        totalProperty:"totalCount",
+        id: 'id',
+        url: '/daemon/list',
+        fields: [
+            {  name: 'id' },
+            {  name: 'service' },
+            {  name: 'pid' },
+            {  name: 'instances' },
+            {  name: 'active_instances' },
+            {  name: 'exists' },
+            {  name: 'active' },
+            {  name: 'config' },
+            {  name: 'params' },
+        ]
     });
 
     <& /comp/search_field.mas &>
-    
+
     var render_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
-    	var instances = '';
-    	if ( value.length > 0 ) {
-	    	Ext.each(value, function(row){
-	            instances += '<li>' + row.instance + '</li>';
-	        });
-    	} else {
-    		instances = _('All');
-    	}
-	    return instances ;
+        var instances = '';
+        if ( value.length > 0 ) {
+            Ext.each(value, function(row){
+                instances += '<li>' + row.instance + '</li>';
+            });
+        } else {
+            instances = _('All');
+        }
+        return instances ;
     };
 
     var render_active_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
-    	var instances = '';
-    	if ( value.length > 0 ) {
-	    	Ext.each(value, function(row){
-	            instances += '<li>(' + row.pid + ') ' + row.disp_id +  '</li>';
-	        });
-    	} else {
-    		instances = _('None');
-    	}
-	    return instances ;
+        var instances = '';
+        if ( value.length > 0 ) {
+            Ext.each(value, function(row){
+                var startMode = row.start_mode.substr(0, 1).toUpperCase();
+                instances += '<li>(' + startMode + ':' + row.pid + ') ' + row.disp_id +  '</li>';
+            });
+        } else {
+            instances = _('None');
+        }
+        return instances ;
     };
 
     var render_name = function(value,metadata,rec,rowIndex,colIndex,store) {
-	    return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
+        return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
     };
 
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
-	    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/daemon.svg' />" ;
+        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/daemon.svg' />" ;
     };
 
     var render_running = function(value,metadata,rec,rowIndex,colIndex,store) {
-	    var img =
-		    value == '1' ? 'icons/green.svg' 
-		    : ( value == -1 ? 'loading/indicator.gif'
-		    : 'icons/gray.svg' );
-		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
+        var img =
+            value == '1' ? 'icons/green.svg'
+            : ( value == -1 ? 'loading/indicator.gif'
+            : 'icons/gray.svg' );
+            return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
     };
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
-	    var img =
-		    value == '1' ? 'start.svg' : 'stop.svg';
-		    return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
+        var img =
+            value == '1' ? 'start.svg' : 'stop.svg';
+            return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
     };
 
 
     var init_buttons = function(action) {
-	    eval('btn_start.' + action + '()');
-	    eval('btn_stop.' + action + '()');
-	    eval('btn_edit.' + action + '()');
-	    eval('btn_delete.' + action + '()');
-    } 
- 
+        eval('btn_start.' + action + '()');
+        eval('btn_stop.' + action + '()');
+        eval('btn_edit.' + action + '()');
+        eval('btn_delete.' + action + '()');
+    }
+
         var btn_start = new Ext.Toolbar.Button({
-	    text: _('Activate'),
-	    icon:'/static/images/icons/start.svg',
-	    disabled: true,
-	    cls: 'x-btn-text-icon',
-	    handler: function() {
-		    var sm = grid.getSelectionModel();
-		    if (sm.hasSelection()) {
-			    var rec = sm.getSelected();
-			    var id = rec.data.id;
-			    Baseliner.ajaxEval( '/daemon/start', { id: id },
-				    function(resp){
-					    Baseliner.message( _('Success'), resp.msg );
-					    store.load();
-				    }
-			    );
-		    } else {
-			    Baseliner.message( _('ERROR'), _('Select at least one row'));	
-		    };
-	    }
+        text: _('Activate'),
+        icon:'/static/images/icons/start.svg',
+        disabled: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var rec = sm.getSelected();
+                var id = rec.data.id;
+                Baseliner.ajaxEval( '/daemon/start', { id: id },
+                    function(resp){
+                        Baseliner.message( _('Success'), resp.msg );
+                        store.load();
+                    }
+                );
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));
+            };
+        }
         });
 
         var btn_stop = new Ext.Toolbar.Button({
-	    text: _('Deactivate'),
-	    icon:'/static/images/icons/stop.svg',
-	    disabled: true,
-	    cls: 'x-btn-text-icon',
-	    handler: function() {
-		    var sm = grid.getSelectionModel();
-		    var sel = sm.getSelected();
-		    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to turn off the daemon') + ' <b>' + sel.data.service  + '</b>?', 
-			    function(btn){ 
-				    if(btn=='yes') {
-					    Baseliner.ajaxEval( '/daemon/stop', { id: sel.data.id },
-						    function(resp){
-							    Baseliner.message( _('Success'), resp.msg );
-							    store.load();
-						    }
-					    );
-				    }
-			    }
-		    );
-	    }
+        text: _('Deactivate'),
+        icon:'/static/images/icons/stop.svg',
+        disabled: true,
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to turn off the daemon') + ' <b>' + sel.data.service  + '</b>?',
+                function(btn){
+                    if(btn=='yes') {
+                        Baseliner.ajaxEval( '/daemon/stop', { id: sel.data.id },
+                            function(resp){
+                                Baseliner.message( _('Success'), resp.msg );
+                                store.load();
+                            }
+                        );
+                    }
+                }
+            );
+        }
         });
 
 
 //        var btn_add = new Ext.Toolbar.Button({
-//			text: _('New'),
-//			icon:'/static/images/icons/add.svg',
-//			cls: 'x-btn-text-icon',
+//            text: _('New'),
+//            icon:'/static/images/icons/add.svg',
+//            cls: 'x-btn-text-icon',
 //            handler: function() {
-//				add_edit()
-//			}
+//                add_edit()
+//            }
 //        });
 
-		var btn_add = new Baseliner.Grid.Buttons.Add({    
-			handler: function() {
-				add_edit()
-			}
-		});
-    
+        var btn_add = new Baseliner.Grid.Buttons.Add({
+            handler: function() {
+                add_edit()
+            }
+        });
+
         var btn_edit = new Ext.Toolbar.Button({
-	    text: _('Edit'),
+        text: _('Edit'),
                 icon:'/static/images/icons/edit.svg',
                 cls: 'x-btn-text-icon',
-	    disabled: true,
+        disabled: true,
                 handler: function() {
-		    var sm = grid.getSelectionModel();
-		    if (sm.hasSelection()) {
-			    var sel = sm.getSelected();
-			    add_edit(sel);
-		    } else {
-			    Baseliner.message( _('ERROR'), _('Select at least one row'));    
-		    };
-	    }
+            var sm = grid.getSelectionModel();
+            if (sm.hasSelection()) {
+                var sel = sm.getSelected();
+                add_edit(sel);
+            } else {
+                Baseliner.message( _('ERROR'), _('Select at least one row'));
+            };
+        }
         });
-    
-        var btn_delete = new Ext.Toolbar.Button({
-		    text: _('Delete'),
-		    icon:'/static/images/icons/delete.svg',
-		    cls: 'x-btn-text-icon',
-		    disabled: true,
-		    handler: function() {
-			    var sm = grid.getSelectionModel();
-			    var sel = sm.getSelected();
-			    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the daemon') + ' <b>' + sel.data.service + '</b>?', 
-			    function(btn){ 
-				    if(btn=='yes') {
-					    Baseliner.ajaxEval( '/daemon/update?action=delete',{ id: sel.data.id },
-						    function(response) {
-							    if ( response.success ) {
-								    grid.getStore().remove(sel);
-								    Baseliner.message( _('Success'), response.msg );
-								    init_buttons('disable');
-							    } else {
-								    Baseliner.message( _('ERROR'), response.msg );
-							    }
-						    }
 
-					    );
-				    }
-			    } );
-		    }
+        var btn_delete = new Ext.Toolbar.Button({
+            text: _('Delete'),
+            icon:'/static/images/icons/delete.svg',
+            cls: 'x-btn-text-icon',
+            disabled: true,
+            handler: function() {
+                var sm = grid.getSelectionModel();
+                var sel = sm.getSelected();
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the daemon') + ' <b>' + sel.data.service + '</b>?',
+                function(btn){
+                    if(btn=='yes') {
+                        Baseliner.ajaxEval( '/daemon/update?action=delete',{ id: sel.data.id },
+                            function(response) {
+                                if ( response.success ) {
+                                    grid.getStore().remove(sel);
+                                    Baseliner.message( _('Success'), response.msg );
+                                    init_buttons('disable');
+                                } else {
+                                    Baseliner.message( _('ERROR'), response.msg );
+                                }
+                            }
+
+                        );
+                    }
+                } );
+            }
         });
 
 
@@ -322,63 +323,63 @@
 
     // create the grid
     var grid = new Ext.grid.GridPanel({
-    	renderTo: 'main-panel',
-	    title: _('Daemons'),
-	    header: false,
-	    autoScroll: true,
-	    autoWidth: true,
-	    store: store,
-	    viewConfig: {forceFit: true	},
-	    selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-	    stripeRows: true,
-	    columns: [
-		    { width: 40, sortable: false, renderer: render_icon },	
-		    { header: _('Service'), width: 300, dataIndex: 'service', sortable: true, renderer: render_name },	
-		    { header: _('Config'), width: 200, dataIndex: 'config', sortable: true, hidden: true },	
-		    { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },	
-		    // { header: _('Running'), width: 100, dataIndex: 'exists', sortable: true, renderer: render_running },	
-		    // { header: _('Last Process ID'), width: 100, dataIndex: 'pid', sortable: true },	
-		    { header: _('Instances'), width: 200, dataIndex: 'instances', sortable: true, renderer: render_instances },
-		    { header: _('Active instances'), width: 200, dataIndex: 'active_instances', sortable: true, renderer: render_active_instances }	
-	    ],
-	    autoSizeColumns: true,
-	    deferredRender:true,
-	    bbar: ptool,
-	    tbar: [ _('Search') + ': ', ' ', searchField,' ',' ',
-		    btn_add,
-		    btn_edit,
-		    btn_delete,
-		    btn_start,
-		    btn_stop,
-		    '->'
-	    ]
+        renderTo: 'main-panel',
+        title: _('Daemons'),
+        header: false,
+        autoScroll: true,
+        autoWidth: true,
+        store: store,
+        viewConfig: {forceFit: true    },
+        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+        stripeRows: true,
+        columns: [
+            { width: 40, sortable: false, renderer: render_icon },
+            { header: _('Service'), width: 300, dataIndex: 'service', sortable: true, renderer: render_name },
+            { header: _('Config'), width: 200, dataIndex: 'config', sortable: true, hidden: true },
+            { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },
+            // { header: _('Running'), width: 100, dataIndex: 'exists', sortable: true, renderer: render_running },
+            // { header: _('Last Process ID'), width: 100, dataIndex: 'pid', sortable: true },
+            { header: _('Instances'), width: 200, dataIndex: 'instances', sortable: true, renderer: render_instances },
+            { header: _('Active instances'), width: 200, dataIndex: 'active_instances', sortable: true, renderer: render_active_instances }
+        ],
+        autoSizeColumns: true,
+        deferredRender:true,
+        bbar: ptool,
+        tbar: [ _('Search') + ': ', ' ', searchField,' ',' ',
+            btn_add,
+            btn_edit,
+            btn_delete,
+            btn_start,
+            btn_stop,
+            '->'
+        ]
     });
 
     grid.on('rowclick', function(grid, rowIndex, columnIndex, e) {
-	    init_buttons('enable');
+        init_buttons('enable');
     });
 
-	var first_load = true;
-	grid.on("activate", function() {
-		if( first_load ) {
-			Baseliner.showLoadingMask( grid.getEl());
-			first_load = false;
-		}
-	});
+    var first_load = true;
+    grid.on("activate", function() {
+        if( first_load ) {
+            Baseliner.showLoadingMask( grid.getEl());
+            first_load = false;
+        }
+    });
 
-	store.load({
-		params:{
-			start:0,
-			limit: ps
-		},
-		callback: function(){
-			Baseliner.hideLoadingMaskFade(grid.getEl());
-		}
-	});
+    store.load({
+        params:{
+            start:0,
+            limit: ps
+        },
+        callback: function(){
+            Baseliner.hideLoadingMaskFade(grid.getEl());
+        }
+    });
 
-	grid.on('destroy', function(){
-		autorefresh.stop(task);
-	});
+    grid.on('destroy', function(){
+        autorefresh.stop(task);
+    });
 
-	return grid;
+    return grid;
 })
