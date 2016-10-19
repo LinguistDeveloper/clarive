@@ -13,7 +13,13 @@
     var graph_type = params.data.type || 'area';
 
     var cal = new Baseliner.Calendar({
-        tbar_end : [ '->', { xtype:'button', icon: IC('tab.svg'), handler:function(){ Baseliner.tabCalendar() } } ],
+        tbar_end: ['->', {
+            xtype: 'button',
+            icon: IC('tab.svg'),
+            handler: function() {
+                Baseliner.tabCalendar()
+            }
+        }],
         bar_where: 'bottom',
         query_type: params.data.query_type,
         id_fieldlet: params.data.id_fieldlet,
@@ -24,10 +30,13 @@
         topic_mid: topic_mid,
         categories: categories,
         label_mask: params.data.label_mask,
-        show_jobs: params.data.show_jobs==undefined ? false : params.data.show_jobs,
+        show_jobs: params.data.show_jobs == undefined ? false : params.data.show_jobs,
         fullCalendarConfig: {
             events: Baseliner.calendar_events,
-            timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }
+            timeFormat: {
+                '': 'H(:mm)',
+                agenda: 'H:mm{ - H:mm}'
+            }
         }
     });
     var jqid=$('#'+id);
