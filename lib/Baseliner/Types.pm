@@ -15,7 +15,7 @@ subtype BL           => as 'Maybe[Str]';
 
 subtype 'PositiveInt', as 'Int', where { $_ >= 0 };
 
-subtype 'Percentage', as 'Int', where { $_ >= 0 && $_ <= 100 };
+subtype 'Percentage', as 'Num', where { $_ >= 0 && $_ <= 100 };
 
 subtype 'SortDirection', as 'Str', where { lc($_) eq 'asc' || lc($_) eq 'desc' };
 

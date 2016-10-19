@@ -780,7 +780,7 @@ subtest 'topics_by_field: sorts by label' => sub {
         username => $developer->username,
         req      => {
             params => {
-                'group_threshold' => '1',
+                'group_threshold' => '0.1',
                 'group_by'        => 'topics_by_category',
                 'sort_by_labels'  => 'on'
             }
