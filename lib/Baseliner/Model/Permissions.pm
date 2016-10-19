@@ -623,10 +623,7 @@ sub inject_security_filter ($self, $username, $where) {
 
 sub inject_project_filter ($self, $username, $action_key, $where, %options) {
     if ( $self->is_root($username) ) {
-        if (my $filter = $options{filter}) {
-            my @values = _array $filter;
-            next unless @values;
-
+        if (my @values = _array $options{filter}) {
             $where->{projects} = mdb->in(@values);
         }
 
