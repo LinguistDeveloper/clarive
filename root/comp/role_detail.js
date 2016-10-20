@@ -60,7 +60,7 @@
             dataIndex: 'action',
             sortable: false,
             renderer: function() {
-                return String.format('<img src="{0}"/>', IC('action.svg'))
+                return String.format('<img src="{0}"/>', IC('action'))
             }
         }, {
             header: _('Description'),
@@ -852,7 +852,7 @@
     var panel_title = params.id_role ? _('Role: %1', params.role) : _('New Role');
     var rolePanel = new Ext.Panel({
         layout: 'border',
-        tab_icon: IC('role.svg'),
+        tab_icon: IC('role'),
         tbar: [
             '->', {
                 text: _('Save'),
@@ -894,7 +894,7 @@
             }, {
                 text: _('Close'),
                 cls: 'ui-comp-role-edit-close',
-                icon: IC('close.svg'),
+                icon: IC('close'),
                 handler: function() {
                     rolePanel.destroy()
                 }

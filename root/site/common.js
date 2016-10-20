@@ -1182,7 +1182,7 @@ Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Create'),
-            icon: IC('add.svg'),
+            icon: IC('add'),
             cls: 'x-btn-text-icon'
         }, config);
         Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
@@ -1193,7 +1193,7 @@ Baseliner.Grid.Buttons.Edit = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Edit'),
-            icon: IC('edit.svg'),
+            icon: IC('edit'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1205,7 +1205,7 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Delete'),
-            icon: IC('delete.svg'),
+            icon: IC('delete'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -4720,7 +4720,7 @@ Cla.json_filter_builder = function(json_field){
             grid.get_grid().store.baseParams = Ext.util.JSON.decode(prev); 
         }
         delete grid.title;
-        var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit.svg'), handler:function(){
+        var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit'), handler:function(){
             var curr_filter = grid.get_grid().store.baseParams;
             delete curr_filter.last_count;
             var json = Ext.util.JSON.encode( curr_filter );

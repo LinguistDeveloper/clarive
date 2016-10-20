@@ -944,7 +944,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.menu_deploy
         });
 
-        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), icon: IC('job.svg'), menu: self.menu_deploy_final, hidden: true });
+        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), icon: IC('job'), menu: self.menu_deploy_final, hidden: true });
 
         if (self.menu_deploy.length <= 0){
             self.btn_deploy.hide();
@@ -967,7 +967,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
 
-        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon:IC('state.svg'), menu: self.status_menu, hidden: true });
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change Status"), icon: IC('state'), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }
@@ -990,7 +990,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_life_cicle = new Ext.Toolbar.Button({
-            icon: IC('diagram.svg'),
+            icon: IC('diagram'),
             cls: 'x-btn-icon',
             enableToggle: true,
             tooltip: _('Open life cycle'),
@@ -1000,7 +1000,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_timeline = new Ext.Toolbar.Button({
-            icon: IC('timeline.svg'),
+            icon: IC('timeline'),
             cls: 'x-btn-icon',
             enableToggle: true,
             tooltip: _('Open timeline'),

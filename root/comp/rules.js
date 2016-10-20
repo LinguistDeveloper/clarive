@@ -324,12 +324,12 @@
         if( rec.data.rule_active == 0 )
             v = String.format('<span style="text-decoration: line-through">{0}</span>', v );
         var type = rec.data.rule_type;
-        var icon = type=='dashboard' ? IC('dashboard.svg')
-                : type=='form' ? IC('form.svg')
-                : type=='event' ? IC('event.svg')
-                : type=='report' ? IC('report.svg')
-                : type=='pipeline' ? IC('job.svg')
-                : type=='webservice' ? IC('webservice.svg')
+        var icon = type=='dashboard' ? IC('dashboard')
+                : type=='form' ? IC('form')
+                : type=='event' ? IC('event')
+                : type=='report' ? IC('report')
+                : type=='pipeline' ? IC('job')
+                : type=='webservice' ? IC('webservice')
                 : '/static/images/icons/rule.svg';
         rec.icon = icon;
         return String.format(
@@ -464,12 +464,12 @@
 
 
     var get_icon_category = function(rule_category){
-        var icon = rule_category=='dashboard' ? IC('dashboard.svg')
-            : rule_category=='form' ? IC('form.svg')
-            : rule_category=='event' ? IC('event.svg')
-            : rule_category=='report' ? IC('report.svg')
-            : rule_category=='pipeline' ? IC('job.svg')
-            : rule_category=='webservice' ? IC('webservice.svg')
+        var icon = rule_category=='dashboard' ? IC('dashboard')
+            : rule_category=='form' ? IC('form')
+            : rule_category=='event' ? IC('event')
+            : rule_category=='report' ? IC('report')
+            : rule_category=='pipeline' ? IC('job')
+            : rule_category=='webservice' ? IC('webservice')
             : '/static/images/icons/rule.svg';
         return icon;
     };
@@ -1374,7 +1374,7 @@
             ] });
 
         // node search system
-        var btn_search = new Ext.Button({ icon:IC('wrench.svg'), menu:[
+        var btn_search = new Ext.Button({ icon: IC('wrench'), menu:[
             { text: _('Search'), icon:'/static/images/icons/search-small.svg',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
             { text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },

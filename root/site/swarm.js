@@ -44,8 +44,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //self.origen=0;
 
         self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim();} });
-        self.btn_pause = new Ext.Button({ icon: IC('pause.svg'), disabled: true, handler: function(){ self.pause_anim() } });
-        self.btn_stop = new Ext.Button({ icon: IC('stop.svg'), disabled: true, handler: function(){ self.stop_anim() } });
+        self.btn_pause = new Ext.Button({ icon: IC('pause'), disabled: true, handler: function(){ self.pause_anim() } });
+        self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
         // self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
         //     menu : {

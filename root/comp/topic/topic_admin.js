@@ -602,7 +602,7 @@
                 '->',
                     {
                     text: _('Close'),
-                    icon: IC('close.svg'),
+                    icon: IC('close'),
                     handler: function(){
                             win.close();
                         }

@@ -801,7 +801,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 refresh_count--;
                 if ( refresh_count <= 0 ) {
                     refresh_count = 0;
-                    button_refresh.setIcon( IC('refresh.svg') );
+                    button_refresh.setIcon( IC('refresh') );
                     tool_bar.enable();
                 }
             },

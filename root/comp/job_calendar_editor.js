@@ -274,10 +274,9 @@
     });
 
     var btnClose = new Ext.Button({
-        icon: '/static/images/icons/delete.svg',
         text: _('Close'),
         cls: 'ui-comp-role-edit-close',
-        icon: IC('close.svg'),
+        icon: IC('close'),
         handler: function() {
             panel.destroy()
         }

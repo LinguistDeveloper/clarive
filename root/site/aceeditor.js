@@ -5,8 +5,8 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
     border: false,
     initComponent: function() {
         var self=this;
-        var btnUndo = new Ext.Button({ icon:IC('undo.svg'), handler: function(){ self.$undo() } });
-        var btnRedo = new Ext.Button({ icon:IC('redo.svg'), handler: function(){ self.$redo() } });
+        var btnUndo = new Ext.Button({ icon: IC('undo'), handler: function(){ self.$undo() } });
+        var btnRedo = new Ext.Button({ icon: IC('redo'), handler: function(){ self.$redo() } });
         if( self.tbar !== undefined ) self.tbar = [
             btnUndo,btnRedo 
         ];

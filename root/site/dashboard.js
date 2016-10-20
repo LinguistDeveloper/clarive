@@ -302,8 +302,8 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 autoScroll: true,
                 tbar: [
                     "->",
-                    { xtype:"button", text:_("Restore originals"), icon:IC ('left'), handler: function(){ restore_originals() } },
-                    { xtype:"button", text:_("Cancel"), icon:IC('cancel'), handler: function(){ win.destroy() } },
+                    { xtype:"button", text:_("Restore originals"), icon: IC('left'), handler: function(){ restore_originals() } },
+                    { xtype:"button", text:_("Cancel"), icon: IC('close'), handler: function(){ win.destroy() } },
                     { xtype:"button", text:_("Save"), icon: IC('save'), handler: function(){ save_form() } }
                 ],
                 bodyStyle: { padding: "4px", "background-color": "#eee" },

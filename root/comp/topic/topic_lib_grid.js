@@ -29,7 +29,7 @@ Cla.open_grid_from_field = function(el,mid,category,field_title){
     var el = $(el);
     var topics = [];
     $(el).find('.topic-row').each(function(){ topics.push($(this).attr('mid')); });
-    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon:IC('topic_out.svg'), topic_list: topics });
+    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon: IC('topic_out'), topic_list: topics });
 };
 
 Baseliner.open_monitor_query = function(q){
@@ -317,8 +317,7 @@ Cla.topic_grid = function(params){
     var status_menu = new Ext.menu.Menu({ items: [] });
     var btn_change_status = new Ext.Toolbar.Button({
         text: _("Change Status"),
-        icon:IC('state.svg'),
-        icon:IC('state.svg'),
+        icon: IC('state'),
         menu: status_menu,
         disabled: true,
         hidden: id_report,

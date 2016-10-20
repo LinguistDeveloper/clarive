@@ -30,14 +30,14 @@ var rol_statuses_color = new Ext.menu.CheckItem({text: _('Colored state'), check
 iid = Ext.id();
 
 //General Button
-var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general.svg'), pressed: true, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
+var btn_general = new Ext.Button({ text: _('Plain'), icon: IC('life_cycle_general'), pressed: true, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
     menu_general.show();
     menu_role.hide();
     cardpanel.getLayout().setActiveItem(general_container);
 }});
 
 //Role Button
-var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol.svg'), pressed: false, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
+var btn_role = new Ext.Button({ text: _('Role'), icon: IC('life_cycle_rol'), pressed: false, allowDepress: false, toggleGroup: 'process-'+iid, handler: function(){
     menu_general.hide();
     menu_role.show();
     cardpanel.getLayout().setActiveItem(role_container);
@@ -58,7 +58,7 @@ var btn_decreaseZoom = new Ext.Button({ text: _('Zoom -'), handler: function(){
 
 // Option menu to General Button
 var menu_general = new Ext.Button({
-    text: _('Options'), icon: IC('life_cycle_general.svg'), menu:{
+    text: _('Options'), icon: IC('life_cycle_general'), menu:{
         items: [
             general_labels, general_icons, general_statuses_color,
             '-',{
@@ -100,7 +100,7 @@ var menu_general = new Ext.Button({
 
 // Option menu to Rol Button
 var menu_role = new Ext.Button({
-    text: _('Options'), icon: IC('life_cycle_rol.svg'), hidden: true, menu:{
+    text: _('Options'), icon: IC('life_cycle_rol'), hidden: true, menu:{
       items: [
         rol_labels, rol_icons, rol_statuses_color,
         '-',{
