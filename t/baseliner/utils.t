@@ -1038,6 +1038,26 @@ subtest '_retry: returns on the first success' => sub {
     is $attempts, 1;
 };
 
+subtest '_retry: rethrows error when no match' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        $attempts++;
+        die 'that=' . $attempts;
+    };
+
+    like exception { Util->_retry( $cb, attempts => 3, when => qr/this/ ) }, qr/that=1/;
+};
+
+subtest '_retry: retries when error matches' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        $attempts++;
+        die 'this=' . $attempts;
+    };
+
+    like exception { Util->_retry( $cb, attempts => 3, when => qr/this/ ) }, qr/this=3/;
+};
+
 subtest 'slice_page: returns slice page' => sub {
     my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
 

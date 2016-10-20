@@ -2724,7 +2724,9 @@ sub _retry {
     my ( $cb, %params ) = @_;
 
     my $attempts = $params{attempts} || 1;
-    my $pause = $params{pause};
+    my $pause    = $params{pause};
+    my $when     = $params{when};
+    my $warn     = $params{warn};
 
     my $ok = 0;
     my $last_error;
@@ -2737,11 +2739,15 @@ sub _retry {
         catch {
             $last_error = shift;
 
-            warn $last_error if $params{warn};
+            warn $last_error if $warn;
         };
 
+        if ( !$ok && $when && $last_error !~ $when ) {
+            die $last_error;
+        }
+
         last if $ok;
-        usleep($pause * 1_000_000) if $pause;
+        usleep( $pause * 1_000_000 ) if $pause;
     }
 
     if ( !$ok ) {

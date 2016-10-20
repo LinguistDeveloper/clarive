@@ -14,6 +14,7 @@ has decoder => qw(is rw isa Object lazy 1 default), sub{ Sereal::Decoder->new };
 has expire_seconds => qw(is rw isa Num default), sub { 3600*24 }; # one expiration day by default
 
 use Clarive::mdb;
+use Baseliner::Utils qw(_retry);
 
 sub dt {
     state $tz = Util->_tz();
@@ -43,75 +44,45 @@ sub BUILD {
 sub set {
     my ( $self, $key, $value ) = @_;
 
-    my $setter;
-    my $key_frozen;
-    my $value_frozen;
-
     return try {
-        $key_frozen = ref $key || length($key) > 750 ? $self->encoder->encode($key) : $key;
-        $value_frozen = $self->encoder->encode($value);
+        my $setter;
+        my $key_frozen;
+        my $value_frozen;
 
-        # if it's too big for mongo, don't store it and remove it
-        if ( length($value_frozen) >= 16_777_216 ) {
-            $self->remove($key);
-            return;
-        }
+        _retry sub {
+            $key_frozen = ref $key || length($key) > 750 ? $self->encoder->encode($key) : $key;
+            $value_frozen = $self->encoder->encode($value);
 
-        #Util->_warn('key too large=' . length($key_frozen) ) if length($key_frozen) >= 800;
-        return if length($key_frozen) >= 800;
-        $setter = { v => $value_frozen };
+            # if it's too big for mongo, don't store it and remove it
+            if ( length($value_frozen) >= 16_777_216 ) {
+                $self->remove($key);
+                return;
+            }
 
-        if ( ref $key eq 'HASH' ) {
-            $$setter{d}   = $$key{d}   if defined $$key{d};
-            $$setter{mid} = $$key{mid} if defined $$key{mid};
-        }
+            #Util->_warn('key too large=' . length($key_frozen) ) if length($key_frozen) >= 800;
+            return if length($key_frozen) >= 800;
+            $setter = { v => $value_frozen };
 
-        mdb->cache->update(
-            { _id            => $key_frozen },
-            { '$currentDate' => { t => boolean::true }, '$set' => $setter },
-            { upsert         => 1 }
+            if ( ref $key eq 'HASH' ) {
+                $$setter{d}   = $$key{d}   if defined $$key{d};
+                $$setter{mid} = $$key{mid} if defined $$key{mid};
+            }
+
+            mdb->cache->update(
+                { _id            => $key_frozen },
+                { '$currentDate' => { t => boolean::true }, '$set' => $setter },
+                { upsert         => 1 }
+            );
+        }, attempts => 5, when => qr/^E11000/;
+    } catch {
+        my $error = shift;
+
+        Util->_error(
+            Util->_loc(
+                'Cache set error %1 for key %2',
+                $error, try { Util->_encode_json($key) } catch { Util->_dump($key) }
+            )
         );
-
-    }
-    catch {
-        my $err      = shift;
-        my $retries  = 0;
-        my $is_error = 1;
-
-        while ( $err =~ /^E11000/ ) {    # E11000 duplicate: MONGO 3.2 Bug in upsert
-            Util->_debug(
-                Util->_loc(
-                    "Retrying write in cache because of duplicate key bug in mongo 3.2 upsert. Key: %1", Util->_dump($key)
-                )
-            );
-            $retries++;
-            $is_error = 0;
-
-            try {
-                mdb->cache->update(
-                    { _id            => $key_frozen },
-                    { '$currentDate' => { t => boolean::true }, '$set' => $setter },
-                    { upsert         => 1 }
-                );
-            }
-            catch {
-                $err = shift;
-            };
-
-            if ( $retries gt 5 ) {
-                $is_error = 1;
-                last;
-            }
-        }
-
-        if ($is_error) {
-            Util->_error(
-                Util->_loc(
-                    'Cache set error %1 for key %2',
-                    $err, try { Util->_encode_json($key) } catch { Util->_dump($key) }
-                )
-            );
-        }
         return;
     };
 }

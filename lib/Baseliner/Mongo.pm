@@ -6,7 +6,7 @@ use Baseliner::MongoCollection;
 use Try::Tiny;
 use Function::Parameters qw(:strict);
 use DateTime::Tiny;
-use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
+use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash _retry);
 use v5.10;
 use experimental 'autoderef';
 
@@ -65,13 +65,26 @@ sub mongo_version {
 Returns the next seq num as STRING
 
 =cut
+
 sub seq {
-    my($self,$name,$seq)=@_;
+    my ( $self, $name, $seq ) = @_;
+
     my $coll = $self->collection('master_seq');
-    $coll->update({ _id=>$name }, { _id=>$name, seq=>$seq+0 },{ upsert=>1 }), return("$seq") if defined $seq;
-    my $doc = $coll->find_and_modify({ query=>{ _id=>$name }, update=>{ '$inc'=>{ seq=>1 } }, new=>1 });
+
+    if ( defined $seq ) {
+        _retry sub {
+            $coll->update( { _id => $name }, { _id => $name, seq => $seq + 0 }, { upsert => 1 } );
+          },
+          attempts => 5,
+          when     => qr/^E11000/;
+
+        return "$seq";
+    }
+
+    my $doc = $coll->find_and_modify( { query => { _id => $name }, update => { '$inc' => { seq => 1 } }, new => 1 } );
     return "$doc->{seq}" if $doc->{seq};
-    $coll->insert({ _id=>$name, seq=>1 });
+
+    $coll->insert( { _id => $name, seq => 1 } );
     return "1";
 }
 
