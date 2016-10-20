@@ -11,7 +11,7 @@ has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);
 has who      => qw(is rw isa Any);
 has slots    => qw(is rw isa Num default 1);
-has seq      => qw(is rw isa Num default), sub { 0 + mdb->seq('sem') };
+has seq      => qw(is rw isa Num);
 has id_queue => qw(is rw isa MongoDB::OID);
 has id_sem   => qw(is rw isa Maybe[MongoDB::OID]);
 has internal => qw(is rw isa Bool default 0);
@@ -223,7 +223,9 @@ sub _enqueue {
     my ( $package, $filename, $line ) = caller;
     my $caller = "$package ($line)";
 
-    my $seq      = $self->seq;
+    my $seq = 0 + mdb->seq('sem');
+    $self->seq($seq);
+
     my $id_queue = mdb->oid;
     my $doc      = {
         _id        => $id_queue,
