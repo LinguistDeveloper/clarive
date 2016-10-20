@@ -1,13 +1,12 @@
 package Baseliner::Model::Events;
 use Moose;
+
+use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Core::Event;
 use Baseliner::Sem;
-use Try::Tiny;
-use v5.10;
-use experimental 'autoderef';
+use Baseliner::Utils;
 
 with 'Baseliner::Role::Service';
 
@@ -41,8 +40,6 @@ register 'service.event.daemon' => {
         $config->{boost} ||= 1 ;
 
         _log _loc( "Event daemon starting with frequency %1, timeout %2, boost %3", $config->{frequency}, $config->{timeout}, $config->{boost} );
-
-        require Baseliner::Sem;
 
         for( 1..1000 ) {
             $self->run_once( $c, $config );
@@ -144,6 +141,7 @@ sub process_event {
     my $self = shift;
     my ( $ev, $data ) = @_;
 
+    require Baseliner::RuleRunner;
     my $rule_runner = Baseliner::RuleRunner->new(tidy_up => 0);
 
     my $event_status = '??';
@@ -222,10 +220,19 @@ sub notify_event {
         push @notify_default, $stash->{created_by} if $stash->{created_by};
     }
 
-    my $notification = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
-    my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email' )->{from};
+    require Baseliner::Model::Notification;
+    my $notification = Baseliner::Model::Notification->new->get_notifications(
+        {
+            event_key      => $event_key,
+            notify_default => \@notify_default,
+            notify_scope   => $notify_scope,
+            mid            => $stash->{mid}
+        }
+    );
+    my $config_email = BaselinerX::Type::Model::ConfigStore->new->get( 'config.comm.email' )->{from};
+
     if ($notification){
-        foreach  my $template (  keys $notification ){
+        foreach  my $template (  keys %$notification ){
             my $topic = {};
             $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
             my $subject_parse = $notification->{$template}->{subject} // $stash->{subject};
