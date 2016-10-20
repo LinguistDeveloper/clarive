@@ -953,11 +953,17 @@ Baseliner.ci_box = function(c) {
     var firstload = true;
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
-    var show_class = c.showClass || 'collection'; delete c.showClass;
+    var field = 'values.collection';
+    if (c.display_mode == 'bl') {
+        field = 'values.bl';
+    } else if (c.display_mode == 'moniker') {
+        field = 'values.moniker';
+    }
+    var showClass = typeof(c.showClass) != undefined ? c.showClass : 'collection';
     var with_vars = c.with_vars; delete c.with_vars;
     var from_mid = c.from_mid; delete c.from_mid;
     var to_mid = c.to_mid; delete c.to_mid;
-	var security = c.security; delete c.security;
+    var security = c.security; delete c.security;
     var filter = c.filter; delete c.filter;
     var cl = c['class'] || c['isa'] || c['classname']; delete c['class']; // IE - class is syntax errors due to reserved word
     var order_by = c.order_by; delete c.order_by;
@@ -970,7 +976,7 @@ Baseliner.ci_box = function(c) {
     if( filter != undefined) bp.filter = filter;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
     if( security != undefined ) bp.security = 1;
-	if( order_by != undefined ) bp.order_by = order_by;
+    if( order_by != undefined ) bp.order_by = order_by;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp }); 
     var tpl = c.tpl; delete c.tpl;
@@ -979,8 +985,8 @@ Baseliner.ci_box = function(c) {
             '<tpl for=".">'
             +  '<div class="search-item ui-ci_box-' + c.name + '"><span id="boot" style="background: transparent">'
             +  '<div class="x-combo-name-list"><img src="{icon}" /></div><strong>{name} </strong>'
-            +  '<tpl if="this.showClass">'
-            +  ' <span class="x-combo-name-list-description">{[ Cla.ci_loc(values.class) ]}</span>'
+            +  '<tpl if="'+ showClass +'">'
+            +  ' <span class="x-combo-name-list-description">{[ '+ field +' ]}</span>'
             +  '</tpl> '
             + '</div>'
             +'</tpl>'
@@ -1006,7 +1012,7 @@ Baseliner.ci_box = function(c) {
         allowBlank: true,
         tpl: tpl,
         displayFieldTpl: displayFieldTpl,
-        showClass: show_class,
+        showClass: showClass,
         }, c ));
     store.on('load', function(){
         if( c.force_set_value && firstload ) { // For default value purpose
