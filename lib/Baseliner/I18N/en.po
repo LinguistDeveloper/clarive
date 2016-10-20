@@ -4547,7 +4547,7 @@ msgstr ""
 msgid "CI Grid"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/combo.js
 msgid "Combo"
 msgstr ""
 
@@ -7569,8 +7569,8 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#: root/comp/configlist/grid.mas root/fields/templates/config/projects.js
-#: root/site/model.js
+#: root/comp/configlist/grid.mas root/fields/templates/config/combo.js
+#: root/fields/templates/config/projects.js root/site/model.js
 msgid "Default Value"
 msgstr ""
 
