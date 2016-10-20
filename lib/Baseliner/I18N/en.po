@@ -2700,7 +2700,11 @@ msgid "event daemon event rule runner timeout (secs)"
 msgstr ""
 
 #: lib/Baseliner/Model/Events.pm
-msgid "Event daemon starting with frequency %1, timeout %2"
+msgid "how many events to treat at once, default=1"
+msgstr ""
+
+#: lib/Baseliner/Model/Events.pm
+msgid "Event daemon starting with frequency %1, timeout %2, boost %3"
 msgstr ""
 
 #: lib/Baseliner/Model/Events.pm

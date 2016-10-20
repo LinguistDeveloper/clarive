@@ -2732,8 +2732,12 @@ msgstr ""
 "timeout del ejecutor de reglas de eventos del demonio de eventos (segs)"
 
 #: lib/Baseliner/Model/Events.pm
-msgid "Event daemon starting with frequency %1, timeout %2"
-msgstr "Demonio de eventos iniciándose con frecuencia %1, timeout %2"
+msgid "how many events to treat at once, default=1"
+msgstr ""
+
+#: lib/Baseliner/Model/Events.pm
+msgid "Event daemon starting with frequency %1, timeout %2, boost %3"
+msgstr "Demonio de eventos iniciándose con frecuencia %1, timeout %2, boost %3"
 
 #: lib/Baseliner/Model/Events.pm
 msgid "Running event %1 (id %2)"
@@ -15602,6 +15606,9 @@ msgstr "destino"
 
 #~ msgid "Job not ready to purge yet: %1 (%2)"
 #~ msgstr "El pase no está listo para purgarse aún: %1 (%2)"
+
+#~ msgid "Event daemon starting with frequency %1, timeout %2"
+#~ msgstr "Demonio de eventos iniciándose con frecuencia %1, timeout %2"
 
 #~ msgid "---- provider $provider has %1 changesets"
 #~ msgstr "---- el proveedor $provider tiene %1 changesets"
