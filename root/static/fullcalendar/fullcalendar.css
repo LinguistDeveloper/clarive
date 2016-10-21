@@ -60,6 +60,7 @@ html .fc,
 	}
 	
 .fc-header-title h2 {
+	margin-bottom: 6px;
 	margin-top: 0;
 	white-space: nowrap;
 	}

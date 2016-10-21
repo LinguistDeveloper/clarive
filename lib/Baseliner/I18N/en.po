@@ -8719,7 +8719,7 @@ msgstr ""
 
 #: root/comp/log_grid.js root/comp/monitor_grid.js root/comp/rules.js
 #: root/comp/sem.js root/comp/sequences.js root/comp/topic/topic_lib.js
-#: root/site/help.js root/site/main.js
+#: root/site/calendar.js root/site/help.js root/site/main.js
 msgid "Refresh"
 msgstr ""
 
@@ -9371,7 +9371,7 @@ msgstr ""
 msgid "Refresh Node"
 msgstr ""
 
-#: root/comp/repl.js
+#: root/comp/repl.js root/dashlets/calendar.js
 msgid "Maximize"
 msgstr ""
 
@@ -13375,6 +13375,14 @@ msgstr ""
 msgid "Third Party Notices"
 msgstr ""
 
+#: root/site/calendar.js root/site/help.js root/site/model.js
+msgid "Back"
+msgstr ""
+
+#: root/site/calendar.js root/site/help.js
+msgid "Forward"
+msgstr ""
+
 #: root/site/calendar.js
 msgid "Day1"
 msgstr ""
@@ -13397,6 +13405,98 @@ msgstr ""
 
 #: root/site/calendar.js
 msgid "%1 #%2"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "January"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "February"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "March"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "April"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "May"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "June"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "July"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "August"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "September"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "October"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "November"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "December"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Jan"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Feb"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Mar"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Apr"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Jun"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Jul"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Aug"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Sep"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Oct"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Nov"
+msgstr ""
+
+#: root/site/calendar.js
+msgid "Dec"
 msgstr ""
 
 #: root/site/calendar.js
@@ -13960,14 +14060,6 @@ msgstr ""
 
 #: root/site/help.js
 msgid "Show Help Index"
-msgstr ""
-
-#: root/site/help.js root/site/model.js
-msgid "Back"
-msgstr ""
-
-#: root/site/help.js
-msgid "Forward"
 msgstr ""
 
 #: root/site/help.js
