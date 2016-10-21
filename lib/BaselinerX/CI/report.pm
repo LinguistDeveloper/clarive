@@ -458,88 +458,107 @@ sub dynamic_fields {
 }
 
 sub all_fields {
-    my ($self,$p) = @_;
+    my ( $self, $p ) = @_;
 
     my $username = $p->{username};
+    my $id_category = $p->{id_category} ? $p->{id_category} : undef;
+
     my @tree;
 
-    my @user_categories = Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
+    my @user_categories =
+      Baseliner::Model::Topic->new->get_categories_permissions( username => $username, type => 'view' );
 
-    my @categories_with_fields;
-    foreach my $category (@user_categories) {
-        my $meta = Baseliner::Model::Topic->new->get_meta( undef, $category->{id}, $username );
-        $meta = Baseliner::Model::Topic->new->get_meta_permissions(
-            username    => $username,
-            meta        => $meta,
-            id_category => $category->{id},
-            id_status   => '*',
-        );
-
-        push @categories_with_fields, {
-            id     => $category->{id},
-            name   => $category->{name},
-            fields => [
-                map {
-                    [ $_->{id_field} => _loc( $_->{name_field} ) ]
-                } @$meta
-            ]
-        };
-    }
-
-    my @children;
-    foreach my $category (@categories_with_fields) {
-        push @children,
-          {
-            text => $category->{name},
-            icon => '/static/images/icons/topic.svg',
-            data => {
-                'id_category'   => $category->{id},
-                'name_category' => $category->{name},
-                'fields'        => $category->{fields},
-            },
-            type => 'category',
-            leaf => \0
-          };
-    }
-
-    push @tree, (
-        {     text        => _loc('Categories'),
-            leaf        => \0,
-            draggable     => \0,
-            expanded     => \1,
-            icon         => '/static/images/icons/topic_one.png',
-            children     => \@children
+    if ( !$id_category ) {
+        my @children;
+        foreach my $category (@user_categories) {
+            push @children,
+              {
+                text => $category->{name},
+                icon => '/static/images/icons/topic.svg',
+                data => {
+                    'id_category'   => $category->{id},
+                    'name_category' => $category->{name},
+                },
+                type => 'category',
+                leaf => \0
+              };
         }
-    );
 
-    my $reports_config = BaselinerX::Type::Model::ConfigStore->get( 'config.reports' );
-    if ($reports_config->{fields_dynamics} && $reports_config->{fields_dynamics} ne 'NO'){
-        my $has_action = Baseliner::Model::Permissions->new->user_has_action( $username, 'action.reports.dynamics' );
-        if($has_action){
-            push @tree, {
-                text => _loc('Dynamic'),
-                leaf => \0,
-                icon     => '/static/images/icons/all.svg',
-                url  => '/ci/report/dynamic_fields',
+        push @tree,
+          (
+            {
+                text      => _loc('Categories'),
+                leaf      => \0,
                 draggable => \0,
-                children => [
-                    map {
-                        my $key = $_;
-                        my ($prefix,$data_key) = split( /\./, $key, 2);
-                        {
-                            text     => $key,
-                            icon     => '/static/images/icons/field-add.svg',
-                            id_field => $prefix,
-                            data_key => $data_key,
-                            type     => 'select_field',
-                            leaf     => \1
-                        }
-                    }
-                    grep !/^_/,
-                    grep !/\.[0-9]+$/,
-                    mdb->topic->all_keys
-                ],
-            };
+                expanded  => \1,
+                icon      => '/static/images/icons/topic_one.png',
+                children  => \@children
+            }
+          );
+
+        my $reports_config = BaselinerX::Type::Model::ConfigStore->get('config.reports');
+        if ( $reports_config->{fields_dynamics} && $reports_config->{fields_dynamics} ne 'NO' ) {
+            my $has_action =
+              Baseliner::Model::Permissions->new->user_has_action( $username, 'action.reports.dynamics' );
+            if ($has_action) {
+                push @tree, {
+                    text      => _loc('Dynamic'),
+                    leaf      => \0,
+                    icon      => '/static/images/icons/all.svg',
+                    url       => '/ci/report/dynamic_fields',
+                    draggable => \0,
+                    children  => [
+                        map {
+                            my $key = $_;
+                            my ( $prefix, $data_key ) = split( /\./, $key, 2 );
+                            {
+                                text     => $key,
+                                icon     => '/static/images/icons/field-add.svg',
+                                id_field => $prefix,
+                                data_key => $data_key,
+                                type     => 'select_field',
+                                leaf     => \1
+                            }
+                          }
+                          grep !/^_/,
+                        grep !/\.[0-9]+$/,
+                        mdb->topic->all_keys
+                    ],
+                };
+            }
+        }
+    }
+    else {
+        my ($category) = grep { $id_category eq $_->{id} } @user_categories;
+
+        if ($category) {
+            my $meta = Baseliner::Model::Topic->new->get_meta( undef, $category->{id}, $username );
+            $meta = Baseliner::Model::Topic->new->get_meta_permissions(
+                username    => $username,
+                meta        => $meta,
+                id_category => $category->{id},
+                id_status   => '*',
+            );
+
+            foreach my $fieldlet ( sort { _loc( $a->{name_field} ) cmp _loc( $b->{name_field} ) } @$meta ) {
+                push @tree,
+                  {
+                    text               => _loc( $fieldlet->{name_field} ),
+                    id_field           => $fieldlet->{id_field},
+                    icon               => '/static/images/icons/field-add.svg',
+                    type               => 'select_field',
+                    meta_type          => $fieldlet->{meta_type},
+                    collection         => $fieldlet->{collection},
+                    collection_extends => $fieldlet->{collection_extends},
+                    ci_class           => $fieldlet->{ci_class},
+                    filter             => $fieldlet->{filter},
+                    gridlet            => $fieldlet->{gridlet},
+                    category           => $category->{name},
+                    options            => $fieldlet->{options},
+                    format             => $fieldlet->{format},
+                    leaf               => \1
+                  };
+            }
         }
     }
 
@@ -1374,9 +1393,9 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
     } @parse_data;
     # order data with text not ci-mid.
     if (@sort) {
-        if (exists $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} =~ /ci|project/){
+        if (defined $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} =~ /ci|project/){
             @topics = sort { $rs_sort[1] eq '1' ? lc($a->{$rs_sort[0]}[0]) cmp lc($b->{$rs_sort[0]}[0]) : lc($b->{$rs_sort[0]}[0]) cmp lc($a->{$rs_sort[0]}[0]) } @topics;
-        } elsif (exists $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} !~ /release|topic/){
+        } elsif (defined $meta_cfg_report{$rs_sort[0]} && $meta_cfg_report{$rs_sort[0]} !~ /release|topic/){
             @topics = sort { $rs_sort[1] eq '1' ? lc($a->{$rs_sort}) cmp lc($b->{$rs_sort}) : lc($b->{$rs_sort}) cmp lc($a->{$rs_sort}) } @topics;
         }
     }
