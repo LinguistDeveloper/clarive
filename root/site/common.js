@@ -152,6 +152,16 @@ Baseliner.alert = function(title, format){
     });
 };
 
+var cloneNode = function(node) {
+    var nn = jQuery.extend(true, {}, node.attributes);
+    nn.id = Cla.id('rule');
+    var copy = new Ext.tree.TreeNode(nn);
+    node.eachChild(function(chi) {
+        copy.appendChild(cloneNode(chi));
+    });
+    return copy;
+};
+
 Baseliner.error = function(title, format){
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
     s = Baseliner.error_msg( s );
@@ -2321,24 +2331,24 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
     rootVisible: false,
     constructor: function(c){
         var self = this;
-        
+
         Baseliner.Tree.superclass.constructor.call(this, Ext.apply({
-            loader: new Baseliner.TreeLoader({ 
+            loader: new Baseliner.TreeLoader({
                         dataUrl: c.dataUrl,
-                        requestMethod: this.requestMethod, 
+                        requestMethod: this.requestMethod,
                         baseParams: c.baseParams }),
             root: { nodeType: 'async', text: '/', draggable: false, id: '/' }
         }, c) );
-        
+
         self.on('contextmenu', self.menu_click );
         self.on('beforenodedrop', self.drop_handler );
-        // auto Topic drawing
+        self.on('nodedragover',self.handle_allow_drop);
         self.on('beforechildrenrendered', function(node){
             node.eachChild(function(n) {
                 Cla.style_topic_node(n);
             });
         });
-        self.on('click', function(n, ev){    
+        self.on('click', function(n, ev){
                 self.click_handler({ node: n });
         });
         self.loader.on('load', function(n){
@@ -2348,55 +2358,135 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         });
         self.addEvents('beforerefresh','afterrefresh');
     },
+    handle_allow_drop: function(dragOverEvent) {
+        if (dragOverEvent.target.attributes.id_favorite && dragOverEvent.dropNode.attributes.id_favorite) {
+            if (dragOverEvent.point == 'append' && !dragOverEvent.target.attributes.id_folder) return false;
+            return true;
+        }
+        return false;
+    },
     drop_handler : function(e) {
         var self = this;
         // from node:1 , to_node:2
         e.cancel = true;
         e.dropStatus = true;
-        var n1 = e.source.dragData.node;
+
+        var n1 = e.dropNode;
         var n2 = e.target;
-        if( n1 == undefined || n2 == undefined ) return false;
-        
+        if (n1 == undefined || n2 == undefined) {
+            return false;
+        }
+
         var node_data1 = n1.attributes.data;
         var node_data2 = n2.attributes.data;
-        var favorite = n1.attributes.id_favorite && n2.attributes.id_favorite && n2.attributes.id_folder;
-        if( node_data1 == undefined ) node_data1={};
-        if( node_data2 == undefined ) return false;
-        if( node_data2.on_drop != undefined ) {
-            var on_drop = node_data2.on_drop;
-            if( on_drop.url != undefined ) {
-                var p = { node1: node_data1, node2: node_data2, id_file: node_data1.id_file  };
-                if(favorite){
-                    p.id_favorite= n1.attributes.id_favorite;
-                    p.favorite_folder= n2.attributes.id_favorite;
-                    p.id_folder= n2.attributes.id_folder;
+        var favorite = n1.attributes.id_favorite && n2.attributes.id_favorite;
+
+        if (node_data1 == undefined) {
+            node_data1 = {};
+        }
+
+        if (node_data2 == undefined) {
+            return false;
+        }
+
+        var dropData = {
+            node1: node_data1,
+            node2: node_data2,
+            id_file: node_data1.id_file
+        };
+
+        if (favorite) {
+            var parent = n2.parentNode;
+            var id_parent;
+            dropData.id_favorite = n1.attributes.id_favorite;
+            if (e.point === 'append') {
+                id_parent = n2.attributes.id_favorite;
+            } else {
+                id_parent = parent.attributes.id_favorite ? parent.attributes.id_favorite : '';
+            }
+
+            try {
+                n1.parentNode.removeChild(n1);
+            } catch (err) {
+            }
+
+            var n1_copy = cloneNode(n1);
+
+            is_leaf = true;
+            if (n1.attributes.url) is_leaf = false;
+            n1_copy.leaf = is_leaf;
+
+            if (e.point === 'above') {
+                parent.insertBefore(n1_copy, n2);
+            } else if (e.point === 'below') {
+                if (n2.nextSibling) {
+                    parent.insertBefore(n1_copy, n2.nextSibling);
+                } else {
+                    parent.appendChild(n1_copy);
                 }
-                if( n2.parentNode && n2.parentNode.attributes.data ) 
-                    p.id_project = n2.parentNode.attributes.data.id_project
-                        
-                Baseliner.ajax_json( on_drop.url, p, function(res){
-                    if( res ) {
-                        if( res.success ) {
-                            Baseliner.message(  _('Drop'), res.msg );
+            }
+
+            var nodes_ordered = [];
+            if (e.point != 'append') {
+                parent.eachChild(function(childNode) {
+                    nodes_ordered.push({
+                        id_favorite: childNode.attributes.id_favorite,
+                        position: parent.indexOf(childNode)
+                    });
+                });
+            }
+
+            Baseliner.ajaxEval('/lifecycle/favorite_add_to_folder', {
+                id_current_parent: n1.attributes.id_parent,
+                id_favorite: dropData.id_favorite,
+                id_parent: id_parent,
+                nodes_ordered: Ext.encode(nodes_ordered),
+                action: e.point
+            }, function(res) {
+                var isNodeExpand;
+                if (e.point === 'append') {
+                    isNodeExpand = n2.isExpanded();
+                    e.tree.getLoader().load(n2);
+                    if (isNodeExpand) n2.expand();
+                } else {
+                    if ((typeof n1_copy.attributes.url !== 'undefined' || n1_copy.attributes.url !== null) && (n1_copy.attributes.url !== '')) {
+                        isNodeExpand = n1.isExpanded();
+                        e.tree.getLoader().load(n1_copy);
+                        if (isNodeExpand) n1_copy.expand();
+                    } else {
+                        e.tree.fireEvent("NodeDropLoaded");
+                    }
+                }
+                e.tree.loader.on('load', function() {
+                    e.tree.fireEvent("NodeDropLoaded");
+                });
+            });
+        }
+
+        if (node_data2.on_drop != undefined) {
+            var on_drop = node_data2.on_drop;
+            if (on_drop.url != undefined) {
+
+                if (n2.parentNode && n2.parentNode.attributes.data)
+                    dropData.id_project = n2.parentNode.attributes.data.id_project
+
+                Baseliner.ajax_json(on_drop.url, dropData, function(res) {
+                    if (res) {
+                        if (res.success) {
+                            Baseliner.message(_('Drop'), res.msg);
                             //e.target.appendChild( n1 );
                             //e.target.expand();
-                            self.refresh_node( e.target );
+                            self.refresh_node(e.target);
                         } else {
-                            Baseliner.message( _('Drop'), res.msg );
+                            Baseliner.message(_('Drop'), res.msg);
                             //Ext.Msg.alert( _('Error'), res.msg );
                         }
                     }
-                    if(favorite){
-                        var is = n2.isExpanded();
-                        e.tree.getLoader().load( n2 );
-                        if( is ) n2.expand();
-                        n1.parentNode.removeChild( n1 );
-                    }
                 });
                 return false;
-            }else{
-                if(on_drop.handler != undefined ){
-                    eval(on_drop.handler + '(n1, n2);');                
+            } else {
+                if (on_drop.handler != undefined) {
+                    eval(on_drop.handler + '(n1, n2);');
                 }
             }
         }
@@ -2456,16 +2546,15 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             if (!node.attributes.is_refreshing){
                 self.fireEvent('beforerefresh', self,node);
                 node.attributes.is_refreshing = true;
-                self.refresh_node( node, callback );    
+                self.refresh_node( node, callback );
             }
         }
         else 
             self.refresh_all(callback);
     },
     refresh_all : function(callback){
-        var self = this;
-        this.loader.load(self.root);
-		self.onload = callback;
+        this.getLoader().load(this.getRootNode( ));
+		this.onload = callback;
     },
     refresh_node : function(node, callback){
         var self = this;

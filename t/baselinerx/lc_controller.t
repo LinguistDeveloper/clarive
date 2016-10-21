@@ -18,11 +18,9 @@ use_ok 'BaselinerX::LcController';
 subtest 'favorite_add: sets correct params to stash' => sub {
     _setup();
 
-    my $user_ci = TestUtils->create_ci('user');
-
+    my $user_ci    = TestUtils->create_ci('user');
     my $controller = _build_controller();
-
-    my $stash = {};
+    my $stash      = {};
 
     my $c = mock_catalyst_c(
         username => 'foo',
@@ -31,11 +29,7 @@ subtest 'favorite_add: sets correct params to stash' => sub {
             params => {
                 text => 'Some Title',
                 icon => '/path/to/icon.svg',
-                data => JSON::encode_json(
-                    {
-                        title => 'foo'
-                    }
-                ),
+                data => JSON::encode_json( { title => 'foo' } ),
                 menu => JSON::encode_json( {} ),
             }
         },
@@ -44,163 +38,201 @@ subtest 'favorite_add: sets correct params to stash' => sub {
 
     $controller->favorite_add($c);
 
-    is_deeply $c->stash, { json => { success => \1, msg => 'Favorite added ok', id_folder => undef } };
-};
+    my ($id) = keys %{ $user_ci->favorites };
 
-subtest 'favorite_add: sets correct params to stash with id_folder' => sub {
-    _setup();
-
-    my $user_ci = TestUtils->create_ci('user');
-
-    my $controller = _build_controller();
-
-    my $stash = {};
-
-    my $c = mock_catalyst_c(
-        username => 'foo',
-        user_ci  => $user_ci,
-        req      => {
-            params => {
-                id_folder => '123',
-                text      => 'Some Title',
-                icon      => '/path/to/icon.svg',
-                data      => JSON::encode_json(
-                    {
-                        title => 'foo'
-                    }
-                ),
-                menu => JSON::encode_json( {} ),
-            }
-        },
-        stash => $stash
-    );
-
-    $controller->favorite_add($c);
-
-    cmp_deeply $c->stash, { json => { success => \1, msg => 'Favorite added ok', id_folder => re(qr/^\d+-\d+$/) } };
+    is_deeply $c->stash,
+        { json => { success => \1, msg => 'Favorite added ok', id_folder => '', id_favorite => $id, position => '0' } };
 };
 
 subtest 'favorite_add: saves favorites to user' => sub {
     _setup();
 
-    my $user_ci = TestUtils->create_ci('user');
-
+    my $user_ci    = TestUtils->create_ci('user');
     my $controller = _build_controller();
-
-    my $stash = {};
 
     my $c = mock_catalyst_c(
         username => 'foo',
         user_ci  => $user_ci,
         req      => {
             params => {
-                text => 'Some Title',
-                icon => '/path/to/icon.svg',
-                data => JSON::encode_json(
-                    {
-                        title => 'foo'
-                    }
-                ),
+                is_folder => 1,
+                text      => 'Some Title',
+                icon      => '/path/to/icon.svg',
+                data      => JSON::encode_json( { title => 'foo' } ),
                 menu => JSON::encode_json( {} ),
             }
-        },
-        stash => $stash
+        }
     );
 
     $controller->favorite_add($c);
 
     $user_ci = ci->new( $user_ci->mid );
-
     my ($id) = keys %{ $user_ci->favorites };
 
     cmp_deeply $user_ci->favorites,
-      {
+        {
         $id => {
-            'icon'        => re(qr/\.svg$/),
-            'text'        => 'Some Title',
-            'menu'        => {},
             'id_favorite' => $id,
-            'data'        => {
-                'title' => 'foo'
-            }
+            'id_folder'   => $id,
+            'menu'        => {},
+            'text'        => 'Some Title',
+            'data'        => { 'title' => 'foo' },
+            'icon'        => ignore(),
+            'position'    => 0,
+            'url'         => '/lifecycle/tree_favorites?id_folder=' . $id
         }
-      };
+        };
 };
 
 subtest 'favorite_add: saves favorites to user when folder' => sub {
     _setup();
 
-    my $user_ci = TestUtils->create_ci('user');
-
+    my $user_ci    = TestUtils->create_ci('user');
     my $controller = _build_controller();
-
-    my $stash = {};
 
     my $c = mock_catalyst_c(
         username => 'foo',
         user_ci  => $user_ci,
         req      => {
             params => {
-                id_folder => '123',
                 text      => 'Some Title',
-                icon      => '/path/to/icon.svg',
-                data      => JSON::encode_json(
-                    {
-                        title => 'foo'
-                    }
-                ),
+                icon      => '',
+                is_folder => 1,
+                data      => JSON::encode_json( { title => 'foo' } ),
                 menu => JSON::encode_json( {} ),
             }
-        },
-        stash => $stash
+        }
     );
 
     $controller->favorite_add($c);
 
     my ($id) = $c->stash->{json}->{id_folder};
-
     $user_ci = ci->new( $user_ci->mid );
 
     cmp_deeply $user_ci->favorites,
-      {
+        {
         $id => {
             'icon'        => ignore(),
             'id_folder'   => $id,
             'text'        => 'Some Title',
-            'url'         => "/lifecycle/tree_favorite_folder?id_folder=$id",
+            'url'         => "/lifecycle/tree_favorites?id_folder=$id",
             'menu'        => {},
             'id_favorite' => $id,
-            'data'        => {
-                'title' => 'foo'
-            }
+            'position'    => '0',
+            'data'        => { 'title' => 'foo' }
         }
-      };
+        };
 };
 
-subtest 'favorite_add_to_folder: sets correct params to stash' => sub {
+subtest 'favorite_del: removes item from favorites' => sub {
     _setup();
 
-    my $user_ci = TestUtils->create_ci('user');
-
-    $user_ci->favorites->{123} = {};
-    $user_ci->favorites->{345} = {};
-    $user_ci->save;
-
+    my $user_ci    = TestUtils->create_ci('user');
     my $controller = _build_controller();
 
-    my $stash = {};
+    $user_ci->favorites->{123} = {
+        id_favorite => '123',
+        id_folder   => '123',
+        position    => '0',
+        text        => 'test 1'
+    };
+    $user_ci->save;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        user_ci  => $user_ci,
+        req      => { params => { id_favorite => 123 } }
+    );
+
+    $controller->favorite_del($c);
+
+    is_deeply $c->stash, { json => { success => \1, msg => 'Favorite removed ok' } };
+};
+
+subtest 'favorite_rename: change the name of favorite item' => sub {
+    _setup();
+
+    my $user_ci    = TestUtils->create_ci('user');
+    my $controller = _build_controller();
+
+    $user_ci->favorites->{123} = {
+        id_favorite => '123',
+        id_folder   => '123',
+        position    => '0',
+        text        => 'test 1'
+    };
+    $user_ci->save;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        user_ci  => $user_ci,
+        req      => { params => { id_favorite => 123, text => 'new text' } }
+    );
+
+    $controller->favorite_rename($c);
+
+    is_deeply $c->stash, { json => { success => \1, msg => 'Favorite renamed ok' } };
+};
+
+subtest 'favorite_rename: rename item from favorites' => sub {
+    _setup();
+
+    my $user_ci    = TestUtils->create_ci('user');
+    my $controller = _build_controller();
+    my $stash      = {};
+
+    $user_ci->favorites->{123} = {
+        id_favorite => '123',
+        id_folder   => '123',
+        position    => '0',
+        text        => 'test 1'
+    };
+    $user_ci->save;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        user_ci  => $user_ci,
+        req      => { params => { id => 123, text => 'rename test 1' } },
+        stash    => $stash
+    );
+
+    $controller->favorite_rename($c);
+
+    is_deeply $c->stash, { json => { success => \1, msg => 'Favorite renamed ok' } };
+};
+
+subtest 'favorite_add_to_folder: moves item on favorite tree' => sub {
+    _setup();
+
+    my $user_ci    = TestUtils->create_ci('user');
+    my $controller = _build_controller();
+
+    $user_ci->favorites->{123} = {
+        id_favorite => '123',
+        id_folder   => '123',
+        position    => '0',
+        text        => 'test 1'
+    };
+
+    $user_ci->favorites->{321} = {
+        id_favorite => '321',
+        id_folder   => '321',
+        position    => '1',
+        text        => 'test 2'
+    };
+
+    $user_ci->save;
 
     my $c = mock_catalyst_c(
         username => 'foo',
         user_ci  => $user_ci,
         req      => {
             params => {
-                id_favorite     => '123',
-                favorite_folder => 'My Folder',
-                id_folder       => '345',
+                id_favorite => '321',
+                id_parent   => '123',
+                action      => 'append',
             }
-        },
-        stash => $stash
+        }
     );
 
     $controller->favorite_add_to_folder($c);
@@ -208,45 +240,40 @@ subtest 'favorite_add_to_folder: sets correct params to stash' => sub {
     is_deeply $c->stash, { json => { success => \1, msg => 'Favorite moved ok' } };
 };
 
-subtest 'favorite_add_to_folder: updates user favorites' => sub {
+subtest 'tree_favorites: returns the favorite items' => sub {
     _setup();
 
-    my $user_ci = TestUtils->create_ci('user');
-
-    $user_ci->favorites->{123} = {};
-    $user_ci->favorites->{345} = {};
-    $user_ci->save;
-
+    my $user_ci    = TestUtils->create_ci('user');
     my $controller = _build_controller();
+    my $stash      = {};
 
-    my $stash = {};
+    $user_ci->favorites->{123} = {
+        id_favorite => '123',
+        id_folder   => '123',
+        position    => '0',
+        text        => 'test 1'
+    };
+    $user_ci->save;
 
     my $c = mock_catalyst_c(
         username => 'foo',
         user_ci  => $user_ci,
-        req      => {
-            params => {
-                id_favorite     => '123',
-                favorite_folder => 'My Folder',
-                id_folder       => '345',
-            }
-        },
-        stash => $stash
+        req      => { params => { id_favorite => 123 } },
+        stash    => $stash
     );
 
-    $controller->favorite_add_to_folder($c);
+    $controller->tree_favorites($c);
 
-    $user_ci = ci->new( $user_ci->mid );
+    cmp_deeply $c->stash->{json},
 
-    is_deeply $user_ci->favorites,
-      {
-        '345' => {
-            'favorite_folder' => '345',
-            'contents'        => {
-                '123' => {}
-            }
+        [
+        {   id_favorite => '123',
+            id_folder   => '123',
+            position    => '0',
+            text        => 'test 1',
+            leaf        => \1
         }
-      };
+        ];
 };
 
 subtest 'tree_project_releases: build releases tree' => sub {

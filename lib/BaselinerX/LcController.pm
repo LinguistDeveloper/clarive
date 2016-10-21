@@ -7,6 +7,7 @@ use experimental 'autoderef', 'smartmatch';
 require Girl;
 use BaselinerX::Type::Action;
 use Baseliner::Model::Topic;
+use Baseliner::Model::Favorites;
 use Baseliner::Model::Permissions;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
@@ -1310,10 +1311,31 @@ sub tree_all : Local {
         }
     }
 }
-sub check_user_favorites : Local {
-    my ($self,$c) = @_;
-    my $mid = $c;
-    my $user_ci = ci->new($mid);
+
+sub tree_favorites : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->req->params;
+    my $user = $c->user_ci;
+
+    $self->filter_user_favorites($user);
+
+    my $tree = Baseliner::Model::Favorites->new->get_children( $user, $p->{id_folder} );
+
+    my @nodes;
+    for my $node (@$tree) {
+        delete $node->{menu} if !$node->{menu};
+        $node->{leaf} = \1 if !$node->{url};
+        push @nodes, $node;
+    }
+
+    $c->stash->{json} = \@nodes;
+    $c->forward( 'View::JSON' );
+}
+
+sub filter_user_favorites {
+    my ($self,$user_ci) = @_;
+
     my @fav_user = $user_ci->{favorites};
     for my $item ( @fav_user ) {
         for my $node (keys $item){
@@ -1340,36 +1362,6 @@ sub check_user_favorites : Local {
     $user_ci->save;
 }
 
-sub tree_favorites : Local {
-    my ($self,$c) = @_;
-    my $p = $c->req->params;
-    my @tree;
-    my $provider;
-    my $user_mid = $c->user_ci->{mid};
-    $self->check_user_favorites($user_mid);
-    my $user = ci->user->find_one($user_mid);
-    my $root = length $p->{id_folder}
-        ? $user->{favorites}->{ $p->{id_folder} }{contents}
-        : $user->{favorites};
-    $root //= {};
-    my $favs = [ map { $root->{$_} } sort { $a cmp $b }
-        keys %$root ];
-
-    for my $node ( @$favs ) {
-        delete $node->{menu} if !$node->{menu}; # otherwise menus don't work
-        $node->{leaf} = \1 if !$node->{url};
-        push @tree, $node;
-    }
-    $c->stash->{json} = \@tree;
-}
-
-sub tree_favorite_folder : Local {
-    my ($self,$c) = @_;
-    my $p = $c->req->params;
-    $c->forward( 'tree_favorites' );
-    $c->forward( 'View::JSON' );
-}
-
 sub tree_workspaces : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
@@ -1385,41 +1377,54 @@ sub tree_workspaces : Local {
     $c->stash->{json} = \@tree;
 }
 
-
-
 sub favorite_add : Local {
     my ( $self, $c ) = @_;
 
     my $p = $c->req->params;
 
+    my $user = $c->user_ci;
+
     $c->stash->{json} = try {
-
-        # create the favorite id
-        my $id = time . '-' . int rand(9999);
-
-        # delete empty ones
-        $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
-
-        # if its a folder
-        if ( length $p->{id_folder} ) {
-            #_name_to_id delete $p->{id_folder};
-            $p->{id_folder} = $id;
-            $p->{icon}      = '/static/images/icons/folder-collapsed.svg';
-            $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
-        }
-
-        # decode data structures
-        defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
-
-        $p->{id_favorite} = $id;
-
-        my $user = $c->user_ci;
-        $user->favorites->{$id} = $p;
-        $user->save;
+        my $favorite = Baseliner::Model::Favorites->new->add_favorite_item(
+            $user,
+            {   text      => $p->{text},
+                url       => $p->{url},
+                icon      => $p->{icon},
+                menu      => $p->{menu},
+                data      => $p->{data},
+                is_folder => $p->{is_folder},
+            }
+        );
 
         cache->remove( { d => "ci", mid => $user->{mid} } );
 
-        { success => \1, msg => _loc("Favorite added ok"), id_folder => $p->{id_folder} }
+        {   success     => \1,
+            msg         => _loc("Favorite added ok"),
+            id_favorite => $favorite->{id_favorite},
+            id_folder   => $favorite->{id_folder} // '',
+            position    => $favorite->{position}
+        }
+    }
+    catch {
+        { success => \0, msg => shift() }
+    };
+
+    $c->forward('View::JSON');
+}
+
+sub favorite_del : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->req->params;
+
+    $c->stash->{json} = try {
+        my $user = $c->user_ci;
+
+        Baseliner::Model::Favorites->new->delete_nodes( $user, $p->{id_favorite}, $p->{id_parent});
+
+        cache->remove( { d => "ci", mid => $user->{mid} } );
+
+        { success => \1, msg => _loc("Favorite removed ok") }
     }
     catch {
         { success => \0, msg => shift() }
@@ -1427,72 +1432,60 @@ sub favorite_add : Local {
     $c->forward('View::JSON');
 }
 
-sub favorite_del : Local {
-    my ($self,$c) = @_;
-    my $p = $c->req->params;
-    $c->stash->{json} = try {
-        my $user = $c->user_ci;
-        my $favs = $user->favorites;
-        # delete node
-        my $id = $p->{id};
-        if( ! delete $favs->{$id} ) {
-            # search
-            delete $favs->{$_}{contents}{$id} for keys %$favs;
-        }
-        $user->save;
-        cache->remove({ d=>"ci", mid=>$user->{mid} });
-        { success=>\1, msg=>_loc("Favorite removed ok") }
-    } catch {
-        { success=>\0, msg=>shift() }
-    };
-    $c->forward( 'View::JSON' );
-}
-
 sub favorite_rename : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     $c->stash->{json} = try {
         _fail _loc("Invalid name") unless length $p->{text};
 
-        # TODO rename id_folder in case it's a folder?
         my $user = $c->user_ci;
-        my $d = $user->favorites->{ $p->{id} };
-        $d->{text} = $p->{text};
-        $user->save;
-        { success=>\1, msg=>_loc("Favorite renamed ok") }
-    } catch {
-        { success=>\0, msg=>shift() }
+
+        Baseliner::Model::Favorites->new->rename_favorite( $user, $p->{id_favorite}, $p->{text} );
+
+        { success => \1, msg => _loc("Favorite renamed ok") }
+    }
+    catch {
+        { success => \0, msg => shift() }
     };
-    $c->forward( 'View::JSON' );
+    $c->forward('View::JSON');
 }
 
+
 sub favorite_add_to_folder : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
-    my $user_mid = $c->user_ci->{mid};
-    cache->remove({ d=>"ci", mid=>$user_mid });
+
+    my $id_favorite   = $p->{id_favorite};
+    my $id_parent     = $p->{id_parent} // '';
+    my $action        = $p->{action} // '';
+    my $nodes_ordered = $p->{nodes_ordered} ? _decode_json( $p->{nodes_ordered} ) : '';
+
+    my $user = $c->user_ci;
+
+    cache->remove( { d => "ci", mid => $user->mid } );
+
     $c->stash->{json} = try {
-        my $favorite_folder= $p->{favorite_folder};
-        my $id_favorite= $p->{id_favorite};
-        my $id_folder= $p->{id_folder};
-        # get data
-        my $user = ci->new($user_mid);
-        my $d = $user->favorites->{ $id_folder };
-        _fail _loc("Not found: %1", $id_folder) unless defined $d;
-        $d->{contents} //= {};
-        # delete old
-        my $fav = delete $user->favorites->{ $id_favorite};
-        # set new
-        $d->{favorite_folder} = $id_folder;
-        $d->{contents}{ $id_favorite} = $fav;
-        $user->save;
-        { success=>\1, msg=>_loc("Favorite moved ok") }
-    } catch {
-        { success=>\0, msg=>shift() }
+        Baseliner::Model::Favorites->new->update_position(
+            $user,
+            $id_favorite,
+            $id_parent,
+            action        => $action,
+            nodes_ordered => $nodes_ordered
+        );
+        { success => \1, msg => _loc("Favorite moved ok") }
+    }
+    catch {
+        { success => \0, msg => shift() }
     };
-    cache->remove({ d=>"ci", mid=>$user_mid });
-    $c->forward( 'View::JSON' );
+
+    cache->remove( { d => "ci", mid => $user->mid } );
+
+    $c->forward('View::JSON');
 }
+
 
 sub click_for_topic {
     my ($self, $catname, $mid ) = @_;

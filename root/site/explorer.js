@@ -151,13 +151,12 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             self.tool_bar.enable_all();
             //node.attributes.is_refreshing = true;
         });
-        
+
         self.loader.on('loadexception', function(loader, node, res) {
             self.tool_bar.enable_all();
         });
 
         self.addEvents( 'favorite_added' );
-        
     },
     menu_favorite_add : function(){
         var self = this;
@@ -200,7 +199,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 var node = sm.getSelectedNode();
                 if( node != undefined ) {
                     Baseliner.ajaxEval( '/lifecycle/favorite_del',
-                        { id: node.attributes.id_favorite, favorite_folder: node.attributes.favorite_folder, id_folder: node.attributes.id_folder },
+                        { id_favorite: node.attributes.id_favorite , id_parent: node.attributes.id_parent},
                         function(res) {
                             Baseliner.message( _('Favorite'), res.msg );
                             node.remove();
@@ -222,7 +221,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                     Ext.Msg.prompt(_('Rename'), _('New name:'), function(btn, text){
                         if( btn == 'ok' ) {
                             Baseliner.ajaxEval( '/lifecycle/favorite_rename',
-                                { id: node.attributes.id_favorite, favorite_folder: node.attributes.favorite_folder, id_folder: node.attributes.id_folder, text: text },
+                                { id_favorite: node.attributes.id_favorite, text: text },
                                 function(res) {
                                     Baseliner.message( _('Favorite'), res.msg );
                                     if( res.success ) node.setText( text );
@@ -237,7 +236,6 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
     menu_click : function(node,event){
         var self = this;
         node.select();
-        
         // menus and click events go in here
         var tree_menu = new Ext.menu.Menu({
             items: base_menu_items,
@@ -407,15 +405,9 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
 
 Baseliner.gen_btn_listener = function() {
     return {
-        'toggle': function(btn, pressed){
-            btn.one_click = pressed ? 1 : 0;
-        },
-        'click': function(btn){
-            if( btn.one_click >= 2 ) {
-                btn.refresh_all(function(){btn.enable();});
-            }
-            btn.one_click = btn.one_click >= 1 ? 2 : 0;
-            return true;
+        'click': function(btn) {
+            btn.refresh_all(function() {
+            });
         }
     }
 }
@@ -446,14 +438,51 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.add( self.$tree_projects );
             }
             self.getLayout().setActiveItem( self.$tree_projects );
-            self.$tree_projects.onload = callback;     
+            self.$tree_projects.onload = callback;
+            button_favorites.enable();
         };
 
         var show_favorites = function(callback,switch_on_empty) {
-            if( !self.$tree_favorites ) {
-                self.$tree_favorites = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' , baseParams: { favorites: true } });
-                self.add( self.$tree_favorites );
+            if (!self.$tree_favorites) {
+                self.$tree_favorites = new Baseliner.ExplorerTree({
+                    dataUrl: '/lifecycle/tree',
+                    baseParams: {
+                        favorites: true
+                    },
+                    listeners: {
+                        beforeexpandnode: function(node) {
+                            if (node.attributes.id_folder) {
+                                node.setIcon('/static/images/icons/folder-expanded.svg');
+                            }
+                        },
+                        beforecollapsenode: function(node) {
+                            if (node.attributes.id_folder) {
+                                node.setIcon('/static/images/icons/folder-collapsed.svg');
+                            }
+                        },
+                        beforenodedrop: function(node) {
+                            button_refresh.disable();
+                            button_favorites.disable();
+                            self.$tree_favorites.disable();
+                        },
+                        NodeDropLoaded: function() {
+                            self.$tree_favorites.enable();
+                            button_refresh.enable();
+                            button_favorites.enable();
+
+                        },
+                        beforeload: function(node) {
+                            self.$tree_favorites.disable();
+                        },
+                        load: function(node) {
+                            self.$tree_favorites.enable();
+                        }
+                    }
+                });
+
+                self.add(self.$tree_favorites);
             }
+
             self.getLayout().setActiveItem( self.$tree_favorites );
             self.$tree_favorites.onload = callback;
             if( switch_on_empty ) {
@@ -475,6 +504,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
             self.getLayout().setActiveItem( self.$tree_workspaces );
             self.$tree_workspaces.onload = callback;
+            button_favorites.enable();
         };
 
         var show_ci = function(callback) {
@@ -485,8 +515,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
             self.getLayout().setActiveItem( self.$tree_ci );
             self.$tree_ci.onload = callback;
+            button_favorites.enable();
         };
-        
+
         var show_releases = function(callback) {
             if( !self.$tree_releases ) {
                 self.$tree_releases = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree', baseParams: { show_releases: true } });
@@ -495,8 +526,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
             self.getLayout().setActiveItem( self.$tree_releases );
             self.$tree_releases.onload = callback;
+            button_favorites.enable();
         };
-        
+
         var show_reports = function(callback) {
             if( !self.$tree_reports ) {
                 self.$tree_reports = new Baseliner.ExplorerTree({ dataUrl : '/ci/report/report_list', baseParams: { show_reports: true } });
@@ -505,8 +537,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
             self.getLayout().setActiveItem( self.$tree_reports );
             self.$tree_reports.onload = callback;
+            button_favorites.enable();
         };
-        
+
         var show_dashboards = function(callback) {
             if( !self.$tree_dashboards ) {
                 self.$tree_dashboards = new Baseliner.ExplorerTree({ dataUrl : '/dashboard/dashboard_list', enableDD:false, baseParams: { ordered: true, show_reports: true } });
@@ -515,8 +548,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
             self.getLayout().setActiveItem( self.$tree_dashboards );
             self.$tree_dashboards.onload = callback;
+            button_favorites.enable();
         };
-        
 
         var button_projects = new Ext.Button({
             cls: 'x-btn-icon',
@@ -544,6 +577,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             tooltip: _('Favorites'),
             handler: function(){
                 var that = this;
+                that.disable();
                 show_favorites(function(){ that.enable();});
             },
             pressed: true,
@@ -679,27 +713,27 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_reports ) self.$tree_reports.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
-        });       
+        });
 
         var add_to_fav_folder = function() {
-            Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, folder){
+            Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, name){
                 if( btn == 'ok' ) {
-                    var on_drop = { url: '/comp/lifecycle/add_to_fav_folder.js' };
                     Baseliner.ajaxEval( '/lifecycle/favorite_add',
                         {
-                            text: folder,
-                            id_folder: folder,
-                            data: Ext.util.JSON.encode({ on_drop: on_drop }),
-                            icon: '/static/images/icons/favorite_new.svg'
+                            text: name,
+                            is_folder: 1,
+                            data: Ext.util.JSON.encode({ on_drop: true })
                         },
                         function(res) {
                             Baseliner.message( _('Favorite'), res.msg );
                             if( res.success ) {
                                 var new_node = self.$tree_favorites.getLoader().createNode({
-                                    text: folder + ' ('+res.id_folder+')',
-                                    icon: '/static/images/icons/favorite.svg',
-                                    data: { on_drop: on_drop },
-                                    url: '/lifecycle/tree_favorite_folder?id_folder=' + res.id_folder
+                                    text: name ,
+                                    icon: '/static/images/icons/folder-collapsed.svg',
+                                    data: { on_drop: true },
+                                    id_folder: res.id_folder,
+                                    id_favorite: res.id_folder,
+                                    url: '/lifecycle/tree_favorites?id_folder=' + res.id_folder
                                 });
                                 self.$tree_favorites.root.appendChild( new_node );
                             }
@@ -714,7 +748,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         };
 
         var button_menu = new Ext.Button({
-            tooltip: _('Config'),
+            tooltip: _('Add Favorite Folder'),
             menu: [
                 { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite_new.svg', handler: add_to_fav_folder }
             ]
@@ -740,6 +774,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             id: 'button_refresh',
             handler: function(){
                 var that = this;
+                that.disable();
                 self.current_tree().refresh_all(function(){that.enable();});
             }
         });
@@ -780,9 +815,13 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });
         self.tbar = tool_bar;
 
-
         Baseliner.Explorer.superclass.initComponent.call(this);
-        self.on('afterrender', function(){ show_favorites(function() { button_favorites.enable(); },true); button_collapse.hide(); });
+        self.on('afterrender', function() {
+            show_favorites(function() {
+                button_favorites.enable();
+            }, true);
+            button_collapse.hide();
+        });
     },
     current_tree : function(){
         return this.getLayout().activeItem;
