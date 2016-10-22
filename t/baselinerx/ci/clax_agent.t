@@ -198,6 +198,127 @@ subtest 'execute: sends correct request with ssl' => sub {
     is $url, 'https://bar:8888/command';
 };
 
+subtest 'execute: sends correct request with proxy' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent(
+        ua     => $ua,
+        server => {
+            hostname => 'destination',
+        },
+        proxy => _build_server(
+            hostname => 'proxy',
+        ),
+    );
+
+    my $ret = $clax_agent->execute( 'echo', 'bar' );
+
+    my ( $url, $data, $options ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'http://proxy:11801/command';
+    is_deeply $options->{headers}, { 'X-Hops' => 'destination:8888', 'X-Hop-Timeout' => 15 };
+};
+
+subtest 'execute: sends correct request with proxy and timeout' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent(
+        ua     => $ua,
+        server => {
+            hostname      => 'destination',
+            proxy_timeout => 10
+        },
+        proxy => _build_server(
+            hostname => 'proxy',
+        ),
+    );
+
+    my $ret = $clax_agent->execute( 'echo', 'bar' );
+
+    my ( $url, $data, $options ) = $ua->mocked_call_args('post_form');
+
+    is_deeply $options->{headers}, { 'X-Hops' => 'destination:8888', 'X-Hop-Timeout' => 10 };
+};
+
+subtest 'execute: sends correct request with deep nested proxy' => sub {
+    my $ua = _mock_ua();
+
+    $ua->mock(
+        post_form => sub {
+            shift;
+            my ( $url, $data, $options ) = @_;
+
+            $options->{data_callback}->('bar');
+
+            { success => 1, headers => { 'x-clax-exit' => 0 } };
+        }
+    );
+
+    my $clax_agent = _build_clax_agent(
+        ua     => $ua,
+        server => {
+            hostname => 'destination',
+        },
+        proxy => _build_server(
+            hostname => 'proxy3',
+            proxy    => _build_server(
+                hostname => 'proxy2',
+                proxy    => _build_server( hostname => 'proxy1' )
+            )
+        ),
+    );
+
+    my $ret = $clax_agent->execute( 'echo', 'bar' );
+
+    my ( $url, $data, $options ) = $ua->mocked_call_args('post_form');
+
+    is $url, 'http://proxy1:11801/command';
+    is_deeply $options->{headers}, { 'X-Hops' => 'proxy2:11801,proxy3:11801,destination:8888', 'X-Hop-Timeout' => 15 };
+};
+
+subtest 'execute: throws when recursive proxies' => sub {
+    my $ua = _mock_ua();
+
+    my $clax_agent = _build_clax_agent(
+        ua    => $ua,
+        server => {
+            hostname => 'localhost',
+        },
+        port => 11801,
+        proxy => BaselinerX::CI::generic_server->new(
+            hostname       => 'localhost',
+            connect_clax   => 1,
+            connect_worker => 0,
+            connect_balix  => 0,
+            connect_ssh    => 0,
+        ),
+    );
+
+    like exception { $clax_agent->execute( 'echo', 'bar' ) }, qr/Recursive proxy configuration in 123/;
+};
+
 subtest 'get_file: sends correct request' => sub {
     my $ua = _mock_ua();
 
@@ -569,9 +690,10 @@ sub _build_clax_agent {
     my $ua = delete $params{ua} || _mock_ua();
 
     my $agent = BaselinerX::CI::clax_agent->new(
+        mid    => 123,
         user   => 'foo',
         port   => '8888',
-        server => BaselinerX::CI::generic_server->new( hostname => 'bar', %$server_args ),
+        server => _build_server( hostname => 'bar', %$server_args ),
         %params
     );
 
@@ -579,4 +701,15 @@ sub _build_clax_agent {
     $agent->mock( _build_ua => sub { $ua } );
 
     return $agent;
+}
+
+sub _build_server {
+    return BaselinerX::CI::generic_server->new(
+        hostname       => 'proxy',
+        connect_clax   => 1,
+        connect_worker => 0,
+        connect_balix  => 0,
+        connect_ssh    => 0,
+        @_
+    );
 }

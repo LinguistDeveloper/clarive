@@ -17,6 +17,11 @@ has connect_worker => qw(is rw isa Bool default 0);
 
 with 'Baseliner::Role::CI::Server';
 
+has_ci 'proxy';
+has proxy_timeout => qw(is rw isa Maybe[Str] default 15);
+
+sub rel_type { { proxy => [ from_mid => 'server_proxy' ] } }
+
 service 'connect' => {
     name    => 'Test Server Connection',
     form    => '/forms/test_server_connect.js',

@@ -9,6 +9,7 @@ use IO::Socket::SSL;
 use Try::Tiny;
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::Utils qw(:logging _file _dir _array);
+use BaselinerX::Type::Model::ConfigStore;
 
 has
   port    => qw(is rw isa Str),
@@ -17,6 +18,12 @@ has
       || 11801;
   };
 has timeout => qw(is rw isa Str);
+has
+  hops    => qw(is ro isa ArrayRef lazy 1),
+  default => sub {
+    my $self = shift;
+    $self->_calculate_hops;
+  };
 
 has basic_auth_enabled  => qw(is rw isa BoolCheckbox coerce 1 default 0);
 has basic_auth_username => qw(is rw isa Str);
@@ -28,12 +35,15 @@ has ssl_ca      => qw(is rw isa Str);
 has ssl_cert    => qw(is rw isa Str);
 has ssl_key     => qw(is rw isa Str);
 
+has_ci 'proxy';
+
 with 'Baseliner::Role::CI::Agent';
 
 sub BUILD {
    my $self = shift;
 
    $self->os($self->server->os);
+   $self->proxy($self->server->proxy) if $self->server->proxy;
 };
 
 sub error;
@@ -62,17 +72,18 @@ method ping {
 method mkpath ( $path ) {
     my $ua = $self->_build_ua;
 
-    my $url = $self->_build_url("/tree/");
+    my $url        = $self->_build_url("/tree/");
+    my $ua_options = $self->_build_options;
 
-    my $response = $ua->post_form( $url, { dirname => $path } );
+    my $response = $ua->post_form( $url, { dirname => $path }, $ua_options );
 
     if ( !$response->{success} ) {
-        _fail _loc('Error while creating a directory: %1', $self->_parse_reason($response));
+        _fail _loc( 'Error while creating a directory: %1', $self->_parse_reason($response) );
     }
 
-    $self->rc( 0 );
-    $self->ret( '' );
-    $self->output( '' );
+    $self->rc(0);
+    $self->ret('');
+    $self->output('');
 
     return $self->tuple;
 }
@@ -93,7 +104,9 @@ sub execute {
     my $output = '';
 
     my $ua = $self->_build_ua;
-    my $url = $self->_build_url("/command");
+
+    my $url     = $self->_build_url("/command");
+    my $ua_options = $self->_build_options;
 
     if (@args) {
         $cmd = join ' ', $cmd, $self->_quote_cmd(@args);
@@ -114,7 +127,8 @@ sub execute {
                 my ($chunk) = @_;
 
                 $output .= $chunk;
-            }
+            },
+            %$ua_options
         }
     );
 
@@ -143,9 +157,10 @@ method is_remote_dir( $dir ) {
 method file_exists( $file_or_dir ) {
     my $ua = $self->_build_ua;
 
-    my $url = $self->_build_url("/tree/$file_or_dir");
+    my $url        = $self->_build_url("/tree/$file_or_dir");
+    my $ua_options = $self->_build_options;
 
-    my $response = $ua->head( $url );
+    my $response = $ua->head( $url, $ua_options );
 
     if ( $response->{success} ) {
         return 1;
@@ -193,6 +208,7 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     my $last_header_sent = 0;
 
     my $url = $self->_build_url("/tree/$remote_dir");
+    my $ua_options = $self->_build_options;
 
     my %query;
     if ($self->copy_attrs) {
@@ -207,7 +223,8 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
         $url => {
             headers => {
                 'Content-Type'   => qq{multipart/form-data; boundary=$boundary},
-                'Content-Length' => length($first_header) + ( -s $fh ) + length($last_header)
+                'Content-Length' => length($first_header) + ( -s $fh ) + length($last_header),
+                %{delete $ua_options->{headers} || {}}
             },
             content => sub {
                 my $rcount = read $fh, my $buffer, 8192;
@@ -231,7 +248,8 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
                 }
 
                 return $buffer;
-            }
+            },
+            %$ua_options
         }
     );
 
@@ -252,14 +270,16 @@ method get_file( :$local, :$remote, :$group = '', :$user = $self->user ) {
     open my $fh, '>', $local or _fail( _loc( "Could not open local file `%1`: %2", $local, $! ) );
     binmode $fh;
 
-    my $url      = $self->_build_url("/tree/$remote");
+    my $url = $self->_build_url("/tree/$remote");
+    my $ua_options = $self->_build_options;
     my $response = $ua->get(
         $url => {
             data_callback => sub {
                 my ( $chunk, $response ) = @_;
 
                 print $fh $chunk;
-            }
+            },
+            %$ua_options
         }
     );
 
@@ -351,7 +371,7 @@ sub _crc32_from_file {
 
 sub _build_url {
     my $self = shift;
-    my ($path) = @_;
+    my ( $path ) = @_;
 
     my $auth = '';
     if ( $self->basic_auth_enabled ) {
@@ -359,13 +379,67 @@ sub _build_url {
         $auth .= '@';
     }
 
+    my $url = $self->server->hostname . ':' . $self->port;
+
+    my $hops = $self->hops;
+
+    if (@$hops) {
+        $url = $hops->[0]->{address};
+    }
+
     my $schema = 'http';
     if ($self->ssl_enabled) {
         $schema .= 's';
     }
 
-    my $url = $self->server->hostname . ':' . $self->port;
     return URI->new("$schema://$auth$url$path");
+}
+
+sub _calculate_hops {
+    my $self = shift;
+
+    my $agent = $self;
+
+    my @hops;
+    push @hops, { address => join( ':', $self->hostname, $self->port ) };
+    my %hops_seen = ( $hops[0]->{address} => 1 );
+
+    while ( $agent->proxy && !$agent->proxy->isa('BaselinerX::CI::Empty') ) {
+        my $timeout = $agent->server->proxy_timeout;
+
+        $agent = $agent->proxy->connect;
+
+        die 'Proxy configuration only supported in Clax' unless $agent->isa('BaselinerX::CI::clax_agent');
+
+        my $proxy = join ':', $agent->hostname, $agent->port;
+        if ( $hops_seen{$proxy} ) {
+            die 'Recursive proxy configuration in ' . $self->mid;
+        }
+
+        $hops_seen{$proxy}++;
+        unshift @hops, { address => $proxy, timeout => $timeout };
+    }
+
+    return \@hops;
+}
+
+sub _build_options {
+    my $self = shift;
+
+    my $options = {};
+
+    my $hops = $self->hops;
+
+    if ( $hops && @$hops ) {
+        my $hop = shift @$hops;
+
+        if (@$hops) {
+            $options->{headers}->{'X-Hops'} = join ',', map { $_->{address} } @$hops;
+            $options->{headers}->{'X-Hop-Timeout'} = $hop->{timeout};
+        }
+    }
+
+    return $options;
 }
 
 sub _build_ua {
