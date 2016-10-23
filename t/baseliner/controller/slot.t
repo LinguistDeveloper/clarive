@@ -698,7 +698,7 @@ subtest 'build_job_window: get first slot from higher priority calendar' => sub 
     my $date = DateTime->now;
 
     my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => '*' );
-    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow ] );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow - 1 ] );
 
     my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '200', bl => 'TEST' );
     my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'U' );
@@ -728,10 +728,10 @@ subtest 'build_job_window: no slot available if higher priority is blocking' => 
     my $date = DateTime->now;
 
     my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => '*' );
-    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow ] );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow - 1 ] );
 
     my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '200', bl => 'TEST' );
-    my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B', days => [ $date->dow ] );
+    my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B', days => [ $date->dow - 1 ] );
 
     my $params = {
         bl           => 'TEST',
@@ -761,10 +761,10 @@ TODO: {
         my $date = DateTime->now;
 
         my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '200', bl => '*' );
-        my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow ] );
+        my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N', days => [ $date->dow -1 ] );
 
         my $id_cal2 = TestSetup->create_calendar( name => 'TEST', seq => '100', bl => 'TEST' );
-        my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B', days => [ $date->dow ] );
+        my @id_win2 = _create_initial_slots( id_cal => $id_cal2, type => 'B', days => [ $date->dow -1 ] );
 
         my $params = {
             bl           => 'TEST',
