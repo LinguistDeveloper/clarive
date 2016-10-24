@@ -3916,23 +3916,23 @@ Baseliner.UploadPanel = Ext.extend( Ext.Panel, {
  *      [ form : <FormPanel> | mid: <Num> ] 
  *  });
  */
-Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
+Baseliner.UploadFilesPanel = Ext.extend(Ext.Panel, {
     border: false,
     layout: 'form',
     id_field: 'upload_files_panel',
-    url_delete : '/topic/remove_file',
-    url_list : '/topic/file_tree',
-    url_download : '/topic/download_file',
-    url_upload : '/topic/upload',
-    get_mid : function(){ // the form may not have a mid in the beginning, but later it does, so this is dynamic
+    url_delete: '/topic/remove_file',
+    url_list: '/topic/file_tree',
+    url_download: '/topic/download_file',
+    url_upload: '/topic/upload',
+    get_mid: function() { // the form may not have a mid in the beginning, but later it does, so this is dynamic
         var self = this;
-        if( self.mid ) return self.mid;
-        if( !self.mid && self.form ) {
+        if (self.mid) return self.mid;
+        if (!self.mid && self.form) {
             var ff;
             ff = self.form.getForm();
             var mid_field = ff.findField("topic_mid");
             var mid = mid_field ? mid_field.getValue() : null;
-            if( !mid ) {
+            if (!mid) {
                 return null;
             } else {
                 self.mid = mid;
@@ -3942,67 +3942,99 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             return null;
         }
     },
-    initComponent : function(){
+    initComponent: function() {
         var self = this;
         var form = self.form;
-        //self.disabled = self.readonly;
-        //if( !self.name ) self.name_field = self.fieldLabel;
-        
+
         var check_sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,
             sortable: false,
             checkOnly: true
         });
-        
-        var record = Ext.data.Record.create([
-            {name: 'filename'},
-            {name: 'versionid'},
-            {name: 'filesize'},     
-            {name: 'size'},     
-            {name: 'md5'},  
-            {name: 'mid'},     
-            {name: '_id', type: 'int'},
-            {name: '_parent', type: 'auto'},
-            {name: '_level', type: 'int'},
-            {name: '_is_leaf', type: 'bool'}
-        ]);     
-        
-        self.store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
-           autoLoad : true,  
-           url: self.url_list, 
-           baseParams: { topic_mid: self.get_mid() == -1 ? '' : self.get_mid(), filter: self.id_field },
-           reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
+
+        var record = Ext.data.Record.create([{
+            name: 'filename'
+        }, {
+            name: 'versionid'
+        }, {
+            name: 'filesize'
+        }, {
+            name: 'size'
+        }, {
+            name: 'md5'
+        }, {
+            name: 'mid'
+        }, {
+            name: '_id',
+            type: 'int'
+        }, {
+            name: '_parent',
+            type: 'auto'
+        }, {
+            name: '_level',
+            type: 'int'
+        }, {
+            name: '_is_leaf',
+            type: 'bool'
+        }]);
+
+        self.store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({
+            autoLoad: true,
+            url: self.url_list,
+            baseParams: {
+                topic_mid: self.get_mid() == -1 ? '' : self.get_mid(),
+                filter: self.id_field
+            },
+            reader: new Ext.data.JsonReader({
+                id: '_id',
+                root: 'data',
+                totalProperty: 'total',
+                successProperty: 'success'
+            }, record)
         });
-        
-        self.store_file.on('load', function(){ self.fireEvent( 'change', self ) });
-        //self.store_file.on('remove', function(){ self.fireEvent( 'change', self ) });
-		
-        var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
+
+        self.store_file.on('load', function(obj) {
+            self.fireEvent('change', self);
+            pnlFileList.setWidth(pnlUpload.getWidth() - 15);
+        });
+
+        var render_file = function(value, metadata, rec, rowIndex, colIndex, store) {
             var asset_mid = rec.data.mid;
-            if( asset_mid != undefined ) {
-                value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, asset_mid, self.url_download );
+            if (asset_mid != undefined) {
+                value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, asset_mid, self.url_download);
+            } else {
+                var icon = IC('catalog-folder.png');
+                value = String.format('<img  style="vertical-align:middle" src="{0}" alt="edit" /><span style="margin-left: 4px;"><b>{1}</span>', icon, value);
             }
-            value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' 
-                //+ '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
-                + value 
-                + '</div>';
+            value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' + value + '</div>';
             return value;
         };
 
-        var file_del = function(){
+        var deleteFiles = function() {
             var sels = checked_selections();
-            if ( sels != undefined ) {
+
+            if (sels != undefined) {
+                pnlUpload.disable();
                 var sel = check_sm.getSelected();
-                Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
+                Baseliner.confirm(_('Are you sure you want to delete these artifacts?'), function() {
                     var sels = checked_selections();
-                    Baseliner.ajaxEval( self.url_delete, { asset_mid : sels.asset_mids, topic_mid: self.get_mid() }, function(res) {
-                        Baseliner.message(_('Deleted'), res.msg );
-                        var rows = check_sm.getSelections();
-                        Ext.each(rows, function(row){ self.store_file.remove(row); })                    
-                        self.store_file.reload();
+                    Baseliner.showLoadingMask(pnlFileList.getEl());
+                    Baseliner.ajaxEval(self.url_delete, {
+                        asset_mid: sels.asset_mids,
+                        topic_mid: self.get_mid()
+                    }, function(res) {
+                        Baseliner.message(_('Deleted'), res.msg);
+                        Ext.each(sels.records, function(record) {
+                            self.store_file.remove(record);
+                        });
+                        var hdCheckbox = pnlFileList.getEl().select('.x-grid3-hd-checker-on');
+                        if (hdCheckbox) hdCheckbox.removeClass('x-grid3-hd-checker-on');
+                        self.form.main.view_is_dirty = true;
+                        Baseliner.hideLoadingMaskFade(pnlFileList.getEl());
+                        pnlUpload.enable();
                     });
                 });
-            } 
+            }
         };
 
         var checked_selections = function() {
@@ -4010,179 +4042,299 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                 var sel = check_sm.getSelections();
                 var name = [];
                 var asset_mids = [];
-                for( var i=0; i<sel.length; i++ ) {
-                    asset_mids.push( sel[i].data.mid );
-                    name.push( sel[i].data.name );
+                for (var i = 0; i < sel.length; i++) {
+                    asset_mids.push(sel[i].data.mid);
+                    name.push(sel[i].data.name);
                 }
-                return { count: asset_mids.length, name: name, asset_mids: asset_mids };
+                return {
+                    count: asset_mids.length,
+                    name: name,
+                    asset_mids: asset_mids,
+                    records: sel
+                };
             }
             return undefined;
         };
-        
-        self.height_list = self.height ? self.height*.9 : 120;
-        self.height_drop = self.height ? self.height*.1 : 100;
-        if( self.height_drop < 40 ) { // minimum height for drop area
+
+        self.height_list = self.height ? self.height * .9 : 120;
+        self.height_drop = self.height ? self.height * .1 : 100;
+        if (self.height_drop < 40) { // minimum height for drop area
             self.height_list = self.height - 40;
             self.height_drop = 40;
         }
-        var filelist = new Ext.ux.maximgb.tg.GridPanel({
+
+
+        var pnlFileList = new Ext.ux.maximgb.tg.GridPanel({
             height: self.height_list,
-            stripeRows: true,
-            autoScroll: true,
-            autoWidth: true,
             sortable: false,
-            header: true,
             hideHeaders: false,
             sm: check_sm,
             store: self.store_file,
+            loadMask: true,
             tbar: [
-                { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
-                '->',
-                { xtype: 'button', cls:'x-btn-icon', icon:'/static/images/icons/delete.svg', handler: file_del }
+                '->', {
+                    xtype: 'button',
+                    cls: 'x-btn-icon',
+                    icon: '/static/images/icons/delete.svg',
+                    handler: deleteFiles
+                }
             ],
             viewConfig: {
                 headersDisabled: true,
-                enableRowBody: true,
                 scrollOffset: 2,
-                forceFit: true
+                forceFit: true,
+                headerTpl: new Ext.Template(
+                    '<table border="0" cellspacing="0" cellpadding="0" style="background-color:#F5F5F5;">',
+                    '<thead>',
+                    '<tr class="x-grid3-hd-row">{cells}</tr>',
+                    '</thead>',
+                    '</table>'
+                ),
             },
-            master_column_id : 'filename',
+            master_column_id: 'filename',
             autoExpandColumn: 'filename',
             columns: [
-              check_sm,
-              { width: 16, dataIndex: 'extension', sortable: true, renderer: Baseliner.render_extensions },
-              { id:"filename", header: _('File'), width: 250, dataIndex: 'filename', renderer: render_file },
-              { header: _('Id'), hidden: true, dataIndex: '_id' },
-              { header: _('Size'), width: 40, dataIndex: 'size' },
-              { header: _('Version'), width: 40, dataIndex: 'versionid' }
-            ]			
-        });
-        
-        var filedrop = new Ext.Panel({
-            border: false,
-            style: { margin: '10px 0px 10px 0px' },
-            height: self.height_drop
+                check_sm, {
+                    id: "filename",
+                    header: _('File'),
+                    width: 250,
+                    dataIndex: 'filename',
+                    renderer: render_file
+                }, {
+                    header: _('Id'),
+                    hidden: true,
+                    dataIndex: '_id'
+                }, {
+                    header: _('Size'),
+                    width: 40,
+                    dataIndex: 'size'
+                }, {
+                    header: _('Version'),
+                    width: 40,
+                    dataIndex: 'versionid'
+                }
+            ]
         });
 
-        var uploadFileCompleted = 0;
-        filedrop.on('afterrender', function(){
-            var el = filedrop.el.dom;
-            var uploader = new qq.FileUploader({
-                element: el,
-                action: self.url_upload,
-                //debug: true,  
-                // additional data to send, name-value pairs
-                //params: {
-                //  topic_mid: data ? data.topic_mid : self.get_mid()
-                //},
-                template: '<div class="qq-uploader">' + 
-                    '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
-                    '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-                    '<ul class="qq-upload-list"></ul>' + 
-                 '</div>',
-                onComplete: function(fu, filename, res){
-                    Baseliner.message(_('Upload File'), _(res.msg, filename) );
-                    //if(res.file_uploaded_mid){
-                        //var form2 = self.form.getForm();
-                        //var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
-                        //files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
-                        //form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
-                        //var files_mid = files_uploaded_mid.split(',');
-                        //self.store_file.baseParams = { files_mid: files_mid };
-                    //    self.store_file.reload();
-                    //}
-                    //else{
-                        self.store_file.baseParams = {topic_mid: self.get_mid() == -1 ? '' : self.get_mid(), filter: self.id_field };
-                        self.store_file.reload();
-                    //}
-                },
-                onSubmit: function(id, filename){
-                    try {
-                    var mid = self.get_mid(); // data && data.topic_mid ? data.topic_mid : self.get_mid();
-                    var config_parms = function(mid) { uploader.setParams({topic_mid: mid, filter: self.id_field, extension: self.ext_fich }); };
-                    if( mid == undefined || mid<0 ) {
-                        Ext.Msg.confirm( _('Confirmation'), _('To upload files, the form needs to be created. Save form before submitting?'),
-                            function(btn){ 
-                                if(btn=='yes') {
-                                    form.main.save_topic({ 
-//                                        no_refresh: true,
-                                        success: function(res){
-                                            // resubmit form hack
-                                            config_parms(res.topic_mid);
-                                            var fc = uploader._handler._files[0];
-                                            var id = uploader._handler.add(fc);
-                                            var fileName = uploader._handler.getName(id);
-                                            uploader._onSubmit(id, fileName);
-                                            uploader._handler.upload(id, uploader._options.params);
+
+        pnlFileList.on('cellclick', function(grid, rowIndex, columnIndex, e) {
+            var store = grid.getStore();
+
+            function getNodeAllChildren(record) {
+                var nodeAllChildren = [];
+
+                if (store.hasChildNodes(record)) {
+                    var children = store.getNodeChildren(record);
+                    nodeAllChildren = nodeAllChildren.concat(children);
+                    Ext.each(children, function(child) {
+                        if (store.hasChildNodes(record)) {
+                            nodeAllChildren = nodeAllChildren.concat(getNodeAllChildren(child));
+                        }
+                    });
+                }
+
+                return nodeAllChildren;
+            }
+
+            // Only if it's check column
+            if (!columnIndex) {
+                record = store.getAt(rowIndex),
+                    sm = grid.getSelectionModel(),
+                    children = getNodeAllChildren(record),
+                    lastRecord;
+
+                if (sm.isSelected(rowIndex)) {
+                    if (children.length) {
+                        sm.selectRecords(children, true);
+                    }
+                } else {
+                    var parent = store.getNodeParent(record);
+                    var childSelected = false;
+
+                    if (parent) {
+                        pchildren = getNodeAllChildren(parent);
+                        Ext.each(pchildren, function(child) {
+                            var row = store.indexOfId(child.id);
+                            if (sm.isSelected(row)) {
+                                childSelected = true;
+                                return
+                            }
+                        });
+                        if (!childSelected) {
+                            row = store.indexOfId(parent.id);
+                            sm.deselectRow(row);
+                        }
+                    }
+
+                    var lastRecord = children.pop();
+
+                    if (lastRecord) {
+                        indexLastRecord = store.indexOf(lastRecord);
+                        sm.deselectRange(rowIndex, indexLastRecord);
+                    }
+                }
+            }
+
+        });
+
+
+        var pnlUpload = new Ext.Panel({
+            border: false,
+            style: {
+                margin: '10px 0px 10px 0px'
+            },
+            height: self.height_drop,
+            submitValue: false,
+            listeners: {
+                'afterrender': function(obj_pnlUpload) {
+                    var el = obj_pnlUpload.el.dom,
+                        elDrop = pnlFileList.el.dom,
+                        uploadFileCompleted = 0;
+
+                    var uploader = new qq.FileUploader({
+                        element: el,
+                        elementDrop: elDrop,
+                        action: self.url_upload,
+                        onComplete: function(fu, filename, res) {
+                            if (res.success) {
+                                self.uploadFiles.push(res.upload_file);
+                            } else {
+                                Baseliner.warning(_('Error uploading file'), _(res.msg));
+                            }
+
+                            if (uploader.getInProgress() == 0) {
+                                Ext.MessageBox.hide();
+                                if (self.uploadFiles.length) {
+                                    var midTopic = self.get_mid();
+                                    Baseliner.ajax_json('/topic/upload_complete', {
+                                        topic_mid: midTopic,
+                                        upload_files: self.uploadFiles,
+                                        idField: self.id_field
+                                    }, function(res) {
+                                        if (res.success) {
+                                            Baseliner.message(_('Uploaded Files'));
+                                            self.store_file.baseParams = {
+                                                topic_mid: self.get_mid() == -1 ? '' : self.get_mid(),
+                                                filter: self.id_field
+                                            };
+                                            self.store_file.reload();
+                                            self.form.main.show_form();
+                                        } else {
+                                            Baseliner.message(_('Catalog'), _('Error uploading files'));
                                         }
                                     });
-                                };
-                            }
-                        );
-                        return false;
-                    } else {
-                        config_parms(mid);
-                    }
-                    }catch(err) {
-                        console.log("Fallo en subida de fichero");
-                    }
-                },
-                onProgress: function(id, filename, loaded, total){
-                    progress = loaded/total;
-                    Ext.MessageBox.show({
-                        title: _('Uploading file ')+filename,
-                        progressText: _('Uploading...'),
-                        width:300,
-                        progress:true,
-                        closable:false
-                    });
-                    Ext.MessageBox.updateProgress(progress, Math.round(100*progress)+'% completed');
-                    
-                    if(progress == 1 && uploadFileCompleted){
-                        Ext.MessageBox.hide();
-                        uploadFileCompleted = 0;
-                    }else if(progress == 1 && !uploadFileCompleted){
-                        uploadFileCompleted = 1;
-                        Ext.MessageBox.updateText(_("Saving file..."));
-                    }
-                },
-                onCancel: function(id, filename){ },
-                classes: {
-                    // used to get elements from templates
-                    button: 'qq-upload-button',
-                    drop: 'qq-upload-drop-area',
-                    dropActive: 'qq-upload-drop-area-active',
-                    list: 'qq-upload-list',
-                                
-                    file: 'qq-upload-file',
-                    spinner: 'qq-upload-spinner',
-                    size: 'qq-upload-size',
-                    cancel: 'qq-upload-cancel',
 
-                    // added to list item when upload completes
-                    // used in css to hide progress spinner
-                    success: 'qq-upload-success',
-                    fail: 'qq-upload-fail'
+                                    self.uploadFiles = [];
+                                    self.form.main.view_is_dirty = true;
+                                }
+
+                                pnlUpload.enable();
+                            }
+
+                        },
+                        onSubmit: function(id, filename) {
+                            try {
+
+                                pnlUpload.disable();
+
+                                var mid = self.get_mid();
+                                var config_parms = function(mid) {
+                                    uploader.setParams($.extend(uploader._options.params, {
+                                        topic_mid: mid,
+                                        filter: self.id_field,
+                                        extension: self.ext_fich
+                                    }));
+                                };
+
+                                if (mid == undefined || mid < 0) {
+                                    Ext.Msg.confirm(_('Confirmation'), _('To upload files, the form needs to be created. Save form before submitting?'),
+                                        function(btn) {
+                                            if (btn == 'yes') {
+                                                self.form.main.save_topic({
+                                                    success: function(res) {
+                                                        self.mid = res.topic_mid;
+                                                        config_parms(res.topic_mid);
+                                                        Ext.each(uploader._handler._files, function(file) {
+                                                            var fc = file;
+                                                            var id = uploader._handler.add(fc);
+                                                            var fileName = uploader._handler.getName(id);
+
+                                                            uploader._onSubmit(id, fileName);
+                                                            uploader._options.params.fullpath = file.relativePath;
+                                                            var str = file.relativePath;
+                                                            var pattern = new RegExp("/" + file.name);
+                                                            if (!pattern.test(str)) {
+                                                                uploader._options.params.fullpath = '/' + file.name;
+                                                            }
+
+                                                            uploader._handler.upload(id, uploader._options.params);
+                                                        });
+                                                        self.form.main.form_is_loaded = false;
+                                                        self.form.main.view_is_dirty = true;
+                                                    },
+                                                    no_refresh: 1
+                                                });
+                                            };
+                                        }
+                                    );
+                                    return false;
+                                } else {
+                                    config_parms(mid);
+                                }
+                            } catch (err) {
+                                console.log(err);
+                            }
+                        },
+                        onProgress: function(id, filename, loaded, total) {
+                            try {
+                                progress = loaded / total;
+                                Ext.MessageBox.show({
+                                    title: _('Uploading file ') + filename,
+                                    progressText: _('Uploading...'),
+                                    width: 300,
+                                    progress: true,
+                                    closable: false
+                                });
+
+                                Ext.MessageBox.updateProgress(progress, Math.round(100 * progress) + '% completed');
+
+                                if (progress == 1 && uploadFileCompleted) {
+                                    Ext.MessageBox.hide();
+                                    uploadFileCompleted = 0;
+                                } else if (progress == 1 && !uploadFileCompleted) {
+                                    uploadFileCompleted = 1;
+                                    Ext.MessageBox.updateText(_("Saving file..."));
+                                }
+
+                            } catch (err) {
+                                Ext.MessageBox.hide();
+                                uploadFileCompleted = 0;                                
+                            }
+                        }
+                    });
+
+
                 }
-            });
-        }); 
-        
-        //{ xtype: 'hidden', name: 'files_uploaded_mid' },
-        self.items = [ filelist, filedrop ];
+            }
+        });
+
+        self.uploadFiles = [];
+
+        self.items = [pnlFileList, pnlUpload];
         Baseliner.UploadFilesPanel.superclass.initComponent.call(this);
     },
-	get_save_data : function(){
-		var self = this;
-		var mids = [];
-		self.store_file.each(function(row){
-			mids.push( row.id ); 
-		});
-		return mids;
-	}, 
-	is_valid : function(){
-		var self = this;
-		return self.store_file.getCount();
-	}	
+    get_save_data: function() {
+        var self = this;
+        var mids = [];
+        self.store_file.each(function(row) {
+            mids.push(row.id);
+        });
+        return mids;
+    },
+    is_valid: function() {
+        var self = this;
+        return self.store_file.getCount();
+    }
 });
 
 // TODO this should be a Job Dashboard style page, in a separate, reusable component
@@ -5015,4 +5167,3 @@ Baseliner.getJobStatusIcon = function(status, rollback) {
             return 'error-7-16.svg';
     }
 };
-

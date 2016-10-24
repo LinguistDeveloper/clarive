@@ -35,6 +35,7 @@ use Baseliner::Utils qw(
   _capture_pipe
   _capture_tee
   zip_dir
+  _get_extension_file
 );
 use Capture::Tiny qw(capture_merged);
 use Clarive::mdb;
@@ -1237,6 +1238,17 @@ subtest 'capture_tee: captures stdout from pipe' => sub {
     like $output, qr/OK/;
 
     like $tee_output, qr/OK/;
+};
+
+subtest 'get_extension_file: returns the extension of a file' => sub {
+    my $result = Util->_get_extension_file('');
+    is $result, '', 'empty extension, no file';
+
+    $result = Util->_get_extension_file('filename.jpg');
+    is $result, 'jpg', 'single extension filename.jpg';
+
+    $result = Util->_get_extension_file('filename.tar.gz');
+    is $result, 'tar.gz', 'double extension filename.tar.gz';
 };
 
 done_testing;

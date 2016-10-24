@@ -18,6 +18,7 @@ use Time::Piece;
 use Test::MockTime qw(set_fixed_time restore_time);
 use Test::TempDir::Tiny;
 use TestGit;
+use Baseliner::Utils qw(_file);
 
 sub cleanup_db {
     my @collections = mdb->db->collection_names;
@@ -175,18 +176,20 @@ sub write_file {
 
 sub create_temp_file {
     my $class = shift;
-    my ($content, $filename) = @_;
+    my (%params) = @_;
+
+    my $content = delete $params{content} || 'content_file';
+    my $filename = delete $params{filename} || 'file';
 
     my $tempdir = tempdir();
 
-    $filename ||= 'file';
     $filename = "$tempdir/$filename";
 
     open my $fh, '>', $filename or die $!;
     print $fh $content;
     close $fh;
 
-    return $filename;
+    return _file $filename;
 }
 
 sub slurp_file {
@@ -242,6 +245,13 @@ sub new {
         }
     }
 
+    $self->{upload} //= {};
+    if ( $params{upload} ) {
+        my @key = keys %{ $params{upload} };
+        if (@key){
+            $self->{upload}->{$key[0]} = FakeRequestUpload->new( %{ $params{upload}->{$key[0]} } );
+        }
+    }
     return $self;
 }
 
@@ -258,6 +268,7 @@ sub headers          { shift->{headers} }
 sub method           { shift->{method} }
 sub body             { shift->{body} }
 sub uploads          { shift->{uploads} }
+sub upload           { $_[0]->{upload}->{ $_[1] } }
 
 sub header {
     my $self = shift;
@@ -280,12 +291,14 @@ sub new {
 
     $self->{fh}       = $params{fh};
     $self->{basename} = $params{basename};
+    $self->{tempname} = $params{tempname};
 
     return $self;
 }
 
 sub fh       { shift->{fh} }
 sub basename { shift->{basename} }
+sub tempname { shift->{tempname} }
 
 package FakeResponse;
 

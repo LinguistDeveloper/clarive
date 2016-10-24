@@ -178,6 +178,11 @@ qq.getByClass = function(element, className){
     return result;
 };
 
+qq.getById = function(element, id){
+    if (element.querySelector){
+        return element.querySelector('#' + id);
+    }
+};
 /**
  * obj2url() takes a json-object as argument and generates
  * a querystring. pretty much like jQuery.param()
@@ -362,12 +367,13 @@ qq.FileUploaderBasic.prototype = {
         this._filesInProgress--;                 
         if (result.error){
             this._options.showMessage(result.error);
-        }             
+        }
     },
     _onCancel: function(id, fileName){
         this._filesInProgress--;        
     },
     _onInputChange: function(input){
+        this.setParams({fullpath: ''});
         if (this._handler instanceof qq.UploadHandlerXhr){                
             this._uploadFileList(input.files);                   
         } else {             
@@ -481,11 +487,12 @@ qq.FileUploader = function(o){
     // additional options    
     qq.extend(this._options, {
         element: null,
+        elementDrop: null,
+
         // if set, will be used instead of qq-upload-list in template
         listElement: null,
                 
         template: '<div class="qq-uploader">' + 
-                '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
                 '<div class="qq-upload-button">Upload a file</div>' +
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
@@ -521,6 +528,7 @@ qq.FileUploader = function(o){
     qq.extend(this._options, o);       
 
     this._element = this._options.element;
+    this._elementDrop = this._options.elementDrop;
     this._element.innerHTML = this._options.template;        
     this._listElement = this._options.listElement || this._find(this._element, 'list');
     
@@ -540,7 +548,7 @@ qq.extend(qq.FileUploader.prototype, {
      * Gets one of the elements listed in this._options.classes
      **/
     _find: function(parent, type){                                
-        var element = qq.getByClass(parent, this._options.classes[type])[0];        
+        var element = qq.getByClass(parent, this._options.classes[type])[0];
         if (!element){
             throw new Error('element not found ' + type);
         }
@@ -549,7 +557,7 @@ qq.extend(qq.FileUploader.prototype, {
     },
     _setupDragDrop: function(){
         var self = this,
-            dropArea = this._find(this._element, 'drop');                        
+            dropArea = this._elementDrop;
 
         var dz = new qq.UploadDropZone({
             element: dropArea,
@@ -564,13 +572,87 @@ qq.extend(qq.FileUploader.prototype, {
                 qq.removeClass(dropArea, self._classes.dropActive);  
             },
             onDrop: function(e){
-                dropArea.style.display = 'none';
+                dropArea.style.display = 'block';
                 qq.removeClass(dropArea, self._classes.dropActive);
-                self._uploadFileList(e.dataTransfer.files);    
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                var items = e.dataTransfer.items;
+                var files = e.dataTransfer.files;
+
+                function onError(e) {
+                    console.error('Error code: ' + e.code);
+                }
+
+                function toArray(list) {
+                  return Array.prototype.slice.call(list || [], 0);
+                }
+
+                function readDirectory(dirEntry) {
+                    var dirReader = dirEntry.createReader();
+                    var entries = [];
+
+                    // Call the reader.readEntries() until no more results are returned.
+                    function readEntries() {
+                        dirReader.readEntries (function(results) {
+                            if (!results.length) {
+                                entries.forEach( function( entry, i ){
+                                    if( entry.isDirectory ){
+                                        readDirectory( entry );
+                                    }else{
+                                        var fullPath = entry.fullPath;
+                                        entry.file(function (file) {
+                                            file.relativePath = fullPath;
+                                            var str = fullPath;
+                                            var pattern = new RegExp("/"+ file.name);
+                                            if (!pattern.test(str)) {
+                                                file.relativePath = '/'+file.name;
+                                                fullPath = file.relativePath;
+                                            }  
+                                            self.setParams( { fullpath: fullPath } );
+                                            self._uploadFile(file);        
+                                        });
+                                    }
+                                });
+                            } else {
+                                entries = entries.concat(toArray(results));
+                                readEntries();
+                            }
+                        }, onError);
+                    };
+                    
+                    readEntries(); // Start reading dirs.
+                };
+
+                for (var i = 0, item; item = items[i]; ++i) {
+                    // Skip this one if we didn't get a file.
+                    if (item.kind != 'file') {
+                        continue;
+                    }
+
+                    var entry = item.webkitGetAsEntry();
+                    if (entry.isDirectory) {
+                        readDirectory( entry );
+                    } else {
+                        var fullPath = entry.fullPath;
+                        entry.file(function (file) {
+                            file.relativePath = fullPath;
+                            var str = fullPath;
+                            var pattern = new RegExp("/"+ file.name);
+                            if (!pattern.test(str)) {
+                                file.relativePath = '/'+file.name;
+                                fullPath = file.relativePath;
+                            }                            
+                            self.setParams({fullpath: fullPath});
+                            self._uploadFile(file);        
+                        });
+                    }
+                }
             }
         });
                 
-        dropArea.style.display = 'none';
+        dropArea.style.display = 'block';
 
         qq.attach(document, 'dragenter', function(e){     
             if (!dz._isValidFileDrag(e)) return; 
@@ -1152,6 +1234,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     },
     getName: function(id){        
         var file = this._files[id];
+
         // fix missing name in Safari 4
         return file.fileName != null ? file.fileName : file.name;       
     },

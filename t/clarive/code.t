@@ -43,11 +43,11 @@ subtest 'eval_code: benchmark code' => sub {
 };
 
 subtest 'run_file: executes code from file' => sub {
-    my $filename = TestUtils->create_temp_file( "1 + 1", 'file.js' );
+    my $filename = TestUtils->create_temp_file( content => "1 + 1", filename => 'file.js' );
 
     my $code = _build_code();
 
-    my $ret = $code->eval_file( $filename );
+    my $ret = $code->eval_file( $filename->stringify );
 
     is $ret->{ret}, 2;
 };

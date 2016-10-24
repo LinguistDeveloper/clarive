@@ -587,7 +587,7 @@ msgstr "Creado Por"
 #: lib/Baseliner/Controller/Doc.pm root/comp/ci-editor.js root/comp/ci-grid.js
 #: root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
 #: root/comp/feature.js root/comp/feature_grid.mas root/comp/job_new.js
-#: root/site/common.js
+#: root/fields/templates/html/upload_files.html root/site/common.js
 msgid "Version"
 msgstr "Versión"
 
@@ -1882,7 +1882,8 @@ msgstr "Tópico no encontrado"
 #: root/fields/system/js/list_revisions.js
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/projects.js root/forms/ci_invoke.js
+#: root/fields/templates/config/projects.js
+#: root/fields/templates/html/upload_files.html root/forms/ci_invoke.js
 #: root/site/common.js root/site/explorer.js root/site/model.js
 msgid "Name"
 msgstr "Nombre"
@@ -2039,12 +2040,16 @@ msgid "Status not found: %1"
 msgstr "Estado no encontrado: %1"
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "The file you want to upload do not have extension"
-msgstr "El fichero que desea subir no tiene extensión"
+msgid "qqfile is not a file"
+msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
-msgid "This type of file is not allowed: %1 "
-msgstr "El fichero tiene un formato no permitido: %1"
+msgid "Uploaded file %1, file_uploaded_mid: %2"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "This type of file is not allowed, only (%1)"
+msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
 msgid "topic mid required"
@@ -2837,12 +2842,12 @@ msgid "User mentioned another user in a comment"
 msgstr "El Usuario nombró a otro usuario en el comentario"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "%1 posted a file: %3"
-msgstr "%1 subió un fichero: %3"
+msgid "%1 posted %2 files"
+msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "User created a file"
-msgstr "El Usuario creó un fichero"
+msgid "User created file(s)"
+msgstr "Usuario creó fichero(s)"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 attached %2"
@@ -2853,12 +2858,12 @@ msgid "User attached a file"
 msgstr "El Usuario adjuntó un fichero"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "%1 removed %2"
-msgstr "%1 borró %2"
+msgid "%1 removed %2 files"
+msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "User removed a file"
-msgstr "El usuario borró un fichero"
+msgid "User removed file(s)"
+msgstr "Usuario borró fichero(s)"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 modify labels"
@@ -2875,6 +2880,14 @@ msgstr "%1 etiquetas borradas"
 #: lib/Baseliner/Model/Topic.pm
 msgid "User removed labels"
 msgstr "El Usuario borró etiquetas"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "%1 removed %2"
+msgstr "%1 borró %2"
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "User removed a file"
+msgstr "El usuario borró un fichero"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "%1 created a topic of %2"
@@ -3207,32 +3220,36 @@ msgid "Created"
 msgstr "Creado"
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "param file is not a Path::Class::File - Object"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "The file %1 does not exist"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "topic_mid (%1) is not a topic"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
+msgid "The related field does not exist for the topic: %1"
+msgstr "El campo relacionado no existe para el tópico: %1"
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "File is already the latest version"
 msgstr "El fichero ya está en su última versión"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Created file %1 to topic [%2] %3"
+msgid "Created %1 files to topic [%2]"
 msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Uploaded file %1"
-msgstr "Fichero subido %1"
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Error uploading file: %1"
-msgstr "Error subiendo fichero: %1"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "File id %1 not found"
 msgstr "Fichero id %1 no encontrado"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "Deleting file %1"
-msgstr "Borrando fichero %1"
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Deleted file %1"
-msgstr "Fichero borrado %1"
+msgid "Deleted %1 file(s)"
+msgstr "Borrado %1 fichero(s)"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Error removing file from topic %1. Error: %2"
@@ -3241,10 +3258,6 @@ msgstr "Error eliminando ficheros del tópico %1. Error: %2"
 #: lib/Baseliner/Model/Topic.pm
 msgid "Missing field"
 msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "The related field does not exist for the topic: %1"
-msgstr "El campo relacionado no existe para el tópico: %1"
 
 #: lib/Baseliner/Model/TopicExporter/Csv.pm root/comp/topic/topic_lib_grid.js
 msgid "Referenced In"
@@ -5025,7 +5038,7 @@ msgid "Job"
 msgstr "Pase"
 
 #: lib/BaselinerX/Job.pm root/comp/message_grid.js root/comp/user_grid.js
-#: root/site/common.js
+#: root/fields/templates/html/upload_files.html root/site/common.js
 msgid "Id"
 msgstr "Id"
 
@@ -7208,7 +7221,7 @@ msgstr "Proyecto"
 msgid "<Enter your search string>"
 msgstr "<Introduzca cadena de búsqueda>"
 
-#: root/comp/catalog_grid.js root/forms/catalog_task.js
+#: root/comp/catalog_grid.js root/forms/catalog_task.js root/site/common.js
 msgid "Catalog"
 msgstr "Catálogo"
 
@@ -12616,6 +12629,10 @@ msgstr "Directorio de descarga"
 msgid "Extension"
 msgstr "Extensión"
 
+#: root/fields/templates/html/upload_files.html root/site/common.js
+msgid "Size"
+msgstr "Tamaño"
+
 #: root/fields/templates/js/env_planner.js
 #: root/fields/templates/js/milestones.js
 msgid "Start date is after end date"
@@ -13772,10 +13789,6 @@ msgid "Installed"
 msgstr "Instalado"
 
 #: root/site/common.js
-msgid "Size"
-msgstr "Tamaño"
-
-#: root/site/common.js
 msgid "CPAN"
 msgstr "CPAN"
 
@@ -13870,6 +13883,18 @@ msgstr "Subir Fichero"
 #: root/site/common.js
 msgid "Are you sure you want to delete these artifacts?"
 msgstr "¿Seguro que quiere borrar estos ficheros?"
+
+#: root/site/common.js
+msgid "Error uploading file"
+msgstr ""
+
+#: root/site/common.js
+msgid "Uploaded Files"
+msgstr ""
+
+#: root/site/common.js
+msgid "Error uploading files"
+msgstr ""
 
 #: root/site/common.js
 msgid ""
@@ -14715,6 +14740,30 @@ msgstr "destino"
 
 #~ msgid "Owner of the Topic (Blank for 'clarive')"
 #~ msgstr "Propietario del tópico (En blanco para 'clarive')"
+
+#~ msgid "The file you want to upload do not have extension"
+#~ msgstr "El fichero que desea subir no tiene extensión"
+
+#~ msgid "This type of file is not allowed: %1 "
+#~ msgstr "El fichero tiene un formato no permitido: %1"
+
+#~ msgid "%1 posted a file: %3"
+#~ msgstr "%1 subió un fichero: %3"
+
+#~ msgid "User created a file"
+#~ msgstr "El Usuario creó un fichero"
+
+#~ msgid "Uploaded file %1"
+#~ msgstr "Fichero subido %1"
+
+#~ msgid "Error uploading file: %1"
+#~ msgstr "Error subiendo fichero: %1"
+
+#~ msgid "Deleting file %1"
+#~ msgstr "Borrando fichero %1"
+
+#~ msgid "Deleted file %1"
+#~ msgstr "Fichero borrado %1"
 
 #~ msgid "Calendar Info"
 #~ msgstr "Datos del Calendario"

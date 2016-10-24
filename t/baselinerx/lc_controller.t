@@ -810,17 +810,19 @@ subtest 'status_list: use statuses passed' => sub {
 
 subtest 'tree_topic_get_files: creates click in data json ' => sub {
     _setup();
-    TestSetup->_setup_user();
 
-    my $base_params = TestSetup->_topic_setup();
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
-    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
-    my $tempdir = tempdir();
+    my $model_topic = Baseliner::Model::Topic->new;
+    my $file      = TestUtils->create_temp_file( filename => 'filename.jpg' );
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $username  = ci->user->find_one()->{name};
 
-    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
-    my $file = Util->_file("$tempdir/filename.jpg");
-
-    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'root' );
+    my %result = $model_topic->upload(
+        file      => $file,
+        topic_mid => $topic_mid,
+        filename  => 'filename.jpg',
+        filter    => 'test_file',
+        username  => $username
+    );
 
     my $controller = _build_controller();
     my $c          = mock_catalyst_c(
@@ -836,29 +838,34 @@ subtest 'tree_topic_get_files: creates click in data json ' => sub {
     is $c->stash->{json}[0]{data}{click}{type},  'download';
     is $c->stash->{json}[0]{data}{click}{title}, 'filename.jpg' . '(v1)';
 
+    $file->remove();
 };
 
 subtest 'build_topic_tree: creates children if topic has files' => sub {
     _setup();
-    TestSetup->_setup_user();
 
-    my $base_params = TestSetup->_topic_setup();
+    my $model_topic = Baseliner::Model::Topic->new;
+    my $file      = TestUtils->create_temp_file( filename => 'filename.jpg' );
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $username  = ci->user->find_one()->{name};
 
-    my ( undef, $topic_mid ) = Baseliner::Model::Topic->new->update( { %$base_params, action => 'add' } );
-    my $params = { filter => 'test_file', qqfile => 'filename.jpg', topic_mid => "$topic_mid" };
-    my $tempdir = tempdir();
-
-    TestUtils->write_file( 'content', "$tempdir/filename.jpg" );
-    my $file = Util->_file("$tempdir/filename.jpg");
-
-    Baseliner::Model::Topic->new->upload( f => $file, p => $params, username => 'root' );
+    $model_topic->upload(
+        file      => $file,
+        topic_mid => $topic_mid,
+        filename  => 'filename.jpg',
+        filter    => 'test_file',
+        username  => $username
+    );
 
     my $controller = _build_controller();
 
     my $topic = mdb->topic->find_one( { mid => $topic_mid } );
-    my @output = $controller->build_topic_tree( mid => $topic_mid, topic => $topic );
+    my @output
+        = $controller->build_topic_tree( mid => $topic_mid, topic => $topic );
 
     ok $output[0]{children};
+
+    $file->remove();
 };
 
 subtest 'build_topic_tree: does not create children if topic has not files' => sub {

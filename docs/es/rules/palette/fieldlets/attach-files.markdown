@@ -4,6 +4,18 @@ index: 400
 icon: file
 ---
 * Permite adjuntar archivos a un tópico.
+
+## Features soportadas
+
+### Subida múltiple de ficheros:
+* Permite seleccionar múltiple ficheros a la vez para subirlos simultáneamente.
+
+### Soporta Arrastrar & Soltar:
+
+* Permite subir ficheros mediante arrastrar y soltar desde tu escritorio a tu fieldlet.
+* Es posible arrastrar y soltar una estructura completa de carpetas, actualmente esta funcioalidad sólo es soportada en Google Chrome.
+
+## Configuración
 * Existe una lista de elementos que pueden ser configurados dentro del fieldlet.
 
 ### Ubicación del fieldlet

@@ -17,6 +17,8 @@ use Text::Unaccent::PurePerl;
 use v5.10;
 use experimental 'smartmatch', 'autoderef', 'switch';
 
+with 'Baseliner::Role::ControllerValidator';
+
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
 
 register 'action.admin.topics' => { name=>'Admin topics' };
@@ -1329,7 +1331,9 @@ sub filters_list : Local {
                     uiProvider => 'Baseliner.CBTreeNodeUI'
                 };
             }
+
             @labels = sort { $b->{priority} <=> $a->{priority} } @labels;
+
             push @tree, {
                 id          => 'L',
                 text        => _loc('Labels'),
@@ -1583,75 +1587,125 @@ sub next_status_for_topics : Local {
     $c->forward('View::JSON');
 }
 
+sub is_valid_extension {
+    my ( $self, %params ) = @_;
+    return 1 if ( !$params{filter} );
+
+    my $filter = lc( $params{filter} );
+    my $filename = $params{filename};
+
+    my $extension = Util->_get_extension_file($filename);
+    $extension =  lc($extension) if ($extension);
+
+    my @filters = split /,|\s+/, $filter;
+    @filters = grep { $_ ne '' } @filters;
+    @filters = map { $_ =~ s/^\.//; $_ } @filters;
+
+    my $exist = grep { $_ eq $extension} @filters;
+
+    return $exist ? 1 : 0;
+}
+
 sub upload : Local {
     my ( $self, $c ) = @_;
 
-    my $p = $c->req->params;
+    return
+        unless my $params = $self->validate_params(
+        $c,
+        qqfile    => { isa => 'Str' },
+        extension => { isa => 'Str', default => '' },
+        filter    => { isa => 'Str' },
+        fullpath  => { isa => 'Str', default => '' },
+        topic_mid => { isa => 'Str' },
+        );
 
-    my $filename    = $p->{qqfile};
-    my $name_filter = $p->{extension};
-    my $match = 0;
-    my $status;
-    my $message ;
-    my ($extension) = $filename =~ /\.(\S+)$/;
-    $extension //= '';
+    try {
+        my $filename         = $params->{qqfile};
+        my $extension_filter = $params->{extension};
+        my $id_field         = $params->{filter};
+        my $fullpath         = $params->{fullpath} // '';
+        my $topic_mid        = $params->{topic_mid};
+        my $username         = $c->username;
 
-    $extension =  lc($extension)   if ($extension);
+        _fail _loc('qqfile is not a file')
+            if $c->req->body eq '' && !$c->req->upload('qqfile');
 
-    if ($name_filter){
-
-        $name_filter =lc($name_filter);
-
-        my @split_filter = split /,|\s+/, $name_filter;
-        @split_filter = grep { $_ ne ''} @split_filter;
-        @split_filter = map { $_ =~ s/^\.//; $_} @split_filter;
-
-        $match =grep { $_ eq $extension} @split_filter;
-
-    }
-    $match = 1 if ( !$name_filter );
-
-    if ($match) {
-
-        my $f;
-
+        my $file;
         if ( $c->req->body eq '' ) {
             my $x = $c->req->upload('qqfile');
-            $f = _file( $x->tempname );
+            $file = _file( $x->tempname );
         }
         else {
-            $f = _file( '' . $c->req->body );
+            $file = _file( '' . $c->req->body );
         }
 
-        my %response = Baseliner::Model::Topic->new->upload( f => $f, p => $p, username => $c->username );
-        if ( $response{status} ne '200' ) {
-             $status = \0;
-             $message = _loc( $response{msg});
+        if ( $file->basename eq '0' ) {
+            my $tempdir  = Util->_tmp_dir();
+            my $fullpath = "$tempdir/$filename";
+            open my $fh, '>', $fullpath or die $!;
+            close $fh;
+            $file = _file $fullpath;
+        }
+
+        if ($self->is_valid_extension(
+                filter   => $extension_filter,
+                filename => $filename
+            )
+            )
+        {
+            my $model_topic = Baseliner::Model::Topic->new;
+            my %result      = $model_topic->upload(
+                file      => $file,
+                topic_mid => $topic_mid,
+                filename  => $filename,
+                filter    => $id_field,
+                fullpath  => $fullpath,
+                username  => $username
+            );
+
+            my $msg = _loc(
+                'Uploaded file %1, file_uploaded_mid: %2',
+                $result{upload_file}->{name},
+                $result{upload_file}->{mid}
+            );
+
+            $c->stash->{json} = { success => 1, msg => $msg, %result };
+
         }
         else {
-            $status = \1;
-            $message = _loc( $response{msg});
+            _throw _loc( "This type of file is not allowed, only (%1)",
+                $extension_filter );
         }
-
     }
-    else {
-        if (!$extension) {
+    catch {
+        my $err = shift;
+        _error $err;
+        chomp($err);
 
-            $status = \0;
-            $message = _loc( "The file you want to upload do not have extension");
-        }
-        else {
-
-            $status = \0;
-            $message = _loc( "This type of file is not allowed: %1 ", $extension )
-        };
-    }
-
-    $c->stash->{json} = {success =>  $status, msg => $message};
-
+        $c->stash->{json} = { success => 0, msg => $err };
+    };
     $c->forward('View::JSON');
 }
 
+sub upload_complete: Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $p->{username} = $c->username;
+
+    try {
+        Baseliner::Model::Topic->new->upload_complete(%$p);
+
+        $c->stash->{json} = { success => 1, msg => 'Upload completed' };
+    }
+    catch {
+        my $err = shift;
+        _error $err;
+        chomp($err);
+
+        $c->stash->{json} = { success => 0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
 
 sub remove_file : Local {
     my ( $self, $c ) = @_;
@@ -1714,25 +1768,75 @@ sub file_tree : Local {
     my $p         = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
     my $rel_field = $p->{filter};
-    my @files     = ();
+    my @files;
+    my @directory_nodes;
+    my %id_path_node;
+
+    my @asset_mid;
     if ($topic_mid) {
-        my @assets = mdb->master_rel->find_values( to_mid => { from_mid=>"$topic_mid", rel_field=>"$rel_field", rel_type=>'topic_asset' } );
-        @files = map {
-            my $ass = $_;
-            my ( $size, $unit ) = Util->_size_unit( $ass->filesize );
-            $size = "$size $unit";
-            +{ filename=>$ass->filename, versionid=>$ass->versionid, mid=>$ass->mid, _id => $ass->mid, _parent => undef, _is_leaf => \1, size => $size }
-        } ci->asset->search_cis( mid => mdb->in(@assets) );
-    } else {
-        my @files_mid = _array( $p->{files_mid} );
-        @files = map {
-            my $ass = $_;
-            my ( $size, $unit ) = Util->_size_unit( $ass->filesize );
-            $size = "$size $unit";
-            +{ filename=>$ass->filename, versionid=>$ass->versionid, mid=>$ass->mid, _id => $ass->mid, _parent => undef, _is_leaf => \1, size => $size }
-        } ci->asset->search_cis( mid => mdb->in(@files_mid) );
+        @asset_mid = mdb->master_rel->find_values(
+            to_mid => {
+                from_mid  => "$topic_mid",
+                rel_field => "$rel_field",
+                rel_type  => 'topic_asset'
+            }
+        );
+    }else{
+        @asset_mid = _array( $p->{files_mid} );
     }
-    $c->stash->{json} = { total => scalar(@files), success => \1, data => \@files };
+
+    my @asset = ci->asset->search_cis( mid => mdb->in( @asset_mid ));
+
+    foreach my $asset ( @asset ){
+        my ( $size, $unit ) = Util->_size_unit( $asset->filesize );
+        $size = "$size $unit";
+
+        my $file = _file($asset->{fullpath});
+        my $path = $file->dir->stringify;
+        my @directories = _array $file->dir->{dirs};
+        unshift @directories, '';
+        while ( my $relative_path = join( '/', @directories ) ) {
+            my $dir_name = pop @directories;
+            if ( !$id_path_node{$relative_path} ) {
+                $id_path_node{$relative_path} = $relative_path . '_' . _nowstamp;
+                push @directory_nodes,
+                    {
+                    filename  => $dir_name,
+                    versionid => undef,
+                    mid       => undef,
+                    _id       => $id_path_node{$relative_path},
+                    _parent   => undef,
+                    _is_leaf  => \0,
+                    size      => undef,
+                    path      => join( '/', @directories )
+                    };
+            }
+        }
+        push @files,
+            {
+            filename  => $asset->filename,
+            versionid => $asset->versionid,
+            mid       => $asset->mid,
+            _id       => $asset->mid,
+            _parent   => undef,
+            _is_leaf  => \1,
+            size      => $size,
+            path      => $path
+            }
+    }
+
+    my @nodes;
+    foreach my $file (@files){
+        $file->{_parent} = $id_path_node{ $file->{path} } if ( $id_path_node{$file->{path}} );
+        push @nodes, $file;
+    }
+
+    foreach my $directory (@directory_nodes){
+        $directory->{_parent} = $id_path_node{ $directory->{path} } if ( $id_path_node{$directory->{path}} );
+        push @nodes, $directory;
+    }
+
+    $c->stash->{json} = { total => scalar(@files), success => \1, data => \@nodes };
     $c->forward('View::JSON');
 }
 
