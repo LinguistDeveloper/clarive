@@ -7623,7 +7623,7 @@ msgstr "Nueva Clave de Config"
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js
+#: root/comp/job_new_comp.js root/comp/monitor_grid.js
 msgid "Failure"
 msgstr "Error"
 
@@ -8259,7 +8259,7 @@ msgstr "Error al abrir fichero de log"
 msgid "New Job"
 msgstr "Nuevo Pase"
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/monitor_grid.js
 msgid "no calendar window"
 msgstr "fuera de ventana"
 
@@ -8292,7 +8292,7 @@ msgstr "Cadena"
 msgid "No job pipelines available"
 msgstr ""
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/monitor_grid.js
 msgid "Create a job outside of the available time slots."
 msgstr "Chequee si quiere crear un pase fuera de ventana."
 
@@ -8536,7 +8536,7 @@ msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr ""
 "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
-#: root/comp/job_new_comp.js
+#: root/comp/job_new_comp.js root/comp/monitor_grid.js
 msgid ""
 "For the jobs outside of window it is required to add a reason to the comment "
 "field"
@@ -9387,10 +9387,20 @@ msgstr "Replanificar"
 #: root/comp/monitor_grid.js
 msgid "Job cannot be rescheduled unless its status is '%1' (current: %2)"
 msgstr ""
+"El pase no puede ser replanificado al menos que su estado sea '%1' (actual: "
+"%2)"
 
 #: root/comp/monitor_grid.js
 msgid "Update"
 msgstr "Actualizar"
+
+#: root/comp/monitor_grid.js
+msgid "Update time and date of the job"
+msgstr "Modificar hora y fecha del pase"
+
+#: root/comp/monitor_grid.js
+msgid "There are no allowed windows for the job"
+msgstr "No hay ventanas permitidas para el pase"
 
 #: root/comp/notifications.js root/comp/rule_new.js
 msgid "Event"

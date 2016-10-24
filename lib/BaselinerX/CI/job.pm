@@ -579,26 +579,35 @@ sub reset {   # aka restart
 }
 
 sub reschedule {
-    my ($self, $p )=@_;
+    my ( $self, $p ) = @_;
     my %p = %{ $p || {} };
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
 
-    _fail _loc("Job %1 cannot be rescheduled unless its status is '%2' (current: %3)", $self->name, _loc('READY')."|"._loc('APPROVAL'), _loc($self->status) )
-        if $self->status ne 'READY' && $self->status ne 'APPROVAL';
-
+    _fail _loc(
+        "Job %1 cannot be rescheduled unless its status is '%2' (current: %3)",
+        $self->name,
+        _loc('READY') . "|" . _loc('APPROVAL'),
+        _loc( $self->status )
+    ) if $self->status ne 'READY' && $self->status ne 'APPROVAL';
     my $msg;
     my $oldtime = $self->schedtime;
-    event_new 'event.job.reschedule' => { job=>$self } => sub {
-        my $newtime = Class::Date->new( "$p->{date} $p->{time}" );
-        $self->schedtime( "$newtime" );
-        $self->maxstarttime( ''. ( $newtime + $self->expiry_time ) );
+    event_new 'event.job.reschedule' => { job => $self } => sub {
+        my $newtime = Class::Date->new("$p->{date} $p->{time}");
+        $self->schedtime("$newtime");
+        $self->maxstarttime( '' . ( $newtime + $self->expiry_time ) );
+        if ( $self->{comments} && $p->{comments} ) {
+            $self->{comments} = $p->{comments} . "\n" . $self->{comments};
+        }
+        elsif ( $p->{comments} ) {
+            $self->{comments} = $p->{comments};
+        }
         $self->save;
         my $log = $self->logger;
-        $msg = _loc("Job %1 rescheduled by user %2 from `%3` to `%4`", $self->name, $realuser, $oldtime, $newtime );
+        $msg = _loc( "Job %1 rescheduled by user %2 from `%3` to `%4`", $self->name, $realuser, $oldtime, $newtime );
         $log->info($msg);
     };
-    return { msg=>$msg };
+    return { msg => $msg };
 }
 
 sub expiry_time {

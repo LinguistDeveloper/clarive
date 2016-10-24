@@ -8,7 +8,11 @@
 <%perl>
     my $iid = Util->_md5;
     use Baseliner::Sugar;
+    use Baseliner::Model::Permissions;
+
     my $view_natures = config_value('job_new.view_natures');
+    my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
+    my $has_no_cal = Baseliner::Model::Permissions->new->user_has_action( $c->username, 'action.job.no_cal' );
 </%perl>
 (function(params) {
     Cla.help_push({
@@ -19,7 +23,32 @@
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>;
     var state_id = 'job-monitor';
+    var canCreateJobOutsideSlots = <% $has_no_cal ? 'true' : 'false'  %>;
+    var showCreateJobOutsideSlots = <% $show_no_cal ? 'true' : 'false'  %>;
     var current_state = params.current_state || {};
+    var dateFormat = Cla.js_date_to_moment_hash[Cla.user_js_date_format()];
+    var preferencesDateFormat = Cla.user_js_date_format();
+
+    var dataAnyTime = function() {
+        var arr = [];
+        var name = _('no calendar window');
+        var today = moment().format(dateFormat);
+        var dateSelected = moment(today, dateFormat).format("YYYY-MM-DD")
+
+        var time = moment().format("HH:mm");
+        var startHour = 0;
+        var startTime = 0;
+
+        for (var h = startHour; h < 24; h++) {
+            var startMinute = startTime;
+            for (var m = startMinute; m < 60; m++) {
+                arr.push(
+                    [String.leftPad(h, 2, '0') + ':' + String.leftPad(m, 2, '0'), name, 'F', dateSelected]
+                );
+            }
+        }
+        return arr;
+    };
 
     // -- ADDING Arr.map() method --
     // Production steps of ECMA-262, Edition 5, 15.4.4.19
@@ -1189,7 +1218,7 @@
                 p.body='';
                 var desc = record.data.comments;
                 if( (desc != undefined) && (desc != '') ) {
-                    p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px;">';
+                    p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px; white-space: pre">';
                     p.body += '<img style="float:left" src="/static/images/icons/post.svg" />';
                     p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded ';
@@ -1363,49 +1392,158 @@
                                     _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY')+"|"+_('APPROVAL'), _(sel.data.status) ) );
                                 return;
                             }
-                            var curr = Date.parseDate(sel.data.schedtime, 'Y-m-d H:i:s' );
-                            var fupdatepanel = new Baseliner.FormPanel({
-                                frame: true,
-                                items: [
-                                    {
-                                        xtype: 'xdatefield',
-                                        anchor: '100%',
-                                        fieldLabel: _('Date'),
-                                        name:'date',
-                                        value: curr
-                                    },
-                                    {
-                                      xtype: 'uxspinner',
-                                      name: 'time',
-                                      fieldLabel: _('Time'),
-                                          anchor: '100%',
-                                      allowBlank: false,
-                                      value: curr.format('H:i'),
-                                      strategy: new Ext.ux.form.Spinner.TimeStrategy()
+                            var dateToday = new Date();
+                            Baseliner.ajaxEval('/job/build_job_window', {
+                                    bl: sel.data.bl,
+                                    job_date: dateToday.format('Y-m-d'),
+                                    job_contents: JSON.stringify({
+                                        mid: sel.data.mid
+                                    }),
+                                    date_format: '%Y-%m-%d'
+                                },
+                                function(res) {
+                                    if (res.success) {
+                                        var timeStore = new Ext.data.SimpleStore({
+                                            id: 'time',
+                                            fields: ['time', 'name', 'type', 'env_date']
+                                        });
+                                        var timeTpl = new Ext.XTemplate(
+                                            '<tpl for=".">',
+                                            '<div class="search-item">',
+                                            '<span style="color:{[ values.type=="N"?"green":(values.type=="U"?"red":"#444") ]}"><b>{time}</b> - {name}</span>',
+                                            '<span style="margin-left:8px; color: #333;font-weight:bold">',
+                                            '@{[ Cla.user_date_job(values.env_date, Cla.js_date_to_moment_hash[Cla.user_js_date_format()]) + " " + Cla.user_date_timezone().zoneName() ]}</span>',
+                                            '</div>',
+                                            '</tpl>'
+                                        );
+                                        var commentsTextArea = new Ext.form.TextArea({
+                                            anchor: '100%',
+                                            height: 80,
+                                            fieldLabel: _('Comments'),
+                                            name: 'comments'
+                                        });
+                                        var timeComboBox = new Ext.form.ComboBox({
+                                            name: 'job_time',
+                                            anchor: '100%',
+                                            hiddenName: 'job_time',
+                                            valueField: 'time',
+                                            displayField: 'time',
+                                            fieldLabel: _('Time'),
+                                            mode: 'local',
+                                            store: timeStore,
+                                            allowBlank: false,
+                                            typeAhead: true,
+                                            forceSelection: true,
+                                            triggerAction: 'all',
+                                            tpl: timeTpl,
+                                            itemSelector: 'div.search-item',
+                                            selectOnFocus: false
+                                        });
+                                        var outsideOfSlotsCheckbox = new Ext.form.Checkbox({
+                                            name: 'check_no_cal',
+                                            fieldLabel: '',
+                                            boxLabel: _("Create a job outside of the available time slots."),
+                                            hidden: !showCreateJobOutsideSlots,
+                                            disabled: !canCreateJobOutsideSlots,
+                                            cls: 'ui-chk-no-cal',
+                                            handler: function(chk, val) {
+                                                var timeNow = new Date();
+                                                if (val) {
+                                                    updateBtn.enable();
+                                                    timeStore.removeAll();
+                                                    timeStore.loadData(dataAnyTime());
+                                                    if (calendarDateField.value == timeNow.format(preferencesDateFormat)) {
+                                                        setFirstDateAvailable(timeStore, timeComboBox);
+                                                    } else {
+                                                        timeComboBox.setValue('00:00');
+                                                    }
+                                                } else {
+                                                    var selectedDate = calendarDateField.getValue().format('Y-m-d');
+                                                    reloadCalendar(sel.data.bl, selectedDate, sel.data.mid, timeStore, calendarDateField, timeComboBox, updateBtn);
+                                                }
+                                            }
+                                        });
+                                        var calendarDateField = new Ext.ux.form.XDateField({
+                                            anchor: '100%',
+                                            fieldLabel: _('Date'),
+                                            name: 'date',
+                                            value: dateToday,
+                                            format: preferencesDateFormat,
+                                            listeners: {
+                                                'select': function(picker, t) {
+                                                    if (!outsideOfSlotsCheckbox.checked) {
+                                                        reloadCalendar(sel.data.bl, t.format('Y-m-d'), sel.data.mid, timeStore, calendarDateField, timeComboBox, updateBtn)
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        timeStore.on('load', function() {
+                                            setFirstDateAvailable(timeStore, timeComboBox);
+                                        });
+
+                                        var updateFormPanel = new Baseliner.FormPanel({
+                                            frame: true,
+                                            padding: 15,
+                                            items: [
+                                                calendarDateField,
+                                                timeComboBox,
+                                                outsideOfSlotsCheckbox,
+                                                commentsTextArea
+                                            ]
+                                        });
+                                        var updateBtn = new Ext.Toolbar.Button({
+                                            text: _('Update'),
+                                            icon: IC('edit.svg'),
+                                            handler: function() {
+                                                if (outsideOfSlotsCheckbox.checked && commentsTextArea.getValue().trim().length == 0) {
+                                                    Ext.Msg.show({
+                                                        title: _('Failure'),
+                                                        msg: _('For the jobs outside of window it is required to add a reason to the comment field'),
+                                                        width: 500,
+                                                        buttons: {
+                                                            ok: true
+                                                        }
+                                                    });
+                                                    return;
+                                                }
+                                                var formValues = updateFormPanel.getValues();
+                                                formValues.date = formValues.date.split(" ");
+                                                formValues.date[1] = formValues.job_time;
+                                                formValues.date = formValues.date.join(" ");
+                                                Baseliner.ci_call(sel.data.mid, 'reschedule', formValues, function(res) {
+                                                    Baseliner.message(_('Reschedule'), res.msg);
+                                                    store.reload();
+                                                    updateWindow.close();
+                                                });
+                                            }
+                                        });
+                                        var updateWindow = new Baseliner.Window({
+                                            layout: 'fit',
+                                            height: 280,
+                                            width: 380,
+                                            tbar: [
+                                                '->', {
+                                                    text: _('Cancel'),
+                                                    icon: IC('close.svg'),
+                                                    handler: function() {
+                                                        updateWindow.close();
+                                                    }
+                                                },
+                                                updateBtn
+                                            ],
+                                            title: _('Update time and date of the job'),
+                                            items: updateFormPanel
+                                        });
+                                        updateWindow.show();
+                                        if (!res.data || res.data == 0) {
+                                            Ext.Msg.alert(_('Error'), _('There are no allowed windows for the job'));
+                                            updateBtn.disable();
+                                        } else {
+                                            timeStore.loadData(res.data);
+                                        }
                                     }
-                                ]
-                            });
-
-                            var winupdate = new Baseliner.Window({
-                                layout: 'fit',
-                                height: 150, width: 380,
-                                tbar: [
-                                    '->',
-                                    {  text: _('Cancel'), icon: IC('close.svg'), handler: function(){ winupdate.close(); } },
-                                    {  text: _('Update'), icon: IC('edit.svg'), handler: function(){
-                                            var d = fupdatepanel.getValues();
-                                            Baseliner.ci_call( sel.data.mid, 'reschedule', d, function(res){
-                                                Baseliner.message( _('Reschedule'), res.msg );
-                                                store.reload();
-                                                winupdate.close();
-                                            });
-
-                                     } }
-                                ],
-                                title: 'Modificar fecha y hora del pase.',
-                                items: fupdatepanel
-                            });
-                            winupdate.show();
+                                }
+                            );
                         } else {
                             Ext.Msg.alert(_('Error'), _('Select a row first'));
                         };
@@ -1461,6 +1599,55 @@
     row_sel.on('rowdeselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).removeClass('x-grid3-row-selected-yellow');
     });
+    function reloadCalendar(bl, jobDate, mid, timeStore, calendarDateField, timeComboBox, updateBtn) {
+        Baseliner.ajaxEval('/job/build_job_window', {
+            bl: bl,
+            job_date: jobDate,
+            job_contents: JSON.stringify({
+                mid: mid
+            }),
+            date_format: '%Y-%m-%d'
+        }, function(res) {
+            timeStore.loadData(res.data);
+            var timeNow = new Date();
+            var existsTimeAvailable = false;
+            if (calendarDateField.value == timeNow.format(preferencesDateFormat)) {
+                for (var i = 0; i < timeStore.totalLength; i++) {
+                    if (timeStore.getAt(i).data.time >= timeNow.format('H:i')) {
+                        timeComboBox.setValue(timeStore.getAt(i).data.time);
+                        existsTimeAvailable = true;
+                        break;
+                    }
+                }
+                if (!existsTimeAvailable) {
+                    thereAreNoSlots(updateBtn);
+                    return;
+                }
+            } else {
+                if (!timeStore.getAt(0)) {
+                    thereAreNoSlots(updateBtn);
+                    return;
+                }
+                timeComboBox.setValue(timeStore.getAt(0).data.time);
+            }
+            updateBtn.enable();
+        });
+    }
+
+    function setFirstDateAvailable(timeStore, timeComboBox) {
+        var timeNow = new Date();
+        for (var i = 0; i < timeStore.totalLength; i++) {
+            if (timeStore.getAt(i).data.time >= timeNow.format('H:i')) {
+                timeComboBox.setValue(timeStore.getAt(i).data.time);
+                break;
+            }
+        };
+    }
+
+    function thereAreNoSlots(updateBtn) {
+        Ext.Msg.alert(_('Error'), _('There are no allowed windows for the job'));
+        updateBtn.disable();
+    }
 
     grid.on("activate", function() {
         if( first_load ) {

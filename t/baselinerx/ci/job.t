@@ -316,6 +316,65 @@ subtest 'run_inproc: throws when user does not have permission' => sub {
       qr/User .*? does not have permissions to start jobs in process/;
 };
 
+subtest 'reschedule: updates time and date of the job' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job = _build_ci( changesets => [$changeset] );
+
+    capture {
+        $job->save;
+        $job->reschedule( { username => $user->name, date => '2022-05-18', time => '15:15:00' } );
+    };
+
+    is $job->{schedtime}, '2022-05-18 15:15:00';
+};
+
+subtest 'reschedule: updates comment of the job' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job = _build_ci( changesets => [$changeset] );
+
+    capture {
+        $job->save;
+        $job->reschedule(
+            { username => $user->name, date => '2022-05-18', time => '15:15:00', comments => "new comment" } );
+    };
+
+    is $job->{comments}, 'new comment';
+};
+
+subtest 'reschedule: concatenates comments, and the last comment is in the first line' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job = _build_ci( changesets => [$changeset], comments => "First comment" );
+
+    capture {
+        $job->save;
+        $job->reschedule(
+            { username => $user->name, date => '2022-05-18', time => '15:15:00', comments => "Second comment" } );
+    };
+
+    is $job->{comments}, "Second comment\nFirst comment";
+};
+
 done_testing;
 
 sub _setup {
