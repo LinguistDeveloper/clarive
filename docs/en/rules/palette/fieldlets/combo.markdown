@@ -30,4 +30,8 @@ Check if you want the field as mandatory.
 
 ### Options
 
-Insert the options will be shown in the combo box. If there are multiple values must be separated by commas
+Insert the options will be shown in the combo box. If there are multiple values must be separated by commas.
+
+### Default Value
+
+To show a default option in the combo box.

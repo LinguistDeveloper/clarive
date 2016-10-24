@@ -25,3 +25,6 @@ icon: combo_box
 
 ### Opciones
 * Inserta las opciones que se van a mostrar en el combo. Los valores de la lista tienen que estar separados por comas.
+
+### Valor por defecto
+* Permite mostrar un valor de Opciones por defecto en el combo.

@@ -4603,9 +4603,9 @@ msgstr ""
 msgid "CI Grid"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/combo.js
 msgid "Combo"
-msgstr ""
+msgstr "Combo"
 
 #: lib/BaselinerX/Fieldlets.pm
 msgid "DB Query"
@@ -7643,8 +7643,8 @@ msgstr "Valores Modificados"
 msgid "Scope"
 msgstr "Ámbito"
 
-#: root/comp/configlist/grid.mas root/fields/templates/config/projects.js
-#: root/site/model.js
+#: root/comp/configlist/grid.mas root/fields/templates/config/combo.js
+#: root/fields/templates/config/projects.js root/site/model.js
 msgid "Default Value"
 msgstr "Valor por Defecto"
 
