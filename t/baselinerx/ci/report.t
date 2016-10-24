@@ -549,7 +549,7 @@ subtest 'get_where: builds correct string not in where' => sub {
     cmp_deeply $where, { title => { '$nin' => [qw/foo bar baz/] } };
 };
 
-subtest 'all_fields: returns all fields' => sub {
+subtest 'all_fields: returns categories' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_common_topic_rule_form;
@@ -563,6 +563,52 @@ subtest 'all_fields: returns all fields' => sub {
             {
                 action => 'action.topics.view',
                 bounds => [ { id_category => $id_category1 } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $report = TestUtils->create_ci('report');
+
+    my $fields = $report->all_fields({username => $user->username});
+
+    cmp_deeply $fields,
+      [
+        {
+            'leaf'     => \0,
+            'icon'     => ignore(),
+            'children' => [
+                {
+                    'leaf' => \0,
+                    'type' => 'category',
+                    'icon' => ignore(),
+                    'data' => {
+                        'id_category'   => ignore(),
+                        'name_category' => 'Category'
+                    },
+                    'text' => 'Category'
+                }
+            ],
+            'expanded'  => \1,
+            'draggable' => \0,
+            'text'      => 'Categories'
+        }
+      ];
+};
+
+subtest 'all_fields: returns category fields' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_common_topic_rule_form;
+
+    my $id_category = TestSetup->create_category(id_rule => $id_rule);
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_category } ]
             },
             {
                 action => 'action.topicsfield.read',
@@ -574,39 +620,56 @@ subtest 'all_fields: returns all fields' => sub {
 
     my $report = TestUtils->create_ci('report');
 
-    my $fields = $report->all_fields({username => $user->username});
+    my $fields = $report->all_fields( { username => $user->username, id_category => $id_category } );
 
-    my $children = $fields->[0]->{children};
+    my ($title) = grep {$_->{id_field} eq 'title'} @$fields;
 
-    ok grep { $_->[0] eq 'description' } @{ $children->[0]->{data}->{fields} };
+    cmp_deeply $title,
+      {
+        'leaf'               => \1,
+        'collection_extends' => undef,
+        'type'               => 'select_field',
+        'category'           => 'Category',
+        'format'             => undef,
+        'meta_type'          => '',
+        'icon'               => ignore(),
+        'id_field'           => 'title',
+        'text'               => '',
+        'collection'         => undef,
+        'ci_class'           => undef,
+        'options'            => undef,
+        'gridlet'            => undef,
+        'filter'             => undef
+      };
 };
 
-subtest 'all_fields: filters out not accessible fields' => sub {
+subtest 'all_fields: returns category fields filtering out not readable' => sub {
     _setup();
 
     my $id_rule = TestSetup->create_common_topic_rule_form;
 
-    my $id_category1 = TestSetup->create_category(id_rule => $id_rule);
-    my $id_category2 = TestSetup->create_category(id_rule => $id_rule);
+    my $id_category = TestSetup->create_category(id_rule => $id_rule);
 
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role(
         actions => [
             {
                 action => 'action.topics.view',
-                bounds => [ { id_category => $id_category1 } ]
+                bounds => [ { id_category => $id_category } ]
             },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [ { id_field => 'title' } ]
+            }
         ]
     );
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
     my $report = TestUtils->create_ci('report');
 
-    my $fields = $report->all_fields({username => $user->username});
+    my $fields = $report->all_fields( { username => $user->username, id_category => $id_category } );
 
-    my $children = $fields->[0]->{children};
-
-    ok !grep { $_->[0] eq 'description' } @{ $children->[0]->{data}->{fields} };
+    ok !grep {$_->{id_field} eq 'description'} @$fields;
 };
 
 done_testing;
