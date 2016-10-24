@@ -931,7 +931,7 @@ register 'statement.var.set' => {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             $stash->{'%s'} = parse_vars( q{%s}, $stash );
-        }, $n->{variable}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{variable}, $n->{value} );
     },
 };
 

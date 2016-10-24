@@ -192,6 +192,19 @@ sub build_app {
 
     $c->config_catalyst;
 
+    # clear cache on restart
+    if ( Clarive->debug ) {
+        if ( $ENV{CLARIVE_CACHE_RESET} ) {
+            cache->clear;
+            mdb->grid->remove( { id_rule => { '$exists' => 1 } } );
+
+            Util->_debug("Cache cleared. If you DON'T want to remove cache, unset CLARIVE_CACHE_RESET");
+        }
+        else {
+            Util->_debug("Cache NOT cleared. If you WANT to remove cache, set CLARIVE_CACHE_RESET=1");
+        }
+    }
+
     #############################
     $c->setup();
     #############################
@@ -229,13 +242,6 @@ sub build_app {
         print STDERR "Environment: $bali_env. MongoDB: $mdbv / $MongoDB::VERSION. Catalyst: $Catalyst::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
-
-    # clear cache on restart
-    if( Clarive->debug ) {
-        cache->clear;
-        mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
-        Util->_debug( "Cache cleared" );
-    }
 
     # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
     # otherwise mongo hell breaks loose

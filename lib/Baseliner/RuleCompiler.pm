@@ -103,7 +103,25 @@ sub compile {
     if ($dsl eq '' && (my $id_rule = $self->id_rule)) {
         my $rule = mdb->rule->find_one(
             { '$or' => [ { _id => mdb->oid($id_rule) }, { id => "$id_rule" }, { rule_name => $id_rule } ] } );
-        $dsl = $self->_build_dsl_from_rule($id_rule, $rule);
+
+        if ( my $grid = mdb->grid->find_one( { id_rule => $id_rule } ) ) {
+            if ( $grid->info->{ts} && $grid->info->{ts} eq $rule->{ts} ) {
+                _debug("DSL not changed. Loading cached version $pkg...");
+
+                $dsl = Encode::decode( 'UTF-8', $grid->slurp );
+            }
+            else {
+                _debug("DSL has changed. Removing cached version $pkg...");
+                mdb->grid->remove( { id_rule => $id_rule } );
+            }
+        }
+
+        if ( !length $dsl ) {
+            $dsl = $self->_build_dsl_from_rule( $id_rule, $rule );
+
+            _debug("Caching DSL $pkg...");
+            mdb->grid_insert( $dsl, id_rule => $id_rule, ts => $rule->{ts} );
+        }
     }
 
     my $warnings_str =
