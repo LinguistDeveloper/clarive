@@ -861,6 +861,11 @@ img.img-custom-logo-file[src$='.svg'] {
     margin-top: -2px;
 }
 
+.x-form-text.x-superboxselect.x-superboxselect-display-btns .x-superboxselect-item.x-tag.x-superboxselect-item span > img {
+    height: 16px;
+    width: 16px;
+}
+
 .x-combo-list .x-combo-list-inner span > img {
     width:16px;
     height:16px;
