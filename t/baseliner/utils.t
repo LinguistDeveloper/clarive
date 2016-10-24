@@ -1056,7 +1056,7 @@ subtest '_retry: retries when error matches' => sub {
         die 'this=' . $attempts;
     };
 
-    like exception { Util->_retry( $cb, attempts => 3, when => qr/this/ ) }, qr/this=3/;
+    like exception { Util->_retry( $cb, attempts => 3, when => qr/^this/ ) }, qr/this=3/;
 };
 
 subtest 'slice_page: returns slice page' => sub {

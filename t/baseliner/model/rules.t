@@ -19,6 +19,7 @@ use BaselinerX::Type::Statement;
 use BaselinerX::Type::Service;
 use Baseliner::RuleCompiler;
 use Baseliner::RuleRunner;
+use Baseliner::Utils qw(_retry);
 
 use_ok 'Baseliner::Model::Rules';
 
@@ -156,28 +157,34 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
     _setup();
 
     mdb->_test_sem->drop;
+    mdb->_test_sem->ensure_index( { key => 1 }, { unique => 1 } );
+    mdb->index_all('sem');
+    mdb->index_all('master_seq');
 
-    TestUtils->setup_registry(
-        'BaselinerX::Type::Service', 'BaselinerX::Type::Event',
-        'BaselinerX::Events',        'BaselinerX::Type::Statement',
-        'Baseliner::Model::Rules'
-    );
+    my $key = 'test';
+
     {
-
         package DummyPKGSemaphore;
         sub new { }
-    };
+    }
+
     Baseliner::Core::Registry->add(
         'DummyPKGSemaphore',
         'service.test.op' => {
             name    => 'Test Op',
             handler => sub {
                 my ( $self, $c, $config ) = @_;
+
                 my $stash = $c->stash;
-                mdb->_test_sem->update( {}, { '$inc' => { cnt => 1 } }, { upsert => 1 } );
-                Time::HiRes::usleep( int rand 500000 );
+
+                _retry sub {
+                    mdb->_test_sem->update( { key => $key }, { '$inc' => { cnt => 1 } }, { upsert => 1 } );
+                }, attempts => 3;
+
+                Time::HiRes::usleep( 10_000 * int rand 10 );
+
                 $stash->{sem_cnt} = mdb->_test_sem->find_one->{cnt};
-                mdb->_test_sem->update( {}, { '$inc' => { cnt => -1 } } );
+                mdb->_test_sem->update( { key => $key }, { '$inc' => { cnt => -1 } } );
 
                 mdb->disconnect;
             }
@@ -201,27 +208,16 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
                 "children" => [
                     {
                         "attributes" => {
-                            'icon'                => '/static/images/icons/script-local.svg',
-                            'palette'             => 0,
+                            'name'                => '',
+                            'text'                => '',
                             'disabled'            => 0,
-                            'who'                 => 'root',
-                            'timeout'             => '',
-                            'text'                => 'Find *.c',
-                            'expanded'            => 1,
                             'semaphore_key'       => 'test-sem',
-                            'id'                  => 'xnode-2995',
-                            'ts'                  => '2014-12-06T11:49:36',
                             'trap_timeout_action' => 'abort',
                             'parallel_mode'       => 'fork',
-                            'name'                => 'Run a local script',
                             'active'              => 1,
                             'trap_rollback'       => 1,
                             'error_trap'          => 'none',
                             'needs_rollback_mode' => 'none',
-                            'note'                => '',
-                            'run_rollback'        => 1,
-                            'data_key'            => 'find_c_files',
-                            'trap_timeout'        => 0,
                             'run_forward'         => 1,
                             "data"                => {
                                 'stdin'          => '',
@@ -246,7 +242,6 @@ subtest 'dsl_build: semaphore key test with fork' => sub {
             },
             {
                 attributes => {
-                    icon     => "/static/images/icons/time.svg",
                     key      => "statement.parallel.wait",
                     active   => 1,
                     name     => "WAIT for children",
@@ -1350,6 +1345,8 @@ sub _setup {
 qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.svg","key":"statement.step","expanded":true,"leaf":false,"id":"xnode-1023"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"icon":"/static/images/icons/job.svg","text":"INIT","id":"xnode-1024"},"children":[]},{"attributes":{"key":"statement.step","expanded":true,"leaf":false,"text":"PRE","icon":"/static/images/icons/job.svg","id":"xnode-1025"},"children":[]},{"attributes":{"icon":"/static/images/icons/job.svg","text":"RUN","leaf":false,"key":"statement.step","expanded":true,"id":"xnode-1026"},"children":[{"attributes":{"icon":"/static/images/icons/cog.svg","on_drop_js":null,"on_drop":"","leaf":true,"nested":0,"holds_children":false,"run_sub":true,"palette":false,"text":"CODE","key":"statement.perl.code","id":"rule-ext-gen1029-1435664566485","name":"CODE","data":{"code":"$code"},"ts":"$iso_ts","who":"root","expanded":false},"children":[]}]},{"attributes":{"leaf":false,"key":"statement.step","expanded":true,"text":"POST","icon":"/static/images/icons/job.svg","id":"xnode-1027"},"children":[]}]%
         }
     );
+
+    mdb->index_all('sem');
 }
 
 sub _build_model {

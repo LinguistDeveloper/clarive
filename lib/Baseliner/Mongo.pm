@@ -81,11 +81,29 @@ sub seq {
         return "$seq";
     }
 
-    my $doc = $coll->find_and_modify( { query => { _id => $name }, update => { '$inc' => { seq => 1 } }, new => 1 } );
-    return "$doc->{seq}" if $doc->{seq};
+    my $doc = _retry sub {
+        $coll->find_and_modify( { query => { _id => $name }, update => { '$inc' => { seq => 1 } }, new => 1 } );
+      },
+      attempts => 5,
+      when     => qr/^E11000/;
 
-    $coll->insert( { _id => $name, seq => 1 } );
-    return "1";
+    return "$doc->{seq}" if $doc && $doc->{seq};
+
+    my $seq_first = '1';
+    eval { $coll->insert( { _id => $name, seq => 1 } ) } or do {
+        my $error = $@;
+
+        if ( $error =~ m/^E11000/ ) {
+            my $doc =
+              $coll->find_and_modify( { query => { _id => $name }, update => { '$inc' => { seq => 1 } }, new => 1 } );
+            $seq_first = "$doc->{seq}" if $doc->{seq};
+        }
+        else {
+            die $error;
+        }
+    };
+
+    return $seq_first;
 }
 
 sub collection {
