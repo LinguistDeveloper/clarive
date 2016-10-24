@@ -1,6 +1,6 @@
 ---
 title: IF var THEN
-icon: if.gif
+icon: if
 ---
 
 Checks if the value of specific stash variable equals a defined value and if it is true,

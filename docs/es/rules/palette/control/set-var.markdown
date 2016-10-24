@@ -1,6 +1,6 @@
 ---
 title: SET VAR
-icon: let.gif
+icon: let
 ---
 * Crea una nueva variable en el stash y almacena el valor indicado en la configuración.
 * El Stash es accesible para establecer el valor de la nueva variable.

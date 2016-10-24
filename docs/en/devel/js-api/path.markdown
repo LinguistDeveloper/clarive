@@ -1,5 +1,6 @@
 ---
 title: cla/path - Path manipulation
+icon: page
 ---
 
 These utilities are useful for manipulating 

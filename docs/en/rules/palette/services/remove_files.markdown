@@ -1,6 +1,6 @@
 ---
 title: Remove Attached Files
-icon: topic.svg
+icon: topic
 ---
 
 Service that removes the assets attached from a [topic](concepts/topic). Form to configure has the following fields:

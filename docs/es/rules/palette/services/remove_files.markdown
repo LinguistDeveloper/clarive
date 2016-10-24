@@ -1,6 +1,6 @@
 ---
 title: Borrar Ficheros Adjuntos
-icon: topic.svg
+icon: topic
 ---
 
 Servicio que borra ficheros adjuntos a un tópico. El formulario de configuración tiene los siguientes campos:

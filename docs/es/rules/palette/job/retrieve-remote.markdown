@@ -1,6 +1,6 @@
 ---
 title: Retrieve a remote file
-icon: file.svg
+icon: file
 ---
 * Obtiene un archivo remoto desde un servidor de acuerdo con los parámetros configurados por el usuario.
 * El agente del servidor asociado realizará el *get* remoto.

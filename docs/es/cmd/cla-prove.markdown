@@ -1,6 +1,6 @@
 ---
 title: cla prove - Ejecuta un test interno
-icon: console.svg
+icon: console
 ---
 * `cla prove`: Ejecuta un test interno y comprueba el resultado.
 * Este comando ejecuta fichero de test localizados en el directorio y muestra los resultados en pantalla.

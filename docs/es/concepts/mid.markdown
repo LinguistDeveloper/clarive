@@ -1,5 +1,6 @@
 ---
 title: MID
+icon: page
 ---
 
 MID es el acrónimo de Master ID.

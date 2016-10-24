@@ -1,7 +1,7 @@
 ---
 title: Daemon Administration
 index: 2
-icon: daemon.gif
+icon: daemon
 ---
 
 A daemon is a computer program that runs as a background process,
@@ -47,13 +47,13 @@ for example purge the demon, we can disable it from this screen.
 
 Actions associated with the buttons on the toolbar:
 
-<img src="/static/images/icons/add.gif" /> **Create**: Create new daemon attached to the Dispatcher.
+<img src="/static/images/icons/add.svg" /> **Create**: Create new daemon attached to the Dispatcher.
 
-<img src="/static/images/icons/edit.gif" /> **Edit**: Modify the configuration for existing daemons
+<img src="/static/images/icons/edit.svg" /> **Edit**: Modify the configuration for existing daemons
 
-<img src="/static/images/icons/delete.gif" /> **Delete**: Delete an existing daemon.
+<img src="/static/images/icons/delete.svg" /> **Delete**: Delete an existing daemon.
 
-<img src="/static/images/icons/start.png" /> **Start**: Run a daemon that has been stopped.
+<img src="/static/images/icons/start.svg" /> **Start**: Run a daemon that has been stopped.
 
-<img src="/static/images/icons/stop.png" /> **Stop**: Stop a running daemon.
+<img src="/static/images/icons/stop.svg" /> **Stop**: Stop a running daemon.
 

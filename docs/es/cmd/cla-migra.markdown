@@ -1,6 +1,6 @@
 ---
 title: cla migra - Migraciones
-icon: console.svg
+icon: console
 ---
 * `cla migra`: Ejecuta las migraciones de bases de datos, necesarias para evitar incompatibilidades entre la versión de la base de datos y la versión de Clarive tras instalar parches.
 

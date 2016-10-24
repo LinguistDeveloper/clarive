@@ -1,6 +1,6 @@
 ---
 title: DELETE hashkey
-icon: if.gif
+icon: if
 ---
 
 To delete an specified stash variable.

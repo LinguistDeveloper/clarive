@@ -31,7 +31,7 @@ icon: email
 * Indica el tipo de acción de la notificación.
 
 #### Activado
-* Todas las notificaciones pueden ser activadas o desactivadas. Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start.png" /> o <img src ="/static/images/icons/stop.png "/>.
+* Todas las notificaciones pueden ser activadas o desactivadas. Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start.svg" /> o <img src ="/static/images/icons/stop.svg "/>.
 * Al igual que el resto de listas que hay en Clarive, tiene las mismas funcionalidades que las demás, esto es, posibilidad de ordenar una columna pinchando en el nombre de la misma, seleccionando las columnas que se quieren mostrar o realizar una [búsqueda](getting-started/search-syntax).
 * Además, se pueden filtrar los resultados en función de la acción o del estado de la notificación. Para ello, pinchar en la pestaña situada en el lateral del campo Acción o del campo Activado y, a continuación, seleccionar el filtro que se desee.
 
@@ -107,7 +107,7 @@ Que el asunto sea breve.
 
 El asunto puede ser dinámico utilizando variables stash, por ejemplo `$ {username}`.
 
-`Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.gif" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
+`Destinatarios` - A través de la opción de <img src = "/static/images/icons/add.svg" /> Crear, se selecciona los destinatarios de las notificaciones. Al pulsar el botón de crear, se abre una nueva ventana para especficar los destinatarios.
 
 *To*
 
@@ -157,18 +157,18 @@ Cuando se marca la casilla "Todos", a la derecha de los campos, la condición se
 * La ventana que se abre para la edición es la misma que para la creación.
 
 
-#### <img src = "/static/images/icons/delete_.png" /> Borrar
+#### <img src = "/static/images/icons/delete.svg" /> Borrar
 * Permite eliminar una o varias notificaciones.
 
 
-#### <img src = "/static/images/icons/start.png" /> Activar / <img src = "/static/images/icons/stop.png" /> Desactivar
+#### <img src = "/static/images/icons/start.svg" /> Activar / <img src = "/static/images/icons/stop.svg" /> Desactivar
 * Permite activar o desactactivar una o varias notificaciones.
 
 
-#### <img src = "/static/images/icons/import.png" /> Importar / <img src = "/static/images/icons/export.png" /> Exportar
+#### <img src = "/static/images/icons/import.svg" /> Importar / <img src = "/static/images/icons/export.svg" /> Exportar
 * Dentro de las opciones del icono <img src = "/static/images/icons/wrench.svg" /> se encuentran las opciones para importar o exportar notificaciones.
 * Para la **exportación**, es necesario seleccionar al menos una fila, una vez seleccionadas las notificaciones que se deseen exportar, el sistema generará un fichero YAML con los datos del evento.
-* La opción de **importar** abrirá una ventana donde añadir el YAML de la notificación. Una vez añadido el código es necesario importarlo a través del botón <img src = "/static/images/icons/import.png" /> Importar que aparece en la parte superior de la ventana activa. Debajo, aparecerá el resultado de la importación.
+* La opción de **importar** abrirá una ventana donde añadir el YAML de la notificación. Una vez añadido el código es necesario importarlo a través del botón <img src = "/static/images/icons/import.svg" /> Importar que aparece en la parte superior de la ventana activa. Debajo, aparecerá el resultado de la importación.
 * Si ha ido de manera correcta el sistema informará con un mensaje:
 
         ----------------| Notify:  |----------------

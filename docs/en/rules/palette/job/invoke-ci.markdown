@@ -1,6 +1,6 @@
 ---
 title: Invoke CI methods
-icon: ci
+icon: class
 ---
 
 Invoke the selected ci method with the given arguments from the form.

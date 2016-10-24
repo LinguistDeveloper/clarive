@@ -1,7 +1,7 @@
 ---
 title: Campo de fecha
 index: 400
-icon: calendar.svg
+icon: calendar
 ---
 
 * Permite añadir un campo fecha en el tópico.

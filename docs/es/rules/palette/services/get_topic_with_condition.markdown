@@ -1,6 +1,6 @@
 ---
 title: Get topics that matches conditions
-icon: topic.svg
+icon: topic
 ---
 Servicio que devuelve los tópicos que cumplen las condiciones establecidas. El formulario para configurar tiene los siguientes campos:
 

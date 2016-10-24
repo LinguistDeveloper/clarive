@@ -1,6 +1,6 @@
 ---
 title: Mensajes del sistema
-icon: sms.svg
+icon: sms
 ---
 
 Los mensajes del sistema son notificaciones globales
@@ -23,7 +23,7 @@ para los usuarios, ua que limita el acceso a la barra de menú
 de la parte superior, buisqueda y otras funciones, se espera
 que los usuarios desestimen los mensajes cerrándolos.
 
-### <img src="/static/images/icons/edit.gif" /> Crear un mensaje nuevo
+### <img src="/static/images/icons/edit.svg" /> Crear un mensaje nuevo
 
 Entrar en la opción `Mensajes del sistema` del menú de administración.
 Se abrirá una ventana con la lista de los mensajes actuales y los antiguos.

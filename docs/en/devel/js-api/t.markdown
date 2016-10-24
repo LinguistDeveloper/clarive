@@ -1,5 +1,6 @@
 ---
 title: cla/t - Testing
+icon: page
 ---
 
 This module contains functions

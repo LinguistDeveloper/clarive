@@ -1,6 +1,6 @@
 ---
 title: IF ROLLBACK
-icon: if.gif
+icon: if
 ---
 
 Checks the status of rollback stash variable and process nested op if

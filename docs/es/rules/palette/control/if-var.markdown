@@ -1,6 +1,6 @@
 ---
 title: IF var THEN
-icon: if.gif
+icon: if
 ---
 * Comprueba si un valor específico está dentro del stash. En caso afirmativo, se ejecuta las operaciones anidadas.
 * Es necesario configurar los siguientes campos:

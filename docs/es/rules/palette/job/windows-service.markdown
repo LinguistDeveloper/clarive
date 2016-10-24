@@ -1,6 +1,6 @@
 ---
 title: Servicios de Windows
-icon: wrench.svg
+icon: wrench
 ---
 
 Elemento que permite controlar Servicios de Windows de forma remota. Las opciones disponibles son:

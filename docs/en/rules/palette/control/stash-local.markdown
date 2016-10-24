@@ -1,6 +1,6 @@
 ---
 title: STASH LOCAL
-icon: loop.gif
+icon: loop
 ---
 
 Execute nested ops but assigning stash to a local stash.

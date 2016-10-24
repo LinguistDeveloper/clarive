@@ -1,6 +1,7 @@
 ---
 title: The Clarive JavaScript DSL
 index: 300
+icon: page
 ---
 
 Accessing the powerful Clarive functionality from the JS DSL

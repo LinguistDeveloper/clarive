@@ -1,5 +1,6 @@
 ---
 title: cla/reg - Registry Manipulation
+icon: page
 ---
 
 The Clarive registry holds extension points to many parts of

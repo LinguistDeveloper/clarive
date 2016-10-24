@@ -1,5 +1,6 @@
 ---
 title: Operacion
+icon: page
 ---
 
 Las operaciones (o "ops") son los diferentes pasos o tareas que son ejecutadas

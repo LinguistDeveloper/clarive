@@ -1,6 +1,6 @@
 ---
 title: APPLY NATURE
-icon: loop.gif
+icon: loop
 ---
 * Si se aplica una naturaleza a un cambio, se cargan las variables de configuración del CI al [stash](concepts/stash)
 * A continuación hay que configurar el componente:

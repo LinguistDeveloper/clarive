@@ -1,6 +1,6 @@
 ---
 title: APPLY PROJECT
-icon: loop.gif
+icon: loop
 ---
 * Carga las variables de configuración de un [proyecto](concepts/project) al [stash](concepts/stash).
 * A continuación hay que configurar el componente:

@@ -1,6 +1,7 @@
 ---
 title: Install Directories
 index: 600
+icon: page
 ---
 
 This document describes the

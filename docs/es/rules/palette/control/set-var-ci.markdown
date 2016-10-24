@@ -1,6 +1,6 @@
 ---
 title: SET VAR to CI
-icon: let.gif
+icon: let
 ---
 * Crea un nueva variable en el stash y referencia el valor de la misma a una instancia CI.
 * Es necesario configurar los siguientes campos:

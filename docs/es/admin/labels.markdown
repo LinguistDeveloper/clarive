@@ -1,6 +1,6 @@
 ---
 title: Administracion de etiquetas
-icon: topic.svg
+icon: topic
 ---
 La administración de etiquetas se ubica dentro de las opciones de **Administración → <img src="/static/images/icons/flag_white.svg" /> Etiquetas**.
 Podremos definir las siguientes características:

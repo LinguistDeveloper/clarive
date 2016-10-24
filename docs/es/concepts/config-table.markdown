@@ -1,5 +1,6 @@
 ---
 title: Tabla de Configuración
+icon: page
 ---
 
 La tabla de configuración global contiene parámetros de configuración __dinámica__ 

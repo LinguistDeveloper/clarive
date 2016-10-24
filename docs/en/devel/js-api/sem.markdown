@@ -1,5 +1,6 @@
 ---
 title: cla/sem - semaphore control
+icon: page
 ---
 
 This namespace contains

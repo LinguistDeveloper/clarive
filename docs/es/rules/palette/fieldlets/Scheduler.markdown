@@ -1,7 +1,7 @@
 ---
 title: Planificador
 index: 400
-icon: clock.svg
+icon: clock
 ---
 
 Permite añadir una tabla como planificadora de eventos.

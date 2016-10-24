@@ -23,7 +23,7 @@ bothersome, because it limits the access to the menu bar
 on top, search and other functions, users are expected to
 dismiss messages by closing them.
 
-### <img src="/static/images/icons/edit.gif" /> Creating a new message
+### <img src="/static/images/icons/edit.svg" /> Creating a new message
 
 Enter the `System Messages` admin option. The system messages
 window will open with a list of current and previous messages.

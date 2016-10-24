@@ -1,5 +1,6 @@
 ---
 title: cla/db - MongoDB namespace
+icon: page
 ---
 
 The database namespace has functions

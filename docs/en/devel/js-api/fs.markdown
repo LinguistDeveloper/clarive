@@ -1,5 +1,6 @@
 ---
 title: cla/fs - Local Filesystem Access
+icon: page
 ---
 
 These functions are for accessing the Clarive

@@ -1,7 +1,7 @@
 ---
 title: Editar Calendario
 index: 1
-icon: wrench.svg
+icon: wrench
 ---
 
 Seleccionamos <img src="/static/images/icons/slot.svg" /> **Ventana de pases**

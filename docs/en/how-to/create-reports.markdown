@@ -1,7 +1,7 @@
 ---
 title: Create a report
 index: 1
-icon: report.svg
+icon: report
 ---
 
 Allow users to create a personalized topic grids. Users set the columns to show, categories and filters that makes possible to have in a topic grid the relevant information. This grid, can be configured with the following options:

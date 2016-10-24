@@ -6,7 +6,7 @@ icon: combo_box
 
 Permite añadir un tópico existente al nuevo tópico.
 
-Permite además crear tópicos desde el formulario pulsando el botón: <img src="/static/images/icons/add.gif" />
+Permite además crear tópicos desde el formulario pulsando el botón: <img src="/static/images/icons/add.svg" />
 
 La lista de elementos que pueden ser configurados dentro del fieldlet.
 

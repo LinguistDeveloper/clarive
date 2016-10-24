@@ -1,6 +1,6 @@
 ---
 title: TRY statement
-icon: if.gif
+icon: if
 ---
 
 Try to run nested ops.

@@ -1,7 +1,7 @@
 ---
 title: Grafico de un CI
 index: 400
-icon: ci-grey.svg
+icon: ci-grey
 ---
 * Muestra un gráfico de relación entre CIs
 * Se debe seleccionar al menos un elemento.

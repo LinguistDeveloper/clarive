@@ -1,6 +1,6 @@
 ---
 title: RETRY
-icon: if.gif
+icon: if
 ---
 
 Acción para repetir de manera iterativa un bucle.

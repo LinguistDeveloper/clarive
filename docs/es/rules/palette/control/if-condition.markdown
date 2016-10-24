@@ -1,6 +1,6 @@
 ---
 title: IF condition THEN
-icon: if.gif
+icon: if
 ---
 * Comprueba la condición y si es afirmativa el flujo continua con los procesos anidados.
 * Conceptualmente, este `if` iterativo es igual al que se puede encontrar en cualquier lenguaje de programación.

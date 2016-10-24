@@ -1,6 +1,6 @@
 ---
 title: Sleep for a number of seconds
-icon: time
+icon: job
 ---
 
 The process sleeps for a specified number of seconds.

@@ -10,7 +10,7 @@ Clarive has a Kanban board generator utility that is available from two places:
 - From withing a topic that holds other topics.
 
 The Kanban board can be opened by clicking on the following icon:
-<img src="/static/images/icons/kanban.png" />
+<img src="/static/images/icons/kanban.svg" />
 
 ### How does it work?
 

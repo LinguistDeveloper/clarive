@@ -1,6 +1,6 @@
 ---
 title: Fieldlets
 index: 500
-icon: detail.png
+icon: detail
 expanded: 0
 ---

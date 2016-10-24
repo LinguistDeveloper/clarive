@@ -1,6 +1,6 @@
 ---
 title: IF condition THEN
-icon: if.gif
+icon: if
 ---
 
 Checks the condition and if true process nested ops.

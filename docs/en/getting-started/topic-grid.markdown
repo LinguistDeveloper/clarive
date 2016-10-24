@@ -12,7 +12,7 @@ The topic grid can be seen in Clarive in 3 initial modes:
 - **All Topics**: Opened by selecting the `All` menu option in the Topic menu.
 - **By Category**: Opened by selecting a category under the Topic menu.
 - **By Project**: Opened by clicking on the project name under the project
-explorer <img src="/static/images/icons/project.png" />.
+explorer <img src="/static/images/icons/project.svg" />.
 
 ### Sorting
 

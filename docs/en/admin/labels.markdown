@@ -1,6 +1,6 @@
 ---
 title: Labels Administration
-icon: topic.svg
+icon: flag_white
 ---
 Labels administration is located within **Admin → <img src="/static/images/icons/flag_white.svg" /> Labels**.
 You can define the following parameters:

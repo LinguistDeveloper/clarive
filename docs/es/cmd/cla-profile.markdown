@@ -1,6 +1,6 @@
 ---
 title: cla profile - Perfil Clarive
-icon: console.svg
+icon: console
 ---
 * `cla profile`: Muestra por pantalla los datos del perfil de Clarive.
 * Los datos que se muestran son:

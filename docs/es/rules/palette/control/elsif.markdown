@@ -1,6 +1,6 @@
 ---
 title: ELSIF condition THEN
-icon: if_else.gif
+icon: if_else
 ---
 
 * Ejecuta las operaciones aninadas como un único bloque cuando se cumple una condición específica.

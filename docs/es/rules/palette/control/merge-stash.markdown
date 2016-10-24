@@ -1,6 +1,6 @@
 ---
 title: MERGE value INTO stash
-icon: let.gif
+icon: let
 ---
 * Combina el valor dado en la configuración del elemento con el valor que tiene en el stash.
 * Es necesario configurar los siguientes campos:

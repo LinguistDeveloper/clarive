@@ -1,5 +1,6 @@
 ---
 title: Autentificacion LDAP
+icon: page
 ---
 
 ## Configuración

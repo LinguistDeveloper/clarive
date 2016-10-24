@@ -1,7 +1,7 @@
 ---
 title: Crear Informe
 index: 1
-icon: report.svg
+icon: report
 ---
 
 Permite a los usuarios crear grids de tópicos personalizados. El usuario selecciona las columnas a mostrar, categorías y filtros. Este grid, puede configurarse de la siguiente manera:

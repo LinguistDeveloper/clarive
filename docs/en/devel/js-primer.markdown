@@ -1,6 +1,7 @@
 ---
 title: A JavaScript Primer
 index: 200
+icon: page
 ---
 
 This is a quick primer to help you getting started with Javascript in case you

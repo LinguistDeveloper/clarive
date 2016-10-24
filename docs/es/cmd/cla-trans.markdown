@@ -1,6 +1,6 @@
 ---
 title: cla trans - Herramienta de conversion
-icon: console.svg
+icon: console
 ---
 * `cla trans`: Herramienta de conversion para encriptar contraseñas.
 * Los subcomandos disponibles se pueden visualizar con la ayuda:

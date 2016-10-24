@@ -1,6 +1,7 @@
 ---
 title: Extending the JS system with modules
 index: 2000
+icon: page
 ---
 
 To extend the JS code we recommend

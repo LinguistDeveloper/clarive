@@ -1,6 +1,6 @@
 ---
 title: Windows service
-icon: wrench.svg
+icon: wrench
 ---
 
 Allow to control Windows services in remote control. The parameters to be configured are:

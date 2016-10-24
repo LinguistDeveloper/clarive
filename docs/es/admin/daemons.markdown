@@ -1,6 +1,6 @@
 ---
 title: Administracion de demonios
-icon: daemon.svg
+icon: daemon
 ---
 * Un demonio es un programa informático que se ejecuta como un proceso en segundo plano, en lugar de estar bajo el control directo de un usuario interactivo.
 * En Clarive, los demonios son especiales, los procesos independientes los inicia el [Dispatcher](admin/dispatcher).
@@ -30,8 +30,8 @@ Las acciones disponibles dentro de la ventana de Demonios son las siguientes:
 
 <img src="/static/images/icons/edit.svg" /> **Editar**: Permite modificar la configuración el demonio seleccionado.
 
-<img src="/static/images/icons/delete.gif" /> **Eliminar**: Elimina un demonio seleccionado en la lista.
+<img src="/static/images/icons/delete.svg" /> **Eliminar**: Elimina un demonio seleccionado en la lista.
 
-<img src="/static/images/icons/start.png" /> **Activar**: Inicia un demonio que está desactivado.
+<img src="/static/images/icons/start.svg" /> **Activar**: Inicia un demonio que está desactivado.
 
-<img src="/static/images/icons/stop.png" /> **Desctivar**: Desactiva un demonio que se está ejecutando.
+<img src="/static/images/icons/stop.svg" /> **Desctivar**: Desactiva un demonio que se está ejecutando.

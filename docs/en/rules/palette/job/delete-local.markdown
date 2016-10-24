@@ -1,6 +1,6 @@
 ---
 title: Delete Local Directory
-icon: file.gif
+icon: file
 ---
 
 Removes given directory recursively.

@@ -68,8 +68,8 @@ values as the original class. Its initial name will be the name of the original 
 
 Import/Export low level configuration data of the selected Topic Classes
 Allows importing or exporting low level configuration data of the selected Topic classes. When
-clicking on the above symbol, an option for Export <img src="/static/images/icons/export.png" alt='Export' />
-as well as an option for Import <img src="/static/images/icons/import.png" alt='Import' /> will be available.
+clicking on the above symbol, an option for Export <img src="/static/images/icons/export.svg" alt='Export' />
+as well as an option for Import <img src="/static/images/icons/import.svg" alt='Import' /> will be available.
 
 Import and export format is in YAML
 
@@ -83,10 +83,10 @@ Workflow restrictions are tight to a specific role defined within Clarive.
 The workflow editor window will show all available roles in the top left window.  To create the possible transitions per
 role, you first select the role(s) that can make the status transition, then you select the status from where the
 transition starts (the dropdown “Status from”), then in the listbox under the status from, you can select all the status
-that are allowed for the selected roles.  Once ready you hit <img src="/static/images/icons/down.png"/> to add the
+that are allowed for the selected roles.  Once ready you hit <img src="/static/images/icons/down.svg"/> to add the
 selected transitions to the list shown in the bottom part of the window.
 
 In case you want to remove certain transitions,you can select for which roles, which transitions need to be removed
-(same way as for adding as described above), but you then hit <img src="/static/images/icons/remove.png"
+(same way as for adding as described above), but you then hit <img src="/static/images/icons/clear-all.svg"
 alt='Remove'/> to remove the transitions from the list.
 

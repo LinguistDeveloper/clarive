@@ -1,5 +1,5 @@
 ---
 title: Rollback All Transactions 
-icon: repo.gif
+icon: repo
 ---
 * Deshace todas las transacciones de base de datos.

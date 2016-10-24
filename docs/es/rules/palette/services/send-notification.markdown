@@ -1,6 +1,6 @@
 ---
 title: Send notification
-icon: job.svg
+icon: job
 ---
 Servicio para enviar notificaciones. El formulario para configurar tiene los siguientes campos:
 

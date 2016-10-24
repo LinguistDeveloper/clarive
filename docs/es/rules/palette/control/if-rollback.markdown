@@ -1,6 +1,6 @@
 ---
 title: IF ROLLBACK
-icon: if.gif
+icon: if
 ---
 * Comprueba en el stash si existe una reversión y procesa las operaciones anidadas en caso de que sea afirmativo.
 * Es necesario configurar los siguientes campos:

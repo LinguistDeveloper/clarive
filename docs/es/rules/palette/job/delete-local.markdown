@@ -1,6 +1,6 @@
 ---
 title: Delete Local Directory
-icon: file.svg
+icon: file
 ---
 * Elimina de manera recursivo el directorio dado en la configuración del elemento.
 * La lista de configuración del elemento incluye las siguientes opciones:

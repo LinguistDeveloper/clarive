@@ -1,5 +1,6 @@
 ---
 title: cla/ci - CI Classes
+icon: page
 ---
 
 Programmatically speaking, each Configuration Item (CI)

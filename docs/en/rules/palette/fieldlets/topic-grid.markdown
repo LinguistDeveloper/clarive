@@ -6,7 +6,7 @@ icon: grid
 
 Allows to add topics into a grid to the form.
 
-Also allows to create topics clicking on `Create button`: <img src="/static/images/icons/add.gif" />
+Also allows to create topics clicking on `Create button`: <img src="/static/images/icons/add.svg" />
 
 There are a list of elements can be configured in the fieldlet:
 

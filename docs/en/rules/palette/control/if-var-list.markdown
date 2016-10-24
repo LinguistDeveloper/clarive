@@ -1,6 +1,6 @@
 ---
 title: IF var in LIST THEN
-icon: if.gif
+icon: if
 ---
 
 Checks if the value of a specific stash variable equals any of a list of values, if so, process nested ops.

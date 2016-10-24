@@ -1,7 +1,7 @@
 ---
 title: Marco de Internet
 index: 400
-icon: webservice.svg
+icon: webservice
 ---
 * Muestra una página web dentro del dashboard.
 * La lista de elementos configurables es la siguiente:

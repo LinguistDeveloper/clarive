@@ -1,6 +1,6 @@
 ---
 title: MERGE value INTO stash
-icon: let.gif
+icon: let
 ---
 
 Merge hash variable to be accessible through stash variables.

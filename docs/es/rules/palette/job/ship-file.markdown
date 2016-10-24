@@ -1,6 +1,6 @@
 ---
 title: Ship File Remotely
-icon: file.svg
+icon: file
 ---
 
 * Los elementos configurables son los siguientes.

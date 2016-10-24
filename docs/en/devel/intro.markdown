@@ -1,6 +1,7 @@
 ---
 title: Introduction
 index: 100
+icon: page
 ---
 
 JavaScript is the language of choice for writing automation rules code in Clarive.

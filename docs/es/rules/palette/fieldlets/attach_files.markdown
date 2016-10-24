@@ -1,7 +1,7 @@
 ---
 title: Adjuntar ficheros
 index: 400
-icon: file.svg
+icon: file
 ---
 * Permite adjuntar archivos a un tópico.
 * Existe una lista de elementos que pueden ser configurados dentro del fieldlet.

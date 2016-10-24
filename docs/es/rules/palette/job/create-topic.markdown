@@ -1,6 +1,6 @@
 ---
 title: Crear nuevo topic
-icon: topic.svg
+icon: topic
 ---
 
 Permite crear un nuevo tópico en Clarive en función a los parámetros recibidos.

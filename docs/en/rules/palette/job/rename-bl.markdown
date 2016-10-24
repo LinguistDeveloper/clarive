@@ -1,6 +1,6 @@
 ---
 title: Rename Baseline Items and Files
-icon: changesets
+icon: rename_items
 ---
 
 According to the configuration window, files and/or items from job
