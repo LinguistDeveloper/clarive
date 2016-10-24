@@ -13,6 +13,335 @@ use Capture::Tiny qw(capture);
 
 use Baseliner::DataView::Job;
 
+subtest 'find: builds correct query when field sorting is not in group keys' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $project_1     = TestUtils->create_ci_project( name => 'Project_A' );
+    my $project_2     = TestUtils->create_ci_project( name => 'Project_B' );
+    my $project_3     = TestUtils->create_ci_project( name => 'Project_C' );
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => [ $project_1, $project_2, $project_3 ] );
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+    my $topic_mid_1       = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_1
+    );
+    my $topic_mid_2 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_2,
+    );
+    my $topic_mid_3 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_3
+    );
+    my $group_keys = { applications => 'job_contents.list_apps' };
+
+    my $job_ci_1;
+    my $job_ci_2;
+    my $job_ci_3;
+
+    capture {
+        $job_ci_1 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_1],
+            bl           => 'PROD',
+            name         => 'job 1'
+        );
+    };
+    capture {
+        $job_ci_2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_2],
+            bl           => 'PROD',
+            name         => 'job 2'
+        );
+    };
+    capture {
+        $job_ci_3 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_3],
+            bl           => 'PROD',
+            name         => 'job 3'
+        );
+    };
+
+    my $view = _build_view();
+
+    my $find = $view->find(
+        username   => 'root',
+        groupby    => 'applications',
+        dir        => 'desc',
+        sort       => 'last_log',
+        groupdir   => 'DESC',
+        group_keys => $group_keys
+    );
+
+    my @job_list = $find->all;
+
+    cmp_deeply $job_list[0]->{job_contents}->{list_apps}, ['Project_C'];
+    cmp_deeply $job_list[1]->{job_contents}->{list_apps}, ['Project_B'];
+    cmp_deeply $job_list[2]->{job_contents}->{list_apps}, ['Project_A'];
+};
+
+subtest 'find: builds correct query when field sorting and group by field  are nested in the same structure' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $project_1     = TestUtils->create_ci_project( name => 'Project_A' );
+    my $project_2     = TestUtils->create_ci_project( name => 'Project_B' );
+    my $project_3     = TestUtils->create_ci_project( name => 'Project_C' );
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user = TestSetup->create_user( id_role => $id_role, project => [ $project_1, $project_2, $project_3 ] );
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+    my $topic_mid_1       = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_1
+    );
+    my $topic_mid_2 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_2,
+    );
+    my $topic_mid_3 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_3
+    );
+    my $group_keys = {
+        applications => 'job_contents.list_apps',
+        natures      => 'job_contents.list_natures'
+    };
+
+    my $job_ci_1;
+    my $job_ci_2;
+    my $job_ci_3;
+
+    capture {
+        $job_ci_1 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_1],
+            bl           => 'PROD',
+            name         => 'job 1'
+        );
+    };
+    capture {
+        $job_ci_2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_2],
+            bl           => 'PROD',
+            name         => 'job 2'
+        );
+    };
+    capture {
+        $job_ci_3 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_3],
+            bl           => 'PROD',
+            name         => 'job 3'
+        );
+    };
+
+    my $view = _build_view();
+
+    my $find = $view->find(
+        username   => 'root',
+        groupby    => 'applications',
+        dir        => 'desc',
+        sort       => 'natures',
+        groupdir   => 'DESC',
+        group_keys => $group_keys
+    );
+
+    my @job_list = $find->all;
+
+    cmp_deeply $job_list[0]->{job_contents}->{list_apps}, ['Project_C'];
+    cmp_deeply $job_list[1]->{job_contents}->{list_apps}, ['Project_B'];
+    cmp_deeply $job_list[2]->{job_contents}->{list_apps}, ['Project_A'];
+};
+
+subtest 'find: builds correct query when field sorting is in group keys' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $project_1     = TestUtils->create_ci_project( name => 'Project_A' );
+    my $project_2     = TestUtils->create_ci_project( name => 'Project_B' );
+    my $project_3     = TestUtils->create_ci_project( name => 'Project_C' );
+    my $project_4     = TestUtils->create_ci_project( name => 'Project_D' );
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user
+        = TestSetup->create_user( id_role => $id_role, project => [ $project_1, $project_2, $project_3, $project_4 ] );
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+    my $topic_mid_1 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_1
+    );
+    my $topic_mid_2 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_2,
+    );
+    my $topic_mid_3 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => [ $project_3, $project_4 ]
+    );
+    my $group_keys = {
+        applications => 'job_contents.list_apps',
+        bl           => 'bl'
+    };
+
+    my $job_ci_1;
+    my $job_ci_2;
+    my $job_ci_3;
+    my $job_ci_4;
+
+    capture {
+        $job_ci_1 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_1],
+            bl           => 'PROD',
+            name         => 'job 1'
+        );
+    };
+    capture {
+        $job_ci_2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_2],
+            bl           => 'QA',
+            name         => 'job 2'
+        );
+    };
+    capture {
+        $job_ci_3 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_3],
+            bl           => 'QA',
+            name         => 'job 3'
+        );
+    };
+    capture {
+        $job_ci_4 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_3],
+            bl           => 'PROD',
+            name         => 'job 4'
+        );
+    };
+
+    my $view = _build_view();
+
+    my $find = $view->find(
+        username   => 'root',
+        groupby    => 'applications',
+        dir        => 'asc',
+        sort       => 'bl',
+        groupdir   => 'asc',
+        group_keys => $group_keys
+    );
+
+    my @job_list = $find->all;
+
+    cmp_deeply $job_list[0]->{bl}, 'PROD';
+    cmp_deeply $job_list[0]->{job_contents}->{list_apps}, ['Project_A'];
+    cmp_deeply $job_list[1]->{bl}, 'QA';
+    cmp_deeply $job_list[1]->{job_contents}->{list_apps}, ['Project_B'];
+    cmp_deeply $job_list[2]->{bl}, 'QA';
+    cmp_deeply $job_list[2]->{job_contents}->{list_apps}, [ 'Project_C', 'Project_D' ];
+    cmp_deeply $job_list[3]->{bl}, 'PROD';
+    cmp_deeply $job_list[3]->{job_contents}->{list_apps}, [ 'Project_C', 'Project_D' ];
+};
+
+subtest 'find: builds correct query when groupby field is not nested' => sub {
+    _setup();
+
+    my $id_topic_rule = _create_topic_form();
+    my $project_1     = TestUtils->create_ci_project( name => 'Project_A' );
+    my $project_2     = TestUtils->create_ci_project( name => 'Project_B' );
+    my $project_3     = TestUtils->create_ci_project( name => 'Project_C' );
+    my $project_4     = TestUtils->create_ci_project( name => 'Project_D' );
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.viewall', bounds => [ {} ] } ] );
+    my $user
+        = TestSetup->create_user( id_role => $id_role, project => [ $project_1, $project_2, $project_3, $project_4 ] );
+    my $id_topic_category = TestSetup->create_category( name => 'Topic', id_rule => $id_topic_rule );
+    my $topic_mid_1 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_1
+    );
+    my $topic_mid_2 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => $project_2,
+    );
+    my $topic_mid_3 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => [$project_3]
+    );
+    my $topic_mid_4 = TestSetup->create_topic(
+        id_category => $id_topic_category,
+        project     => [$project_4]
+    );
+    my $group_keys = {
+        bl     => 'bl',
+        status => 'status'
+    };
+
+    my $job_ci_1;
+    my $job_ci_2;
+    my $job_ci_3;
+    my $job_ci_4;
+
+    capture {
+        $job_ci_1 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_1],
+            bl           => 'PROD',
+            name         => 'job 1'
+        );
+    };
+    capture {
+        $job_ci_2 = TestSetup->create_job(
+            final_status => 'FINISHED',
+            changesets   => [$topic_mid_2],
+            bl           => 'QA',
+            name         => 'job 2'
+        );
+    };
+    capture {
+        $job_ci_3 = TestSetup->create_job(
+            status     => 'READY',
+            changesets => [$topic_mid_3],
+            bl         => 'QA',
+            name       => 'job 3'
+        );
+    };
+    capture {
+        $job_ci_4 = TestSetup->create_job(
+            final_status => 'READY',
+            changesets   => [$topic_mid_4],
+            bl           => 'QA',
+            name         => 'job 4'
+        );
+    };
+
+    my $view = _build_view();
+
+    my $find = $view->find(
+        username   => 'root',
+        groupby    => 'bl',
+        dir        => 'desc',
+        sort       => 'status',
+        groupdir   => 'DESC',
+        group_keys => $group_keys
+    );
+
+    my @job_list = $find->all;
+
+    cmp_deeply $job_list[0]->{bl},     'QA';
+    cmp_deeply $job_list[0]->{status}, 'FINISHED';
+    cmp_deeply $job_list[1]->{bl},     'QA';
+    cmp_deeply $job_list[1]->{status}, 'READY';
+    cmp_deeply $job_list[2]->{bl},     'QA';
+    cmp_deeply $job_list[2]->{status}, 'READY';
+    cmp_deeply $job_list[3]->{bl},     'PROD';
+    cmp_deeply $job_list[3]->{status}, 'FINISHED';
+};
+
 subtest 'build_where: builds correct where period' => sub {
     _setup();
 
@@ -597,6 +926,7 @@ sub _setup {
 
     TestUtils->cleanup_cis;
 
+    mdb->master_doc->drop;
     mdb->category->drop;
     mdb->job_log->drop;
     mdb->role->drop;

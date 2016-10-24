@@ -10,38 +10,39 @@ sub find {
     my $self = shift;
     my (%params) = @_;
 
-    my $groupby    = delete $params{groupby};
-    my $dir        = delete $params{dir};
-    my $sort       = delete $params{sort};
-    my $groupdir   = delete $params{groupdir};
-    my $group_keys = $params{group_keys};
+    my $groupby     = delete $params{groupby} || '';
+    my $dir         = delete $params{dir};
+    my $sort        = delete $params{sort};
+    my $groupdir    = delete $params{groupdir} || '';
+    my $allow_field = $params{group_keys};
 
-    my $permissions  = Baseliner::Model::Permissions->new;
-    return unless $permissions->user_has_action( $params{username}, 'action.job.viewall', bounds => '*');
+    my $permissions = Baseliner::Model::Permissions->new;
+    return unless $permissions->user_has_action( $params{username}, 'action.job.viewall', bounds => '*' );
 
     $sort ||= 'starttime';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1;
+    $groupdir = lc $groupdir eq 'asc' ? 1 : -1;
 
+    my $sort_by     = $allow_field->{$sort}    || '';
+    my $field_group = $allow_field->{$groupby} || '';
     my @order_by;
-    if ( length($groupby) ) {
-        $groupdir = $groupdir eq 'ASC' ? 1 : -1;
-        @order_by = (
-            $group_keys->{$groupby} => ( $groupby eq 'when' ? -1 : $groupdir ),
-            $group_keys->{$sort} => $dir
-        );
+
+    if ($field_group) {
+        push @order_by, $field_group => ( $groupby eq 'when' ? -1 : $groupdir );
+
+        my ($field_sort) = $sort_by =~ m{^(.*)\.} ? $1 : '';
+        push @order_by, $sort_by => $dir if !( $field_group =~ /$field_sort/ ) && $sort_by;
     }
     else {
-        @order_by = ( $group_keys->{$sort} => $dir ) if $group_keys->{$sort};
+        @order_by = ( $allow_field->{$sort} => $dir ) if $allow_field->{$sort};
     }
 
     my $where = $self->build_where(%params);
-
     my $rs = mdb->master_doc->find( { collection => 'job', %$where } );
 
     if (@order_by) {
         $rs->sort( mdb->ixhash(@order_by) );
     }
-
     return $rs;
 }
 
