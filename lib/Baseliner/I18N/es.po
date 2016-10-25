@@ -932,27 +932,31 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "View All Jobs"
-msgstr ""
+msgstr "Ver todos los pases"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Restart Jobs"
-msgstr ""
+msgstr "Reiniciar pases"
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "Force Rollback"
+msgstr "Forzar regresión"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Change default pipeline in job_new window"
-msgstr ""
+msgstr "Modificar pipeline por defecto en ventana de nuevo job"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Run Jobs In-Proc, within the Web Server"
-msgstr ""
+msgstr "Ejecutar pases En Proceso, en el servidor web"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Create a job outside of the available time slots"
-msgstr ""
+msgstr "Crear un job fuera de los intervalos de tiempo disponible"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Can access the advanced menu in job detailed log"
-msgstr ""
+msgstr "Acceso al menu avanzado dentro de detalles del job"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Latest"
@@ -985,6 +989,10 @@ msgstr "Pase %1 marcha atrás programada"
 #: lib/Baseliner/Controller/Job.pm
 msgid "Job %1 does not need rollback"
 msgstr "Pase %1 no necesita marcha atrás"
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "User %1 does not have permissions to action %2"
+msgstr "El usuario %1 no tiene permisos para la acción %2"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Unverified"
@@ -7636,7 +7644,7 @@ msgstr "Nueva Clave de Config"
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
+#: root/comp/job_new_comp.js
 msgid "Failure"
 msgstr "Error"
 
@@ -8272,7 +8280,7 @@ msgstr "Error al abrir fichero de log"
 msgid "New Job"
 msgstr "Nuevo Pase"
 
-#: root/comp/job_new.js root/comp/monitor_grid.js
+#: root/comp/job_new.js
 msgid "no calendar window"
 msgstr "fuera de ventana"
 
@@ -8305,7 +8313,7 @@ msgstr "Cadena"
 msgid "No job pipelines available"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/monitor_grid.js
+#: root/comp/job_new.js
 msgid "Create a job outside of the available time slots."
 msgstr "Chequee si quiere crear un pase fuera de ventana."
 
@@ -8549,7 +8557,7 @@ msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr ""
 "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
+#: root/comp/job_new_comp.js
 msgid ""
 "For the jobs outside of window it is required to add a reason to the comment "
 "field"
@@ -8960,7 +8968,7 @@ msgstr "Anotar"
 msgid "Advanced"
 msgstr "Avanzado"
 
-#: root/comp/log_grid.js root/comp/monitor_grid.js
+#: root/comp/log_grid.js
 msgid "View Log"
 msgstr "Ver Log de Pase"
 
@@ -9143,6 +9151,25 @@ msgstr "Seleccione una fila"
 msgid "Are you sure you want to rollback the job?"
 msgstr "¿Estás seguro de que quieres hacer rollback del pase?"
 
+#: root/comp/monitor_grid.js
+msgid "Force Rollback Warning"
+msgstr ""
+"<b>ATENCIÓN</b>: Use esta opción con precaución, forzar la regresión "
+"<b>puede desestabilizar el funcionamiento de los entornos</b>. Si no está "
+"seguro de las dependencias, <b>no continue el rollback</b>"
+
+#: root/comp/monitor_grid.js
+msgid "Yes, I'm sure"
+msgstr "Si, estoy seguro"
+
+#: root/comp/monitor_grid.js root/comp/notifications.js
+#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/rules.js
+#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
+#: root/fields/system/js/list_tasks.js root/forms/shortcut.js
+#: root/site/common.js root/site/dashboard.js root/site/model.js
+msgid "Cancel"
+msgstr "Cancelar"
+
 #: root/comp/monitor_grid.js root/comp/rules.js
 msgid "Rollback"
 msgstr "Rollback"
@@ -9158,14 +9185,6 @@ msgstr ""
 #: root/comp/monitor_grid.js
 msgid "Resume"
 msgstr "Reanudar"
-
-#: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/rules.js
-#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
-#: root/fields/system/js/list_tasks.js root/forms/shortcut.js
-#: root/site/common.js root/site/dashboard.js root/site/model.js
-msgid "Cancel"
-msgstr "Cancelar"
 
 #: root/comp/monitor_grid.js
 msgid ""
@@ -9226,6 +9245,18 @@ msgstr "Pase Reiniciado"
 #: root/comp/monitor_grid.js
 msgid "Could not rerun the job: %1"
 msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "Reschedule"
+msgstr "Replanificar"
+
+#: root/comp/monitor_grid.js
+msgid "Job cannot be rescheduled unless its status is '%1' (current: %2)"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "Update"
+msgstr "Actualizar"
 
 #: root/comp/monitor_grid.js
 msgid "REJECTED"
@@ -9394,26 +9425,8 @@ msgid "RUN End Date"
 msgstr "Fecha final de ejecución"
 
 #: root/comp/monitor_grid.js
-msgid "Reschedule"
-msgstr "Replanificar"
-
-#: root/comp/monitor_grid.js
-msgid "Job cannot be rescheduled unless its status is '%1' (current: %2)"
-msgstr ""
-"El pase no puede ser replanificado al menos que su estado sea '%1' (actual: "
-"%2)"
-
-#: root/comp/monitor_grid.js
-msgid "Update"
-msgstr "Actualizar"
-
-#: root/comp/monitor_grid.js
-msgid "Update time and date of the job"
-msgstr "Modificar hora y fecha del pase"
-
-#: root/comp/monitor_grid.js
 msgid "There are no allowed windows for the job"
-msgstr "No hay ventanas permitidas para el pase"
+msgstr ""
 
 #: root/comp/notifications.js root/comp/rule_new.js
 msgid "Event"
@@ -14812,9 +14825,6 @@ msgstr "destino"
 
 #~ msgid "Invalid text"
 #~ msgstr "Texto no válido"
-
-#~ msgid "User %1 does not have permissions to action %2"
-#~ msgstr "El usuario %1 no tiene permisos para la acción %2"
 
 #~ msgid "No action or username specified"
 #~ msgstr "No action or username specified"

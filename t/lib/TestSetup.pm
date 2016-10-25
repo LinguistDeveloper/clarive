@@ -129,10 +129,13 @@ sub create_rule_pipeline {
                             "active"         => 1,
                             "name"           => "Server CODE",
                             "holds_children" => 0,
+                            "needs_rollback_mode" => "nb_always",
                             "data"           => {
                                 "lang" => "perl",
-                                "code" => "sleep(10);"
-                            },
+                                "code" => "sleep(1);",
+                                "needs_rollback_key" => "code_perl",
+                                "needs_rollback_mode" => "nb_always",
+                             },
                             "nested"  => "0",
                             "on_drop" => ""
                         },
@@ -241,7 +244,7 @@ sub create_rule_pipeline {
                             "holds_children" => 0,
                             "data"           => {
                                 "lang" => "perl",
-                                "code" => "sleep(10);"
+                                "code" => "do{}"
                             },
                             "nested"  => "0",
                             "on_drop" => ""
@@ -276,7 +279,7 @@ sub create_rule_pipeline {
                             "holds_children" => 0,
                             "data"           => {
                                 "lang" => "perl",
-                                "code" => "sleep(10);"
+                                "code" => "do{}"
                             },
                             "nested"  => "0",
                             "on_drop" => ""
@@ -725,7 +728,7 @@ sub create_job {
                                 "holds_children" => 0,
                                 "data"           => {
                                     "lang" => "perl",
-                                    "code" => "sleep(10);"
+                                    "code" => "do{}"
                                 },
                                 "nested"  => "0",
                                 "on_drop" => ""
@@ -760,7 +763,7 @@ sub create_job {
                                 "holds_children" => 0,
                                 "data"           => {
                                     "lang" => "perl",
-                                    "code" => "sleep(10);"
+                                    "code" => "do{}"
                                 },
                                 "nested"  => "0",
                                 "on_drop" => ""
@@ -795,7 +798,7 @@ sub create_job {
                                 "holds_children" => 0,
                                 "data"           => {
                                     "lang" => "perl",
-                                    "code" => "sleep(10);"
+                                    "code" => "do{}"
                                 },
                                 "nested"  => "0",
                                 "on_drop" => ""

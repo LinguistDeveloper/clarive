@@ -1,6 +1,6 @@
 package BaselinerX::CI::job;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _now :other _array _capture_tee);
+use Baseliner::Utils qw(:logging _now :other _array _capture_tee _ts);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::JobLogger;
@@ -288,7 +288,7 @@ sub _create {
                 my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( where => {collection => 'status'}, docs_only => 1));
                 my $ci_other_status = ci->bl->search_ci(moniker => $active_job->bl);
                 my ($other_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_other_status->parents( where => {collection => 'status'}, docs_only => 1));
-                if ( $self_status_to->{name} ne $other_status_to->{name} ) {
+                if ( $self_status_to && $self_status_to->{name} ne $other_status_to->{name} ) {
                     _fail _loc( "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)",
                         $cs->topic_name, $active_job->name, $active_job->mid, $other_status_to->{name} )
                 }
@@ -1165,27 +1165,21 @@ sub run {
     };
 
     my $rollback_now = 0;
-    my $nr = $stash->{needs_rollback} // {};
-    my @needing_rollback = Util->_unique(sort { $a cmp $b } map { $nr->{$_}} grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr);
-    if( $job_error ) {
-        if( @needing_rollback && !$self->rollback ) {
-            $self->step( $needing_rollback[0] );
-            $self->finish( $end_status );
-            # rinse and repeat
-            $self->last_finish_status( '' );
-            $self->final_status( '' );
+
+    if ($job_error) {
+        if ( $self->is_rollback_needed ) {
+            $rollback_now      = 1;
             $stash->{rollback} = 1;
-            $stash->{job} = $self;
-            $self->rollback( 1 );
-            $self->status( 'RUNNING' );
+            $stash->{job}      = $self;
+            $self->finish($end_status);
             $self->is_rejected(0);
-            $self->exec( $self->exec + 1);
-            $rollback_now = 1;
-            $self->logger->info( "Starting *Rollback*", \@needing_rollback );
-        } elsif( !@needing_rollback && !$self->rollback ) {
-            $self->logger->info( _loc( 'No need to rollback anything.' ) );
-        } else {
-            $self->logger->error( _loc( 'Error during rollback. Baselines are inconsistent, manual intervention required.' ) );
+            $self->start_rollback;
+        }
+        elsif ( !$self->is_rollback_needed && !$self->rollback ) {
+            $self->logger->info( _loc('No need to rollback anything.') );
+        }
+        else {
+            $self->logger->error( _loc('Error during rollback. Baselines are inconsistent, manual intervention required.') );
         }
     }
 
@@ -1452,5 +1446,46 @@ sub steps {
 
     return @steps;
 }
+
+sub is_rollback_needed {
+    my ($self) = @_;
+
+    my $stash = $self->job_stash;
+    my $nr = $stash->{needs_rollback} && keys %{$stash->{needs_rollback}} && !$self->rollback ? 1 : 0;
+
+    return $nr;
+}
+
+sub rollback_steps {
+    my ($self) = @_;
+
+    my $stash = $self->job_stash;
+    my $nr = $stash->{needs_rollback} // {};
+    my @rollback_steps
+        = Util->_unique( sort { $a cmp $b } map { $nr->{$_} } grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr );
+
+    return @rollback_steps;
+}
+
+sub start_rollback {
+    my ($self) = @_;
+
+    my @rollback_steps = $self->rollback_steps;
+
+    my $exec = $self->exec + 1;
+    $self->exec($exec);
+    $self->step( $rollback_steps[0] );
+    $self->last_finish_status('');
+    $self->final_status('');    # reset status, so that POST runs in rollback
+    $self->rollback(1);
+    $self->is_rejected(0);
+    $self->status('READY');
+    $self->logger->info( "Starting *Rollback*", \@rollback_steps );
+    $self->maxstarttime( _ts->set( day => _ts->day + 1 ) . '' );
+    $self->save;
+
+    return $self;
+}
+
 
 1;

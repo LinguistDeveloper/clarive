@@ -927,6 +927,10 @@ msgid "Restart Jobs"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
+msgid "Force Rollback"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
 msgid "Change default pipeline in job_new window"
 msgstr ""
 
@@ -970,6 +974,10 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Job %1 does not need rollback"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "User %1 does not have permissions to action %2"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
@@ -7562,7 +7570,7 @@ msgstr ""
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
+#: root/comp/job_new_comp.js
 msgid "Failure"
 msgstr ""
 
@@ -8173,7 +8181,7 @@ msgstr ""
 msgid "New Job"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/monitor_grid.js
+#: root/comp/job_new.js
 msgid "no calendar window"
 msgstr ""
 
@@ -8204,7 +8212,7 @@ msgstr ""
 msgid "No job pipelines available"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/monitor_grid.js
+#: root/comp/job_new.js
 msgid "Create a job outside of the available time slots."
 msgstr ""
 
@@ -8441,7 +8449,7 @@ msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr ""
 "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
+#: root/comp/job_new_comp.js
 msgid ""
 "For the jobs outside of window it is required to add a reason to the comment "
 "field"
@@ -8845,7 +8853,7 @@ msgstr ""
 msgid "Advanced"
 msgstr ""
 
-#: root/comp/log_grid.js root/comp/monitor_grid.js
+#: root/comp/log_grid.js
 msgid "View Log"
 msgstr ""
 
@@ -9028,6 +9036,25 @@ msgstr ""
 msgid "Are you sure you want to rollback the job?"
 msgstr ""
 
+#: root/comp/monitor_grid.js
+msgid "Force Rollback Warning"
+msgstr ""
+"<b>Warning</b>: Use this option with caution, forcing rollback <b>can "
+"destabilizing the functioning of environments</b>. If you are not sure of "
+"dependencies, <b>not continue the rollback</b>"
+
+#: root/comp/monitor_grid.js
+msgid "Yes, I'm sure"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/comp/notifications.js
+#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/rules.js
+#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
+#: root/fields/system/js/list_tasks.js root/forms/shortcut.js
+#: root/site/common.js root/site/dashboard.js root/site/model.js
+msgid "Cancel"
+msgstr ""
+
 #: root/comp/monitor_grid.js root/comp/rules.js
 msgid "Rollback"
 msgstr ""
@@ -9042,14 +9069,6 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Resume"
-msgstr ""
-
-#: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/rules.js
-#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
-#: root/fields/system/js/list_tasks.js root/forms/shortcut.js
-#: root/site/common.js root/site/dashboard.js root/site/model.js
-msgid "Cancel"
 msgstr ""
 
 #: root/comp/monitor_grid.js
@@ -9108,6 +9127,18 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Could not rerun the job: %1"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "Reschedule"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "Job cannot be rescheduled unless its status is '%1' (current: %2)"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "Update"
 msgstr ""
 
 #: root/comp/monitor_grid.js
@@ -9274,22 +9305,6 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "RUN End Date"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "Reschedule"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "Job cannot be rescheduled unless its status is '%1' (current: %2)"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "Update"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "Update time and date of the job"
 msgstr ""
 
 #: root/comp/monitor_grid.js

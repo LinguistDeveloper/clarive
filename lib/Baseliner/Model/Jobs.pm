@@ -17,13 +17,36 @@ use Baseliner::Model::Permissions;
 use Baseliner::Utils;
 
 register 'action.search.job' => { name => _locl('Search jobs') };
-
-register 'event.job.rerun' => { name=>'Rerun a job', description => _locl('Rerun a job'), notify=>{ scope=>['project','bl'] }  };
-register 'event.job.reschedule' => { name=>'Reschedule a job', description =>_locl('Reschedule a job'), notify=>{ scope=>['project','bl'] }  };
-register 'event.job.start' => { name=>'Job start', description =>_locl('Job start'), notify=>{ scope=>['project','bl'] } };
-register 'event.job.start_step' => { name=>'Job step start', description =>_locl('Job step start'), notify=>{ scope=>['project','bl','step'] } };
-register 'event.job.end' => { name=>'Job end, after POST', description =>_locl('Job end, after POST'), notify=>{ scope=>['project','bl','status'] } };
-register 'event.job.end_step' => { name=>'Job step end', description =>_locl('Job step end'), notify=>{ scope=>['project','bl','status','step'] } };
+register 'event.job.rerun' => {
+    name        => 'Rerun a job',
+    description => _locl('Rerun a job'),
+    notify      => { scope => [ 'project', 'bl' ] }
+};
+register 'event.job.reschedule' => {
+    name        => 'Reschedule a job',
+    description => _locl('Reschedule a job'),
+    notify      => { scope => [ 'project', 'bl' ] }
+};
+register 'event.job.start' => {
+    name        => 'Job start',
+    description => _locl('Job start'),
+    notify      => { scope => [ 'project', 'bl' ] }
+};
+register 'event.job.start_step' => {
+    name        => 'Job step start',
+    description => _locl('Job step start'),
+    notify      => { scope => [ 'project', 'bl', 'step' ] }
+};
+register 'event.job.end' => {
+    name        => 'Job end, after POST',
+    description => _locl('Job end, after POST'),
+    notify      => { scope => [ 'project', 'bl', 'status' ] }
+};
+register 'event.job.end_step' => {
+    name        => 'Job step end',
+    description => _locl('Job step end'),
+    notify      => { scope => [ 'project', 'bl', 'status', 'step' ] }
+};
 
 our $group_keys = {
     id           => 'jobid',
@@ -140,12 +163,27 @@ sub monitor {
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start) unless $limit eq -1;
 
-    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all;
+    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields( { id => 1, rule_name => 1 } )->all;
 
     my @rows;
     my $now = _dt();
-    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0);
-    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second );
+    my $today = DateTime->new(
+        year   => $now->year,
+        month  => $now->month,
+        day    => $now->day,
+        hour   => 0,
+        minute => 0,
+        second => 0
+    );
+    my $ahora = DateTime->new(
+        year   => $now->year,
+        month  => $now->month,
+        day    => $now->day,
+        hour   => $now->hour,
+        minute => $now->minute,
+        second => $now->second
+    );
+
 
     local $Baseliner::CI::mid_scope = {};
 
@@ -186,6 +224,8 @@ sub monitor {
 
         my $can_restart
             = $permissions->user_has_action( $username, 'action.job.restart', bounds => { bl => $job->{bl} } );
+        my $can_force_rollback
+            = $permissions->user_has_action( $username, 'action.job.force_rollback', bounds => { bl => $job->{bl} } );
         my $can_cancel
             = $permissions->user_has_action( $username, 'action.job.cancel', bounds => { bl => $job->{bl} } );
         my $can_delete
@@ -241,6 +281,7 @@ sub monitor {
             run_start => $last_exec ? $job->{milestones}->{$last_exec}->{RUN}->{start} || " " : " ",
             run_end   => $last_exec ? $job->{milestones}->{$last_exec}->{RUN}->{end}   || " " : " ",
             can_restart => $can_restart,
+            force_rollback => $can_force_rollback,
             can_cancel  => $can_cancel,
             can_delete  => $can_delete,
             progress    => $self->_calculate_progress($job),
@@ -403,14 +444,24 @@ sub get_contents {
 } ## end sub get_contents
 
 sub user_can_search {
-    my ($self, $username) = @_;
-    return Baseliner::Model::Permissions->user_has_action( $username, 'action.search.job');
+    my ( $self, $username ) = @_;
+    return Baseliner::Model::Permissions->user_has_action( $username, 'action.search.job' );
 }
 
+
 sub build_field_query {
-    my ($self,$query,$where) = @_;
-    mdb->query_build( where=>$where, query=>$query, fields=>['name', 'bl','final_status', 'final_step', 'list_contents','username','job_contents.list_apps', 'job_contents.list_changesets', 'job_contents.list_natures', 'job_contents.list_releases'] );
+    my ( $self, $query, $where ) = @_;
+    mdb->query_build(
+        where  => $where,
+        query  => $query,
+        fields => [
+            'name',                      'bl',       'final_status',           'final_step',
+            'list_contents',             'username', 'job_contents.list_apps', 'job_contents.list_changesets',
+            'job_contents.list_natures', 'job_contents.list_releases'
+        ]
+    );
 }
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

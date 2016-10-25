@@ -33,8 +33,22 @@ register 'action.job.viewall' => {
         }
     ]
 };
-register 'action.job.restart' => { name=>_locl('Restart Jobs'),
+
+register 'action.job.restart' => {
+    name   => _locl('Restart Jobs'),
     bounds => [
+        {
+           key     => 'bl',
+            name    => 'Environment',
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
+
+register 'action.job.force_rollback' => {
+    name    => _locl('Force Rollback'),
+    extends => ['action.job.restart'],
+    bounds  => [
         {
             key     => 'bl',
             name    => 'Environment',
@@ -141,40 +155,53 @@ sub pipeline_versions : Local {
 
 sub rollback : Local {
     my ( $self, $c ) = @_;
+
     # local $Baseliner::_no_cache = 1;
-    my $p = $c->req->params;
+    my $p                       = $c->req->params;
+    my $force_confirmation      = $p->{force_confirmation} || 0;
+    my $bl                      = $p->{bl};
+    my $permissions             = Baseliner::Model::Permissions->new;
+    my $user_can_restart        = $permissions->user_has_action( $c->username, 'action.job.restart',        bounds => { bl => $bl } );
+    my $user_can_force_rollback = $permissions->user_has_action( $c->username, 'action.job.force_rollback', bounds => { bl => $bl } );
+
     try {
-        my $job = ci->new( $p->{mid} ) // _fail(_loc('Job %1 not found', $p->{name}));
-        _fail(_loc('Job %1 is currently running', $job->name)) if $job->is_running;
-        if( my @deps = $job->find_rollback_deps ) {
-            $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'), deps=>\@deps };
-        } else {
-            my $stash = $job->job_stash;
-            my $nr = $stash->{needs_rollback} // {};
-            my @needing_rollback = Util->_unique(sort { $a cmp $b } map { $nr->{$_}} grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr);
-            if( @needing_rollback && !$job->rollback ) {
-                my $exec = $job->exec + 1;
-                $job->exec( $exec );
-                $job->step( $needing_rollback[0] );
-                $job->last_finish_status( '' );
-                $job->final_status( '' );  # reset status, so that POST runs in rollback
-                $job->rollback( 1 );
-                $job->status( 'READY' );
-                $job->logger->info( "Starting *Rollback*", \@needing_rollback );
-                $job->maxstarttime(_ts->set(day => _ts->day + 1).'');
-                $job->save;
-                $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
-                $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
-            } else {
-                $c->stash->{json} = { success => \0, msg=>_loc('Job %1 does not need rollback', $job->name ) };
+        if ( $user_can_restart || $user_can_force_rollback ) {
+
+            my $job = ci->new( $p->{mid} ) // _fail( _loc( 'Job %1 not found', $p->{name} ) );
+            _fail( _loc( 'Job %1 is currently running', $job->name ) ) if $job->is_running;
+            my @deps = $job->find_rollback_deps;
+
+            if ( @deps && !$force_confirmation ) {
+                $c->stash->{json} = {
+                    needs_confirmation => $user_can_force_rollback ? \1 : \0,
+                    msg  => _loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'),
+                    deps => \@deps
+                };
             }
+            else {
+                if ( $job->is_rollback_needed ) {
+
+                    $job->start_rollback;
+
+                    $job->logger->info( _loc( 'Job rollback requested by %1', $c->username ) );
+                    $c->stash->{json} = { success => \1, msg => _loc( 'Job %1 rollback scheduled', $job->name ) };
+                }
+                else {
+                    $c->stash->{json} = { success => \0, msg => _loc( 'Job %1 does not need rollback', $job->name ) };
+                }
+            }
+
         }
-    } catch {
-        $c->stash->{json} = { success => \0, msg=>"".shift() };
+        else {
+            _fail( _loc( 'User %1 does not have permissions to action %2', $c->username, 'Rollback' ) );
+        }
+    }
+    catch {
+        $c->stash->{json} = { success => \0, msg => "" . shift() };
     };
-_warn $c->stash->{json};
     $c->forward('View::JSON');
 }
+
 
 # list objects ready for a job
 sub job_items_json : Path('/job/items/json') {
@@ -397,7 +424,10 @@ sub refresh_now : Local {
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my @rows = ci->job->find({ mid=>mdb->in($p->{ids}) })->fields({ _id=>-1, status=>1, exec=>1, step=>1, last_log_message=>1 })->sort({ _seq=>-1 })->all;
+            my @rows
+                = ci->job->find( { mid => mdb->in( $p->{ids} ) } )
+                ->fields( { _id => -1, status => 1, exec => 1, step => 1, last_log_message => 1 } )
+                ->sort( { _seq => -1 } )->all;
             my $data ='';
             map { $data.= join(',', sort(%$_) ) } @rows;  # TODO should use step and exec also
             $magic = Util->_md5( $data );
@@ -714,9 +744,23 @@ sub jc_store : Local  {
 
         my @chi;
         if( $ci->is_release ) {
-            my @changesets = $ci->children( where=>{collection=>'topic'}, 'category.is_changeset' => 1, no_rels=>1, depth => 2, mids_only => 1 );
+            my @changesets = $ci->children(
+                where                   => { collection => 'topic' },
+                'category.is_changeset' => 1,
+                no_rels                 => 1,
+                depth                   => 2,
+                mids_only               => 1
+            );
             my @cs_mids = map { $_->{mid} } @changesets;
-            my ($info, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids, limit => 1000 });
+            my ( $info, @cs_user ) = model->Topic->topics_for_user(
+                {   username     => $c->username,
+                    clear_filter => 1,
+                    id_project   => $id_project,
+                    statuses     => [$status_from],
+                    topic_list   => \@cs_mids,
+                    limit        => 1000
+                }
+            );
             @chi = map {
                my $cs_data = $_;
                $children{ $$cs_data{mid} } = 1;
@@ -798,7 +842,7 @@ sub jc_store : Local  {
     }
 
     #@data = sort{ $$a{_id} <=> $$b{_id} } @data;
-    $c->stash->{json} = { data=>\@data, totalCount=>scalar(@data), success=>\1, deploys=>\%deploys };
+    $c->stash->{json} = { data => \@data, totalCount => scalar(@data), success => \1, deploys => \%deploys };
     $c->forward('View::JSON');
 }
 
@@ -869,7 +913,8 @@ sub burndown_new : Local {
         }
 
         if ( $topic_mid ) {
-            my @related_topics = map { $_->{mid}} ci->new($topic_mid)->children( where => { collection => 'topic'}, mids_only => 1, depth => 5);
+            my @related_topics = map { $_->{mid} }
+                ci->new($topic_mid)->children( where => { collection => 'topic' }, mids_only => 1, depth => 5 );
             $where->{changesets} = mdb->in(@related_topics);
         }
 
@@ -943,11 +988,12 @@ sub burndown : Local {
             my %ret = map { $_ => 0 } 0..23;
             my $wh = $t ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
             my $tot = 0;
-            for my $job( ci->job->find($wh)->fields({ status=>1, endtime=>1, _id=>0 })->all ) {
-                my $hour = Class::Date->new($job->{endtime})->hour;
-                $ret{ $hour }++;
+            for my $job ( ci->job->find($wh)->fields( { status => 1, endtime => 1, _id => 0 } )->all ) {
+                my $hour = Class::Date->new( $job->{endtime} )->hour;
+                $ret{$hour}++;
                 $tot++;
             }
+
             for( sort { $a <=> $b } keys %ret ) {
                 my $diff = $tot - $ret{$_};
                 $ret{$_} = $diff;
