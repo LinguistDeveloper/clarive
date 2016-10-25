@@ -29,6 +29,30 @@ subtest 'precompile_rule: precompiles rule' => sub {
     ok( Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
+subtest 'job_daemon: creates event when status job change to expired' => sub {
+    _setup();
+
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.job.daemon.mode', value => 'detach' );
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+
+    my $job = TestSetup->create_job( changesets => [$changeset] );
+    $job->step('RUN');
+    $job->maxstarttime('2015-10-26 03:21:20');
+    $job->status('APPROVAL');
+    capture { $job->save() };
+
+    my $service = _build_service( job => $job );
+    capture { $service->job_daemon( undef, { id => '123', frequency => '1', iterations => 1 } ) };
+
+    my $exist_event = mdb->event->find_one( { event_key => 'event.job.expired' } );
+
+    ok $exist_event;
+};
+
 subtest 'job_daemon: runs job when step pre finishs ok in rollback mode' => sub {
     _setup();
 

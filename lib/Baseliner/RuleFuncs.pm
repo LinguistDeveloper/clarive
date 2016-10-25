@@ -212,11 +212,13 @@ sub error_trap {
             _debug("Stash contains variables with '.' removed to avoid errors:\n\n". join(", ", @complete_keys));
         };
 
-        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {} => sub{
-            # catch and ignore
+        my @projects = map { $_->{mid} } _array( $job->projects );
+        event_new 'event.job.trapped' =>
+            { notify => { project => \@projects }, username => 'internal', stash => $stash, output => $err } =>
+            sub { } => sub {
             my $err = shift;
-            _warn( _loc('Could not store event for trapped error: %1', $err ) );
-        };
+            _warn( _loc( 'Could not store event for trapped error: %1', $err ) );
+            };
 
         my $last_status = 'TRAPPED';
         my $timeout = $trap_timeout;

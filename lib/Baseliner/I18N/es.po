@@ -1083,22 +1083,6 @@ msgstr "Error: fichero de log no encontrado o inválido: %1"
 msgid "Stash saved ok"
 msgstr "Stash guardado ok"
 
-#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Job.pm
-msgid "New job"
-msgstr "Nuevo pase"
-
-#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Job.pm
-msgid "Job deleted"
-msgstr "Pase borrado"
-
-#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Job.pm
-msgid "Job cancelled"
-msgstr "Pase cancelado"
-
-#: lib/Baseliner/Controller/Job.pm
-msgid "Running job cancelled while running"
-msgstr "Pase en ejecución cancelado"
-
 #: lib/Baseliner/Controller/Job.pm
 msgid "Job already cancelled"
 msgstr "Pase ya cancelado"
@@ -2959,10 +2943,6 @@ msgstr "Acción root - puede hacer cualquier cosa"
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
 msgstr "Regla Inválida"
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Rule error trapped"
-msgstr "Error de regla capturado"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule created"
@@ -5728,8 +5708,44 @@ msgid "Level"
 msgstr "Nivel"
 
 #: lib/BaselinerX/Job.pm
+msgid "New job"
+msgstr "Nuevo pase"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job deleted"
+msgstr "Pase borrado"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job cancelled"
+msgstr "Pase cancelado"
+
+#: lib/BaselinerX/Job.pm
 msgid "Running job cancelled"
 msgstr "Ejecutando pase cancelado"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Unpaused"
+msgstr "Job Reanudado "
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Paused"
+msgstr "Job Pausado"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Trapped"
+msgstr "Job Retenido"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Untrapped"
+msgstr "Job Liberado"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Trapped Pause"
+msgstr "Job Retencion Pausada"
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Expired"
+msgstr "Job Expirado"
 
 #: lib/BaselinerX/Lc.pm
 msgid "Show provider tags in the Lifecycle tree"
@@ -15644,8 +15660,8 @@ msgstr "destino"
 #~ msgid "Members"
 #~ msgstr "Miembros"
 
-#~ msgid "Remove Invalid Actions"
-#~ msgstr "Descartar Acciones Inválidas"
+#~ msgid "Rule error trapped"
+#~ msgstr "Error de regla capturado"
 
 #~ msgid ""
 #~ "Retrying write in cache because of duplicate key bug in mongo 3.2 upsert. "

@@ -15,6 +15,109 @@ use Baseliner::Utils qw(_load);
 
 use_ok 'BaselinerX::CI::job';
 
+subtest 'trap_action: creates event when status job is changed to trappedpause' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $job_ci;
+
+    capture {
+        $job_ci = TestSetup->create_job(
+            changesets => [$changeset],
+            name       => 'job'
+        );
+        $job_ci->status('TRAPPED');
+        $job_ci->save;
+
+        $job_ci->trap_action( { comments => 'change status for job to trappedpause', action => 'pause' } );
+    };
+
+    my @event    = mdb->event->find_one( { event_key => 'event.job.trappedpause' } );
+    my $event    = _load( $event[0]->{event_data} );
+    my $comments = $event->{comments};
+
+    is $comments, 'change status for job to trappedpause';
+};
+
+subtest 'trap_action: creates event when status job is changed to untrapped' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $job_ci;
+
+    capture {
+        $job_ci = TestSetup->create_job(
+            changesets => [$changeset],
+            name       => 'job'
+        );
+        $job_ci->status('TRAPPED');
+        $job_ci->save;
+
+        $job_ci->trap_action( { comments => 'change status for job to untrapped', action => 'skip' } );
+    };
+
+    my @event    = mdb->event->find_one( { event_key => 'event.job.untrapped' } );
+    my $event    = _load( $event[0]->{event_data} );
+    my $comments = $event->{comments};
+
+    is $comments, 'change status for job to untrapped';
+};
+
+subtest 'pause: creates event when status job is changed to pause' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $job_ci;
+
+    capture {
+        $job_ci = TestSetup->create_job(
+            changesets => [$changeset],
+            name       => 'job'
+        );
+        $job_ci->step('PRE');
+        $job_ci->save;
+        $job_ci->pause( reason => 'job are paused', timeout => 1, frequency => 1, no_fail => 1 );
+
+    };
+
+    my $exist_event = mdb->event->find_one( { event_key => 'event.job.paused' } );
+
+    ok $exist_event ;
+};
+
+subtest 'resume: creates event when status job is restarted' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $job_ci;
+
+    capture {
+        $job_ci = TestSetup->create_job(
+            changesets => [$changeset],
+            name       => 'job'
+        );
+        $job_ci->status('PAUSED');
+        $job_ci->save;
+        $job_ci->resume( { username => $user->{username} } );
+    };
+
+    my $exist_event = mdb->event->find_one( { event_key => 'event.job.unpaused' } );
+
+    ok $exist_event;
+};
+
 subtest 'start_task: sets current_service' => sub {
     _setup();
 
@@ -440,13 +543,19 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',     'BaselinerX::Type::Registor',
-        'BaselinerX::Type::Action',    'BaselinerX::Type::Service',
-        'BaselinerX::Type::Config',    'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Statement', 'BaselinerX::CI',
-        'BaselinerX::Fieldlets',       'Baseliner::Model::Topic',
-        'Baseliner::Model::Rules',     'Baseliner::Model::Jobs',
+        'BaselinerX::Type::Event',
+        'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Action',
+        'BaselinerX::Type::Service',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Menu',
+        'BaselinerX::CI',
+        'BaselinerX::Fieldlets',   'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules', 'Baseliner::Model::Jobs',
         'Baseliner::Controller::Job',
+        'BaselinerX::Job'
     );
 
     TestUtils->cleanup_cis;
