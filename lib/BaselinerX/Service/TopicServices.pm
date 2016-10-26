@@ -170,9 +170,10 @@ sub web_request {
 sub change_status {
     my ( $self, $c, $config ) = @_;
 
-    my $topics = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
+    my $topics                = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
     my $old_status_id_or_name = $config->{old_status};
     my $new_status_id_or_name = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
+    my $username              = $config->{username};
 
     my @topic_mids = Util->_array_or_commas($topics);
 
@@ -204,6 +205,13 @@ sub change_status {
 
     for my $topic ( @topic_rows ) {
         my $old_status = $topic->{category_status};
+        Baseliner::Model::Topic->new->check_permissions_change_status(
+            username    => $username,
+            topic_mid   => $topic->{mid},
+            id_category => $topic->{id_category},
+            old_status  => $old_status,
+            new_status  => $new_status
+        );
 
         _log _loc(
             'Changing status for topic %1 from status `%2` (%3) to status `%4` (%5)',

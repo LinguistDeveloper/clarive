@@ -4123,6 +4123,30 @@ sub _get_mid_files_from_fields {
     return @asset_mid;
 }
 
+sub check_permissions_change_status {
+    my ( $self, %params ) = @_;
+
+    my $old_status = $params{old_status};
+    my $new_status = $params{new_status};
+
+    my @allowed_next_statuses = $self->next_status_for_user(
+        username       => $params{username},
+        topic_mid      => $params{topic_mid},
+        id_category    => $params{id_category},
+        id_status_from => $old_status->{id_status}
+    );
+
+    if ( !grep { $_->{id_status} eq $new_status->{id_status} } @allowed_next_statuses ) {
+        _fail(
+            _loc(
+                "User '%1' has no permissions to change status from '%2' to '%3'",
+                $params{username}, $old_status->{name}, $new_status->{name},
+            )
+        );
+    }
+    return 1;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

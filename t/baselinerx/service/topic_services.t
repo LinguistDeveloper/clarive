@@ -315,7 +315,7 @@ subtest 'create: creates topic with category and status by name' => sub {
     is $topic_ci->{id_category},        $id_release_category;
 };
 
-subtest 'change_status: changes topic status' => sub {
+subtest 'change_status: user has permissions to change statuses assigned in the workflow' => sub {
     _setup();
 
     my $status  = TestUtils->create_ci( 'status', name => 'New',     type => 'I' );
@@ -323,81 +323,94 @@ subtest 'change_status: changes topic status' => sub {
 
     my $project = TestUtils->create_ci( 'project', name => 'Project' );
 
-    my $id_release_rule     = _create_release_form();
-    my $id_release_category = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_release_rule,
-        id_status => [ $status->mid, $status2->mid ]
+    my $id_rule  = TestSetup->create_rule_form();
+    my $id_role  = TestSetup->create_role();
+    my $workflow = [
+        {   id_role        => $id_role,
+            id_status_from => $status->id_status,
+            id_status_to   => $status2->id_status,
+            job_type       => 'promote'
+        }
+    ];
+    my $id_category = TestSetup->create_category(
+        name     => 'Category',
+        id_rule  => $id_rule,
+        workflow => $workflow
     );
 
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view' } ] );
-
     my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
     my $topic_mid = TestSetup->create_topic(
         project     => $project,
-        id_category => $id_release_category,
+        id_category => $id_category,
         status      => $status,
         title       => "Topic"
     );
-
-    mdb->master_rel->insert( { from_mid => $topic_mid, to_mid => $user->mid, rel_type => 'topic_users' } );
-
-    my $config = {
-        topics     => [$topic_mid],
-        new_status => $status2->mid
-    };
-
-    my $topic_services = BaselinerX::Service::TopicServices->new();
-
-    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
-
-    $topic_services->change_status( $c, $config );
-
-    my $topic_ci = ci->new($topic_mid);
-    is $topic_ci->{id_category_status}, $status2->mid;
-};
-
-subtest 'change_status: changes topic status checking old status' => sub {
-    _setup();
-
-    my $status  = TestUtils->create_ci( 'status', name => 'New',     type => 'I' );
-    my $status2 = TestUtils->create_ci( 'status', name => 'Progres', type => 'I' );
-
-    my $project = TestUtils->create_ci( 'project', name => 'Project' );
-
-    my $id_release_rule     = _create_release_form();
-    my $id_release_category = TestSetup->create_category(
-        name      => 'Category',
-        id_rule   => $id_release_rule,
-        id_status => [ $status->mid, $status2->mid ]
-    );
-
-    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.category.view' } ] );
-
-    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $topic_mid = TestSetup->create_topic(
-        project     => $project,
-        id_category => $id_release_category,
-        status      => $status,
-        title       => "Topic"
-    );
-
-    mdb->master_rel->insert( { from_mid => $topic_mid, to_mid => $user->mid, rel_type => 'topic_users' } );
 
     my $config = {
         topics     => [$topic_mid],
         old_status => $status->mid,
-        new_status => $status2->mid
+        new_status => $status2->mid,
+        username   => $user->username
     };
 
     my $topic_services = BaselinerX::Service::TopicServices->new();
 
-    my $c = mock_catalyst_c( stash => { username => $user->{username} } );
+    my $c = mock_catalyst_c();
 
     $topic_services->change_status( $c, $config );
 
     my $topic_ci = ci->new($topic_mid);
+
     is $topic_ci->{id_category_status}, $status2->mid;
+};
+
+subtest 'change_status: user has no permissions to change statuses that are not assigned in the workflow' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New',      type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Progres',  type => 'I' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Finished', type => 'I' );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_rule  = TestSetup->create_rule_form();
+    my $id_role  = TestSetup->create_role();
+    my $workflow = [
+        {   id_role        => $id_role,
+            id_status_from => $status->id_status,
+            id_status_to   => $status2->id_status,
+            job_type       => 'promote'
+        }
+    ];
+    my $id_category = TestSetup->create_category(
+        name     => 'Category',
+        id_rule  => $id_rule,
+        workflow => $workflow
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => "Topic"
+    );
+
+    my $config = {
+        topics     => [$topic_mid],
+        old_status => $status->mid,
+        new_status => $status3->mid,
+        username   => $user->username
+    };
+
+    my $topic_services = BaselinerX::Service::TopicServices->new();
+
+    my $c = mock_catalyst_c();
+
+    like exception { $topic_services->change_status( $c, $config ) },
+        qr/has no permissions to change status from 'New' to 'Finished'/;
 };
 
 subtest 'change_status: throws when changing topic from not allowed status' => sub {
