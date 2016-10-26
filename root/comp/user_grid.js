@@ -286,7 +286,7 @@
             }
         })
         
-        var btn_grabar_user =   new Ext.Toolbar.Button({
+        var saveButton = new Ext.Toolbar.Button({
             text: _('Save'),
             icon:'/static/images/icons/action_save.svg',
             width: 70,
@@ -320,7 +320,6 @@
                             store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
                             form.findField("id").setValue(a.result.user_id);
                             form.findField("username").getEl().dom.setAttribute('readOnly', true);
-                            btn_grabar_user.disable();
                             win.setTitle(_('Edit user'));
                             },
                             failure: function(f,a){
@@ -747,7 +746,7 @@
                 {
                 columnWidth:0.10,
                 items:[
-                    btn_grabar_user,
+                    saveButton,
                     blank_image,
                     btn_cerrar
                     ]
@@ -807,6 +806,7 @@
         win = new Ext.Window({
             title: title,
             height: 600,
+            minWidth: 730,
             width: 730,
             closeAction: 'close',
             modal: true,
