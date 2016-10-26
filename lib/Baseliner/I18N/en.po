@@ -3759,6 +3759,10 @@ msgstr ""
 msgid "Missing field"
 msgstr ""
 
+#: lib/Baseliner/Model/Topic.pm
+msgid "User '%1' has no permissions to change status from '%2' to '%3'"
+msgstr ""
+
 #: lib/Baseliner/Model/TopicExporter/Csv.pm root/comp/topic/topic_lib_grid.js
 msgid "Referenced In"
 msgstr ""
