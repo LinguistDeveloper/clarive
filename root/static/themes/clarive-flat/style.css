@@ -775,7 +775,7 @@ body .x-window .x-window-tl .x-window-header {
 ul.x-tab-strip-top { background: #d3d0d0 none; border:none; padding-top:1px; padding-left:1px; }
 ul.x-tab-strip li {margin-left:3px; }
 
-.x-tab-strip-top .x-tab-right { background:#eaeaea none; border: 1px solid #bbb; border-bottom: none }
+.x-tab-strip-top .x-tab-right { background:#dedede none; border: 1px solid #bbb; border-bottom: none }
 .x-tab-strip-top .x-tab-left {background:transparent none;}
 .x-tab-strip-top .x-tab-strip-inner {background:transparent none;}
 .x-tab-strip-top .x-tab-strip-active  .x-tab-right { background:#f5f5f5 none; color: white;}
