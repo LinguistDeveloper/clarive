@@ -14,6 +14,15 @@ use POSIX ":sys_wait_h";
 
 use_ok 'Baseliner::Mongo';
 
+subtest 'mongo_version: returns current mongo version' => sub {
+    _setup();
+
+    my $mdb = _build_mdb();
+
+    my $version = $mdb->mongo_version;
+    like $version , qr/^\d+\.\d+/;
+};
+
 subtest 'seq: creates autoincrementing sequence' => sub {
     _setup();
 
