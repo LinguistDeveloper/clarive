@@ -229,7 +229,7 @@ sub get_rules_notifications{
             if ($notify_scope) {
                 $valid = $self->isValid({ data => $data, notify_scope => $notify_scope, mid => $mid});
             }else{
-                $valid = 1 unless keys $data->{scopes};
+                $valid = 1 unless $data->{scopes} && keys %{ $data->{scopes} };
             }
             if ($valid == 1){
                 my $actions;
@@ -265,7 +265,7 @@ sub get_rules_notifications{
                     given ($type) {
                         when ('Users')         {
                             if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
-                                @tmp_users = Baseliner->model('Users')->get_users_username;
+                                @tmp_users = Baseliner::Model::Users->new->get_users_username;
                             }
                             else{
                                 @tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};
@@ -302,22 +302,31 @@ sub get_rules_notifications{
                             }
                             @roles = _unique @roles;
 
-                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
+                            @tmp_users = Baseliner::Model::Users->new->filter_users_roles(
+                                roles        => \@roles,
+                                notify_scope => $notify_scope,
+                                mid          => $mid
+                            );
                         }
-                        when ('Roles')      {
+                        when ('Roles') {
                             my @roles;
-                            if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
-                                if (exists $notify_scope->{project}){
-                                    @roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
+                            if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ) {
+                                if ( exists $notify_scope->{project} ) {
+                                    @roles = Baseliner::Model::Users->new->get_roles_from_projects(
+                                        $notify_scope->{project} );
                                 }
-                                else{
+                                else {
                                     @roles = ('*');
                                 }
                             }
-                            else{
+                            else {
                                 @roles = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
-                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
+                            @tmp_users = Baseliner::Model::Users->new->filter_users_roles(
+                                roles        => \@roles,
+                                notify_scope => $notify_scope,
+                                mid          => $mid
+                            );
                         }
                         when ('Fields')         {
                             my @fields = keys $notification->{$key}{carrier}{$carrier}->{$type};

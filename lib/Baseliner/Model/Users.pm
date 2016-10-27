@@ -108,58 +108,56 @@ sub get_users_username {
     return wantarray ? @users : \@users;
 }
 
-sub get_users_from_mid_roles_topic {
+sub filter_users_roles {
     my ( $self, %p ) = @_;
-    my @roles = _array $p{roles} or _throw 'Missing parameter roles';
-    my $mid   = $p{mid};
 
-    my @topic_securities;
+    my @roles        = _array $p{roles} or _throw 'Missing parameter roles';
+    my $mid          = $p{mid};
+    my $notify_scope = $p{notify_scope};
+    my @projects;
+    my @users;
+    my @mega_ors;
 
     if ( !$mid ) {
-        push @topic_securities, {};
+        push @projects, $notify_scope->{project} ? { project => $notify_scope->{project} } : {};
     } else {
-
         my $topic = mdb->topic->find_one( {mid => "$mid"} );
 
+        push @projects, $topic->{_project_security} if $topic->{_project_security};
 
-        push @topic_securities, $topic->{_project_security} if $topic->{_project_security};
-
-        if ( $topic->{category}->{is_release} && !@topic_securities ) {
+        if ( $topic->{category}->{is_release} && !@projects ) {
             my @children =
                 map { $_->{mid} }
                 ci->new( $mid )->children( where => {collection => 'topic'}, depth => 1, mids_only => 1 );
-            @topic_securities =
+            @projects =
                 map { $_->{_project_security} }
                 mdb->topic->find( {mid => mdb->in( @children )} )->all;
-            if ( !@topic_securities ) {
-                push @topic_securities, {};
+            if ( !@projects ) {
+                push @projects, {};
             }
-        } ## end if ( $topic->{category...})
-    } ## end else [ if ( !$mid ) ]
-
-    my $mega_where = {};
-    my @mega_ors;
-
-    for my $topic_security ( @topic_securities ) {
-        my @ors;
-        my $total_where = {};
-
-        for my $role (@roles) {
-            my $where = {};
-            $where->{"project_security.$role"} = { '$nin' => [undef] };
-            while ( my ( $k, $v ) = each %{ $topic_security || {} } ) {
-                $where->{"project_security.$role.$k"} = { '$in' => [ undef, @$v ] };
-            } ## end while ( my ( $k, $v ) = each...)
-            push @ors, $where;
         }
-        $total_where->{'$or'} = \@ors;
-        push @mega_ors, $total_where;
     }
 
-    my @users;
+    for my $project ( @projects ) {
+        my @ors;
+        my $where_project = {};
+
+        for my $role (@roles) {
+            my $where_role = {};
+            $where_role->{"project_security.$role"} = { '$nin' => [undef] };
+            while ( my ( $k, $v ) = each %{ $project || {} } ) {
+                $where_role->{"project_security.$role.$k"} = { '$in' => [ undef, @$v ] };
+            }
+            push @ors, $where_role;
+        }
+        $where_project->{'$or'} = \@ors;
+        push @mega_ors, $where_project;
+    }
+
     if ( @mega_ors ) {
-        $mega_where->{'$or'} = \@mega_ors;
-        @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
+        my $where = {};
+        $where->{'$or'} = \@mega_ors;
+        @users = map {$_->{name}} _array(ci->user->find($where)->all);
     } else {
         @users = Baseliner::Model::Permissions->new->users_with_roles(roles => \@roles);
     }

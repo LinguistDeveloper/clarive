@@ -136,6 +136,8 @@ Second combo:
 *Users*: Selects users who receive the notification.
 
 *Roles*: Selects the group of users who receive the notification.
+For events of type job, the notification will be sent to all users who have
+the role assigned to the same job project.
 
 *Actions*: Selected an action, sends a notification to all users who are assigned this action based projects.
 
