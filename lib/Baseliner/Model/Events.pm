@@ -314,7 +314,6 @@ sub new_event {
 sub _new_event {
     my $self = shift;
     my ( $ev, $key, $data, $module, $code ) = @_;
-
     my $ts       = mdb->ts;
     my $ts_hires = mdb->ts_hires;
 
@@ -428,10 +427,8 @@ sub _create_event_and_friends {
             username     => $ed->{username}
         }
     );
-
-    if ( _array( $ev->{vars} ) > 0 ) {
+    if (( $key =~ /event.topic|event.file|event.post|event.ci/ ) && _array( $ev->{vars} ) > 0 ) {
         my $ed_reduced = {};
-
         # fix "unhandled" Mongo errors due to unblessed structures
         my $ed_cloned = Util->_clone($ed);
         Util->_unbless($ed_cloned);
