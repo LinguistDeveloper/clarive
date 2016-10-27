@@ -884,6 +884,34 @@ subtest 'build_topic_tree: does not create children if topic has not files' => s
     ok !$output[0]{children};
 };
 
+subtest 'repository_details: returns details about ci repository' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository(
+        name        => 'Repo',
+        collection  => 'GitRepository',
+        description => 'Test Git'
+    );
+    my $project    = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
+    my $id_role    = TestSetup->create_role();
+    my $user       = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c( req => { params => { mid => $repo->mid } } );
+
+    $controller->repository_details($c);
+
+    cmp_deeply $c->stash->{json},
+        {
+        collection  => $repo->collection,
+        description => $repo->description,
+        mid         => $repo->mid,
+        name        => $repo->name,
+        repo_dir    => $repo->repo_dir,
+        success     => \1
+        };
+};
+
 done_testing;
 
 sub _build_controller {

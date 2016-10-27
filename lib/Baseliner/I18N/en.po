@@ -5251,6 +5251,7 @@ msgstr ""
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
+#: root/site/explorer.js
 msgid "Description"
 msgstr ""
 
@@ -7208,7 +7209,8 @@ msgstr ""
 #: root/comp/rules.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
 #: root/forms/catalog_task.js root/forms/parse_config.js
-#: root/forms/write_config.js root/site/common.js root/site/model.js
+#: root/forms/write_config.js root/site/common.js root/site/explorer.js
+#: root/site/model.js
 msgid "Type"
 msgstr ""
 
@@ -7571,7 +7573,7 @@ msgstr ""
 
 #: root/ci/item.js root/comp/catalog/item_deploy.js root/comp/feature_grid.mas
 #: root/forms/file_foreach.js root/forms/script_local.js root/forms/sed.js
-#: root/forms/write_file.js
+#: root/forms/write_file.js root/site/explorer.js
 msgid "Path"
 msgstr ""
 
@@ -14780,6 +14782,14 @@ msgstr ""
 
 #: root/site/explorer.js
 msgid "Remove from Favorites"
+msgstr ""
+
+#: root/site/explorer.js
+msgid "Repo Details"
+msgstr ""
+
+#: root/site/explorer.js
+msgid "Unknown error"
 msgstr ""
 
 #: root/site/explorer.js

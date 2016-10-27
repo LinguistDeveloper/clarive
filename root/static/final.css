@@ -36,6 +36,10 @@ body {
 }
 
 
+.repo-info .ext-mb-content {
+    margin-top: 8px !important;
+}
+
 /* REPL style */
 .CodeMirror pre {
     font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Courier, monospace;
@@ -1087,4 +1091,3 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 ul.x-tab-strip li {
     margin-bottom: -1px;
 }
-
