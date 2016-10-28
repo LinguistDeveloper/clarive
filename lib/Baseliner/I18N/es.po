@@ -9282,7 +9282,7 @@ msgid ""
 "campo observaciones"
 msgstr ""
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/role_grid.js
 msgid "Invalid"
 msgstr "Inválido"
 
@@ -10701,28 +10701,8 @@ msgid "New Role"
 msgstr "Nuevo Rol"
 
 #: root/comp/role_grid.js
-msgid "Actions (%1)"
-msgstr "Acciones (%1)"
-
-#: root/comp/role_grid.js
-msgid "Invalid (%1)"
-msgstr "Inválidas (%1)"
-
-#: root/comp/role_grid.js
-msgid "Members"
-msgstr "Miembros"
-
-#: root/comp/role_grid.js
 msgid "Please, select the role to delete"
 msgstr "Por favor, seleccione el rol a borrar"
-
-#: root/comp/role_grid.js
-msgid "The role %1 does not have users assigned, delete this role?"
-msgstr "El rol %1 no tiene usuarios asignados, ¿desea borrar el rol?"
-
-#: root/comp/role_grid.js
-msgid "The role %1 has %2 user(s) assigned, delete this role?"
-msgstr "El rol %1 tiene %2 usuario(s) asignados, ¿desea borrar el rol?"
 
 #: root/comp/role_grid.js
 msgid "Could not delete the role"
@@ -10750,8 +10730,8 @@ msgid "Actions for role %1"
 msgstr "Acciones para el rol %1"
 
 #: root/comp/role_grid.js
-msgid "Remove Invalid Actions"
-msgstr "Descartar Acciones Inválidas"
+msgid "Delete Invalid Actions"
+msgstr "Borrar Acciones Inválidas"
 
 #: root/comp/rule_new.js
 msgid "Event Type"
@@ -15603,6 +15583,23 @@ msgstr "destino"
 
 #~ msgid "Created file %1 to topic [%2] %3"
 #~ msgstr "Creadp el fichero %1 a tópico [%2] %3"
+#~ msgid "The role %1 does not have users assigned, delete this role?"
+#~ msgstr "El rol %1 no tiene usuarios asignados, ¿desea borrar el rol?"
+
+#~ msgid "The role %1 has %2 user(s) assigned, delete this role?"
+#~ msgstr "El rol %1 tiene %2 usuario(s) asignados, ¿desea borrar el rol?"
+
+#~ msgid "Actions (%1)"
+#~ msgstr "Acciones (%1)"
+
+#~ msgid "Invalid (%1)"
+#~ msgstr "Inválidas (%1)"
+
+#~ msgid "Members"
+#~ msgstr "Miembros"
+
+#~ msgid "Remove Invalid Actions"
+#~ msgstr "Descartar Acciones Inválidas"
 
 #~ msgid ""
 #~ "Retrying write in cache because of duplicate key bug in mongo 3.2 upsert. "
@@ -17970,9 +17967,6 @@ msgstr "destino"
 
 #~ msgid "<b>PLASTIC Revisions:</B> Processing revision $_"
 #~ msgstr "<b>Revisiones PLASTIC:</B> Procesando la revisión $_"
-
-#~ msgid "Delete Invalid Actions"
-#~ msgstr "Borrar Acciones Inválidas"
 
 #~ msgid "RUNNING sem_check_for_roadkill"
 #~ msgstr "RUNNING sem_check_for_roadkill"

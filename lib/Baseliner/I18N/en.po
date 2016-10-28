@@ -9148,7 +9148,7 @@ msgid ""
 "campo observaciones"
 msgstr ""
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/role_grid.js
 msgid "Invalid"
 msgstr ""
 
@@ -10552,27 +10552,7 @@ msgid "New Role"
 msgstr ""
 
 #: root/comp/role_grid.js
-msgid "Actions (%1)"
-msgstr ""
-
-#: root/comp/role_grid.js
-msgid "Invalid (%1)"
-msgstr ""
-
-#: root/comp/role_grid.js
-msgid "Members"
-msgstr ""
-
-#: root/comp/role_grid.js
 msgid "Please, select the role to delete"
-msgstr ""
-
-#: root/comp/role_grid.js
-msgid "The role %1 does not have users assigned, delete this role?"
-msgstr ""
-
-#: root/comp/role_grid.js
-msgid "The role %1 has %2 user(s) assigned, delete this role?"
 msgstr ""
 
 #: root/comp/role_grid.js
@@ -10601,7 +10581,7 @@ msgid "Actions for role %1"
 msgstr ""
 
 #: root/comp/role_grid.js
-msgid "Remove Invalid Actions"
+msgid "Delete Invalid Actions"
 msgstr ""
 
 #: root/comp/rule_new.js

@@ -122,64 +122,43 @@ sub bounds : Local {
 }
 
 sub json : Local {
-    my ($self,$c) = @_;
+    my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'role';
-    $dir ||= 'asc';
-    if($dir =~ /asc/i){
+    my ( $start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    $sort  ||= 'role';
+    $dir   ||= 'asc';
+    $start ||= 0;
+
+    if ( $dir =~ /asc/i ) {
         $dir = 1;
-    }else{
+    }
+    else {
         $dir = -1;
     }
 
-    $start ||= 0;
-    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(role description mailbox)]) : {};
+    my $where = $query ? mdb->query_build( query => $query, fields => [qw(role description mailbox)] ) : {};
     my $rs = mdb->role->find($where);
-    $cnt = $rs->count();
+    $cnt = $rs->count;
     $rs->skip($start);
-    if ($limit && $limit != -1) {
+
+    if ( $limit && $limit != -1 ) {
         $rs->limit($limit);
     }
-    $rs->sort($sort ? { $sort => $dir } : { role => 1 });
+    $rs->sort( $sort ? { $sort => $dir } : { role => 1 } );
 
     my @rows;
-    while( my $r = $rs->next ) {
-        my $rs_actions = $r->{actions};
-        my @actions;
-        my @invalid_actions;
-        for my $act (@$rs_actions){
-            my $key = $act->{action};
-            try {
-                my $action = Baseliner::Core::Registry->get( $key );
-                my $str = { name=>$action->name,  key=>$key };
-                push @actions, $str;
-            } catch {
-                #my $err = shift;
-                #_warn "Invalid Action in Role $$r{id}: $key: $err";
-                push @invalid_actions, { name=>$key, key=>'' };
-            };
-        }
-        my $actions_txt = \@actions;
-        next if $query
-            && !Util->query_grep( query=>$query, all_fields=>1, rows=>[ $r, map { +{ action=>$_ } } @actions, @invalid_actions ] );
-
-        # if the query has a dot, filter actions
-        if( defined $query && $query =~ /\./ ) {
-            @actions = grep { $a = join ',', values %$_; $a =~ /$query/i } @actions;
-        }
-
+    while ( my $r = $rs->next ) {
         push @rows,
-          {
+            {
             id          => $r->{id},
             role        => $r->{role},
-            actions     => $actions_txt,
-            invalid_actions => \@invalid_actions,
             description => $r->{description},
-            mailbox => $r->{mailbox},
-            dashboards => $r->{dashboards}
-          }
+            mailbox     => $r->{mailbox},
+            dashboards  => $r->{dashboards}
+            };
     }
+
     $c->stash->{json} = { data => \@rows, totalCount => $cnt };
     $c->forward('View::JSON');
 }
@@ -630,6 +609,31 @@ sub roleprojects : Local {
     };
     cache->remove({ d=>'security' });
     cache->remove({ d=>"topic:meta" });
+    $c->forward('View::JSON');
+}
+
+sub actions : Local {
+    my ( $self, $c ) = @_;
+
+    my @actions;
+    my @invalid_actions;
+    my $p            = $c->req->params;
+    my $role         = mdb->role->find_one( { id => $p->{role_id} } );
+    my $role_actions = $role->{actions};
+
+    for my $act (@$role_actions) {
+        my $key = $act->{action};
+        try {
+            my $action = Baseliner::Core::Registry->get($key);
+            my $str = { name => $action->name, key => $key };
+            push @actions, $str;
+        }
+        catch {
+            push @invalid_actions, { name => $key, key => '' };
+        };
+    }
+
+    $c->stash->{json} = { actions => \@actions, invalid_actions => \@invalid_actions };
     $c->forward('View::JSON');
 }
 
