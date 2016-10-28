@@ -178,6 +178,8 @@ sub compile {
         }
     }
 
+    _debug("Done loading rule $pkg (t=" . $self->compile_time . ")" );
+
     return { err => $self->compile_error, t => $self->compile_time };
 }
 
