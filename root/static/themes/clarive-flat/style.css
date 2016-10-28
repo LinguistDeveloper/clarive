@@ -1896,18 +1896,24 @@ div.x-panel-body .job-calendar {
 }
 
 .x-form-invalid-msg {
-    font:normal 14px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font:normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 }
 
 .x-form-invalid-msg {
     padding: 2px;
+    padding-left: 0px;
     background: transparent no-repeat 0 2px;
     line-height: 16px;
-    width: 200px;
+    width: 200px !important;
 }
 
 .x-form-invalid-msg {
     color: #c0272b;
     font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-image: none !important;
+}
+
+.x-topic-placeholder {
+    min-height: 80px !important;
+    min-width:  125px !important;
 }
