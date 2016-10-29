@@ -489,81 +489,88 @@ sub list_repo_contents : Local {
 }
 
 sub branches : Local {
-    my ($self,$c) = @_;
-    my @tree;
-    my @changes;
-    my $p = $c->req->params;
-    my $project = $p->{project} or _fail 'missing project';
-    my $id_project = $p->{id_project} or _fail 'missing project id';
-    my $id_repo = $p->{id_repo} or _fail 'missing repo id';
-    my $config = config_get 'config.lc';
+    my ( $self, $c ) = @_;
 
-    # provider-by-provider:
-    # get all the changes for this project + baseline
+    my $p          = $c->req->params;
+    my $project    = $p->{project} or _fail 'missing project';
+    my $id_project = $p->{id_project} or _fail 'missing project id';
+    my $id_repo    = $p->{id_repo} or _fail 'missing repo id';
+    my $config     = config_get 'config.lc';
+
+    my @changes;
+    my @tree;
+
     if ( $config->{show_changes_in_tree} || !$p->{id_status} ) {
         try {
-            my $repo = Baseliner::CI->new( $id_repo );
+            my $repo = Baseliner::CI->new($id_repo);
 
-            if( $repo->can('list_tree') ) {
-                @tree = $repo->list_tree( username=>$c->username, %$p );
+            if ( $repo->can('list_tree') ) {
+                @tree = $repo->list_tree( username => $c->username, %$p );
             }
             else {
-                if ($repo->{navigation_type} && $repo->{navigation_type} eq 'Directory') {
-                    my $res = $repo->list_directories( project=>$project, repo_mid=>$id_repo, username => $c->username, directory=>'', id_project=>$id_project );
-                    push @tree, $_ for _array($res->{directories});
+                if ( $repo->{navigation_type} && $repo->{navigation_type} eq 'Directory' ) {
+                    my $res = $repo->list_directories(
+                        project    => $project,
+                        repo_mid   => $id_repo,
+                        username   => $c->username,
+                        directory  => '',
+                        id_project => $id_project
+                    );
+                    push @tree, $_ for _array( $res->{directories} );
                     @tree = sort { $a->{text} cmp $b->{text} } @tree;
-                    push @changes, $_ for _array($res->{repositories});
+                    push @changes, $_ for _array( $res->{repositories} );
                 }
                 else {
                     @changes =
                         $repo->can('list_contents')
-                          ? $repo->list_contents( request => $p )
-                          : $repo->list_branches(
-                            project  => $project,
-                            repo_mid => $id_repo,
-                            username => $c->username
-                          );
+                      ? $repo->list_contents( request => $p )
+                      : $repo->list_branches(
+                        project  => $project,
+                        repo_mid => $id_repo,
+                        username => $c->username
+                      );
                 }
                 _debug _loc("---- provider %1 has %2 changesets", $repo->name, scalar @changes);
-                # loop through the branch objects
-                for my $cs ( @changes ) {
+
+                for my $cs (@changes) {
                     my $menu = [];
-                    # get menu extensions (find packages that do)
-                    # get node menu
                     my $data = $cs->node_data;
-                    $data->{repo_mid} = $id_repo;
+                    $data->{repo_mid}   = $id_repo;
                     $data->{id_project} = $id_project;
-                    $data->{project} = $project;
+                    $data->{project}    = $project;
 
                     push @$menu, _array $cs->node_menu if ref $cs->node_menu;
                     push @tree, {
-                        url        => $cs->node_url,
-                        data       => $data, #$cs->node_data,
-                        parent_data => { id_project=>$id_project, project=>$project },
-                        menu       => $menu,
-                        icon       => $cs->icon,
-                        text       => $cs->text || $cs->name,
-                        leaf       => \0,
+                        url         => $cs->node_url,
+                        data        => $data,                                                #$cs->node_data,
+                        parent_data => { id_project => $id_project, project => $project },
+                        menu        => $menu,
+                        icon        => $cs->icon,
+                        text => $cs->text || $cs->name,
+                        leaf => \0,
                         expandable => \0
                     };
                 }
             }
-        } catch {
+        }
+        catch {
             my $err = shift;
-            my $msg = _loc('Error detected: %1', $err );
-            _error( $msg );
-            push @tree, {
-                text => substr($msg,0,255),
-                data => {},
-                icon => '/static/images/icons/error_red.svg',
-                leaf=>\1,
+            my $msg = _loc( 'Error detected: %1', $err );
+            _error($msg);
+            push @tree,
+              {
+                text       => substr( $msg, 0, 255 ),
+                data       => {},
+                icon       => '/static/images/icons/error_red.svg',
+                leaf       => \1,
                 expandable => \0
-            };
+              };
         };
     }
-    $c->stash->{ json } = \@tree;
-    $c->forward( 'View::JSON' );
+    $c->stash->{json} = \@tree;
+    $c->forward('View::JSON');
 }
+
 
 sub changeset : Local {
     my ($self,$c) = @_;
