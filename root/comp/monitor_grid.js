@@ -985,6 +985,20 @@
                         inputValue: 'ERROR'
                     }]
                 });
+                var changeJobStatusCheckbox = new Ext.form.Checkbox({
+                    hidden: true,
+                    fieldLabel: _('Change Job Status'),
+                    listeners: {
+                        check: function(info) {
+                            if (info.checked) {
+                                radio_post.show()
+                                form_res.doLayout();
+                            } else {
+                                radio_post.hide()
+                            };
+                        }
+                    }
+                });
                 var step_buttons = new Ext.Container({
                     layout: {
                         type: 'hbox'
@@ -1004,10 +1018,20 @@
                             pressed: step_field == st,
                             handler: function() {
                                 if (this.text == 'POST') {
-                                    radio_post.show();
+                                    changeJobStatusCheckbox.show();
                                     form_res.doLayout();
                                 } else {
+                                    changeJobStatusCheckbox.hide();
+                                    changeJobStatusCheckbox.reset();
                                     radio_post.hide();
+                                }
+                            },
+                            listeners: {
+                                afterrender: function() {
+                                    if (step_field == 'POST') {
+                                        changeJobStatusCheckbox.show();
+                                        form_res.doLayout();
+                                    }
                                 }
                             }
                         });
@@ -1016,26 +1040,44 @@
                 });
                 var form_res = new Ext.FormPanel({
                     frame: false,
-                    height: 150,
+                    autoHeight: true,
                     defaults: { width:'100%' },
-                    bodyStyle:'padding: 10px',
+                    bodyStyle:'padding: 15px',
                     items: [
-                        user_combo,
-                        { xtype: 'hidden', name:'mid', value: sel.data.mid },
-                        { xtype: 'hidden', name:'job_name', value: sel.data.name },
-                        { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
-                        { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
+                        user_combo, {
+                            xtype: 'hidden',
+                            name: 'mid',
+                            value: sel.data.mid
+                        }, {
+                            xtype: 'hidden',
+                            name: 'job_name',
+                            value: sel.data.name
+                        }, {
+                            xtype: 'hidden',
+                            name: 'starttime',
+                            fieldLabel: _('Start Date'),
+                            value: sel.data.starttime
+                        }, {
+                            xtype: 'checkbox',
+                            name: 'run_now',
+                            fieldLabel: _("Run Now"),
+                            checked: run_now
+                        },
                         step_buttons,
-                        radio_post
+                        changeJobStatusCheckbox,
+                        radio_post,
                     ],
                     buttons: [
                         {text:_('Rerun'), handler:function(f){
                             var but = this;
                             but.disable();
-                            var form_data = form_res.getForm().getValues();
+                            var form_data = form_res.getForm().getValues(); 
                             step_buttons.items.each(function(btn){
                                 if( btn.pressed ) form_data.step = btn.text;
                             });
+                            if (!changeJobStatusCheckbox.checked) {
+                                delete form_data.last_finish_status;
+                            }
                             Baseliner.ci_call( 'job', 'reset', form_data,
                                 function(res){
                                     Baseliner.message( sel.data.name, _('Job Restarted') );
@@ -1057,8 +1099,9 @@
                 var win_res=new Ext.Window({
                     title: _('Rerun'),
                     width: 400,
-                    height: 200,
+                    autoHeight: true,
                     bodyStyle:'padding: 10px',
+                    shadow:false,
                     items: form_res
                 });
                 win_res.show();
