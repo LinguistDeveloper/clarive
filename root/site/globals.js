@@ -20,7 +20,7 @@ Prefs = {};
 
 IC = function(icon){
     var path = '/static/images/icons/';
-    return /\./.test(icon) ? path+icon : path+icon+'.png'; 
+    return /\./.test(icon) ? path+icon : path+icon+'.svg'; 
 }
 
 Cla.isIE = !(window.ActiveXObject) && "ActiveXObject" in window;

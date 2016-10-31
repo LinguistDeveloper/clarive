@@ -707,8 +707,8 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             modal: true, closeAction: 'hide',
             tbar: [
                 '->',
-                new Ext.Button({ text:_('Clear All'), icon:IC('delete.svg'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig; } }),
-                new Ext.Button({ text:_('Filter'), icon:IC('search-small.svg'), handler: function(){ self.filter_win.hide(); } })
+                new Ext.Button({ text:_('Clear All'), icon: IC('delete'), handler: function(){ self.include_cl = self.include_cl_orig; self.not_in_class = self.not_in_class_orig; self.include_cl_combo.setValue(self.include_cl_orig); self.not_in_class_check.checked = self.not_in_class_orig; } }),
+                new Ext.Button({ text:_('Filter'), icon: IC('search-small'), handler: function(){ self.filter_win.hide(); } })
             ],
             items: [ self.include_cl_combo, self.not_in_class_check ]
         });
@@ -723,7 +723,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
 
         self.show_filter = new Ext.Button({
-            text: _('Filter (None)'), icon: IC('search-small.svg'), handler: function(){
+            text: _('Filter (None)'), icon: IC('search-small'), handler: function(){
                 self.filter_win.show();
             }
         });

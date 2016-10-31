@@ -8748,7 +8748,7 @@ msgstr ""
 
 #: root/comp/log_grid.js root/comp/monitor_grid.js root/comp/rules.js
 #: root/comp/sem.js root/comp/sequences.js root/comp/topic/topic_lib.js
-#: root/site/calendar.js root/site/help.js root/site/main.js
+#: root/site/help.js root/site/main.js
 msgid "Refresh"
 msgstr ""
 
@@ -9415,7 +9415,7 @@ msgstr ""
 msgid "Refresh Node"
 msgstr ""
 
-#: root/comp/repl.js root/dashlets/calendar.js
+#: root/comp/repl.js
 msgid "Maximize"
 msgstr ""
 
@@ -13423,14 +13423,6 @@ msgstr ""
 msgid "Third Party Notices"
 msgstr ""
 
-#: root/site/calendar.js root/site/help.js root/site/model.js
-msgid "Back"
-msgstr ""
-
-#: root/site/calendar.js root/site/help.js
-msgid "Forward"
-msgstr ""
-
 #: root/site/calendar.js
 msgid "Day1"
 msgstr ""
@@ -14116,6 +14108,14 @@ msgstr ""
 
 #: root/site/help.js
 msgid "Show Help Index"
+msgstr ""
+
+#: root/site/help.js root/site/model.js
+msgid "Back"
+msgstr ""
+
+#: root/site/help.js
+msgid "Forward"
 msgstr ""
 
 #: root/site/help.js

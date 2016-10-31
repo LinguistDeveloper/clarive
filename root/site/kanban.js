@@ -51,7 +51,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             }
         });
         self.btn_save = new Ext.Button({ 
-            text:_('Save Layout'), icon:IC('save'), tooltip:_('Save Current Layout'), hidden: self.topic_mid==undefined, 
+            text:_('Save Layout'), icon: IC('save'), tooltip:_('Save Current Layout'), hidden: self.topic_mid==undefined, 
             handler: function(){
                 self.save_statuses();
             }

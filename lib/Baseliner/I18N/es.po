@@ -8861,7 +8861,7 @@ msgstr "Debug"
 
 #: root/comp/log_grid.js root/comp/monitor_grid.js root/comp/rules.js
 #: root/comp/sem.js root/comp/sequences.js root/comp/topic/topic_lib.js
-#: root/site/calendar.js root/site/help.js root/site/main.js
+#: root/site/help.js root/site/main.js
 msgid "Refresh"
 msgstr "Refresco"
 
@@ -9532,7 +9532,7 @@ msgstr "Historial"
 msgid "Refresh Node"
 msgstr "Refrescar"
 
-#: root/comp/repl.js root/dashlets/calendar.js
+#: root/comp/repl.js
 msgid "Maximize"
 msgstr "Maximizar"
 
@@ -13565,14 +13565,6 @@ msgstr "Notificaciones de Copyright"
 msgid "Third Party Notices"
 msgstr "Noticias de terceros"
 
-#: root/site/calendar.js root/site/help.js root/site/model.js
-msgid "Back"
-msgstr "Atrás"
-
-#: root/site/calendar.js root/site/help.js
-msgid "Forward"
-msgstr "Adelante"
-
 #: root/site/calendar.js
 msgid "Day1"
 msgstr "Día"
@@ -14263,6 +14255,14 @@ msgstr "Este navegador no es soportado por %1"
 #: root/site/help.js
 msgid "Show Help Index"
 msgstr "Mostrar Índice"
+
+#: root/site/help.js root/site/model.js
+msgid "Back"
+msgstr "Atrás"
+
+#: root/site/help.js
+msgid "Forward"
+msgstr "Adelante"
 
 #: root/site/help.js
 msgid "Help not available for this item."

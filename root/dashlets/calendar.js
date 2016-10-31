@@ -15,8 +15,7 @@
     var cal = new Baseliner.Calendar({
         tbar_end: ['->', {
             xtype: 'button',
-            icon: IC('tab.svg'),
-            tooltip: _('Maximize'),
+            icon: IC('tab'),
             handler: function() {
                 Baseliner.tabCalendar()
             }

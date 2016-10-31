@@ -66,7 +66,7 @@
     // Option menu to General Button
     var options_menu = new Ext.Button({
         text: _('Options'),
-        icon: IC('timeline.svg'),
+        icon: IC('timeline'),
         menu: {
             items: [event_details]
         }

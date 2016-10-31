@@ -27,7 +27,7 @@ Ext.onReady(function(){
 
    Cla.help_button.on('click', function(ev,hp){
         // when the user sees the menu, switch the bulb off
-        Cla.help_button.setIcon(IC('lightbulb_off.svg'));
+        Cla.help_button.setIcon(IC('lightbulb_off'));
     });
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
@@ -72,7 +72,7 @@ Ext.onReady(function(){
         }
         var tabfav = info.favorite_this(); 
         var opp = function(){
-            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite.svg');
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite_new');
             var fav_data = {
                 title: title_field.getValue(),
                 click: {
@@ -300,7 +300,7 @@ Ext.onReady(function(){
             //collapsed: true,
             hidden: true,
             height: 300,
-            tbar_end : [ '->', { xtype:'button', icon: IC('tab.svg'), handler:function(){ Cla.tabCalendar() } } ],
+            tbar_end : [ '->', { xtype:'button', icon: IC('tab'), handler:function(){ Cla.tabCalendar() } } ],
             fullCalendarConfig: {
                 events: Cla.calendar_events,
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }

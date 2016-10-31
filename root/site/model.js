@@ -1399,7 +1399,7 @@ Baseliner.StatusBox = function(opt) {
         fieldLabel: _('To'),
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
-        + '<div style="float:left; margin-right: 5px"><img src={[ IC("state.svg") ]} />'
+        + '<div style="float:left; margin-right: 5px"><img src={[ IC("state") ]} />'
         + '</div>{name}</div></tpl>',
         displayFieldTpl: tpl,
         extraItemCls: 'x-tag',
@@ -1444,7 +1444,7 @@ Ext.extend(Baseliner.CategoryBox, Baseliner.SuperBoxSelect);
 
 Baseliner.UserBox = function(opt) {
     var fieldTpl = '<div class="x-combo-list-item" style="margin-top: -2px">'
-        + '<img src="{[ values.icon || IC("user.svg")]}" /> '
+        + '<img src="{[ values.icon || IC("user")]}" /> '
         + '{realname}{[ values.username != values.realname ? " (" + values.username  + ")" : "" ]}'
         + '</div>';
 
@@ -2760,7 +2760,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
 
         self.btn_copy = new Ext.Button({
             hidden: !self.show_btn_copy,
-            icon: IC('copy.svg'),
+            icon: IC('copy'),
             text: _("Copy Vars To..."),
             menu: []
         });

@@ -158,25 +158,25 @@ Cla.help_show = function(params) {
         }
     });
 
-    var btn_home = new Ext.Button({ icon: IC('home.svg'), tooltip: _('Show Help Index'), handler: function(){
+    var btn_home = new Ext.Button({ icon: IC('home'), tooltip: _('Show Help Index'), handler: function(){
         search_box.setValue('');
         docs_tree.getLoader().baseParams.query = '';
         docs_tree.getLoader().load(docs_tree.root);
         //docs_tree.refresh();
     }});
 
-    var btn_refresh = new Ext.Button({ icon: IC('refresh.svg'), tooltip: _('Refresh'), handler: function(){
+    var btn_refresh = new Ext.Button({ icon: IC('refresh'), tooltip: _('Refresh'), handler: function(){
         docs_tree.refresh();
     }});
 
-    var btn_left = new Ext.Button({ icon: IC('arrow_left.svg'), tooltip: _('Back'), disabled: true, handler: function(){
+    var btn_left = new Ext.Button({ icon: IC('arrow_left'), tooltip: _('Back'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr <= 0 )  return;
         var path = help_win.history[ --help_win.history_curr ];
         if( path ) goto_doc( path, { from_hist : true } );
         check_btns();
     }});
-    var btn_right = new Ext.Button({ icon: IC('arrow_right.svg'), tooltip: _('Forward'), disabled: true, handler: function(){
+    var btn_right = new Ext.Button({ icon: IC('arrow_right'), tooltip: _('Forward'), disabled: true, handler: function(){
         check_btns();
         if( help_win.history_curr >= help_win.history.length ) return;
         var path = help_win.history[ ++help_win.history_curr ];
@@ -273,12 +273,12 @@ Cla.help_button_flash = function(params) {
     // there's new content, show the bulb on
     Cla.help_button.setIcon('static/images/loading/loading-fast.gif');
     setTimeout(function(){
-        Cla.help_button.setIcon(IC('lightbulb.svg'));
+        Cla.help_button.setIcon(IC('lightbulb'));
     },400);
 }
 
 Cla.help_base_items = [
-    { text:_('Clarive Help'), icon: IC('help.svg'), handler:function(){ Cla.help_show() } },
+    { text:_('Clarive Help'), icon: IC('help'), handler:function(){ Cla.help_show() } },
     '-'
 ];
 Cla.help_items = [];

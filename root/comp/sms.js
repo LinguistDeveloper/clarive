@@ -14,7 +14,7 @@
             new Baseliner.CLEditor({ name:'more', fieldLabel:_('More Info'), height:340 })
         ]
     });
-    var btn_new = new Ext.Button({ icon:IC('action_save.svg'), text:_('Publish'), hidden: true, handler:function(){
+    var btn_new = new Ext.Button({ icon: IC('save'), text:_('Publish'), hidden: true, handler:function(){
         if( !form.getForm().isValid() ) return;
         var d = form.getValues();
         var m = d.users
@@ -27,7 +27,7 @@
             });
         });
     }});
-    var btn_del = new Ext.Button({ icon:IC('delete.svg'), hidden: false, text:_('Delete'), handler:function(){
+    var btn_del = new Ext.Button({ icon: IC('delete'), hidden: false, text:_('Delete'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -38,7 +38,7 @@
             });
         }
     } });
-    var btn_cancel = new Ext.Button({ icon:IC('close.svg'), hidden: false, text:_('Cancel'), handler:function(){
+    var btn_cancel = new Ext.Button({ icon: IC('close'), hidden: false, text:_('Cancel'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -49,7 +49,7 @@
             });
         }
     } });
-    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon:IC('copy.svg'), handler:function(){
+    var btn_clone = new Ext.Button({ text:_('Clone'), hidden: false, icon: IC('copy'), handler:function(){
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
@@ -83,7 +83,7 @@
     };
     var btn_grid = new Ext.Button({
         text: _('View Messages'),
-        icon: IC('sms.svg'),
+        icon: IC('sms'),
         hidden: true,
         pressed: false,
         toggleGroup: 'sms-btn',
@@ -93,7 +93,7 @@
     });
     var btn_compose = new Ext.Button({
         text: _('Compose'),
-        icon: IC('edit.svg'),
+        icon: IC('edit'),
         pressed: false,
         toggleGroup: 'sms-btn',
         handler: function() {
@@ -101,7 +101,7 @@
         }
     });
 
-    var btn_close = new Ext.Button({ icon:IC('close.svg'), hidden: false, text:_('Close'), handler: function(){
+    var btn_close = new Ext.Button({ icon: IC('close'), hidden: false, text:_('Close'), handler: function(){
         win.close();
     } });
 

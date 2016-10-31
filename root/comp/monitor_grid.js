@@ -912,7 +912,7 @@
                             if( res.success ) {
                                 grid.getStore().reload();
                                 if(sel.data.can_cancel){
-                                    buttonCancel.setText( msg_cancel_delete[1] );
+                                    cancelButton.setText( msg_cancel_delete[1] );
                                 }
                             } else {
                                 Ext.Msg.alert( _('Error'), _('Could not delete the job: %1', res.msg ) );
