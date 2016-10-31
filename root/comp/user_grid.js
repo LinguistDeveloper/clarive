@@ -285,58 +285,67 @@
                 win.close();
             }
         })
-        
-        var btn_grabar_user =   new Ext.Toolbar.Button({
+
+        var saveButton = new Ext.Toolbar.Button({
             text: _('Save'),
-            icon:'/static/images/icons/action_save.svg',
+            icon: '/static/images/icons/action_save.svg',
             width: 70,
-            handler: function(){
+            handler: function() {
                 var form = form_user.getForm();
 
                 var action = form.getValues()['id'] != '-1' ? 'update' : 'add';
-                
+
                 if (form.isValid()) {
                     var swDo = true;
-                    if (form.findField('pass').emptyText != form.getValues()['pass'] && form.getValues()['pass'] !='' ){
-                        if(form.getValues()['pass_cfrm'] != form.getValues()['pass']){
-                                       Ext.Msg.show({  
-                                       title: _('Information'), 
-                                       msg: _('Passwords do not match'), 
-                                       buttons: Ext.Msg.OK, 
-                                       icon: Ext.Msg.INFO
-                                       });
+                    if (form.findField('pass').emptyText != form.getValues()['pass'] && form.getValues()['pass'] != '') {
+                        if (form.getValues()['pass_cfrm'] != form.getValues()['pass']) {
+                            Ext.Msg.show({
+                                title: _('Information'),
+                                msg: _('Passwords do not match'),
+                                buttons: Ext.Msg.OK,
+                                icon: Ext.Msg.INFO
+                            });
                             swDo = false;
                         };
                     }
-                    if (swDo){
+                    if (swDo) {
                         form.submit({
-                            params: { action: action,
-                                  type: 'user'
+                            params: {
+                                action: action,
+                                type: 'user'
                             },
-                            success: function(f,a){
-                            Baseliner.message(_('Success'), a.result.msg );
-                            store.load({params:{start:0 , limit: ptool.pageSize || ps}});
-                            grid.getSelectionModel().clearSelections();
-                            store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
-                            form.findField("id").setValue(a.result.user_id);
-                            form.findField("username").getEl().dom.setAttribute('readOnly', true);
-                            btn_grabar_user.disable();
-                            win.setTitle(_('Edit user'));
+                            success: function(f, a) {
+                                Baseliner.message(_('Success'), a.result.msg);
+                                store.load({
+                                    params: {
+                                        start: 0,
+                                        limit: ptool.pageSize || ps
+                                    }
+                                });
+                                grid.getSelectionModel().clearSelections();
+                                store_user_roles_projects.load({
+                                    params: {
+                                        username: form.getValues()['username']
+                                    }
+                                });
+                                form.findField("id").setValue(a.result.user_id);
+                                form.findField("username").getEl().dom.setAttribute('readOnly', true);
+                                win.setTitle(_('Edit user'));
                             },
-                            failure: function(f,a){
+                            failure: function(f, a) {
 
-                            Ext.Msg.show({
-                                title: _('Information'),
-                                msg: a.result.msg ,
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.INFO
-                            });                         
+                                Ext.Msg.show({
+                                    title: _('Information'),
+                                    msg: a.result.msg,
+                                    buttons: Ext.Msg.OK,
+                                    icon: Ext.Msg.INFO
+                                });
                             }
                         });
                     }
                 }
             }
-        })      
+        })
 
         var check_roles_sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,
@@ -747,7 +756,7 @@
                 {
                 columnWidth:0.10,
                 items:[
-                    btn_grabar_user,
+                    saveButton,
                     blank_image,
                     btn_cerrar
                     ]
@@ -807,6 +816,7 @@
         win = new Ext.Window({
             title: title,
             height: 600,
+            minWidth: 730,
             width: 730,
             closeAction: 'close',
             modal: true,
