@@ -10760,7 +10760,7 @@ msgstr ""
 
 #: root/comp/topic/topic_lib.js
 msgid "Add Comment"
-msgstr ""
+msgstr "Comment"
 
 #: root/comp/topic/topic_lib.js root/forms/eval_remote.js
 #: root/forms/server_code.js root/forms/stmt_eval.js root/forms/stmt_for.js
@@ -10769,7 +10769,7 @@ msgid "Code"
 msgstr ""
 
 #: root/comp/topic/topic_lib.js
-msgid "Add Comment: %1"
+msgid "Comment: %1"
 msgstr ""
 
 #: root/comp/topic/topic_lib.js

@@ -10889,7 +10889,7 @@ msgid "Code"
 msgstr "Código"
 
 #: root/comp/topic/topic_lib.js
-msgid "Add Comment: %1"
+msgid "Comment: %1"
 msgstr "Comentar: %1"
 
 #: root/comp/topic/topic_lib.js
