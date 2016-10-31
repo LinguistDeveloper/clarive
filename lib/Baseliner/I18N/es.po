@@ -15823,7 +15823,6 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
-<<<<<<< HEAD
 #~ msgid "Topic %1 does not match category %2. Skipped"
 #~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
 
@@ -15884,6 +15883,7 @@ msgstr "destino"
 #~ msgstr ""
 #~ "Reintento de escritura en cache a causa del bug de clave duplicada en "
 #~ "mongo 3.2 para el upset. Clave: %1"
+
 #~ msgid "Next commit set"
 #~ msgstr "Commits siguientes"
 
