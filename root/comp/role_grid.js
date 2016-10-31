@@ -1,5 +1,6 @@
 (function(){
     var ps = 30;
+    var fistLoad = true;
     var store = new Baseliner.JsonStore({
         root: 'data' ,
         remoteSort: true,
@@ -39,14 +40,19 @@
     });
 
     var renderOptions = function(val, m, rd, inx) {
-        var response = '';
-        response += '<div id="boot" style="background: transparent">';
-        response += String.format('<button class="btn btn-mini" type="button" onclick="javascript:Ext.getCmp(\'{0}\').list_actions({1})">{2}</button>', grid.id, inx, _('Actions'));
-        response += String.format(' <button class="btn btn-mini btn-danger" type="button" onclick="javascript:Ext.getCmp(\'{0}\').list_actions({1},true)" style="color: #">{2}</button>', grid.id, inx, _('Invalid'));
+        var response = '<div id="boot" style="background: transparent">';
+        response += String.format('<button class="btn btn-mini" type="button" \
+            onclick="javascript:Ext.getCmp(\'{0}\').list_actions({1})">{2}</button>',
+            grid.id, inx, _('Actions')
+        );
+        response += String.format(' <button class="btn btn-mini btn-danger" type="button" \
+            onclick="javascript:Ext.getCmp(\'{0}\').list_actions({1},true)" style="color: #">{2}</button>',
+            grid.id, inx, _('Invalid')
+        );
         response += '</div>';
+
         return response;
     }
-    var first_load = true;
 
     // create the grid
     var grid = new Ext.grid.GridPanel({
@@ -55,23 +61,47 @@
         header: false,
         autoScroll: true,
         store: store,
-        stripeRows:true,
-        viewConfig: { forceFit: true },
-        selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-        columns: [
-            { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },
-            { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
-            { header: _('Mailbox'), width: 200, dataIndex: 'mailbox', sortable: true, renderer: Baseliner.escape_lt_gt  },
-            { header: _('Options'), width: 200, dataIndex: 'role', sortable: true, renderer: renderOptions },
-        ],
+        stripeRows: true,
+        viewConfig: {
+            forceFit: true
+        },
+        selModel: new Ext.grid.RowSelectionModel({
+            singleSelect: true
+        }),
+        columns: [{
+            header: _('Role'),
+            width: 200,
+            dataIndex: 'role',
+            sortable: true,
+            renderer: function(v) {
+                return '<b>' + v + '</b>'
+            }
+        }, {
+            header: _('Description'),
+            width: 200,
+            dataIndex: 'description',
+            sortable: true
+        }, {
+            header: _('Mailbox'),
+            width: 200,
+            dataIndex: 'mailbox',
+            sortable: true,
+            renderer: Baseliner.escape_lt_gt
+        }, {
+            header: _('Options'),
+            width: 200,
+            dataIndex: 'role',
+            sortable: true,
+            renderer: renderOptions
+        }, ],
         autoSizeColumns: true,
-        deferredRender:true,
+        deferredRender: true,
         bbar: ptool,
-        tbar: [ _('Search') + ': ', ' ',
-            searchField,' ',' ',
+        tbar: [_('Search') + ': ', ' ',
+            searchField, ' ', ' ',
             new Ext.Toolbar.Button({
                 text: _('Add'),
-                icon:'/static/images/icons/add.svg',
+                icon: '/static/images/icons/add.svg',
                 cls: 'x-btn-text-icon ui-comp-role-create',
                 handler: function() {
                     openRoleDetail();
@@ -79,7 +109,7 @@
             }),
             new Ext.Toolbar.Button({
                 text: _('Edit'),
-                icon:'/static/images/icons/edit.svg',
+                icon: '/static/images/icons/edit.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -104,36 +134,39 @@
 
                     if (sel === undefined) {
                         Ext.Msg.alert('Status', _('Please, select the role to delete'));
+
                         return;
                     }
 
-                    var consult_role_user = new Ext.data.Connection();
-                    consult_role_user.request({
+                    var consultRoleUser = new Ext.data.Connection();
+                    consultRoleUser.request({
                         url: '/role/delete',
                         params: {
                             id_role: sel.data.id
                         },
-                        success: function(resp, opt) {
+                        success: function(resp) {
                             var info = Ext.util.JSON.decode(resp.responseText);
 
-                            var message = undefined;
+                            var message;
 
-                            var role_name = sel.json.role.bold();
-                            var role_users = info.users;
-                            var user_list = role_users.slice(0, 10).join('<br>');
+                            var roleName = sel.json.role.bold();
+                            var roleUsers = info.users;
+                            var userList = roleUsers.slice(0, 10).join('<br>');
 
-                            if (role_users.length == 0) {
-                                message = _('The role %1 does not have users assigned, delete this role?', role_name);
+                            if (roleUsers.length == 0) {
+                                message = _('The role %1 does not have users assigned, \
+                                    delete this role?', roleName);
                             } else {
-                                message = _('The role %1 has %2 user(s) assigned, delete this role?', role_name, role_users.length) + '<br><br>' + user_list;
+                                message = _('The role %1 has %2 user(s) assigned, \
+                                    delete this role?', roleName, roleUsers.length) + '\
+                                <br><br>' + userList;
 
-                                if (role_users.length > 10) {
+                                if (roleUsers.length > 10) {
                                     message += '<br>[...]';
                                 }
 
                                 message += '<br>';
                             }
-
                             Ext.Msg.confirm(_('Confirmation'), message,
                                 function(btn) {
                                     if (btn == 'yes') {
@@ -144,27 +177,27 @@
                                                 id_role: sel.data.id,
                                                 delete_confirm: '1'
                                             },
-                                            success: function(resp, opt) {
+                                            success: function() {
                                                 grid.getStore().remove(sel);
                                                 store.reload();
                                             },
-                                            failure: function(resp, opt) {
+                                            failure: function() {
                                                 Ext.Msg.alert(_('Error'), _('Could not delete the role'));
                                             }
                                         });
                                     }
                                 });
                         },
-                        failure: function(resp, opt) {
+                        failure: function() {
                             Ext.Msg.alert(_('Error'), _('The role does not exist'));
                         }
                     });
                 }
             }),
 
-             new Ext.Toolbar.Button({
+            new Ext.Toolbar.Button({
                 text: _('Duplicate'),
-                icon:'/static/images/icons/copy.svg',
+                icon: '/static/images/icons/copy.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -173,9 +206,15 @@
                         var conn = new Ext.data.Connection();
                         conn.request({
                             url: '/role/duplicate',
-                            params: { id_role: sel.data.id },
-                            success: function(resp,opt) { grid.getStore().load(); },
-                            failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not duplicate the role')); }
+                            params: {
+                                id_role: sel.data.id
+                            },
+                            success: function(resp, opt) {
+                                grid.getStore().load();
+                            },
+                            failure: function(resp, opt) {
+                                Ext.Msg.alert(_('Error'), _('Could not duplicate the role'));
+                            }
                         });
                     } else {
                         Ext.Msg.alert('Error', _('Select at least one row'));
@@ -183,12 +222,12 @@
                 }
             }),
             '->'
-            ]
+        ]
     });
     grid.on("activate", function() {
-        if( first_load ) {
+        if( fistLoad ) {
             Baseliner.showLoadingMask( grid.getEl());
-            first_load = false;
+            fistLoad = false;
         }
     });
     store.load({
@@ -248,8 +287,8 @@
                     Baseliner.ajax_json('/role/cleanup', {
                         id: row.data.id,
                         actions: actions
-                    }, function(res_delete) {
-                        Baseliner.message(_('Delete'), res_delete.msg);
+                    }, function(resDelete) {
+                        Baseliner.message(_('Delete'), resDelete.msg);
                         grid.store.reload();
                         if (sel) {
                             agrid.store.remove(sel);
@@ -265,7 +304,7 @@
                 width: 800,
                 layout: 'fit',
                 items: [agrid],
-                tbar: [btn_cleanup]
+                tbar: [cleanUpButton]
             });
             win.show();
         });

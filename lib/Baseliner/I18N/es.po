@@ -15583,6 +15583,7 @@ msgstr "destino"
 
 #~ msgid "Created file %1 to topic [%2] %3"
 #~ msgstr "Creadp el fichero %1 a tópico [%2] %3"
+
 #~ msgid "The role %1 does not have users assigned, delete this role?"
 #~ msgstr "El rol %1 no tiene usuarios asignados, ¿desea borrar el rol?"
 
