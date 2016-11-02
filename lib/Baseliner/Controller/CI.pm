@@ -852,7 +852,7 @@ sub store : Local : Does('Ajax') {
     if ( $p->{with_vars} ) {    # $p->{no_vars} ) {  # show variables always, with_vars deprecated
         my %vp = (
               $p->{role} ? ( role => $p->{role} )
-            : ( $p->{classname} || $p->{class} || $p->{isa} ) ? ( classname => $p->{class} || $p->{classname} )
+            : ( $p->{classname} || $p->{class} || $p->{isa} || $class ) ? ( classname => $p->{class} || $p->{classname} || $class)
             :                                                   ()
         );
 
