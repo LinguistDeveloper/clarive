@@ -4,7 +4,7 @@ use strict;
 use Try::Tiny;
 use Scalar::Util qw(blessed);
 use Moose::Util::TypeConstraints;
-use Baseliner::Utils qw(_throw _loc);
+use Baseliner::Utils qw(_throw _loc _array);
 use Baseliner::Types;
 use Baseliner::Role::CI;
 use BaselinerX::CI::Empty;
