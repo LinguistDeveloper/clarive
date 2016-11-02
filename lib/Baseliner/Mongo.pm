@@ -56,7 +56,7 @@ sub oid {
 }
 
 sub mongo_version {
-    state $mdbv = mdb->db->run_command({ serverStatus=> 1 })->{version};
+    state $mdbv = mdb->db->run_command({ buildInfo=> 1 })->{version};
     return $mdbv;
 }
 
@@ -748,7 +748,7 @@ sub txn {
 }
 
 our $AUTOLOAD;
-our $TRACE_DB = $ENV{CLARIVR_TRACE} && $ENV{CLARIVE_TRACE} =~ /db/;
+our $TRACE_DB = $ENV{CLARIVE_TRACE} && $ENV{CLARIVE_TRACE} =~ /db/;
 
 sub AUTOLOAD {
     my $self = shift;
