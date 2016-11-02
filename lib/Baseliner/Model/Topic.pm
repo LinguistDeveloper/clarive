@@ -3823,7 +3823,9 @@ sub upload {
         my $asset = ci->asset->find_one( { mid => $file_mid } );
         $asset->{md5} = mdb->grid->files->find_one(
             { _id => mdb->oid( $asset->{id_data} ) } )->{md5};
-        if ( $asset->{fullpath} eq $fullpath ) {
+
+        my $asset_fullpath = $asset->{fullpath} ? $asset->{fullpath} : '/'. $params{filename};
+        if ( $asset_fullpath eq $fullpath ) {
 
             # asset is already up
             $highest_version = $asset

@@ -1773,70 +1773,85 @@ sub file_tree : Local {
     my %id_path_node;
 
     my @asset_mid;
-    if ($topic_mid) {
-        @asset_mid = mdb->master_rel->find_values(
-            to_mid => {
-                from_mid  => "$topic_mid",
-                rel_field => "$rel_field",
-                rel_type  => 'topic_asset'
-            }
-        );
-    }else{
-        @asset_mid = _array( $p->{files_mid} );
-    }
 
-    my @asset = ci->asset->search_cis( mid => mdb->in( @asset_mid ));
-
-    foreach my $asset ( @asset ){
-        my ( $size, $unit ) = Util->_size_unit( $asset->filesize );
-        $size = "$size $unit";
-
-        my $file = _file($asset->{fullpath});
-        my $path = $file->dir->stringify;
-        my @directories = _array $file->dir->{dirs};
-        unshift @directories, '';
-        while ( my $relative_path = join( '/', @directories ) ) {
-            my $dir_name = pop @directories;
-            if ( !$id_path_node{$relative_path} ) {
-                $id_path_node{$relative_path} = $relative_path . '_' . _nowstamp;
-                push @directory_nodes,
-                    {
-                    filename  => $dir_name,
-                    versionid => undef,
-                    mid       => undef,
-                    _id       => $id_path_node{$relative_path},
-                    _parent   => undef,
-                    _is_leaf  => \0,
-                    size      => undef,
-                    path      => join( '/', @directories )
-                    };
-            }
+    try {
+        if ($topic_mid) {
+            _fail _loc('filter param is required') if !$rel_field;
+            @asset_mid = mdb->master_rel->find_values(
+                to_mid => {
+                    from_mid  => "$topic_mid",
+                    rel_field => "$rel_field",
+                    rel_type  => 'topic_asset'
+                }
+            );
+        }else{
+            @asset_mid = _array( $p->{files_mid} );
         }
-        push @files,
-            {
-            filename  => $asset->filename,
-            versionid => $asset->versionid,
-            mid       => $asset->mid,
-            _id       => $asset->mid,
-            _parent   => undef,
-            _is_leaf  => \1,
-            size      => $size,
-            path      => $path
+
+        my @asset = ci->asset->search_cis( mid => mdb->in( @asset_mid ));
+
+        foreach my $asset ( @asset ){
+            my ( $size, $unit ) = Util->_size_unit( $asset->filesize );
+            $size = "$size $unit";
+
+            my $path;
+            if ($asset->{fullpath}){
+                my $file = _file($asset->{fullpath});
+                $path = $file->dir->stringify;
+                my @directories = _array $file->dir->{dirs};
+                unshift @directories, '';
+                while ( my $relative_path = join( '/', @directories ) ) {
+                    my $dir_name = pop @directories;
+                    if ( !$id_path_node{$relative_path} ) {
+                        $id_path_node{$relative_path} = $relative_path . '_' . _nowstamp;
+                        push @directory_nodes,
+                            {
+                            filename  => $dir_name,
+                            versionid => undef,
+                            mid       => undef,
+                            _id       => $id_path_node{$relative_path},
+                            _parent   => undef,
+                            _is_leaf  => \0,
+                            size      => undef,
+                            path      => join( '/', @directories )
+                            };
+                    }
+                }
             }
-    }
 
-    my @nodes;
-    foreach my $file (@files){
-        $file->{_parent} = $id_path_node{ $file->{path} } if ( $id_path_node{$file->{path}} );
-        push @nodes, $file;
-    }
+            push @files,
+                {
+                filename  => $asset->filename,
+                versionid => $asset->versionid,
+                mid       => $asset->mid,
+                _id       => $asset->mid,
+                _parent   => undef,
+                _is_leaf  => \1,
+                size      => $size,
+                path      => $path || '/'
+                }
+        }
 
-    foreach my $directory (@directory_nodes){
-        $directory->{_parent} = $id_path_node{ $directory->{path} } if ( $id_path_node{$directory->{path}} );
-        push @nodes, $directory;
-    }
+        my @nodes;
+        foreach my $file (@files){
+            $file->{_parent} = $id_path_node{ $file->{path} } if ( $id_path_node{$file->{path}} );
+            push @nodes, $file;
+        }
 
-    $c->stash->{json} = { total => scalar(@files), success => \1, data => \@nodes };
+        foreach my $directory (@directory_nodes){
+            $directory->{_parent} = $id_path_node{ $directory->{path} } if ( $id_path_node{$directory->{path}} );
+            push @nodes, $directory;
+        }
+
+        $c->stash->{json} = { total => scalar(@files), success => \1, data => \@nodes };
+    }
+    catch {
+        my $err = shift;
+        _error $err;
+        chomp($err);
+
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
     $c->forward('View::JSON');
 }
 
