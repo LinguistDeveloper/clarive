@@ -26,20 +26,26 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
         var self = this;
         self.loading_field = false;
         self.addEvents(['aftereditor']);
+        self.path = '/static/cleditor/images/';
 
         this.on('afterrender', function(){
             $.cleditor.buttons.fullscreen = {
                 name: 'fullscreen',
-                image: '../../images/icons/fullscreen_24.svg',
+                image: '../../images/icons/fullscreen.svg',
                 tooltip: _('full screen'),
                 title: _("Full Screen"),
                 command: "fullscreen",
                 popupName: "fullscreen",
                 getEnabled: function(){ return true },
                 buttonClick: function(){
+                    var title = _("Full Screen"),
+                        objImg = $('[title="' + title + '"]'),
+                        imageUrl;
                     if( self.fullscreen ) {
                         // minimize
                         // TODO in Chrome, after minimize, can't paste images
+                        imageUrl = self.path + '../../images/icons/fullscreen.svg';
+                        objImg.css('background-image', 'url("' + imageUrl + '")');
                         var main = self.editor_dom();
                         $(main).css({ position:'', top:'', left:'', bottom:'', right:'' });
                         if( self.iframe_last_height ) self.cleditor.$frame.css({ height: self.iframe_last_height });
@@ -49,6 +55,9 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                         self.fullscreen = false;
                     } else {
                         // max
+                        imageUrl = self.path + '../../images/icons/fullscreen-exit.svg';
+                        objImg.css('background-image', 'url("' + imageUrl + '")');
+
                         var main = self.editor_dom();
                         $(main).css({ position:'absolute', top:0, left:0, bottom:0, right:0, 'z-index':9999 });
                         main.style.height = null;
