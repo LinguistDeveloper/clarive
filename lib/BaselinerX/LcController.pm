@@ -1600,6 +1600,24 @@ sub menu_related {
     return @menu;
 }
 
+sub repository_details : Local {
+    my ( $self, $c ) = @_;
+
+    my $p   = $c->req->params;
+    my $mid = $p->{mid};
+    my $ci  = ci->new($mid);
+
+    $c->stash->{json} = {
+        success       => \1,
+        name          => $ci->name,
+        mid           => $ci->mid,
+        repo_dir      => $ci->repo_dir,
+        description   => $ci->description,
+        collection    => $ci->collection,
+    };
+    $c->forward('View::JSON');
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

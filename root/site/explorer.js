@@ -233,6 +233,47 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             }
         };
     },
+    menuRepoInfo: function() {
+        var self = this;
+        return {
+            text: _('Repo Details'),
+            icon: '/static/images/icons/detail.svg',
+            handler: function(n) {
+                var sm = self.getSelectionModel();
+                var node = sm.getSelectedNode();
+                if (node != undefined) {
+                    var repoId = node.attributes.data.id_repo;
+                    Baseliner.ajaxEval('/lifecycle/repository_details', {
+                            mid: repoId
+                        },
+                        function(res) {
+                            if (res.success) {
+                                var html = '';
+                                html += '<b>' + _("Name") + ':</b> ' + res.name;
+                                html += '<br><br><b>' + _("Path") + ':</b> ' + res.repo_dir;
+                                if (res.collection != null) {
+                                    html += '<br><br><b>' + _("Type") + ':</b> ' + res.collection + '<br>';
+                                };
+                                if (res.description != null && res.description.length) {
+                                    html += '<br><b>' + _("Description") + ':</b> ' + res.description + '<br>';
+                                };
+                                Ext.Msg.show({
+                                    title: _('Repo Details'),
+                                    msg: html,
+                                    minWidth: 350,
+                                    cls:'repo-info',
+                                    buttons: Ext.Msg.OK,
+                                    icon: 'ext-mb-info'
+                                });
+                            } else {
+                                Baseliner.message('ERROR', _('Unknown error'));
+                            }
+                        }
+                    );
+                }
+            }
+        };
+    },
     menu_click : function(node,event){
         var self = this;
         node.select();
@@ -389,6 +430,9 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 de.on('destroy', function(){ dump_win.close() });
                 //node.attributes.loader = loader;
             }});
+        }
+        if (node.attributes != undefined && node.attributes.type == 'changeset'){
+            tree_menu.add( this.menuRepoInfo() );
         }
         tree_menu.add({
             xtype: 'menuitem',
