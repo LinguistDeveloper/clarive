@@ -7,7 +7,7 @@ use experimental 'smartmatch';
 
 register 'config.lc' => {
     metadata => [
-        { id=>'show_changes_in_tree', label=>'Show provider tags in the Lifecycle tree', default=>'0' },
+        { id=>'show_changes_in_tree', label=>_locl('Show provider tags in the Lifecycle tree'), default=>'0' },
     ]
 };
 

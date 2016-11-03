@@ -8,12 +8,12 @@ use experimental 'autoderef', 'smartmatch';
 
 register 'config.reports.listado_jobs' => {
     metadata=> [
-        { id=>'user_list', label => 'Usuarios que ven el informe (lista separada por comas)', default => 'root', type=>'text', width=>200 },
+        { id=>'user_list', label => _locl('Users who see the report (list separated by commas)'), default => 'root', type=>'text', width=>200 },
     ],
 };
 
 register 'report.clarive.jobs' => {
-    name => 'Job List',
+    name => _locl('Job List'),
     data => { },
     form => '/reports/listado_jobs.js',
     security_handler => sub{

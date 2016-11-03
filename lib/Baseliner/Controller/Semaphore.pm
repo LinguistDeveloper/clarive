@@ -19,9 +19,9 @@ Main Sempahore controller for the admin user interface.
 
 BEGIN { extends 'Catalyst::Controller' }
 
-register 'action.admin.semaphore' => { name => 'Semaphore Administration' };
+register 'action.admin.semaphore' => { name => _locl('Semaphore Administration') };
 register 'menu.admin.semaphore' => {
-    label => 'Semaphores', url_comp=>'/semaphore/grid', title=>'Semaphores', icon=>'/static/images/icons/semaphore.svg',
+    label => _locl('Semaphores'), url_comp=>'/semaphore/grid', title=>_locl('Semaphores'), icon=>'/static/images/icons/semaphore.svg',
     action=>'action.admin.semaphore'
 };
 

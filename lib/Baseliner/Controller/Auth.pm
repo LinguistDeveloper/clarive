@@ -9,25 +9,25 @@ use Try::Tiny;
 use MIME::Base64;
 
 register 'action.surrogate' => {
-    name => 'Become a different user',
+    name => _locl('Become a different user'),
 };
 
 register 'action.change_password' => {
-    name => 'User can change his password',
+    name => _locl('User can change his password'),
 };
 
 register 'config.login' => {
     metadata => [
-        { id => 'delay_attempts', default => 5, name=> 'Number of attempts the user ' },
-        { id => 'delay_duration', default => 5, name=> 'Number of seconds the sleep loggin user' },
+        { id => 'delay_attempts', default => 5, name=> _locl('Number of user attempts') },
+        { id => 'delay_duration', default => 5, name=> _locl('Seconds delay between retries') },
         ]
     };
 
 register 'config.maintenance' => {
-    name => 'Maintenance mode',
+    name => _locl('Maintenance mode'),
     metadata => [
-        { id => 'enabled', name => 'Enabled', default => 0 },
-        { id => 'message', name => 'Message', default => 'Maintenance mode. Please try again later' },
+        { id => 'enabled', name => _locl('Enabled'), default => 0 },
+        { id => 'message', name => _locl('Message'), default => 'Maintenance mode. Please try again later' },
     ]
 };
 

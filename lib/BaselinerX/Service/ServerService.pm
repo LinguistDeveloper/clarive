@@ -10,7 +10,7 @@ use Try::Tiny;
 with 'Baseliner::Role::Service';
 # guardamos aqui el config que recibimos en el run
 register 'service.restart_server' => {
-    name => 'Restarts Clarive server',
+    name => _locl('Restart'),
     icon => '/static/images/icons/daemon.svg',
     handler => \&run, };
 

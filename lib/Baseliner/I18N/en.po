@@ -127,6 +127,38 @@ msgid "Active nodes count"
 msgstr ""
 
 #: lib/Baseliner/Controller/Auth.pm
+msgid "Become a different user"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm
+msgid "User can change his password"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm
+msgid "Number of user attempts"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm
+msgid "Seconds delay between retries"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm
+msgid "Maintenance mode"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm root/ci/clax_agent.js root/comp/rules.js
+msgid "Enabled"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm lib/BaselinerX/Job.pm
+#: root/comp/lifecycle/run/message.mas root/comp/log.html
+#: root/comp/log_grid.js root/comp/message_grid.js
+#: root/comp/revision/grid_live.mas root/comp/run/message.mas root/comp/sms.js
+#: root/forms/store_file.js root/site/runner.js
+msgid "Message"
+msgstr ""
+
+#: lib/Baseliner/Controller/Auth.pm
 msgid "Authentication required"
 msgstr ""
 
@@ -240,12 +272,12 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Baseline.pm
 msgid "List all Baselines"
-msgstr "List all Environments"
+msgstr ""
 
 #: lib/Baseliner/Controller/Baseline.pm root/dashlets/baselines.html
 #: root/site/common.js
 msgid "Baselines"
-msgstr "Environments"
+msgstr ""
 
 #: lib/Baseliner/Controller/Baseline.pm root/site/common.js root/site/model.js
 msgid "Common"
@@ -255,8 +287,25 @@ msgstr ""
 msgid "View CIs"
 msgstr ""
 
+#: lib/Baseliner/Controller/CI.pm root/comp/catalog/manual_deploy.js
+#: root/comp/role_grid.js root/comp/topic/topic_admin.js
+#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
+#: root/site/lifecycle-graph.js
+msgid "Role"
+msgstr ""
+
+#: lib/Baseliner/Controller/CI.pm root/comp/ci-grid.js
+#: root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
+#: root/comp/job_new.js root/site/common.js
+msgid "Collection"
+msgstr ""
+
 #: lib/Baseliner/Controller/CI.pm
 msgid "Admin CIs"
+msgstr ""
+
+#: lib/Baseliner/Controller/CI.pm
+msgid "Search CIs"
 msgstr ""
 
 #: lib/Baseliner/Controller/CI.pm
@@ -473,6 +522,10 @@ msgstr ""
 msgid "Administer daemons"
 msgstr ""
 
+#: lib/Baseliner/Controller/Daemon.pm root/comp/daemon_grid.js
+msgid "Daemons"
+msgstr ""
+
 #: lib/Baseliner/Controller/Daemon.pm
 msgid "Daemon started"
 msgstr ""
@@ -503,6 +556,10 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Daemon.pm
 msgid "Error deleting Daemon"
+msgstr ""
+
+#: lib/Baseliner/Controller/Dashboard.pm
+msgid "Change dashboards in explorer"
 msgstr ""
 
 #: lib/Baseliner/Controller/Dashboard.pm
@@ -593,6 +650,10 @@ msgid "Topic mid not found: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Event.pm
+msgid "Admin Events"
+msgstr ""
+
+#: lib/Baseliner/Controller/Event.pm
 msgid "Events"
 msgstr ""
 
@@ -619,6 +680,14 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Event.pm
 msgid "Event status changed to: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Feature.pm
+msgid "Upgrade features, plugins and modules"
+msgstr ""
+
+#: lib/Baseliner/Controller/Feature.pm root/comp/feature.js
+msgid "Upgrades"
 msgstr ""
 
 #: lib/Baseliner/Controller/Feature.pm
@@ -745,7 +814,7 @@ msgstr ""
 #: root/fields/templates/config/listbox.js root/forms/topic_status.js
 #: root/forms/topic_status_deprecated.js root/site/common.js
 msgid "Topics"
-msgstr "Topics"
+msgstr ""
 
 #: lib/Baseliner/Controller/FileVersion.pm
 msgid "Doc"
@@ -922,6 +991,14 @@ msgstr ""
 msgid "View All Jobs"
 msgstr ""
 
+#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Fieldlets.pm
+#: lib/BaselinerX/Job.pm lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
+#: root/comp/catalog_grid.js root/comp/dashboard_job.html
+#: root/dashlets/job_stats_by_env.html root/forms/script_local.js
+#: root/forms/script_remote.js root/site/about.html
+msgid "Environment"
+msgstr ""
+
 #: lib/Baseliner/Controller/Job.pm
 msgid "Restart Jobs"
 msgstr ""
@@ -931,7 +1008,7 @@ msgid "Force Rollback"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
-msgid "Change default pipeline in job_new window"
+msgid "Change default pipeline in job new window"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
@@ -1158,7 +1235,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Notification.pm
 msgid "Se ha producido un error"
-msgstr "There was an error"
+msgstr ""
 
 #: lib/Baseliner/Controller/Notification.pm lib/Baseliner/Controller/Topic.pm
 #: lib/BaselinerX/CI/report.pm root/comp/configlist/grid.mas
@@ -1247,7 +1324,7 @@ msgstr ""
 msgid "JS Reload"
 msgstr ""
 
-#: lib/Baseliner/Controller/REPL.pm
+#: lib/Baseliner/Controller/REPL.pm lib/Baseliner/Controller/Root.pm
 msgid "Wipe Cache"
 msgstr ""
 
@@ -1320,6 +1397,14 @@ msgid "Cannot save: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Review.pm
+msgid "%1 posted a review: %3"
+msgstr ""
+
+#: lib/Baseliner/Controller/Review.pm
+msgid "User posted a review"
+msgstr ""
+
+#: lib/Baseliner/Controller/Review.pm
 msgid "@%1 created a review for %2"
 msgstr ""
 
@@ -1358,6 +1443,30 @@ msgid "Role '%1' modified"
 msgstr ""
 
 #: lib/Baseliner/Controller/Root.pm
+msgid "User can access the lifecycle panel"
+msgstr ""
+
+#: lib/Baseliner/Controller/Root.pm
+msgid "User can access the menu"
+msgstr ""
+
+#: lib/Baseliner/Controller/Root.pm
+msgid "User can access the workspace view"
+msgstr ""
+
+#: lib/Baseliner/Controller/Root.pm
+msgid "User can access the releases view"
+msgstr ""
+
+#: lib/Baseliner/Controller/Root.pm
+msgid "User can access the repositories in a project"
+msgstr ""
+
+#: lib/Baseliner/Controller/Root.pm
+msgid "User can generate docs from topics and views"
+msgstr ""
+
+#: lib/Baseliner/Controller/Root.pm
 msgid "Not Logged on"
 msgstr ""
 
@@ -1393,9 +1502,29 @@ msgstr ""
 msgid "Admin Rules"
 msgstr ""
 
+#: lib/Baseliner/Controller/Rule.pm root/comp/monitor_grid.js
+#: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
+#: root/email/generic_rule.html
+msgid "Rule"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Auto rename variables in rules"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid ""
+"CAUTION: If activated, variable names will be changed in rules when renamed "
+"in CIs. USE AT YOUR OWN RISK"
+msgstr ""
+
 #: lib/Baseliner/Controller/Rule.pm root/ci/nature.js root/comp/rules.js
 #: root/site/tabfu.js
 msgid "Rules"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "SOAP WS ready to return"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
@@ -1615,6 +1744,15 @@ msgid "Error deleting rule from folder: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Scheduler.pm
+msgid "Admin Scheduler"
+msgstr ""
+
+#: lib/Baseliner/Controller/Scheduler.pm lib/BaselinerX/Fieldlets.pm
+#: root/comp/scheduler_grid.js root/fields/templates/config/scheduler.js
+msgid "Scheduler"
+msgstr ""
+
+#: lib/Baseliner/Controller/Scheduler.pm
 msgid "No log"
 msgstr ""
 
@@ -1643,11 +1781,47 @@ msgid "Error killing task: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Search.pm
+msgid "Block the use of Lucy in searches"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
+msgid "Regex to filter provider packages"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
+msgid "AND or OR default"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
+msgid "Number of results to return to user"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
+msgid "Limit sent to provider"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
+msgid "Max length of excerpt string"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
+msgid "Max number of highlighted tokens excerpts"
+msgstr ""
+
+#: lib/Baseliner/Controller/Search.pm
 msgid "Missing provider"
 msgstr ""
 
 #: lib/Baseliner/Controller/Search.pm
 msgid "Missing query"
+msgstr ""
+
+#: lib/Baseliner/Controller/Semaphore.pm
+msgid "Semaphore Administration"
+msgstr ""
+
+#: lib/Baseliner/Controller/Semaphore.pm root/comp/sem.js
+msgid "Semaphores"
 msgstr ""
 
 #: lib/Baseliner/Controller/Semaphore.pm
@@ -1722,10 +1896,10 @@ msgstr ""
 msgid "Admin Job Calendar"
 msgstr ""
 
-#: lib/Baseliner/Controller/Slot.pm root/comp/ci-editor.js
-#: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
-#: root/comp/job_new.js root/comp/lifecycle/report_edit.js
-#: root/site/calendar.js root/site/main.js
+#: lib/Baseliner/Controller/Slot.pm lib/BaselinerX/Dashlets.pm
+#: root/comp/ci-editor.js root/comp/job_calendar_editor.js
+#: root/comp/job_calendar_grid.js root/comp/job_new.js
+#: root/comp/lifecycle/report_edit.js root/site/calendar.js root/site/main.js
 msgid "Calendar"
 msgstr ""
 
@@ -1739,7 +1913,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
 msgid "A calendar (%1) already exists for namespace %2 and baseline %3"
-msgstr "A calendar (%1) already exists for namespace %2 and environment %3"
+msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
 msgid "Calendar with id '%1' $msgs[0]"
@@ -1769,6 +1943,10 @@ msgstr ""
 msgid "You do not have permissions to open this calendar"
 msgstr ""
 
+#: lib/Baseliner/Controller/Swarm.pm
+msgid "Swarm"
+msgstr ""
+
 #: lib/Baseliner/Controller/Swarm.pm root/site/tabfu.js
 msgid "Unknown"
 msgstr ""
@@ -1782,6 +1960,11 @@ msgid "New"
 msgstr ""
 
 #: lib/Baseliner/Controller/SystemMessages.pm
+#: lib/BaselinerX/Service/SystemMessages.pm root/comp/sms.js
+msgid "System Messages"
+msgstr ""
+
+#: lib/Baseliner/Controller/SystemMessages.pm
 #: lib/Baseliner/Model/SystemMessages.pm
 msgid "Missing message id"
 msgstr ""
@@ -1790,16 +1973,25 @@ msgstr ""
 msgid "Missing action"
 msgstr ""
 
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Controller/TopicAdmin.pm
+msgid "Admin topics"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "View related graph in topics"
+msgstr ""
+
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Helper/Topic.pm
-#: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
-#: lib/BaselinerX/Job.pm lib/BaselinerX/Reports/listado_jobs.pm
-#: root/comp/dashboard_job.html root/comp/events.js
-#: root/comp/lifecycle/report_edit.js root/comp/monitor_grid.js
-#: root/comp/notifications.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/dashlets/filtered_topics.html
-#: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
-#: root/dashlets/my_topics.html root/dashlets/number_of_topics_chart_config.js
+#: lib/Baseliner/Helper/Topics.pm lib/Baseliner/Model/Topic.pm
+#: lib/BaselinerX/Fieldlets.pm lib/BaselinerX/Job.pm
+#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/dashboard_job.html
+#: root/comp/events.js root/comp/lifecycle/report_edit.js
+#: root/comp/monitor_grid.js root/comp/notifications.js
+#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
+#: root/dashlets/filtered_topics.html root/dashlets/lastjobs.html
+#: root/dashlets/list_jobs.js root/dashlets/my_topics.html
+#: root/dashlets/number_of_topics_chart_config.js
 #: root/dashlets/pending_jobs.html root/dashlets/swarm_config.js
 #: root/fields/system/js/field_status.js root/forms/topic_create.js
 #: root/reports/listado_jobs.js root/site/common.js root/site/model.js
@@ -2113,10 +2305,6 @@ msgid "Error adding topic #%1 to #%2: %3"
 msgstr ""
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
-msgid "Admin topics"
-msgstr ""
-
-#: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "Category added"
 msgstr ""
 
@@ -2407,11 +2595,11 @@ msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
 msgid "Baseline Identifier"
-msgstr "Environment Identifier"
+msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
 msgid "Baseline Name"
-msgstr "Environment Name"
+msgstr ""
 
 #: lib/Baseliner/Core/Registry.pm
 msgid "Could not find registry class '%1' for key '%2'"
@@ -2440,11 +2628,39 @@ msgid "Missing parameter: collection"
 msgstr ""
 
 #: lib/Baseliner/Model/CI.pm
+msgid "Missing parameter: query"
+msgstr ""
+
+#: lib/Baseliner/Model/CI.pm
 msgid "User not found for query %1"
 msgstr ""
 
 #: lib/Baseliner/Model/CI.pm
+msgid "Missing parameter: update"
+msgstr ""
+
+#: lib/Baseliner/Model/CI.pm
 msgid "Update user ok"
+msgstr ""
+
+#: lib/Baseliner/Model/Catalog.pm
+msgid "View catalog"
+msgstr ""
+
+#: lib/Baseliner/Model/Catalog.pm
+msgid "Request catalog"
+msgstr ""
+
+#: lib/Baseliner/Model/Events.pm lib/BaselinerX/Service/Purge.pm
+msgid "Event daemon configuration"
+msgstr ""
+
+#: lib/Baseliner/Model/Events.pm
+msgid "event daemon frequency (secs)"
+msgstr ""
+
+#: lib/Baseliner/Model/Events.pm
+msgid "event daemon event rule runner timeout (secs)"
 msgstr ""
 
 #: lib/Baseliner/Model/Events.pm
@@ -2545,7 +2761,19 @@ msgid "Remove labels from a topic"
 msgstr ""
 
 #: lib/Baseliner/Model/Messaging.pm
+msgid "Receive General Admin Messages"
+msgstr ""
+
+#: lib/Baseliner/Model/Messaging.pm
+msgid "Receive Error Notifications"
+msgstr ""
+
+#: lib/Baseliner/Model/Messaging.pm
 msgid "SQA Package analysis finished"
+msgstr ""
+
+#: lib/Baseliner/Model/Messaging.pm
+msgid "Send a Notification"
 msgstr ""
 
 #: lib/Baseliner/Model/Messaging.pm
@@ -2560,8 +2788,80 @@ msgstr ""
 msgid "internal"
 msgstr ""
 
-#: lib/Baseliner/Model/Notification.pm
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
 msgid "Admin Notifications"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Template by default"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Exclude all default notifications"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Email daemon frequency"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Email daemon process queue timeout"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Max message size in bytes"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Max attach size in bytes"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Email server"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Email default sender"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Email domain"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Auto generate emails for users with empty email field"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Max attempts"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Base URL to access baseliner"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Default template for emails"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "SMTP needs authentication"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "SMTP server user"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "SMTP server password"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm lib/BaselinerX/Notificacion.pm
+msgid "Email Daemon"
+msgstr ""
+
+#: lib/Baseliner/Model/Notification.pm
+msgid "Flush Email Queue Once"
 msgstr ""
 
 #: lib/Baseliner/Model/Notification.pm
@@ -2648,11 +2948,95 @@ msgid "Error during rule precompilation: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "IF var THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "IF var ne value THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "IF condition THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "ELSE"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "ELSIF condition THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "IF var in LIST THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "TRY statement (without catch)"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "TRY statement (needs a catch)"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "CATCH statement (needs a try_with_catch)"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "RETRY statement"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "MERGE value INTO stash"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "DELETE hashkey"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "DELETE last trap action"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "WAIT for children"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "FOREACH stash[ variable ]"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "FOREACH CI"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "FOREACH SPLIT /re/"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "JOB STEP"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "a job step section: PRE,RUN,POST..."
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "SUB"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Just group tasks under this but do not run it"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm root/comp/monitor_grid.js
+msgid "FAIL"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Task Shortcut"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -2663,8 +3047,16 @@ msgstr ""
 msgid "Missing shortcut `%%1`"
 msgstr ""
 
+#: lib/Baseliner/Model/Rules.pm
+msgid "LOG message"
+msgstr ""
+
 #: lib/Baseliner/Model/Rules.pm root/comp/lifecycle/repo.js root/comp/repl.js
 msgid "%1"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Get date"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -2672,7 +3064,35 @@ msgid "Date %1 is not a valid date: %2"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "%1 posted a comment on %2: %3"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Dummy Event to Test a Rule"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "SET VAR"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "SET EXPR"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "SET VAR to CI"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "APPLY NATURE"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "STASH LOCAL"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "APPLY PROJECT"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -2680,11 +3100,63 @@ msgid "Current project *%%1* (%%2)"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "EVAL"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "DO"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "GROUP"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "FOR eval"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "Server CODE"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "CODE (Perl)"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "FOR projects with changes DO"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Project *%%1* skipped for bl %%2"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "IF EXISTS nature THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Nature Detected *%%1*"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "IF ANY nature THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "IF last trap status THEN"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "IF ROLLBACK"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "INCLUDE rule"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "CALL rule"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -2920,6 +3392,18 @@ msgstr ""
 msgid "Change topic status logically (no deployment)"
 msgstr ""
 
+#: lib/Baseliner/Model/Topic.pm lib/BaselinerX/Fieldlets.pm
+#: root/comp/lifecycle/tasks.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_lib_grid.js
+#: root/dashlets/number_of_topics_chart_config.js
+#: root/dashlets/swarm_config.js root/email/generic_post.html
+#: root/email/generic_topic.html root/fields/system/js/field_category.js
+#: root/fields/templates/config/origin_issue_chart_pie.js
+#: root/fields/templates/config/status_chart_pie.js root/forms/catalog_task.js
+#: root/forms/topic_create.js
+msgid "Category"
+msgstr ""
+
 #: lib/Baseliner/Model/Topic.pm
 msgid "Create Topic"
 msgstr ""
@@ -2950,6 +3434,11 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "View Topic Field"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm root/comp/topic/form_editor.js
+#: root/forms/link_revision.js
+msgid "Field"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -3160,7 +3649,7 @@ msgstr ""
 #: root/comp/revision/grid.mas root/comp/topic/topic_admin.js
 #: root/fields/templates/config/listbox.js root/site/common.js
 msgid "Release"
-msgstr "Release"
+msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm root/comp/topic/topic_admin.js
 msgid "Changeset"
@@ -3734,6 +4223,18 @@ msgstr ""
 msgid "User Login Attempt"
 msgstr ""
 
+#: lib/BaselinerX/Auth.pm
+msgid "Authorize User Login"
+msgstr ""
+
+#: lib/BaselinerX/Auth.pm
+msgid "Deny User Login"
+msgstr ""
+
+#: lib/BaselinerX/Auth.pm
+msgid "Login Error Message"
+msgstr ""
+
 #: lib/BaselinerX/CI.pm
 msgid "New CI"
 msgstr ""
@@ -3834,7 +4335,7 @@ msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Promoted baseline %1 to %2"
-msgstr "Línea Base promocionada de %1 a %2"
+msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Demote baseline $tag to $top_rev: tag -f $tag $top_rev"
@@ -3842,7 +4343,7 @@ msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Demoted baseline %1 to %2"
-msgstr "Línea Base devuelta de %1 a %2"
+msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Updating baseline $tag to $top_rev: tag -f $tag $top_rev"
@@ -3850,7 +4351,7 @@ msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Updated baseline %1 to %2"
-msgstr "Actualizado el entorno %1 a %2"
+msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid ""
@@ -4510,11 +5011,11 @@ msgstr ""
 
 #: lib/BaselinerX/CI/user.pm
 msgid "class_date_format"
-msgstr "%m/%d/%Y"
+msgstr ""
 
 #: lib/BaselinerX/CI/user.pm
 msgid "class_date_time"
-msgstr "%l:%M%p"
+msgstr ""
 
 #: lib/BaselinerX/CI/worker_agent.pm
 msgid "Could not find a worker capable of %1"
@@ -4528,8 +5029,80 @@ msgstr ""
 msgid "worker agent error: timeout during execute (tmout=%1 sec)"
 msgstr ""
 
+#: lib/BaselinerX/Dashlets.pm
+msgid "Last jobs by app"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "List jobs"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "List baselines"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm root/dashlets/job_chart_config.js
+msgid "Job chart"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Job daily distribution"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm root/site/graph.js
+msgid "CI Graph"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topics chart"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "List topics"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topics time line"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topics burndown"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topics period burndown"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topics burndown NG"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topics gauge"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Topic Roadmap"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Internet frame"
+msgstr ""
+
+#: lib/BaselinerX/Dashlets.pm
+msgid "Email messages"
+msgstr ""
+
+#: lib/BaselinerX/Events.pm
+msgid "user %1 created the repository %2"
+msgstr ""
+
 #: lib/BaselinerX/Events.pm
 msgid "New repository"
+msgstr ""
+
+#: lib/BaselinerX/Events.pm
+msgid "user %1 updated the repository %2"
 msgstr ""
 
 #: lib/BaselinerX/Events.pm
@@ -4592,24 +5165,12 @@ msgstr ""
 msgid "Environment Planner"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm lib/BaselinerX/Job.pm
-#: lib/BaselinerX/Reports/estadisticas_jobs_bl.pm root/comp/catalog_grid.js
-#: root/comp/dashboard_job.html root/dashlets/job_stats_by_env.html
-#: root/forms/script_local.js root/forms/script_remote.js root/site/about.html
-msgid "Environment"
-msgstr ""
-
 #: lib/BaselinerX/Fieldlets.pm
 msgid "Planned Start"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm
 msgid "Planned End"
-msgstr ""
-
-#: lib/BaselinerX/Fieldlets.pm root/comp/scheduler_grid.js
-#: root/fields/templates/config/scheduler.js
-msgid "Scheduler"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm root/comp/log_grid.js
@@ -4756,6 +5317,38 @@ msgid "Can update system tags in repositories"
 msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
+msgid "Path to git-http-backend"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Allow unauthenticated users to access the repository URL"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Check Auth Always"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Path to git repositories"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Path to git binary"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Show tags in the Lifecycle tree"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Hide commits already added to changeset"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Truncate diff if its length exceeds this number"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
 msgid "Create a Git Revision Job"
 msgstr ""
 
@@ -4769,6 +5362,14 @@ msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
 msgid "Link a git revision to the changesets in title"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Create a tag in a Git repository"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Create a branch in a Git repository"
 msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
@@ -4817,6 +5418,14 @@ msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
 msgid "No bl_to defined for bl %1"
+msgstr ""
+
+#: lib/BaselinerX/Global.pm lib/BaselinerX/Tools.pm root/comp/monitor_grid.js
+msgid "Tools"
+msgstr ""
+
+#: lib/BaselinerX/Global.pm
+msgid "List of patterns to be hidden in user outputs"
 msgstr ""
 
 #: lib/BaselinerX/Job.pm
@@ -4949,6 +5558,12 @@ msgstr ""
 msgid "Create a new Job"
 msgstr ""
 
+#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/lifecycle/deploy.js root/comp/monitor_grid.js
+#: root/comp/topic/topic_lib.js root/site/kanban.js
+msgid "New Job"
+msgstr ""
+
 #: lib/BaselinerX/Job.pm root/comp/monitor_grid.js
 msgid "Monitor"
 msgstr ""
@@ -4989,15 +5604,12 @@ msgstr ""
 msgid "Level"
 msgstr ""
 
-#: lib/BaselinerX/Job.pm root/comp/lifecycle/run/message.mas
-#: root/comp/log.html root/comp/log_grid.js root/comp/message_grid.js
-#: root/comp/revision/grid_live.mas root/comp/run/message.mas root/comp/sms.js
-#: root/forms/store_file.js root/site/runner.js
-msgid "Message"
-msgstr ""
-
 #: lib/BaselinerX/Job.pm
 msgid "Running job cancelled"
+msgstr ""
+
+#: lib/BaselinerX/Lc.pm
+msgid "Show provider tags in the Lifecycle tree"
 msgstr ""
 
 #: lib/BaselinerX/Lc.pm
@@ -5092,6 +5704,30 @@ msgstr ""
 msgid "Apply filter"
 msgstr ""
 
+#: lib/BaselinerX/Notificacion.pm
+msgid "Exclude all notifications"
+msgstr ""
+
+#: lib/BaselinerX/Notificacion.pm
+msgid "Email daemon process_queue timeout"
+msgstr ""
+
+#: lib/BaselinerX/Notificacion.pm
+msgid "Email Flush Queue Once"
+msgstr ""
+
+#: lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
+#: lib/BaselinerX/Reports/estadisticas_jobs_mes.pm
+#: lib/BaselinerX/Reports/estadisticas_jobs_semana.pm
+#: lib/BaselinerX/Reports/listado_jobs.pm
+#: lib/BaselinerX/Reports/trending_requests_by_month.pm
+msgid "Users who see the report (list separated by commas)"
+msgstr ""
+
+#: lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
+msgid "Job Stats by Environment"
+msgstr ""
+
 #: lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
 #: root/dashlets/job_stats_by_env.html
 msgid "#Failed"
@@ -5137,8 +5773,8 @@ msgstr ""
 msgid "Total Jobs"
 msgstr ""
 
-#: lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
-msgid "Job Stats by Environment"
+#: lib/BaselinerX/Reports/estadisticas_jobs_mes.pm
+msgid "Monthly Job Stats"
 msgstr ""
 
 #: lib/BaselinerX/Reports/estadisticas_jobs_mes.pm
@@ -5177,12 +5813,12 @@ msgstr ""
 msgid "Total jobs"
 msgstr ""
 
-#: lib/BaselinerX/Reports/estadisticas_jobs_mes.pm
-msgid "Monthly Job Stats"
-msgstr ""
-
 #: lib/BaselinerX/Reports/estadisticas_jobs_semana.pm
 msgid "Weekly Job Stats"
+msgstr ""
+
+#: lib/BaselinerX/Reports/listado_jobs.pm
+msgid "Job List"
 msgstr ""
 
 #: lib/BaselinerX/Reports/listado_jobs.pm
@@ -5225,8 +5861,8 @@ msgstr ""
 msgid "Executions"
 msgstr ""
 
-#: lib/BaselinerX/Reports/listado_jobs.pm
-msgid "Job List"
+#: lib/BaselinerX/Reports/trending_requests_by_month.pm
+msgid "TRENDING: Requests by month"
 msgstr ""
 
 #: lib/BaselinerX/Reports/trending_requests_by_month.pm
@@ -5245,6 +5881,10 @@ msgstr ""
 msgid "Create CI"
 msgstr ""
 
+#: lib/BaselinerX/Service/CallWebService.pm
+msgid "Web Request"
+msgstr ""
+
 #: lib/BaselinerX/Service/Catalog.pm
 msgid "Name of category created"
 msgstr ""
@@ -5259,6 +5899,41 @@ msgstr ""
 
 #: lib/BaselinerX/Service/Catalog.pm
 msgid "Draft status for wizard"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm
+msgid "Catalog - IF var THEN"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm
+msgid "Folder"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm root/comp/daemon_grid.js
+#: root/comp/dashboard_job.html root/forms/windows_service.js
+#: root/site/model.js
+msgid "Service"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm
+msgid "Task Group"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm root/comp/log.html
+msgid "Task"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm
+msgid "CATALOG STEP"
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm
+msgid "a task step section: MENU,WIZZARD,RUN..."
+msgstr ""
+
+#: lib/BaselinerX/Service/Catalog.pm root/comp/rule_new.js
+#: root/comp/topic/topic_admin.js
+msgid "Form"
 msgstr ""
 
 #: lib/BaselinerX/Service/Catalog.pm
@@ -5345,7 +6020,7 @@ msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Updating baseline %1 for repository %2, job type %3"
-msgstr "Updating environment %1 for repository %2, job type %3"
+msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Could not find previous revision for repository: %1 (%2)"
@@ -5361,7 +6036,7 @@ msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Verifying baseline %1 for repository %2, job type %3"
-msgstr "Verifying environment %1 for repository %2, job type %3"
+msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Revisions selected"
@@ -5369,7 +6044,7 @@ msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Baseline verified for repository %1"
-msgstr "Environment verified for repository %1"
+msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Loading items into stash... (type=%1, bl=%2)"
@@ -5397,7 +6072,7 @@ msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Checking out baseline %1 for project %2, repository %3: %4"
-msgstr "Checking out environment %1 for project %2, repository %3: %4"
+msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Baseline checkout of %1 item(s) completed"
@@ -5448,11 +6123,23 @@ msgid "Request Approval"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Approval requested for job %3 (user %1)"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "approval requested for job"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Job %3 Approved"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm root/site/common.js
 msgid "Job Approved"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Job %3 Rejected"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm root/site/common.js
@@ -5461,6 +6148,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Applications: %1. Requesting approval for job %2"
+msgstr ""
+
+#: lib/BaselinerX/Service/CreateJob.pm
+msgid "Create a Job"
+msgstr ""
+
+#: lib/BaselinerX/Service/DBServices.pm
+msgid "Deploy SQL from Nature Items"
 msgstr ""
 
 #: lib/BaselinerX/Service/DBServices.pm
@@ -5473,6 +6168,18 @@ msgstr ""
 
 #: lib/BaselinerX/Service/DBServices.pm
 msgid "Error processing SQL"
+msgstr ""
+
+#: lib/BaselinerX/Service/DBServices.pm
+msgid "Commit All Transactions"
+msgstr ""
+
+#: lib/BaselinerX/Service/DBServices.pm
+msgid "Rollback All Transactions"
+msgstr ""
+
+#: lib/BaselinerX/Service/DBServices.pm
+msgid "DB Backup Schema Objects"
 msgstr ""
 
 #: lib/BaselinerX/Service/DBServices.pm
@@ -5493,6 +6200,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/DBServices.pm
 msgid "DB ROLLBACK transaction %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/Dispatcher.pm
+msgid "Dispatcher configuration"
+msgstr ""
+
+#: lib/BaselinerX/Service/Dispatcher.pm
+msgid "Dispatcher Service"
 msgstr ""
 
 #: lib/BaselinerX/Service/Dispatcher.pm
@@ -5801,6 +6516,10 @@ msgid "Footprint elements"
 msgstr ""
 
 #: lib/BaselinerX/Service/Init.pm
+msgid "Init Job Home"
+msgstr ""
+
+#: lib/BaselinerX/Service/Init.pm
 msgid "Creating job home: %1"
 msgstr ""
 
@@ -5814,6 +6533,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/Init.pm
 msgid "Job home '%1' created"
+msgstr ""
+
+#: lib/BaselinerX/Service/JobDaemon.pm
+msgid "Watch for new jobs"
+msgstr ""
+
+#: lib/BaselinerX/Service/JobDaemon.pm
+msgid "A Dummy Job"
 msgstr ""
 
 #: lib/BaselinerX/Service/JobDaemon.pm
@@ -5876,12 +6603,106 @@ msgid ""
 "%3, pid %4, host %5)"
 msgstr ""
 
+#: lib/BaselinerX/Service/LDAPServices.pm
+msgid "Search in LDAP server"
+msgstr ""
+
+#: lib/BaselinerX/Service/Parsing.pm
+msgid "Parse Files"
+msgstr ""
+
 #: lib/BaselinerX/Service/Parsing.pm
 msgid "Path not found: `%1`"
 msgstr ""
 
 #: lib/BaselinerX/Service/Parsing.pm
 msgid "Parser *%1* could not parse '%2'"
+msgstr ""
+
+#: lib/BaselinerX/Service/PauseSuspend.pm
+msgid "Pause a Job"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "event purge daemon frequency (secs)"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Number of days to keep job files"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Number of days to keep OK job logs"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Number of days to keep KO job logs"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in Bytes to keep logs"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Number of compressed files  associated to a log file"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in MBytes to keep nginx-error log"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in MBytes to keep nginx-access log"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in MBytes to keep mongod log"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in MBytes to keep redis log"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in MBytes to keep cla-disp log"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Max size in MBytes to keep cla-web log"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Set this to true (1) to prevent Clarive from purging log files"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Set this to true (1) to prevent Clarive from purging job logs"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Keep sent messages in duration format: 1M, 2D, etc."
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid ""
+"Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to "
+"blank to stop this purge."
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Keep ko event log entries (0 or 1)"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Keep ok event log entries (0 or 1)"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Keep login event log entries (0 or 1)"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Purge Daemon"
 msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
@@ -5897,8 +6718,12 @@ msgid "Purging %1 ko events"
 msgstr ""
 
 #: lib/BaselinerX/Service/RenameItems.pm
+msgid "Rename Baseline Items and Files"
+msgstr ""
+
+#: lib/BaselinerX/Service/RenameItems.pm
 msgid "Running file rename for baseline %1"
-msgstr "Running file rename for environment %1"
+msgstr ""
 
 #: lib/BaselinerX/Service/RenameItems.pm
 msgid "Renamed %1 item(s), removed %2 item(s)"
@@ -5918,7 +6743,7 @@ msgstr ""
 
 #: lib/BaselinerX/Service/RenameItems.pm
 msgid "Could not delete file that belongs to another baseline %1: %2"
-msgstr "Could not delete file that belongs to another environment %1: %2"
+msgstr ""
 
 #: lib/BaselinerX/Service/RenameItems.pm
 msgid "Renamed %1 file(s)"
@@ -5926,7 +6751,27 @@ msgstr ""
 
 #: lib/BaselinerX/Service/RenameItems.pm
 msgid "Deleted elements that belong to another baseline"
-msgstr "Deleted elements that belong to another environment"
+msgstr ""
+
+#: lib/BaselinerX/Service/SchedulerService.pm
+msgid "SQA send_ju Daemon Frequency"
+msgstr ""
+
+#: lib/BaselinerX/Service/SchedulerService.pm
+msgid "Service iterations"
+msgstr ""
+
+#: lib/BaselinerX/Service/Scripting.pm
+msgid "Run a local script"
+msgstr ""
+
+#: lib/BaselinerX/Service/Scripting.pm
+msgid "Run a remote script"
+msgstr ""
+
+#: lib/BaselinerX/Service/Scripting.pm
+msgid "Eval Remote"
+msgstr ""
 
 #: lib/BaselinerX/Service/Scripting.pm
 msgid "Could not change dir to directory `%1`: does not exist"
@@ -5989,6 +6834,10 @@ msgid "output"
 msgstr ""
 
 #: lib/BaselinerX/Service/Sed.pm
+msgid "Replace Strings"
+msgstr ""
+
+#: lib/BaselinerX/Service/Sed.pm
 msgid "Sed: Missing or invalid path in configuration"
 msgstr ""
 
@@ -6024,6 +6873,10 @@ msgstr ""
 msgid "Sed: failed to write to file '%1': %2"
 msgstr ""
 
+#: lib/BaselinerX/Service/ServerService.pm root/site/common.js
+msgid "Restart"
+msgstr ""
+
 #: lib/BaselinerX/Service/ServerService.pm
 msgid "Server restart requested. Using kill HUP $pid"
 msgstr ""
@@ -6044,12 +6897,12 @@ msgstr ""
 msgid "Job awaking after %1 seconds"
 msgstr ""
 
-#: lib/BaselinerX/Service/SystemMessages.pm root/comp/sms.js
-msgid "System Messages"
-msgstr ""
-
 #: lib/BaselinerX/Service/SystemMessages.pm
 msgid "Error creating system message: %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/Templating.pm
+msgid "Transform Template"
 msgstr ""
 
 #: lib/BaselinerX/Service/Templating.pm
@@ -6080,8 +6933,44 @@ msgstr ""
 msgid "Error processing file body with templating %1: %2"
 msgstr ""
 
+#: lib/BaselinerX/Service/TopicServices.pm root/forms/topic_status.js
+msgid "Change topic status"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm root/forms/topic_create.js
+msgid "Create a new topic"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Update topic data"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Attach file to a topic"
+msgstr ""
+
 #: lib/BaselinerX/Service/TopicServices.pm
 msgid "Remove files from a topic"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Load topic data"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Load topic related"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Watch for topics without activity in statuses"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Get topics that match conditions"
+msgstr ""
+
+#: lib/BaselinerX/Service/TopicServices.pm
+msgid "Inactivity daemon Frequency"
 msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
@@ -6120,6 +7009,10 @@ msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
 msgid "Error asseting the file %1 to the topic %2. Error: %3"
+msgstr ""
+
+#: lib/BaselinerX/Service/ValidateStashVariables.pm
+msgid "Validate stash variables"
 msgstr ""
 
 #: lib/BaselinerX/Service/ValidateStashVariables.pm
@@ -6232,6 +7125,10 @@ msgstr ""
 
 #: lib/BaselinerX/Type/Service.pm
 msgid "Missing argument 1, stash"
+msgstr ""
+
+#: lib/BaselinerX/Type/Service/Config.pm
+msgid "Config Baseliner"
 msgstr ""
 
 #: lib/Clarive/Api.pm
@@ -6433,7 +7330,7 @@ msgstr ""
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/model.js
 msgid "Baseline"
-msgstr "Environment"
+msgstr ""
 
 #: root/ci/balix_agent.js root/comp/configlist/grid.mas
 #: root/comp/configlist/resolve_value.mas root/comp/role_grid.js
@@ -6447,7 +7344,7 @@ msgstr ""
 
 #: root/ci/bl.js
 msgid "Baseline ID"
-msgstr "Entorno ID"
+msgstr ""
 
 #: root/ci/bl.js root/ci/status.js root/comp/sem.js
 msgid "Sequence"
@@ -6476,10 +7373,6 @@ msgstr ""
 
 #: root/ci/capture.js root/site/common.js
 msgid "Regex"
-msgstr ""
-
-#: root/ci/clax_agent.js root/comp/rules.js
-msgid "Enabled"
 msgstr ""
 
 #: root/ci/clax_agent.js
@@ -7079,12 +7972,6 @@ msgstr ""
 msgid "Enter or select the category tags"
 msgstr ""
 
-#: root/comp/catalog/manual_deploy.js root/comp/role_grid.js
-#: root/comp/topic/topic_admin.js root/comp/user_actions.mas
-#: root/comp/user_grid.js root/comp/user_info.mas root/site/lifecycle-graph.js
-msgid "Role"
-msgstr ""
-
 #: root/comp/catalog/manual_deploy.js
 msgid "Manual Deployment Setup"
 msgstr ""
@@ -7289,11 +8176,6 @@ msgstr ""
 #: root/comp/ci-viewer.js root/comp/revision/grid.mas
 #: root/comp/revision/grid_live.mas
 msgid "Item"
-msgstr ""
-
-#: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
-#: root/comp/ci-viewer.js root/comp/job_new.js root/site/common.js
-msgid "Collection"
 msgstr ""
 
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
@@ -7681,15 +8563,6 @@ msgid "Not Active"
 msgstr ""
 
 #: root/comp/daemon_grid.js
-msgid "Daemons"
-msgstr ""
-
-#: root/comp/daemon_grid.js root/comp/dashboard_job.html
-#: root/forms/windows_service.js root/site/model.js
-msgid "Service"
-msgstr ""
-
-#: root/comp/daemon_grid.js
 msgid "Running"
 msgstr ""
 
@@ -7727,7 +8600,7 @@ msgstr ""
 
 #: root/comp/dashboard_job.html
 msgid "Elementos <%$namejob%>"
-msgstr "Items <%$namejob%>"
+msgstr ""
 
 #: root/comp/dashboard_job.html
 msgid "Items"
@@ -7810,10 +8683,6 @@ msgstr ""
 
 #: root/comp/events.js
 msgid "Reset event status"
-msgstr ""
-
-#: root/comp/feature.js
-msgid "Upgrades"
 msgstr ""
 
 #: root/comp/feature.js root/comp/feature_grid.mas
@@ -8096,11 +8965,11 @@ msgstr ""
 
 #: root/comp/job_calendar_grid.js
 msgid "Previsualizar"
-msgstr "Preview"
+msgstr ""
 
 #: root/comp/job_calendar_grid.js
 msgid "Previsualizar Calendario"
-msgstr "Calendar Preview"
+msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
 msgid "From %1 to %2"
@@ -8113,7 +8982,7 @@ msgstr ""
 #: root/comp/job_calendar_slot_edit.js root/comp/job_calendar_slots.js
 #: root/comp/topic/topic_admin.js
 msgid "Normal"
-msgstr "Normal"
+msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
 msgid "Urgent Only"
@@ -8173,12 +9042,6 @@ msgstr ""
 
 #: root/comp/job_logfile.js
 msgid "Logfile Open Error"
-msgstr ""
-
-#: root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/lifecycle/deploy.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_lib.js root/site/kanban.js
-msgid "New Job"
 msgstr ""
 
 #: root/comp/job_new.js
@@ -8370,11 +9233,11 @@ msgstr ""
 
 #: root/comp/job_new_comp.js
 msgid "Destination Baseline"
-msgstr "To Environment"
+msgstr ""
 
 #: root/comp/job_new_comp.js
 msgid "Origin Baseline"
-msgstr "From Environment"
+msgstr ""
 
 #: root/comp/job_new_comp.js
 msgid "Custom Window"
@@ -8447,7 +9310,6 @@ msgstr ""
 #: root/comp/job_new_comp.js
 msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr ""
-"No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
 #: root/comp/job_new_comp.js
 msgid ""
@@ -8664,17 +9526,6 @@ msgstr ""
 
 #: root/comp/lifecycle/tasks.js
 msgid "Tarea"
-msgstr "Task"
-
-#: root/comp/lifecycle/tasks.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js
-#: root/dashlets/number_of_topics_chart_config.js
-#: root/dashlets/swarm_config.js root/email/generic_post.html
-#: root/email/generic_topic.html root/fields/system/js/field_category.js
-#: root/fields/templates/config/origin_issue_chart_pie.js
-#: root/fields/templates/config/status_chart_pie.js root/forms/catalog_task.js
-#: root/forms/topic_create.js
-msgid "Category"
 msgstr ""
 
 #: root/comp/lifecycle/tasks.js
@@ -8727,10 +9578,6 @@ msgstr ""
 
 #: root/comp/log.html root/comp/log_grid.js root/comp/monitor_grid.js
 msgid "Step"
-msgstr ""
-
-#: root/comp/log.html
-msgid "Task"
 msgstr ""
 
 #: root/comp/log.html root/comp/log_grid.js root/comp/monitor_grid.js
@@ -8912,7 +9759,7 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "All-f"
-msgstr "All"
+msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Natures: %1"
@@ -8932,7 +9779,7 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Baseline: %1"
-msgstr "Environment: %1"
+msgstr ""
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_admin.js
 msgid "promote"
@@ -9010,10 +9857,6 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "(no data)"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "Tools"
 msgstr ""
 
 #: root/comp/monitor_grid.js
@@ -9106,10 +9949,6 @@ msgid "Job Status"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "FAIL"
-msgstr ""
-
-#: root/comp/monitor_grid.js
 msgid "Change Job Status"
 msgstr ""
 
@@ -9175,7 +10014,7 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "IN-EDIT"
-msgstr "IN EDIT"
+msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "WAITING"
@@ -9290,11 +10129,6 @@ msgstr ""
 msgid "Runner"
 msgstr ""
 
-#: root/comp/monitor_grid.js root/comp/rule_new.js root/comp/rules.js
-#: root/comp/scheduler_grid.js root/email/generic_rule.html
-msgid "Rule"
-msgstr ""
-
 #: root/comp/monitor_grid.js
 msgid "PRE Start Date"
 msgstr ""
@@ -9388,7 +10222,7 @@ msgstr ""
 #: root/comp/project_grid.mas root/forms/if_nature.js
 #: root/forms/nature_block.js
 msgid "Nature"
-msgstr "Nature"
+msgstr ""
 
 #: root/comp/project_grid.mas root/comp/user_grid.js root/site/tabfu.js
 msgid "Surrogate"
@@ -9791,10 +10625,6 @@ msgstr ""
 #: root/comp/rule_new.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_msg.html root/site/common.js root/site/dashboard.js
 msgid "Dashboard"
-msgstr ""
-
-#: root/comp/rule_new.js root/comp/topic/topic_admin.js
-msgid "Form"
 msgstr ""
 
 #: root/comp/rule_new.js
@@ -10380,10 +11210,6 @@ msgid "Moved up"
 msgstr ""
 
 #: root/comp/sem.js
-msgid "Semaphores"
-msgstr ""
-
-#: root/comp/sem.js
 msgid "slots"
 msgstr ""
 
@@ -10535,10 +11361,6 @@ msgstr ""
 #: root/fields/templates/config/status_chart_pie.js root/forms/ldap_search.js
 #: root/site/graph.js
 msgid "Filter"
-msgstr ""
-
-#: root/comp/topic/form_editor.js root/forms/link_revision.js
-msgid "Field"
 msgstr ""
 
 #: root/comp/topic/form_editor.js root/forms/variable_values.js
@@ -11494,10 +12316,6 @@ msgid "Last year"
 msgstr ""
 
 #: root/dashlets/job_chart_config.js
-msgid "Job chart"
-msgstr ""
-
-#: root/dashlets/job_chart_config.js
 #: root/dashlets/job_distribution_day_config.js
 msgid "Period to be shown. Last ..."
 msgstr ""
@@ -11561,7 +12379,7 @@ msgstr ""
 #: root/dashlets/topics_by_date_line_config.js
 #: root/dashlets/topics_period_burndown_config.js root/forms/catalog_task.js
 msgid "Area"
-msgstr "Area"
+msgstr ""
 
 #: root/dashlets/job_distribution_day_config.js
 #: root/dashlets/topics_by_date_line_config.js
@@ -12562,7 +13380,7 @@ msgstr ""
 
 #: root/forms/catalog_task.js root/reports/listado_jobs.js
 msgid "BLs"
-msgstr "Environments"
+msgstr ""
 
 #: root/forms/catalog_task.js
 msgid "Repeatable"
@@ -12787,7 +13605,7 @@ msgstr ""
 #: root/forms/mkpath_remote.js root/forms/retrieve_remote.js
 #: root/forms/ship_remote.js root/forms/sync_remote.js
 msgid "Remote Path"
-msgstr "Ruta remota"
+msgstr ""
 
 #: root/forms/nature_items.js
 msgid "Commit Items?"
@@ -12897,56 +13715,56 @@ msgstr ""
 #: root/forms/retrieve_remote.js root/forms/ship_remote.js
 #: root/forms/sync_remote.js
 msgid "Local Path"
-msgstr "Ruta local"
+msgstr ""
 
 #: root/forms/retry.js
 msgid "Attempts"
-msgstr "Intentos"
+msgstr ""
 
 #: root/forms/retry.js
 msgid "Pause (s)"
-msgstr "Pausa (s)"
+msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
 #: root/forms/wait_for_children.js root/forms/windows_service.js
 msgid "Errors"
-msgstr "Errores"
+msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
 msgid "Return Codes"
-msgstr "Códigos de retorno"
+msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
 msgid "Ok"
-msgstr "Ok"
+msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js root/site/common.js
 msgid "Warn"
-msgstr "Advertencia"
+msgstr ""
 
 #: root/forms/script_local.js
 msgid "Output Files"
-msgstr "Ficheros de salida"
+msgstr ""
 
 #: root/forms/script_local.js
 msgid "Output or log files generated by this command"
-msgstr "Salida o fichero de log generado por este comando"
+msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
 msgid "Home Directory"
-msgstr "Directorio home"
+msgstr ""
 
 #: root/forms/script_local.js
 msgid "Stdin"
-msgstr "Stdin"
+msgstr ""
 
 #: root/forms/script_remote.js
 msgid "Run Remote Script"
-msgstr "Ejecutar script remoto"
+msgstr ""
 
 #: root/forms/script_remote.js
 msgid "Command"
-msgstr "Comando"
+msgstr ""
 
 #: root/forms/sed.js
 msgid "Slurp"
@@ -13214,10 +14032,6 @@ msgid "Encoding"
 msgstr ""
 
 #: root/forms/topic_create.js
-msgid "Create a new topic"
-msgstr ""
-
-#: root/forms/topic_create.js
 msgid ""
 "Topic data. Type id_field in Key and string or variable (${variable}) in "
 "Value"
@@ -13245,10 +14059,6 @@ msgstr ""
 
 #: root/forms/topic_related.js
 msgid "Do not exclude event mid"
-msgstr ""
-
-#: root/forms/topic_status.js
-msgid "Change topic status"
 msgstr ""
 
 #: root/forms/topic_status.js
@@ -13385,19 +14195,19 @@ msgstr ""
 
 #: root/reports/listado_jobs.js
 msgid "Fecha inicio Desde"
-msgstr "Start date from"
+msgstr ""
 
 #: root/reports/listado_jobs.js
 msgid "Fecha inicio Hasta"
-msgstr "Start date to"
+msgstr ""
 
 #: root/reports/listado_jobs.js
 msgid "Fecha fin Desde"
-msgstr "End date from"
+msgstr ""
 
 #: root/reports/listado_jobs.js
 msgid "Fecha fin Hasta"
-msgstr "End date to"
+msgstr ""
 
 #: root/reports/trending.js
 msgid "From date"
@@ -13699,21 +14509,17 @@ msgstr ""
 msgid "Could not find form `%1`"
 msgstr ""
 
-#: root/site/common.js
-msgid "Restart"
+#: root/site/common.js root/site/prefs.js
+msgid "momentjs_date_format"
 msgstr ""
 
 #: root/site/common.js root/site/prefs.js
-msgid "momentjs_date_format"
-msgstr "MM/DD/YYYY"
-
-#: root/site/common.js root/site/prefs.js
 msgid "momentjs_time_format"
-msgstr "h:mma"
+msgstr ""
 
 #: root/site/common.js root/site/globals.js root/site/prefs.js
 msgid "js_date_format"
-msgstr "m/d/Y"
+msgstr ""
 
 #: root/site/common.js
 msgid "js_time_format"
@@ -14029,10 +14835,6 @@ msgid "Are you sure you want to delete the search %1?"
 msgstr ""
 
 #: root/site/graph.js
-msgid "CI Graph"
-msgstr ""
-
-#: root/site/graph.js
 msgid "Redraw"
 msgstr ""
 
@@ -14310,11 +15112,11 @@ msgstr ""
 
 #: root/site/prefs.js
 msgid "js_dt_format"
-msgstr "m/d/Y h:i:s"
+msgstr ""
 
 #: root/site/prefs.js
 msgid "js_dtd_format"
-msgstr "D m/d/Y h:i:s"
+msgstr ""
 
 #: root/site/prefs.js
 msgid "Saved ok"
@@ -14476,11 +15278,11 @@ msgstr ""
 
 #: root/site/tabfu.js
 msgid "Aceptar"
-msgstr "Accept"
+msgstr ""
 
 #: root/site/tabfu.js
 msgid "Cancelar"
-msgstr "Cancel"
+msgstr ""
 
 #: root/site/tabfu.js
 msgid " Change User "
@@ -14595,465 +15397,3 @@ msgstr ""
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr ""
-
-#~ msgid "Prueba"
-#~ msgstr "Test"
-
-#~ msgid "Franja horaria"
-#~ msgstr "Times"
-
-#~ msgid "Hora de pase Caducada"
-#~ msgstr "Job time expires"
-
-#~ msgid ""
-#~ "Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un "
-#~ "pase fuera de las ventanas permitidas"
-#~ msgstr ""
-#~ "Job out of window. Select 'Custom window' if you want a job out of the "
-#~ "allowed windows"
-
-#~ msgid "Pendiente de Aprobación"
-#~ msgstr "Pending approval"
-
-#~ msgid "status_new"
-#~ msgstr "Status"
-
-#~ msgid "IN EDIT"
-#~ msgstr "In Edit"
-
-#~ msgid "DONE"
-#~ msgstr "Finished"
-
-#~ msgid "cat"
-#~ msgstr "Catalan"
-
-#~ msgid "BL"
-#~ msgstr "Environment"
-
-#~ msgid "Baseline added"
-#~ msgstr "Environment added"
-
-#~ msgid "Baseline key already exists, introduce another baseline key"
-#~ msgstr "Environment key already exists, enter another environment key"
-
-#~ msgid "Error adding Baseline: %1"
-#~ msgstr "Error adding Environment %1"
-
-#~ msgid "Baseline modified"
-#~ msgstr "Environment modified"
-
-#~ msgid "Error modifying Baseline: %1"
-#~ msgstr "Error modifying Environment %1"
-
-#~ msgid "Baseline deleted"
-#~ msgstr "Environment deleted"
-
-#~ msgid "Error deleting Baseline"
-#~ msgstr "Error deleting Environment"
-
-#~ msgid "Create baseline"
-#~ msgstr "Create environment"
-
-#~ msgid "Order (Drag & Drop)"
-#~ msgstr "Order (Drag & Drop)"
-
-#~ msgid "Key baseline"
-#~ msgstr "Key environment"
-
-#~ msgid "Name of the baseline"
-#~ msgstr "Name of the environment"
-
-#~ msgid "A brief description of the baseline"
-#~ msgstr "A brief description of the environment"
-
-#~ msgid "Edit baseline"
-#~ msgstr "Edit environment"
-
-#~ msgid "Are you sure you want to delete the baseline"
-#~ msgstr "Are you sure you want to delete the environment"
-
-#~ msgid "Are you sure you want to deploy/rollback %1 to baseline %2 (%3)?"
-#~ msgstr "¿Quiere mover %1 al entorno de %2 (%3)?"
-
-#~ msgid "baseline"
-#~ msgstr "Entorno"
-
-#~ msgid "Application: %1. Requesting approval for job %2, baseline %3: %4"
-#~ msgstr "Application: %1. Requesting approval for job %2, environment %3: %4"
-
-#~ msgid "Applications: %1. Requesting approval for job %2, baseline %3: %4"
-#~ msgstr ""
-#~ "Applications: %1. Requesting approval for job %2, environment %3: %4"
-
-#~ msgid "Requesting approval for baseline %1, item %2"
-#~ msgstr "Requesting approval for environment %1, item %2"
-
-#~ msgid "Incidencia"
-#~ msgstr "Issue"
-
-#~ msgid "Requerimiento"
-#~ msgstr "Requirement"
-
-#~ msgid "Solicitud IT"
-#~ msgstr "IT Request"
-
-#~ msgid "Entrega"
-#~ msgstr "Sprint"
-
-#~ msgid "Caso de Prueba"
-#~ msgstr "Test Case"
-
-#~ msgid "Funcionalidad"
-#~ msgstr "Functionality"
-
-#~ msgid "Petición Especial"
-#~ msgstr "Special Request"
-
-#~ msgid "Plan de Pruebas"
-#~ msgstr "Test Plan"
-
-#~ msgid "Cambio BD"
-#~ msgstr "DB Change"
-
-#~ msgid "Suspendido"
-#~ msgstr "Suspended"
-
-#~ msgid "Repetido"
-#~ msgstr "Repeated"
-
-#~ msgid "Aprobado"
-#~ msgstr "Approved"
-
-#~ msgid "Cerrado"
-#~ msgstr "Closed"
-
-#~ msgid "Entregado"
-#~ msgstr "Delivered"
-
-#~ msgid "Integración"
-#~ msgstr "Integration"
-
-#~ msgid "Integracion"
-#~ msgstr "Integration"
-
-#~ msgid "Análisis"
-#~ msgstr "Analysis"
-
-#~ msgid "Preproducción"
-#~ msgstr "Preproduction"
-
-#~ msgid "Producción"
-#~ msgstr "Production"
-
-#~ msgid "Desarrollo"
-#~ msgstr "Development"
-
-#~ msgid "Estudio"
-#~ msgstr "Study"
-
-#~ msgid "En Curso"
-#~ msgstr "Running"
-
-#~ msgid "Finalizado"
-#~ msgstr "Finished"
-
-#~ msgid "Desestimado"
-#~ msgstr "Dismissed"
-
-#~ msgid "Nuevo"
-#~ msgstr "New"
-
-#~ msgid "Rechazado"
-#~ msgstr "Rejected"
-
-#~ msgid "Solicitado"
-#~ msgstr "Requested"
-
-#~ msgid "Realizado"
-#~ msgstr "Done"
-
-#~ msgid "Alta"
-#~ msgstr "High"
-
-#~ msgid "Crítica"
-#~ msgstr "Critical"
-
-#~ msgid "Común"
-#~ msgstr "Common"
-
-#~ msgid "Incidencias"
-#~ msgstr "Issues"
-
-#~ msgid "Revisiones"
-#~ msgstr "Revisions"
-
-#~ msgid "Proyectos"
-#~ msgstr "Projects"
-
-#~ msgid "Ficheros"
-#~ msgstr "Files"
-
-#~ msgid "Tareas"
-#~ msgstr "Tasks"
-
-#~ msgid "Requerimientos"
-#~ msgstr "Requirements"
-
-#~ msgid "Defectos"
-#~ msgstr "Defects"
-
-#~ msgid "Bugs"
-#~ msgstr "Bugs"
-
-#~ msgid "Casos de Prueba"
-#~ msgstr "Test Cases"
-
-#~ msgid "Funcionalidades"
-#~ msgstr "Functionalities"
-
-#~ msgid "Documentos"
-#~ msgstr "Documents"
-
-#~ msgid "Planes_de_pruebas"
-#~ msgstr "Test Plans"
-
-#~ msgid "Solicitudes"
-#~ msgstr "Requests"
-
-#~ msgid "Tópicos"
-#~ msgstr "Topics"
-
-#~ msgid "noun:Run"
-#~ msgstr "Run"
-
-#~ msgid "operaciones"
-#~ msgstr "operations"
-
-#~ msgid "Repositorios"
-#~ msgstr "Repositories"
-
-#~ msgid "Planes de pruebas"
-#~ msgstr "Test Plans"
-
-#~ msgid "Seguimiento de proyecto"
-#~ msgstr "Project tracking"
-
-#~ msgid "Funcional"
-#~ msgstr "Functional"
-
-#~ msgid "Organico"
-#~ msgstr "Organic"
-
-#~ msgid "Topicos"
-#~ msgstr "Topics"
-
-#~ msgid "Fecha PaP Desde"
-#~ msgstr "Date PaP From"
-
-#~ msgid "Fecha PaP Hasta"
-#~ msgstr "Date PaP Until"
-
-#~ msgid "Fecha UAT Desde"
-#~ msgstr "Date UAT From"
-
-#~ msgid "Fecha UAT Hasta"
-#~ msgstr "Date UAT Until"
-
-#~ msgid "Tablas"
-#~ msgstr "Tables"
-
-#~ msgid "Area solicitante"
-#~ msgstr "Requesting area"
-
-#~ msgid "Tipos"
-#~ msgstr "Types"
-
-#~ msgid "Pendiente de validar"
-#~ msgstr "Validation pending"
-
-#~ msgid "Texto Libre"
-#~ msgstr "Free Text"
-
-#~ msgid "todos"
-#~ msgstr "all"
-
-#~ msgid "Naturaleza"
-#~ msgstr "Nature"
-
-#~ msgid "Sistemas"
-#~ msgstr "Systems"
-
-#~ msgid "Envío de Notificación por Email"
-#~ msgstr "Sending email notification"
-
-#~ msgid "Se filtraran los paquetes por este campo"
-#~ msgstr "The packages are going to be filtered by this field"
-
-#~ msgid "ci:env_template"
-#~ msgstr "Environment Template"
-
-#~ msgid "ci:inf_template"
-#~ msgstr "Infrastructure Template"
-
-#~ msgid "ci:job"
-#~ msgstr "Job"
-
-#~ msgid ""
-#~ "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase "
-#~ "fuera de las ventanas permitidas"
-#~ msgstr ""
-#~ "Job out of window. Select Custom window if you want a job out of the "
-#~ "allowed windows"
-
-#~ msgid "ci:bl"
-#~ msgstr "Environment"
-
-#~ msgid "ci:project"
-#~ msgstr "Project"
-
-#~ msgid "ci:file"
-#~ msgstr "File"
-
-#~ msgid "ci:capture"
-#~ msgstr "Capture"
-
-#~ msgid "ci:ssh_agent"
-#~ msgstr "SSH Agent"
-
-#~ msgid "ci:artifact"
-#~ msgstr "Artifact"
-
-#~ msgid "ci:GitRevision"
-#~ msgstr "Git Revision"
-
-#~ msgid "ci:area"
-#~ msgstr "Area"
-
-#~ msgid "ci:itemset"
-#~ msgstr "Itemset"
-
-#~ msgid "ci:team"
-#~ msgstr "Team"
-
-#~ msgid "ci:GitItem"
-#~ msgstr "Git Item"
-
-#~ msgid "ci:engine"
-#~ msgstr "Engine Parser"
-
-#~ msgid "ci:GitRepository"
-#~ msgstr "Git Repository"
-
-#~ msgid "ci:topic_file"
-#~ msgstr "Topic File"
-
-#~ msgid "ci:dbi_connection"
-#~ msgstr "DBI Connection"
-
-#~ msgid "ci:worker_agent"
-#~ msgstr "Worker Agent"
-
-#~ msgid "ci:asset"
-#~ msgstr "Asset"
-
-#~ msgid "ci:topic"
-#~ msgstr "Topic"
-
-#~ msgid "ci:user"
-#~ msgstr "User"
-
-#~ msgid "ci:generic_server"
-#~ msgstr "Generic Server"
-
-#~ msgid "ci:db_loader"
-#~ msgstr "DB Loader"
-
-#~ msgid "ci:nature"
-#~ msgstr "Nature"
-
-#~ msgid "ci:variable"
-#~ msgstr "Variable"
-
-#~ msgid "ci:script"
-#~ msgstr "Script"
-
-#~ msgid "ci:Empty"
-#~ msgstr "Empty"
-
-#~ msgid "ci:web_cluster"
-#~ msgstr "Web Cluster"
-
-#~ msgid "ci:clax_agent"
-#~ msgstr "Clax Agent"
-
-#~ msgid "ci:item"
-#~ msgstr "Item"
-
-#~ msgid "ci:windows_server"
-#~ msgstr "Windows Server"
-
-#~ msgid "ci:status"
-#~ msgstr "Status"
-
-#~ msgid "ci:filesys_repo"
-#~ msgstr "Filesystem Repository"
-
-#~ msgid "ci:balix_agent"
-#~ msgstr "Balix Agent"
-
-#~ msgid "ci:ProjectEnvironment"
-#~ msgstr "Project Environment"
-
-#~ msgid "ci:matcher"
-#~ msgstr "Matcher"
-
-#~ msgid "ci:grammar"
-#~ msgstr "Grammar"
-
-#~ msgid "ci:report"
-#~ msgstr "Report"
-
-#~ msgid "ci:post"
-#~ msgstr "Post"
-
-#~ msgid "ci:group"
-#~ msgstr "Group"
-
-#~ msgid "ci:DBDest"
-#~ msgstr "DB Destination"
-
-#~ msgid "ci:ftp_agent"
-#~ msgstr "FTP Agent"
-
-#~ msgid "ci:web_instance"
-#~ msgstr "Web Instance"
-
-#~ msgid "ci:folder"
-#~ msgstr "Folder"
-
-#~ msgid "ci:file_loader"
-#~ msgstr "File Loader"
-
-#~ msgid "Ayuda"
-#~ msgstr "Help"
-
-#~ msgid "No hay aprobaciones programadas para este pase."
-#~ msgstr "No approvals scheduled for this job."
-
-#~ msgid "Aplicacion"
-#~ msgstr "Aplication"
-
-#~ msgid "Linea de negocio"
-#~ msgstr "Line of bussines"
-
-#~ msgid "Clave"
-#~ msgstr "Key"
-
-#~ msgid "Criticidad"
-#~ msgstr "Criticality"
-
-#~ msgid "Direcci&oacuten de Desarrollo"
-#~ msgstr "Direcci&oacuten de Desarrollo"
-
-#~ msgid "Direcci&oacuten de Producci&oacuten"
-#~ msgstr "Direcci&oacuten de Producci&oacuten"

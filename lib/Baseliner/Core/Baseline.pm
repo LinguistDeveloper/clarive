@@ -12,11 +12,11 @@ no Moose;
 ## ----- static methods
 
 register 'config.baseline' => {
-    name => _loc('Config global baselines'),
+    name => _locl('Config global baselines'),
     array => 1,
     metadata => [
-        { id=>'id', label=>_loc('Baseline Identifier'), },
-        { id=>'name', label=>_loc('Baseline Name'), },
+        { id=>'id', label=>_locl('Baseline Identifier'), },
+        { id=>'name', label=>_locl('Baseline Name'), },
     ],
 };
 

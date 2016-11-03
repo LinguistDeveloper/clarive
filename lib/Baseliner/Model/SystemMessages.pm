@@ -12,19 +12,19 @@ use Baseliner::Model::Users;
 with 'Baseliner::Role::Service';
 
 register 'event.sms.new' => {
-    name        => 'New System Message',
+    name        => _locl('New System Message'),
     description => _locl('New System Message'),
     vars        => ['username']
 };
 
 register 'event.sms.cancel' => {
-    name        => 'Canceled System Message',
+    name        => _locl('Canceled System Message'),
     description => _locl('Canceled System Message'),
     vars        => ['username']
 };
 
 register 'event.sms.remove' => {
-    name        => 'Deleted System Message',
+    name        => _locl('Deleted System Message'),
     description => _locl('Deleted System Message'),
     vars        => ['username']
 };

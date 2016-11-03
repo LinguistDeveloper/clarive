@@ -83,7 +83,7 @@ register 'menu.job' => { label => _locl('Jobs'), index=>110, actions => ['action
 register 'menu.job.create' => {
     label    => _locl('Create a new Job'),
     url_comp => '/job/create',
-    title    => 'New Job',
+    title    => _locl('New Job'),
     icon     => '/static/images/icons/job.svg',
     actions  => ['action.job.create'],
     index    => 10,
@@ -91,7 +91,7 @@ register 'menu.job.create' => {
 register 'menu.job.list' => {
     label    => _locl('Monitor'),
     url_comp => '/job/monitor',
-    title    => 'Monitor',
+    title    => _locl('Monitor'),
     icon     => '/static/images/icons/television.svg',
     actions  => ['action.job.view_monitor'],
     index    => 20,
@@ -107,19 +107,19 @@ register 'service.job.new' => {
 };
 
 register 'event.job.pre' => {
-    text => 'PRE job step event',
+    text => _locl('PRE job step event'),
     description => _locl('PRE job step event'),
     vars => ['job_name', 'id_job', 'job_stash', 'job' ],
 };
 
 register 'event.job.run' => {
-    text => 'RUN job step event',
+    text => _locl('RUN job step event'),
     description => _locl('RUN job step event'),
     vars => ['job_name', 'id_job', 'job_stash', 'job' ],
 };
 
 register 'event.job.post' => {
-    text => 'post job step event',
+    text => _locl('POST job step event'),
     description => _locl('POST job step event'),
     vars => ['job_name', 'id_job', 'job_stash', 'job' ],
 };

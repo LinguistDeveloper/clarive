@@ -8,12 +8,12 @@ use experimental 'smartmatch';
 
 register 'config.reports.estadisticas_jobs_mes' => {
     metadata=> [
-        { id=>'user_list', label => 'Usuarios que ven el informe (lista separada por comas)', default => 'root', type=>'text', width=>200 },
+        { id=>'user_list', label => _locl('Users who see the report (list separated by commas)'), default => 'root', type=>'text', width=>200 },
     ],
 };
 
 register 'report.clarive.job_statistics_mes' => {
-    name => 'Monthly Job Stats',
+    name => _locl('Monthly Job Stats'),
     data => { },
     form => '/reports/listado_jobs.js',
     security_handler => sub{

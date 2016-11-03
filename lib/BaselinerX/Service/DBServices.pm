@@ -10,7 +10,7 @@ with 'Baseliner::Role::Service';
 
 
 register 'service.db.deploy_sql' => {
-    name    => 'Deploy SQL from Nature Items',
+    name    => _locl('Deploy SQL from Nature Items'),
     icon    => '/static/images/icons/repo.svg',
     form    => '/forms/db_deploy_sql.js',
     job_service  => 1,
@@ -153,21 +153,21 @@ LOG
 }
 
 register 'service.db.commit_all_transactions' => {
-    name    => 'Commit All Transactions',
+    name    => _locl('Commit All Transactions'),
     icon    => '/static/images/icons/repo.svg',
     job_service  => 1,
     handler => \&commit_all,
 };
 
 register 'service.db.rollback_all_transactions' => {
-    name    => 'Rollback All Transactions',
+    name    => _locl('Rollback All Transactions'),
     icon    => '/static/images/icons/repo.svg',
     job_service  => 1,
     handler => \&rollback_all,
 };
 
 register 'service.db.backup' => {
-    name    => 'DB Backup Schema Objects',
+    name    => _locl('DB Backup Schema Objects'),
     icon    => '/static/images/icons/repo.svg',
     job_service  => 1,
     handler => \&backup_schema,

@@ -24,7 +24,7 @@ register 'config.catalog.settings' => {
 ####################### STATEMENTS
 
 register 'statement.catalog.if.var' => {
-    text => 'Catalogue - IF var THEN',
+    text => _locl('Catalog - IF var THEN'),
     type => 'if',
     icon => '/static/images/icons/catalogue.svg',
     form => '/forms/variable_value.js',
@@ -45,7 +45,7 @@ register 'statement.catalog.if.var' => {
 };
 
 register 'statement.catalog.folder' => {
-    text => 'Folder',
+    text => _locl('Folder'),
     data => { },
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
@@ -160,7 +160,7 @@ register 'statement.catalog.folder' => {
 };
 
 register 'statement.catalog.service' => {
-    text => 'Service',
+    text => _locl('Service'),
     data => { },
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
@@ -183,7 +183,7 @@ register 'statement.catalog.service' => {
 };
 
 register 'statement.catalog.task_group' => {
-    text => 'Task Group',
+    text => _locl('Task Group'),
     data => { },
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
@@ -223,7 +223,7 @@ register 'statement.catalog.task_group' => {
 
 
 register 'statement.catalog.task' => {
-    text => 'Task',
+    text => _locl('Task'),
     data => { },
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
@@ -246,8 +246,8 @@ register 'statement.catalog.task' => {
 };
 
 register 'statement.catalog.step' => {
-    text => 'CATALOG STEP',
-    description=> 'a task step section: MENU,WIZZARD,RUN...',
+    text => _locl('CATALOG STEP'),
+    description=> _locl('a task step section: MENU,WIZZARD,RUN...'),
     icon => '/static/images/icons/catalogue.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
@@ -662,7 +662,7 @@ register 'service.catalog.task_group' => {
 };
 
 register 'service.catalog.form' => {
-    name => 'Form',
+    name => _locl('Form'),
     icon => '/static/images/icons/catalogue.svg',
     form => '/forms/catalog_form.js',
     parse_vars => 0,

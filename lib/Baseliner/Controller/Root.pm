@@ -6,13 +6,13 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Auth::CAS;
 
-register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
-register 'action.home.show_menu' => { name => 'User can access the menu' } ;
-register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
-register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
-register 'action.home.view_project_repos' => { name => 'User can access the repositories in a project' } ;
-register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ;
-register 'event.wipe_cache' => { name => 'Wipe Cache', description => 'Wipe Cache', vars=>['username','ts'] } ;
+register 'action.home.show_lifecycle' => { name => _locl('User can access the lifecycle panel') };
+register 'action.home.show_menu' => { name => _locl('User can access the menu') } ;
+register 'action.home.view_workspace' => { name => _locl('User can access the workspace view') } ;
+register 'action.home.view_releases' => { name => _locl('User can access the releases view') } ;
+register 'action.home.view_project_repos' => { name => _locl('User can access the repositories in a project') } ;
+register 'action.home.generate_docs' => { name => _locl('User can generate docs from topics and views') } ;
+register 'event.wipe_cache' => { name => _locl('Wipe Cache'), description => _locl('Wipe Cache'), vars=>['username','ts'] } ;
 
 use Try::Tiny;
 use MIME::Base64;

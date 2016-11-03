@@ -22,10 +22,10 @@ with 'Baseliner::Role::CacheProxy' => {
 };
 
 register 'config.events' => {
-    name => 'Event daemon configuration',
+    name => _locl('Event daemon configuration'),
     metadata => [
-        { id=>'frequency', label=>'event daemon frequency (secs)', default=>15 },
-        { id=>'timeout', label=>'event daemon event rule runner timeout (secs)', default=>30 },
+        { id=>'frequency', label=>_locl('event daemon frequency (secs)'), default=>15 },
+        { id=>'timeout', label=>_locl('event daemon event rule runner timeout (secs)'), default=>30 },
     ]
 };
 

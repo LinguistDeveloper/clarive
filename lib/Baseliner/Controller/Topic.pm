@@ -21,8 +21,8 @@ with 'Baseliner::Role::ControllerValidator';
 
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
 
-register 'action.admin.topics' => { name=>'Admin topics' };
-register 'action.topics.view_graph' => { name=>'View related graph in topics' };
+register 'action.admin.topics' => { name=>_locl('Admin topics') };
+register 'action.topics.view_graph' => { name=>_locl('View related graph in topics') };
 
 register 'registor.menu.topics' => {
     generator => sub { __PACKAGE__->generate_menus() }

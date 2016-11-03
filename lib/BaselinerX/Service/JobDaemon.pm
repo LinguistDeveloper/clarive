@@ -18,7 +18,7 @@ our $EXIT_NOW = 0;
 has 'proc_list' => ( is=>'rw', isa=>'ArrayRef', default=>sub { [] } );
 
 register 'service.job.daemon' => {
-    name    => 'Watch for new jobs',
+    name    => _locl('Watch for new jobs'),
     icon => '/static/images/icons/daemon.svg',
     config  => 'config.job.daemon',
     daemon  => 1,
@@ -26,7 +26,7 @@ register 'service.job.daemon' => {
 };
 
 register 'service.job.dummy' => {
-    name => 'A Dummy Job',
+    name => _locl('A Dummy Job'),
     handler => sub {
         my ($self,$c)=@_;
         _log "DUMMY";

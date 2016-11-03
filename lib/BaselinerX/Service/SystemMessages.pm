@@ -11,7 +11,7 @@ use Class::Date;
 with 'Baseliner::Role::Service';
 
 register 'service.job.system_messages' => {
-    name => _loc('System Messages'),
+    name => _locl('System Messages'),
     job_service  => 1,
     form => '/forms/system_messages.js',
     icon => "/static/images/icons/sms.svg",

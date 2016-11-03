@@ -6,12 +6,12 @@ with 'Baseliner::Role::ControllerValidator';
 
 use Baseliner::Core::Registry ':dsl';
 use BaselinerX::CI::review;
-use Baseliner::Utils qw(_loc _array _ci);
+use Baseliner::Utils qw( _loc _array _ci _locl );
 use Baseliner::Sugar;
 
 register 'event.review.create' => {
-    text => '%1 posted a review: %3',
-    description => 'User posted a review',
+    text => _locl('%1 posted a review: %3'),
+    description => _locl('User posted a review'),
     vars => ['username', 'ts', 'review'],
     notify => {
         #scope => ['project', 'category', 'category_status', 'priority','baseline'],

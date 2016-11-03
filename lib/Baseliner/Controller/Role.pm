@@ -248,7 +248,7 @@ sub action_tree : Local {
                 push @tree_query,
                   {
                     id   => $key,
-                    text => ( $name ne $key ? "$name" : "$key" ),
+                    text => _loc( $name ne $key ? "$name" : "$key" ),
                     bounds_available => ($act->bounds && @{ $act->bounds}) ? \1 : \0,
                     icon => $icon,
                     leaf => \1
@@ -278,7 +278,7 @@ sub action_tree : Local {
 
             $folders{$fkey} //= {
                 key       => $fkey,
-                text      => $folder,
+                text      => _loc($folder),
                 leaf      => \0,
                 draggable => \0,
                 icon      => '/static/images/icons/action_folder.svg',
@@ -298,7 +298,7 @@ sub action_tree : Local {
             }
 
             my $node = {
-                text             => $text,
+                text             => _loc($text),
                 id               => $key,
                 key              => $key,
                 bounds_available => ( $act->bounds && @{ $act->bounds } ) ? \1 : \0,
@@ -322,7 +322,7 @@ sub action_tree : Local {
 
                 $folders{$parent} //= {
                     key       => $parent,
-                    text      => $parent_name,
+                    text      => _loc($parent_name),
                     icon      => '/static/images/icons/action_folder.svg',
                     draggable => \0,
                     leaf      => \0,

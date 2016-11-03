@@ -7,7 +7,7 @@ with 'Baseliner::Role::Service';
 
 register 'service.config' => {
     alias => 'config',
-    name    => 'Config Baseliner',
+    name    => _locl('Config Baseliner'),
     icon => '/static/images/icons/wrench.svg',
     handler => \&run,
 };

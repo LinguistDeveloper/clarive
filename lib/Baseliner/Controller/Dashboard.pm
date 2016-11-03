@@ -20,7 +20,7 @@ use Baseliner::Utils qw(:default _load_yaml_from_comment _trend_line parse_dt);
 
 with 'Baseliner::Role::ControllerValidator';
 
-register 'action.dashboards.view' => { name => 'Change dashboards in explorer'};
+register 'action.dashboards.view' => { name => _locl('Change dashboards in explorer') };
 
 sub init : Local {
     my ($self,$c) = @_;

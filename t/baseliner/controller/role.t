@@ -65,7 +65,7 @@ subtest 'action_tree: returns action tree' => sub {
                     {
                         'icon'             => '/static/images/icons/checkbox.svg',
                         'id'               => 'action.ci.admin',
-                        'text'             => undef,
+                        'text'             => '',
                         'bounds_available' => \0,
                         'key'              => 'action.ci.admin',
                         'leaf'             => \1

@@ -9,13 +9,13 @@ use Try::Tiny;
 our $INSTALL_DIR = '.install';
 
 register 'action.admin.upgrade' => {
-    name => 'Upgrade features, plugins and modules',
+    name => _locl('Upgrade features, plugins and modules'),
 };
 
 register 'menu.admin.upgrade' => {
     action => 'action.admin.upgrade',
-    title => 'Upgrades',
-    label => 'Upgrades',
+    title => _locl('Upgrades'),
+    label => _locl('Upgrades'),
     icon  => '/static/images/icons/upgrade.svg',
     url_comp => '/comp/feature.js',
     index => 1000,

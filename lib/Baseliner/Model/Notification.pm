@@ -27,34 +27,34 @@ register 'menu.admin.notifications' => {
 
 register 'config.notifications' => {
     metadata => [
-        { id => 'template_default', label => 'Template by default', default => '/email/generic_topic.html'},
-        { id => 'exclude_default', label => 'Exclude all default notifications', default => '0'}
+        { id => 'template_default', label => _locl('Template by default'), default => '/email/generic_topic.html'},
+        { id => 'exclude_default', label => _locl('Exclude all default notifications'), default => '0'}
     ]
 };
 
 register 'config.comm.email' => {
     name => 'Email configuration',
     metadata => [
-        { id=>'frequency', name=>'Email daemon frequency', default=>10 },
-        { id=>'timeout', name=>'Email daemon process_queue timeout', default=>30 },
-        { id=>'max_message_size', name=>'Max message size in bytes', default=>(1024 * 1024) },
-        { id=>'max_attach_size', name=>'Max attach size in bytes', default=>(1024 * 1024 * 7) },
-        { id=>'server', name=>'Email server', default=>'smtp.example.com' },
-        { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
-        { id=>'domain', name=>'Email domain', default=>'exchange.local' },
-        { id=>'auto_generate_empty_emails', name=>'Auto generate emails for users with empty email field', default=>'0' },
-        { id=>'max_attempts', name=>'Max attempts', default=>10 },
-        { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
-        { id=>'default_template', name=>'Default template for emails', default=>'/email/generic.html' },
-        { id=>'smtp_auth', name=>'SMTP needs authentication', default=>0 },
-        { id=>'smtp_user', name=>'SMTP server user', default=>'' },
-        { id=>'smtp_password', name=>'SMTP server password', default=>'' },
+        { id=>'frequency', name=>_locl('Email daemon frequency'), default=>10 },
+        { id=>'timeout', name=>_locl('Email daemon process queue timeout'), default=>30 },
+        { id=>'max_message_size', name=>_locl('Max message size in bytes'), default=>(1024 * 1024) },
+        { id=>'max_attach_size', name=>_locl('Max attach size in bytes'), default=>(1024 * 1024 * 7) },
+        { id=>'server', name=>_locl('Email server'), default=>'smtp.example.com' },
+        { id=>'from', name=>_locl('Email default sender'), default=>'user <user@mailserver>' },
+        { id=>'domain', name=>_locl('Email domain'), default=>'exchange.local' },
+        { id=>'auto_generate_empty_emails', name=>_locl('Auto generate emails for users with empty email field'), default=>'0' },
+        { id=>'max_attempts', name=>_locl('Max attempts'), default=>10 },
+        { id=>'baseliner_url', name=>_locl('Base URL to access baseliner'), default=>'http://localhost:3000' },
+        { id=>'default_template', name=>_locl('Default template for emails'), default=>'/email/generic.html' },
+        { id=>'smtp_auth', name=>_locl('SMTP needs authentication'), default=>0 },
+        { id=>'smtp_user', name=>_locl('SMTP server user'), default=>'' },
+        { id=>'smtp_password', name=>_locl('SMTP server password'), default=>'' },
 
     ]
 };
 
 register 'service.daemon.email' => {
-    name => 'Email Daemon',
+    name => _locl('Email Daemon'),
     icon => '/static/images/icons/daemon.svg',
     config => 'config.comm.email',
     handler => sub {
@@ -65,7 +65,7 @@ register 'service.daemon.email' => {
 };
 
 register 'service.email.flush' => {
-    name => 'Email Flush Queue Once',
+    name => _locl('Flush Email Queue Once'),
     icon => '/static/images/icons/envelope.svg',
     config => 'config.comm.email',
     handler => sub {

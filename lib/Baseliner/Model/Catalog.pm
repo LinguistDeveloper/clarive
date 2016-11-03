@@ -22,11 +22,11 @@ BEGIN { extends 'Catalyst::Model' }
 # };
 
 register 'action.catalog.view' => {
-    name => 'View catalog'
+    name => _locl('View catalog')
 };
 
 register 'action.catalog.request' => {
-    name => 'Request catalog'
+    name => _locl('Request catalog')
 };
 
 sub get_catalog_actions {

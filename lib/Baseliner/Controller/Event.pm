@@ -9,11 +9,11 @@ use experimental 'switch';
 
 BEGIN {  extends 'Catalyst::Controller' }
 
-register 'action.admin.event' => { name=>'Admin Events' };
+register 'action.admin.event' => { name => _locl('Admin Events') };
 
 register 'menu.admin.events' => {
-    label    => 'Events',
-    title    => _loc('Events'),
+    label    => _locl('Events'),
+    title    => _locl('Events'),
     action   => 'action.admin.event',
     url_comp => '/comp/events.js',
     icon     => '/static/images/icons/event.svg',

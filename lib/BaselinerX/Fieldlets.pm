@@ -553,7 +553,7 @@ register 'fieldlet.system.tasks' => {
 
 register 'fieldlet.required.category' => {
     name        => _locl('Topic Category'),
-    name_field  => 'Category',
+    name_field  => _locl('Category'),
     id_field    => 'category',
     bd_field    => 'id_category',
     html        => '/fields/templates/html/dbl_row_body.html',
