@@ -579,6 +579,56 @@ subtest 'json: returns correct successful response without filter' => sub {
     is $c->stash->{json}{totalCount}, 2;
 };
 
+subtest 'actions: returns valid role actions' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.some' => {} );
+
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.some' } ]
+    );
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c( req => { params => { role_id => $id_role } } );
+    $controller->actions($c);
+
+    cmp_deeply $c->stash->{json},
+    {
+        actions => [
+            {   key  => 'action.some',
+                name => undef
+            }
+        ],
+        invalid_actions => []
+    };
+};
+
+subtest 'actions: returns invalid role actions' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role(
+        role    => 'Role',
+        actions => [ { action => 'action.invalid' } ]
+    );
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c( req => { params => { role_id => $id_role } } );
+    $controller->actions($c);
+
+    cmp_deeply $c->stash->{json},
+    {
+        actions         => [],
+        invalid_actions => [
+            {   key  => '',
+                name => 'action.invalid'
+            }
+        ]
+    }
+};
+
 subtest 'action_info: returns no info for unknown action' => sub {
     _setup();
 
