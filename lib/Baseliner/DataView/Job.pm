@@ -31,7 +31,7 @@ sub find {
         push @order_by, $field_group => ( $groupby eq 'when' ? -1 : $groupdir );
 
         my ($field_sort) = $sort_by =~ m{^(.*)\.} ? $1 : '';
-        push @order_by, $sort_by => $dir if !( $field_group =~ /$field_sort/ ) && $sort_by;
+        push @order_by, $sort_by => $dir if ( !$field_sort || $field_group !~ /$field_sort/ ) && $sort_by;
     }
     else {
         @order_by = ( $allow_field->{$sort} => $dir ) if $allow_field->{$sort};
