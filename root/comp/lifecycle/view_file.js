@@ -23,7 +23,7 @@
                     handler: checkin },
                 { xtype:'button', text:_('Compile'),icon: '/static/images/icons/play.svg', cls: 'x-btn-text-icon',
                     handler: checkin },
-                { xtype:'button', text:_('Save'), icon: '/static/images/icons/action_save.svg', cls: 'x-btn-text-icon',
+                { xtype:'button', text:_('Save'), icon: '/static/images/icons/save.svg', cls: 'x-btn-text-icon',
                     handler: checkin }
             ],
             items 	 : [ code ]

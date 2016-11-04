@@ -605,7 +605,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             btn_out,
             {   xtype: 'button',
                 text: _('Save'),
-                icon:'/static/images/icons/action_save.svg',
+                icon:'/static/images/icons/save.svg',
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){

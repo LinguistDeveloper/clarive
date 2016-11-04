@@ -847,7 +847,7 @@
             enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, debug_mode,
             error_trap, trapTimeout, trap_timeout_action, trapMaxRetry, trap_rollback, sub_name
         ]});
-        var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/action_save.svg', handler:function(){
+        var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.svg', handler:function(){
             node.attributes = de.getData();
             if( !node.attributes.data ) node.attributes.data={};
             var dk = data_key.getValue();
@@ -947,7 +947,7 @@
                             tbar: [
                                 '->',
                                 { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ form.destroy() } },
-                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/action_save.svg', handler: function(){ save_form() } }
+                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.svg', handler: function(){ save_form() } }
                             ],
                             bodyCssClass: 'rule-op-edit-form',
                             items: comp
@@ -1185,11 +1185,11 @@
                             bbar: [
                                 '->',
                                 { xtype:'button', icon: '/static/images/icons/left.svg', text: _('Go Back'), handler: function(){ errwin.close() } },
-                                { xtype:'button', icon: '/static/images/icons/action_save.svg', text: _('Always Ignore for this Rule and Save'), handler: function(){
+                                { xtype:'button', icon: '/static/images/icons/save.svg', text: _('Always Ignore for this Rule and Save'), handler: function(){
                                     save_action({ ignore_dsl_errors: 1, ignore_error_always: 1 }); // repeat
                                     errwin.close();
                                 }},
-                                { xtype:'button', icon: '/static/images/icons/action_save.svg', text: _('Ignore and Save'), handler: function(){
+                                { xtype:'button', icon: '/static/images/icons/save.svg', text: _('Ignore and Save'), handler: function(){
                                     save_action({ ignore_dsl_errors: 1 }); // repeat
                                     errwin.close();
                                 }}
@@ -1354,7 +1354,7 @@
             });
             stmts_menu.showAt(event.xy);
         };
-        var btn_save_tree = new Ext.Button({ cls: 'ui-comp-rule-view-save', text: _('Save'), icon:'/static/images/icons/action_save.svg', handler: rule_save });
+        var btn_save_tree = new Ext.Button({ cls: 'ui-comp-rule-view-save', text: _('Save'), icon:'/static/images/icons/save.svg', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ tooltip: _('Refresh'), icon:'/static/images/icons/refresh.svg', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.svg', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){

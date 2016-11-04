@@ -229,7 +229,7 @@
             url: '/daemon/update',
             buttons: [{
                 text: _('Save'),
-                icon: '/static/images/icons/action_save.svg',
+                icon: '/static/images/icons/save.svg',
                 type: 'submit',
                 handler: function() {
                     var form = form_daemon.getForm();

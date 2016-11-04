@@ -808,7 +808,7 @@
     var button_submit = new Ext.Button({
         xtype: 'button',
         text: _('Create'),
-        icon: '/static/images/icons/action_save.svg',
+        icon: '/static/images/icons/save.svg',
         cls: 'ui-btn-create x-btn-text-icon',
         handler: function(){
             if( check_no_cal.checked && comments.getValue().length == 0 ) {

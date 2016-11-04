@@ -24,7 +24,7 @@ seleccionamos el calendario a copiar.
 - **Entorno**: Seleccionamos el entorno al que se aplica el calendario.
 - **Ámbito**: Seleccionamos el ámbito al que se aplica el calendario. Es posible seleccionar un Grupo (CI) para seleccionar más de un proyecto.
 
-Para finalizar pulsamos el botón <img src="/static/images/icons/action_save.svg"
+Para finalizar pulsamos el botón <img src="/static/images/icons/save.svg"
 /> Guardar.
 
 Una vez guardado se puede editar en la sección [Editar

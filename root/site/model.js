@@ -2122,7 +2122,7 @@ Baseliner.DataEditor = function(c) {
     }
 
     if( ! c.hide_cancel )  tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ close_comp(false) } } );
-    if( ! c.hide_save )  tbar.push({ text:_('Save'), icon:'/static/images/icons/action_save.svg', handler: function(){ close_comp(true) } } );
+    if( ! c.hide_save )  tbar.push({ text:_('Save'), icon:'/static/images/icons/save.svg', handler: function(){ close_comp(true) } } );
 
     var cols = [];
     cols.push({ id:'key', header: _("Key"), width: c.col_key_width || 50, sortable: false, dataIndex: 'key', editor: textedit, renderer: render_key });
@@ -2476,7 +2476,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         } else {
             self.tbar = [];
             if( ! self.hide_save )
-                self.tbar.push({ text:_('Save'), icon:'/static/images/icons/action_save.svg', handler: function(){ self.done(true) } } );
+                self.tbar.push({ text:_('Save'), icon:'/static/images/icons/save.svg', handler: function(){ self.done(true) } } );
             if( ! self.hide_cancel )
                 self.tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ self.done(false) } } );
         }

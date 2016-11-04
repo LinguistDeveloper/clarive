@@ -19,7 +19,7 @@
        },
        message : function(msg) {
            this.log( msg );
-           this.update( String.format( '<img src="/static/images/icons/action_save.svg" /> <b style="line-height: 16px">{0}</b>', msg ) );
+           this.update( String.format( '<img src="/static/images/icons/save.svg" /> <b style="line-height: 16px">{0}</b>', msg ) );
            this.ownerCt.doLayout();
        },
        error: function(msg) {

@@ -487,7 +487,7 @@
 
         var btn_submit = new Ext.Button({
             text: _('Save'),
-            icon: '/static/images/icons/action_save.svg',
+            icon: '/static/images/icons/save.svg',
             handler: function() {
                 var ff = schedule_form.getForm();
                 ff.submit({

@@ -117,7 +117,7 @@ sub _translate_icon {
         '/static/images/icons/action.gif'                  => '/static/images/icons/action.svg',
         '/static/images/icons/action_folder.gif'           => '/static/images/icons/action_folder.svg',
         '/static/images/icons/action_go.gif'               => '/static/images/icons/action_go.svg',
-        '/static/images/icons/action_save.gif'             => '/static/images/icons/action_save.svg',
+        '/static/images/icons/action_save.gif'             => '/static/images/icons/save.svg',
         '/static/images/icons/add.gif'                     => '/static/images/icons/add.svg',
         '/static/images/icons/agent.gif'                   => '/static/images/icons/agent.svg',
         '/static/images/icons/application.gif'             => '/static/images/icons/application.svg',

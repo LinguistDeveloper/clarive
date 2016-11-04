@@ -817,7 +817,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         self.btn_save_form = new Ext.Button({
             text: _('Save'),
-            icon:'/static/images/icons/action_save.svg',
+            icon:'/static/images/icons/save.svg',
             cls: 'x-btn-icon-text',
             // type: 'submit',
             hidden: true,
