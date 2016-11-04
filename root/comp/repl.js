@@ -617,7 +617,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:IC('debug-view'),
+                icon:IC('play'),
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },

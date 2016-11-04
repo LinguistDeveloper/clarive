@@ -213,14 +213,16 @@ Baseliner.message = function(title, msg, config){
     }
 
     msg = Baseliner.error_msg( msg );
+
+    if( msg && msg.length > 500 ) {
+        msg = msg.substring(0,500) + '(...)' ;
+    }
+
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, 'class': 'baseliner-message',
         time: 2200,
         image: '/static/images/icons/about.svg'
     }, config));
-    /*
-    setTimeout( function(){ $.gritter.remove( id, { fade: true }); }, timeout);
-    */
 };
 
 Baseliner.warning = function(title, msg ){
