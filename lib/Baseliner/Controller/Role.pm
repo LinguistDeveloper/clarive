@@ -115,7 +115,7 @@ sub bounds : Local {
 
     my $data = $permissions->action_bounds_available($action, $bound, %$filter);
 
-    unshift @$data, { id => '', title => 'Any' };
+    unshift @$data, { id => '', title => _loc('Any') };
 
     $c->stash->{json} = { data => $data, totalCount => scalar(@$data) };
     $c->forward('View::JSON');

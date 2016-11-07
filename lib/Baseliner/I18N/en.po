@@ -197,8 +197,7 @@ msgid "Missing User"
 msgstr ""
 
 #: lib/Baseliner/Controller/Auth.pm lib/Baseliner/Controller/FileVersion.pm
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas
-#: root/comp/role_detail.js root/comp/rules.js
+#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/comp/rules.js
 #: root/fields/system/js/list_tasks.js root/site/common.js
 msgid "OK"
 msgstr ""
@@ -1398,6 +1397,12 @@ msgstr ""
 #: root/forms/workflow_if_role.js root/forms/workflow_transition_match.js
 #: root/site/model.js
 msgid "Roles"
+msgstr ""
+
+#: lib/Baseliner/Controller/Role.pm root/comp/role_detail.js
+#: root/dashlets/list_topics_config.js root/forms/git_delete_reference.js
+#: root/forms/if_var_condition.js root/forms/topic_get_with_condition.js
+msgid "Any"
 msgstr ""
 
 #: lib/Baseliner/Controller/Role.pm
@@ -7346,12 +7351,13 @@ msgstr ""
 #: root/ci/DBDest.js root/ci/item.js root/ci/status.js root/ci/variable.js
 #: root/comp/catalog_grid.js root/comp/configlist/grid.mas
 #: root/comp/dashboard_job.html root/comp/job_calendar_slot_edit.js
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/comp/rule_new.js
-#: root/comp/rules.js root/comp/topic/form_editor.js
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/forms/catalog_task.js root/forms/git_delete_reference.js
-#: root/forms/parse_config.js root/forms/write_config.js root/site/common.js
-#: root/site/explorer.js root/site/model.js
+#: root/comp/monitor_grid.js root/comp/revision/grid.mas
+#: root/comp/role_detail.js root/comp/rule_new.js root/comp/rules.js
+#: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
+#: root/comp/user_grid.js root/forms/catalog_task.js
+#: root/forms/git_delete_reference.js root/forms/parse_config.js
+#: root/forms/write_config.js root/site/common.js root/site/explorer.js
+#: root/site/model.js
 msgid "Type"
 msgstr ""
 
@@ -8365,7 +8371,7 @@ msgstr ""
 #: root/comp/job_new.js root/comp/label_admin.js root/comp/lifecycle/tasks.js
 #: root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
-#: root/comp/revision/grid.mas root/comp/role_grid.js
+#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
 #: root/site/common.js root/site/kanban.js root/site/tabfu.js
@@ -10021,8 +10027,8 @@ msgid "Yes, I'm sure"
 msgstr ""
 
 #: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/rules.js
-#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
+#: root/comp/revision/grid.mas root/comp/rules.js root/comp/sem.js
+#: root/comp/sms.js root/comp/topic/topic_drop.js
 #: root/fields/system/js/list_tasks.js root/forms/shortcut.js
 #: root/site/common.js root/site/dashboard.js root/site/model.js
 msgid "Cancel"
@@ -10648,7 +10654,31 @@ msgid "Available Actions"
 msgstr ""
 
 #: root/comp/role_detail.js
-msgid "Role bounds"
+msgid "Negative"
+msgstr ""
+
+#: root/comp/role_detail.js
+msgid "Allow"
+msgstr ""
+
+#: root/comp/role_detail.js
+msgid "Deny"
+msgstr ""
+
+#: root/comp/role_detail.js
+msgid "Role Bounds"
+msgstr ""
+
+#: root/comp/role_detail.js
+msgid "Action bounds saved"
+msgstr ""
+
+#: root/comp/role_detail.js root/site/common.js
+msgid "Are you sure you want to close the window?"
+msgstr ""
+
+#: root/comp/role_detail.js
+msgid "Bounds Selection"
 msgstr ""
 
 #: root/comp/role_detail.js
@@ -12635,11 +12665,6 @@ msgstr ""
 #: root/fields/templates/config/release.js
 #: root/forms/topic_get_with_condition.js
 msgid "Select topics in statuses"
-msgstr ""
-
-#: root/dashlets/list_topics_config.js root/forms/git_delete_reference.js
-#: root/forms/if_var_condition.js root/forms/topic_get_with_condition.js
-msgid "Any"
 msgstr ""
 
 #: root/dashlets/list_topics_config.js root/forms/topic_get_with_condition.js
@@ -14686,10 +14711,6 @@ msgstr ""
 
 #: root/site/calendar.js
 msgid "Sat"
-msgstr ""
-
-#: root/site/common.js
-msgid "Are you sure you want to close the window?"
 msgstr ""
 
 #: root/site/common.js

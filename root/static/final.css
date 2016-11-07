@@ -1194,6 +1194,7 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 .list_jobs_item img {
     margin-right: 3px !important;
 }
+
 .x-tab-strip-top.x-tab-right {
     padding-bottom: 3px;
 }
@@ -1213,4 +1214,18 @@ ul.x-tab-strip li {
 
 .x-menu-item.x-menu-check-item.log-filter-menu.x-unselectable .x-menu-item-text {
     padding-left: 16px;
+}
+
+.x-bounds-window-bwrap .x-window-ml .x-window-mr .x-window-mc .x-window-tbar .x-toolbar.x-small-editor.x-toolbar-layout-ct {
+    border: none;
+}
+
+.x-bounds-form.x-form {
+    padding-top: 15px;
+}
+
+.x-bounds-form .x-btn.x-btn-text-icon {
+    margin-left: 105px;
+    margin-top:20px;
+    padding-top: 2px;
 }
