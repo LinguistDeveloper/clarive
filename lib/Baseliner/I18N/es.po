@@ -2276,6 +2276,10 @@ msgstr ""
 msgid "File %1 not found"
 msgstr "Fichero %1 no encontrado"
 
+#: lib/Baseliner/Controller/Topic.pm
+msgid "filter param is required"
+msgstr "Parámetro filter es requerido"
+
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Service/CreateJob.pm
 msgid "The user %1 has created job %2 for %3 bl"
 msgstr "El usuario %1 ha creado el pase %2 para %3 bl"

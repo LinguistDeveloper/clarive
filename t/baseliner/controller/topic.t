@@ -1626,6 +1626,202 @@ subtest 'upload complete: creates correct event.file.create event' => sub {
 
 };
 
+subtest 'file_tree: returns false if param topic_mid is passed without filter param' => sub {
+    _setup();
+
+    my $username = 'test_user';
+
+    my $c = _build_c(
+        username => $username,
+        req      => { params => { topic_mid => '1234' } }
+    );
+
+    my $controller = _build_controller();
+    $controller->file_tree($c);
+
+    cmp_deeply $c->stash,
+        {
+        json => {
+            success => \0,
+            msg     => re(qr/filter param is required/),
+        }
+        };
+};
+
+subtest 'file_tree: returns true and empty data structure if no params passed' => sub {
+    _setup();
+
+    my $username = 'test_user';
+
+    my $c = _build_c(
+        username => $username,
+        req      => { params => {} }
+    );
+
+    my $controller = _build_controller();
+    $controller->file_tree($c);
+
+    my @data;
+
+    cmp_deeply $c->stash,
+        {
+        json => {
+            success => \1,
+            total   => 0,
+            data    => \@data
+        }
+        };
+};
+
+subtest 'file_tree: returns file data tree structure without directory' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $username  = ci->user->find_one()->{name};
+    my $file      = TestUtils->create_temp_file( filename => 'filename.txt' );
+    my $c         = _build_c(
+        username => $username,
+        req      => {
+            params => {
+                extension => 'txt',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.txt',
+                #fullpath  => $file->dir . "/filename.txt"
+            },
+            body => $file->stringify
+        }
+    );
+
+    my $controller = _build_controller();
+    $controller->upload($c);
+    my $asset_mid = ci->asset->find_one()->{mid};
+    my $asset = ci->new($asset_mid);
+    my ( $size, $unit ) = Util->_size_unit( $asset->filesize );
+    $size = "$size $unit";
+
+    my @asset;
+    push @asset, $asset->{mid};
+
+    $c = _build_c(
+        username => $username,
+        req      => { params => { files_mid => \@asset } }
+    );
+
+    $controller->file_tree($c);
+
+    cmp_deeply $c->stash,
+        {
+        json => {
+            success => \1,
+            total   => 1,
+            data    => [
+                { mid => $asset->mid, _id => $asset->mid, _parent => undef, filename => $asset->name, versionid => 1, size => $size, path => '/', _is_leaf => \1 }
+            ]
+        }
+        };
+};
+
+subtest 'file_tree: returns file data tree structure with directory when it pass files_mid' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $username  = ci->user->find_one()->{name};
+    my $file      = TestUtils->create_temp_file( filename => 'filename.txt' );
+    my $c         = _build_c(
+        username => $username,
+        req      => {
+            params => {
+                extension => 'txt',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.txt',
+                fullpath  => "/directory/filename.txt"
+            },
+            body => $file->stringify
+        }
+    );
+
+    my $controller = _build_controller();
+    $controller->upload($c);
+    my $asset_mid = ci->asset->find_one()->{mid};
+    my $asset = ci->new($asset_mid);
+    my ( $size, $unit ) = Util->_size_unit( $asset->filesize );
+    $size = "$size $unit";
+
+    my @asset;
+    push @asset, $asset->{mid};
+
+    $c = _build_c(
+        username => $username,
+        req      => { params => { files_mid => \@asset } }
+    );
+
+    $controller->file_tree($c);
+
+    cmp_deeply $c->stash,
+        {
+        json => {
+            success => \1,
+            total   => 1,
+            data    => [
+                { mid => $asset->mid, _id => $asset->mid, _parent => ignore(), filename => $asset->name, versionid => 1, size => $size, path => '/directory', _is_leaf => \1 },
+                { mid => undef, _id => ignore(), _parent => undef, filename => 'directory', versionid => undef, size => undef, path => '', _is_leaf => \0 }
+            ]
+        }
+        };
+};
+
+subtest 'file_tree: returns file data tree structure with directory when it pass topic_mid and filter' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $username  = ci->user->find_one()->{name};
+    my $file      = TestUtils->create_temp_file( filename => 'filename.txt' );
+    my $c         = _build_c(
+        username => $username,
+        req      => {
+            params => {
+                extension => 'txt',
+                topic_mid => $topic_mid,
+                filter    => 'test_file',
+                qqfile    => 'filename.txt',
+                fullpath  => "/directory/filename.txt"
+            },
+            body => $file->stringify
+        }
+    );
+
+    my $controller = _build_controller();
+    $controller->upload($c);
+    my $asset_mid = ci->asset->find_one()->{mid};
+    my $asset = ci->new($asset_mid);
+    my ( $size, $unit ) = Util->_size_unit( $asset->filesize );
+    $size = "$size $unit";
+
+    my @asset;
+    push @asset, $asset->{mid};
+
+    $c = _build_c(
+        username => $username,
+        req      => { params => { topic_mid => $topic_mid, filter => 'test_file' } }
+    );
+
+    $controller->file_tree($c);
+
+    cmp_deeply $c->stash,
+        {
+        json => {
+            success => \1,
+            total   => 1,
+            data    => [
+                { mid => $asset->mid, _id => $asset->mid, _parent => ignore(), filename => $asset->name, versionid => 1, size => $size, path => '/directory', _is_leaf => \1 },
+                { mid => undef, _id => ignore(), _parent => undef, filename => 'directory', versionid => undef, size => undef, path => '', _is_leaf => \0 }
+            ]
+        }
+        };
+};
+
 subtest 'is_valid_extension: returns false, not allowed extension' => sub {
     my $controller = _build_controller();
     my $result     = $controller->is_valid_extension(
