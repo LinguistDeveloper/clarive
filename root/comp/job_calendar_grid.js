@@ -71,7 +71,7 @@
                 },
                 buttons: [{
                     text: _('Save'),
-                    icon: '/static/images/icons/action_save.svg',
+                    icon: '/static/images/icons/save.svg',
                     handler: function() {
                         var ff = new_cal.getForm();
                         var comboCopy = ff.findField('copyof');

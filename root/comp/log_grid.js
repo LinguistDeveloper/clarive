@@ -235,7 +235,7 @@
             tbar: [
                 { 
                     text: _('Save'),
-                    icon:'/static/images/icons/action_save.svg',
+                    icon:'/static/images/icons/save.svg',
                     cls: 'x-btn-text-icon',
                     handler: function(){
                         if( field_annotate.getValue().length > 2000 ) {

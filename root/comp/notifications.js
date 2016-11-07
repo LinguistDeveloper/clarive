@@ -1004,7 +1004,7 @@
                     }
                 }, {
                     text: _('Save'),
-                    icon: '/static/images/icons/action_save.svg',
+                    icon: '/static/images/icons/save.svg',
                     handler: function() {
                         add_recipients();
                     }
@@ -1291,7 +1291,7 @@
                 }
             }, {
                 text: _('Save'),
-                icon: '/static/images/icons/action_save.svg',
+                icon: '/static/images/icons/save.svg',
                 handler: function() {
                     save_notification();
                 }

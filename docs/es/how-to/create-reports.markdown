@@ -68,5 +68,5 @@ A la derecha, aparece el árbol con los datos añadidos en nuestro informe:
 
  - **Ordenar**: Podemos definir el orden. Arrastrar un fieldlet aquí y hacer click en él. Aparecerá un menú en el que definiremos el orden ascendente o descendente.
 
-Para terminar hacer click en <img src="/static/images/icons/action_save.svg"/> Guardar.
+Para terminar hacer click en <img src="/static/images/icons/save.svg"/> Guardar.
 

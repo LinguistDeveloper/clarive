@@ -23,6 +23,6 @@ The calendar with a higher level, has more precedence.
 - **Environment**: Select the environment which the calendar applies.
 - **Scope**: Select the scope which the calendar applies. User also can use CI Groups as scope to select more than one project.
 
-To finish, click the <img src="/static/images/icons/action_save.svg" /> Save button.
+To finish, click the <img src="/static/images/icons/save.svg" /> Save button.
 
 To edit the calendar, go to the [Edit calendar](how-to/edit-calendar) section.

@@ -71,4 +71,4 @@ At the right side, the tree with added data into the report:
  - **Order**: Finally, we can set the default order to show the report. Drag a fieldlet here, and click on it. This will show a menu to set the order type: ASC or DESC.
 
 
-To finish, just click on <img src="/static/images/icons/action_save.svg"/> Save.
+To finish, just click on <img src="/static/images/icons/save.svg"/> Save.

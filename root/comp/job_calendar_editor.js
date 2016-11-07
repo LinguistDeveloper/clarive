@@ -219,7 +219,7 @@
     });
 
     var btnSave = new Ext.Button({
-        icon: '/static/images/icons/action_save.svg',
+        icon: '/static/images/icons/save.svg',
         text: _('Save'),
         handler: function() {
             var ff = cal_form.getForm();

@@ -85,7 +85,7 @@ my $iid = Util->_md5;
                 if (!topic[col.name] || topic[col.name] == 0 || topic[col.name] == false ) {
                   html = html + '<div style="text-align:center;"><img src="/static/images/icons/topic.svg"></div>';
                 } else {
-                  html = html + '<div style="text-align:center;"><img src="/static/images/icons/action_save.svg"></div>'
+                  html = html + '<div style="text-align:center;"><img src="/static/images/icons/save.svg"></div>'
                 }
               }
             }

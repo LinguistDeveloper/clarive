@@ -111,7 +111,7 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
         
         var btn_save_config = new Ext.Toolbar.Button({
             text: _('Save'),
-            icon: '/static/images/icons/action_save.svg',
+            icon: '/static/images/icons/save.svg',
             cls: 'x-btn-text-icon',
             handler: function() {
                 var fields = new Array();
