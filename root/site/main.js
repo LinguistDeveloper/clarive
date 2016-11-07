@@ -180,8 +180,9 @@ Ext.onReady(function(){
             }
     });
     tbar_items.push( Cla.share_button );
-
-    Prefs.site.show_calendar = true;
+    // TODO: fix calendar to show again in main menu => Change Prefs.site.show_calendar to
+    // false. When fix, it has to be true again.
+    Prefs.site.show_calendar = false;
     if( Prefs.site.show_calendar ) {
         var south_panel = new Ext.Button({
             icon: "/static/images/icons/calendar.svg",
