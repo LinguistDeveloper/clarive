@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 
 use Test::More;
 use Test::Deep;
@@ -79,11 +80,28 @@ subtest 'seq: sets sequence in parallel' => sub {
     is $mdb->seq('col'), $forks + 1;
 };
 
+subtest 'grid_insert: inserts data into grid' => sub {
+    _setup();
+
+    mdb->grid_insert( 'hello', foo => 'bar' );
+
+    is( mdb->grid_slurp( { foo => 'bar' } ), 'hello' );
+};
+
+subtest 'grid_insert: inserts unicode data into grid' => sub {
+    _setup();
+
+    mdb->grid_insert( 'привет', foo => 'bar' );
+
+    is( mdb->grid_slurp( { foo => 'bar' } ), 'привет' );
+};
+
 done_testing;
 
 sub _setup {
     mdb->master_seq->drop;
     mdb->index_all('master_seq');
+    mdb->grid->drop;
 }
 
 sub _build_mdb {

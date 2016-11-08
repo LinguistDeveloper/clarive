@@ -107,8 +107,6 @@ sub compile {
         if ( my $grid = mdb->grid->find_one( { id_rule => $id_rule } ) ) {
             if ( $grid->info->{ts} && $grid->info->{ts} eq $rule->{ts} ) {
                 _debug("DSL not changed. Loading cached version $pkg...");
-
-                $dsl = Encode::decode( 'UTF-8', $grid->slurp );
             }
             else {
                 _debug("DSL has changed. Removing cached version $pkg...");
