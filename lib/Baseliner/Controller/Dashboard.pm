@@ -479,15 +479,15 @@ sub topics_by_field : Local {
         depth               => { isa => 'PositiveInt', default => 5 }
       );
 
-    my (@topics_by_category, $colors, @data );
-    my $group_threshold = $p->{group_threshold};
-    my $group_by = $p->{group_by};
-    my $categories = $p->{categories};
-    my $statuses = $p->{statuses};
-    my $not_in_status = $p->{not_in_status};
+    my ( @topics_by_category, $colors, @data );
+    my $group_threshold   = $p->{group_threshold};
+    my $group_by          = $p->{group_by};
+    my $categories        = $p->{categories};
+    my $statuses          = $p->{statuses};
+    my $not_in_status     = $p->{not_in_status};
     my $numberfield_group = $p->{numberfield_group};
-    my $result_type = $p->{result_type};
-    my $sort_by_labels = $p->{sort_by_labels};
+    my $result_type       = $p->{result_type};
+    my $sort_by_labels    = $p->{sort_by_labels};
     my $max_legend_length = $p->{max_legend_length};
     my $id_project        = $p->{project_id};
     my $topic_mid         = $p->{topic_mid};

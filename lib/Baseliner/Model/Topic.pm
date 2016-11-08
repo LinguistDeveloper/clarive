@@ -3666,8 +3666,8 @@ sub apply_filter{
 }
 
 sub filter_children {
-    my ($self, $where, %p ) = @_;
-    my $topic_mid = $p{topic_mid};
+    my ( $self, $where, %p ) = @_;
+    my $topic_mid  = $p{topic_mid};
     my $id_project = $p{id_project};
     my $depth      = $p{depth} // 5;
 
@@ -3682,8 +3682,8 @@ sub filter_children {
     elsif ($id_project) {
         my @mids_in = ();
         my @topics_project = map { $$_{from_mid} }
-            mdb->master_rel->find({ to_mid=>$id_project, rel_type=>'topic_project' })->all;
-        push @mids_in, grep { length } @topics_project;
+            mdb->master_rel->find( { to_mid => $id_project, rel_type => 'topic_project' } )->all;
+        push @mids_in, grep {length} @topics_project;
         $where->{mid} = mdb->in(@mids_in) if @mids_in;
     }
 }

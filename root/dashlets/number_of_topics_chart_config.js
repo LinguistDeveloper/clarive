@@ -4,70 +4,119 @@
         path: 'rules/palette/dashlets/topics-chart'
     });
     var data = params.data || {};
-    var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
-    var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
+    var cstatus = new Baseliner.StatusBox({
+        name: 'statuses',
+        fieldLabel: _('Select topics in statuses'),
+        value: data.statuses || ''
+    });
+    var ccategory = new Baseliner.CategoryBox({
+        name: 'categories',
+        fieldLabel: _('Select topics in categories'),
+        value: data.categories || ''
+    });
 
     var common = params.common_options || Cla.dashlet_common(params);
 
-    return common.concat([
-        {
-            xtype: 'label',
-            text: _('Chart options'),
-            style: {
-                // 'margin': '10px',
-                'font-size': '12px',
-                'font-weight': 'bold'
-            }
-        },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
-          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
-          items:[
-            { layout:'form', 
-              columnWidth: .5, 
-              bodyStyle: 'background:transparent;',
-              items: [
-                new Baseliner.ComboSingle({ forceSelection: false, allowBlank: false, fieldLabel: _('Select or type the grouping field'), editable: true, name: 'group_by', value: data.group_by || 'category.name', data: [
-                    ['category.name'],
-                    ['category_status.name'],
-                    ['created_by'],
-                    ['modified_by']
-                  ] 
-                }),
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('Grouper number field'), name: 'numberfield_group', value: data.numberfield_group || ''},
+    return common.concat([{
+        xtype: 'label',
+        text: _('Chart options'),
+        style: {
+            // 'margin': '10px',
+            'font-size': '12px',
+            'font-weight': 'bold'
+        }
+    }, {
+        xtype: 'panel',
+        hideBorders: true,
+        layout: 'column',
+        bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+        items: [{
+            layout: 'form',
+            columnWidth: .5,
+            bodyStyle: 'background:transparent;',
+            items: [
+                new Baseliner.ComboSingle({
+                    forceSelection: false,
+                    allowBlank: false,
+                    fieldLabel: _('Select or type the grouping field'),
+                    editable: true,
+                    name: 'group_by',
+                    value: data.group_by || 'category.name',
+                    data: [
+                        ['category.name'],
+                        ['category_status.name'],
+                        ['created_by'],
+                        ['modified_by']
+                    ]
+                }), {
+                    xtype: 'textfield',
+                    anchor: '100%',
+                    fieldLabel: _('Grouper number field'),
+                    name: 'numberfield_group',
+                    value: data.numberfield_group || ''
+                },
 
-                new Baseliner.ComboDouble({ fieldLabel: _('Type of number'), name:'number_type', value: data.number_type || 'number', data: [
-                    ['number', _('Number')],
-                    ['currency', _('Currency')],
-                    ['percentage', _('Percentage')]
-                  ]
+                new Baseliner.ComboDouble({
+                    fieldLabel: _('Type of number'),
+                    name: 'number_type',
+                    value: data.number_type || 'number',
+                    data: [
+                        ['number', _('Number')],
+                        ['currency', _('Currency')],
+                        ['percentage', _('Percentage')]
+                    ]
                 }),
-                new Baseliner.ComboDouble({ fieldLabel: _('Agregate grouper field by'), name:'result_type', value: data.result_type || 'count', data: [
-                    ['count', _('Count')],
-                    ['avg', _('Average')],
-                    ['sum', _('Sum Total')],
-                    ['min', _('MIN')],
-                    ['max', _('MAX')]
-                  ]
-                }),
-                { xtype : "checkbox", name : "sort_by_labels", checked: data.sort_by_labels=='on' ? true : false, boxLabel : _('Sort by labels') }
-              ]
-            },
-            { layout:'form',
-              columnWidth: .5,
-              bodyStyle: 'background:transparent;',
-              items: [
-                new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'donut', data: [
-                    ['pie', _('Pie')],
-                    ['donut', _('Donut')],
-                    ['bar', _('Bar')]
-                  ]
-                }),
-                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5},
-                { xtype:'textfield', anchor:'100%', fieldLabel: _('Currency symbol to be shown'), name: 'symbol', value: data.symbol || ''},
-                { xtype:'numberfield', anchor:'100%', fieldLabel: _('Max characters in legend (0 = no limit)'), name: 'max_legend_length', value: data.max_legend_length || 0},
-
+                new Baseliner.ComboDouble({
+                    fieldLabel: _('Agregate grouper field by'),
+                    name: 'result_type',
+                    value: data.result_type || 'count',
+                    data: [
+                        ['count', _('Count')],
+                        ['avg', _('Average')],
+                        ['sum', _('Sum Total')],
+                        ['min', _('MIN')],
+                        ['max', _('MAX')]
+                    ]
+                }), {
+                    xtype: "checkbox",
+                    name: "sort_by_labels",
+                    checked: data.sort_by_labels == 'on' ? true : false,
+                    boxLabel: _('Sort by labels')
+                }
+            ]
+        }, {
+            layout: 'form',
+            columnWidth: .5,
+            bodyStyle: 'background:transparent;',
+            items: [
+                new Baseliner.ComboDouble({
+                    fieldLabel: _('Chart will be shown as ...'),
+                    name: 'type',
+                    value: data.type || 'donut',
+                    data: [
+                        ['pie', _('Pie')],
+                        ['donut', _('Donut')],
+                        ['bar', _('Bar')]
+                    ]
+                }), {
+                    xtype: 'numberfield',
+                    anchor: '100%',
+                    fieldLabel: _('Minimum % to group series in Others group'),
+                    name: 'group_threshold',
+                    value: data.group_threshold || 5
+                }, {
+                    xtype: 'textfield',
+                    anchor: '100%',
+                    fieldLabel: _('Currency symbol to be shown'),
+                    name: 'symbol',
+                    value: data.symbol || ''
+                }, {
+                    xtype: 'numberfield',
+                    anchor: '100%',
+                    fieldLabel: _('Max characters in legend (0 = no limit)'),
+                    name: 'max_legend_length',
+                    value: data.max_legend_length || 0
+                },
             ]
         }]
     }, {
