@@ -10,16 +10,27 @@
 <%perl>
     use experimental 'smartmatch';
 
-    my $json = $data->{$meta->{bd_field}} ;
+    my $json = $data->{ $meta->{bd_field} };
     my @res;
     my $ix = 0;
-    my @columns = split ';', $meta->{columns};
-    my @html_view_columns = split ',', $meta->{html_view_columns};
-    if(@html_view_columns){
-        map {push @res, $_ if $_~~@html_view_columns} @columns;
-    }else{
-        @res = @columns;
+    my @columns;
+
+    if ( !$meta->{columns} && $meta->{key} eq 'fieldlet.milestones' ) {
+        $meta->{columns} = join ';', 'Milestone[slotname],textfield,250',
+            'Start Date[start_date],datefield,80',
+            'Planned Start Date[plan_start_date],datefield,80',
+            'End Date[end_date],datefield,80',
+            'Planned End Date[plan_end_date],datefield,80';
     }
+
+    @columns = split ';', $meta->{columns};
+    my @html_view_columns = split ',', $meta->{html_view_columns};
+    if (@html_view_columns) {
+        map { push @res, $_ if $_ ~~ @html_view_columns } @columns;
+    }
+    else {
+        @res = @columns;
+}
 
     my $cols = ref $meta->{columns} ? \@res : do {
         [ map { [ split ',' ] } @res ]
