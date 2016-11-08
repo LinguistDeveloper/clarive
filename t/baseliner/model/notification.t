@@ -115,6 +115,79 @@ subtest 'get_recipients: returns all actions' => sub {
     like $output[0]->{id}, qr/^action./;
 };
 
+subtest 'get_rules_notifications: returns notification to user associated to the role filter by project ' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci_project();
+    my $project2 = TestUtils->create_ci_project();
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user2    = TestSetup->create_user( id_role => $id_role, project => $project2, username => 'tester' );
+
+    my $model = _build_model();
+
+    mdb->notification->insert(
+        {   event_key     => 'event.job.end',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}',
+            data          => { recipients => { TO => { Roles => { mid => $id_role } } } }
+
+        },
+    );
+
+    my @output = $model->get_rules_notifications(
+        { notify_scope => { project => [ $project->mid ] }, action => 'SEND', event_key => 'event.job.end' } );
+
+    my ($keys) = keys %{ $output[0] };
+    my $username = $user->username;
+
+    is scalar @output, 1;
+    is_deeply $output[0]->{"$keys"}->{carrier}->{TO}, { $username => 1 };
+};
+
+subtest 'get_rules_notifications: returns notification to user associated to the role filter by topic mid ' => sub {
+    _setup();
+
+    my $project     = TestUtils->create_ci_project();
+    my $project2    = TestUtils->create_ci_project();
+    my $id_role     = TestSetup->create_role();
+    my $user        = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user2       = TestSetup->create_user( id_role => $id_role, project => $project2, username => 'tester' );
+    my $id_rule     = TestSetup->create_rule_form();
+    my $id_category = TestSetup->create_category(
+        name    => 'Category',
+        id_rule => $id_rule,
+    );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+    );
+    mdb->topic->update( { mid => "$topic_mid" },
+        { '$set' => { '_project_security' => { project => [ $project->mid ] } } } );
+
+    my $model = _build_model();
+
+    mdb->notification->insert(
+        {   event_key     => 'event.topic.create',
+            action        => 'SEND',
+            is_active     => '1',
+            template_path => '{}',
+            data          => { recipients => { TO => { Roles => { mid => $id_role } } } }
+
+        },
+    );
+
+    my @output
+        = $model->get_rules_notifications( { mid => $topic_mid, action => 'SEND', event_key => 'event.topic.create' } );
+
+    my ($keys) = keys %{ $output[0] };
+    my $username = $user->username;
+
+    is scalar @output, 1;
+    is_deeply $output[0]->{"$keys"}->{carrier}->{TO}, { $username => 1 };
+};
+
 done_testing;
 
 sub _create_form {
@@ -135,7 +208,9 @@ sub _setup {
         'BaselinerX::Type::Registor', 'BaselinerX::Type::Event',
         'BaselinerX::Type::Action',   'BaselinerX::Type::Fieldlet',
         'BaselinerX::CI',             'BaselinerX::Fieldlets',
-        'Baseliner::Model::Label'
+        'Baseliner::Model::Label',    'BaselinerX::Type::Service',
+        'Baseliner::Model::Topic',    'Baseliner::Model::Rules',
+        'BaselinerX::Type::Statement'
     );
 
     Baseliner::Core::Registry->initialize;
@@ -145,6 +220,13 @@ sub _setup {
     mdb->role->drop;
     mdb->rule->drop;
     mdb->category->drop;
+    mdb->master->drop;
+    mdb->master_rel->drop;
+    mdb->master_doc->drop;
+
+    mdb->notification->drop;
+    mdb->index_all('notification');
+    mdb->role->drop;
 }
 
 sub _build_model {

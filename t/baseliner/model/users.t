@@ -105,15 +105,67 @@ subtest 'get_usernames_from_user_mids: list usernames from mids' => sub {
     is $usernames[1], $user2->username;
 };
 
+subtest 'filter_users_roles: returns user associated to the role filter by project' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $project  = TestUtils->create_ci_project();
+    my $project2 = TestUtils->create_ci_project();
+    my $id_role  = TestSetup->create_role();
+    my $user     = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user2    = TestSetup->create_user( id_role => $id_role, project => $project2, username => 'tester' );
+    my $params   = { notify_scope => { project => [ $project->mid ] }, roles => $id_role };
+
+    my @users = $model->filter_users_roles(%$params);
+
+    is scalar @users, 1;
+    is $users[0], $user->username;
+};
+
+subtest 'filter_users_roles: returns user associated to the role filter by topic mid' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $project     = TestUtils->create_ci_project();
+    my $project2    = TestUtils->create_ci_project();
+    my $id_role     = TestSetup->create_role();
+    my $user        = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $user2       = TestSetup->create_user( id_role => $id_role, project => $project2, username => 'tester' );
+    my $id_rule     = TestSetup->create_rule_form();
+    my $id_category = TestSetup->create_category(
+        name    => 'Category',
+        id_rule => $id_rule,
+    );
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+    );
+    mdb->topic->update( { mid => "$topic_mid" },
+        { '$set' => { '_project_security' => { project => [ $project->mid ] } } } );
+
+    my $params = { mid => $topic_mid, roles => $id_role };
+
+    my @users = $model->filter_users_roles(%$params);
+
+    is scalar @users, 1;
+    is $users[0], $user->username;
+};
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::CI',
-        'BaselinerX::Type::Event'
+        'BaselinerX::CI',             'BaselinerX::Type::Event',
+        'BaselinerX::Type::Action',   'BaselinerX::Type::Service',
+        'BaselinerX::Type::Fieldlet', 'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',    'Baseliner::Model::Rules',
+        'BaselinerX::Type::Statement'
     );
 
     TestUtils->cleanup_cis();
+    mdb->topic->drop;
 }
 
 sub _build_model {

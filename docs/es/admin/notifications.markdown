@@ -121,6 +121,8 @@ Segunda selección - Selecciona los destinatarios, estos pueden ser:
 *Usuarios* - Permite seleccionar a los usuarios que recibirán la notificación.
 
 *Roles* - Permite notificar del evento a un grupo de usuarios que tenga un mismo rol.
+Para los eventos de tipo pase, la notificación se enviará a todos los usuarios que tenga
+su rol asignado al mismo proyecto del pase.
 
 *Acciones*
 
