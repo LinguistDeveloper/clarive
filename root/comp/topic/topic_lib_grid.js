@@ -20,7 +20,7 @@ Baseliner.open_topic_grid = function(dir,title,mid){
    var gridp ={ tab_icon: '/static/images/icons/topic.svg' } ;
    if( dir ) {
        gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
-       gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
+       gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.svg';
    }
    Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp );
 };

@@ -259,32 +259,6 @@ register 'statement.catalog.step' => {
     }
 };
 
-# register 'statement.catalog.run_task_services' => {
-#     text => 'RUN TASK SERVICES',
-#     description=> 'RUN TASK SERVICES...',
-#     icon => '/static/images/icons/job.png',
-#     dsl=>sub{
-#         my ($self, $n, %p ) = @_;
-#         sprintf(q{
-#             my $service_selected = $stash->{service_selected};
-
-#             my $sel_task_current = BaselinerX::Service::Catalog::set_sel_task_current( $service_selected->{tasks} );
-#             if( $stash->{catalog_step} eq 'RUN' ) {
-#                 if ( !$sel_task_current->{attributes}->{sw_dependency} ) {
-#                     if ( !$sel_task_current->{attributes}->{sw_services_task_done} ) {
-#                         try{
-#                             %s
-#                             $sel_task_current->{attributes}->{sw_services_task_done} = 1;
-#                         } catch {
-#                             $sel_task_current->{attributes}->{sw_services_task_done} = 0;
-#                         }
-#                     }
-#                 }
-#             }
-#         }, $self->dsl_build( $n->{children}, %p ) );
-#     }
-# };
-
 ####################### SERVICES
 
 register 'service.catalog.service' => {
@@ -755,25 +729,6 @@ register 'service.catalog.form' => {
         }
     },
 };
-
-# register 'service.catalog.wizard_panel' => {
-#     name => 'Wizard Panel',
-#     icon => '/static/images/icons/catalog-wizard.png',
-#     form => '/forms/wizard_panel.js',
-#     handler => sub{
-#         my ( $self, $c, $config ) = @_;
-#         my $stash = $c->stash;
-#         my $service = $stash->{service};
-
-#         my $path = $config->{path};
-#         my $title = $config->{title} || $config->{node_attributes}{text};
-#         my $note = $config->{note} || $config->{node_attributes}{note};
-
-#         #push @{ $stash->{wizard_js_forms} }, $path;
-#         push @{ $service->{forms} }, { title=>$title, path=>$path, note=>$note };
-#     },
-# };
-
 
 sub set_service_data {
     my ( $self, $relation_field, $service_data, $id_category, $stash ) = @_;

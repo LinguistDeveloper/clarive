@@ -37,7 +37,6 @@ register 'service.git.newjob' => {
 register 'service.git.checkout' => {
     name    =>_locl('Checkout a Git Revision'),
     icon    => '/static/images/icons/git.svg',
-    #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&checkout,
 };
@@ -45,7 +44,6 @@ register 'service.git.checkout' => {
 register 'service.git.job_elements' => {
     name    =>_locl('Fill job_elements'),
     icon    => '/static/images/icons/git.svg',
-    #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&job_elements,
 };
@@ -53,7 +51,6 @@ register 'service.git.job_elements' => {
 register 'service.git.link_revision_to_topic' => {
     name    =>_locl('Link a git revision to the changesets in title'),
     icon    => '/static/images/icons/git.svg',
-    #icon    => '/static/images/icons/git-repo.gif',
     job_service => 1,
     handler =>  \&link_revision,
     form => '/forms/link_revision.js'
@@ -62,7 +59,6 @@ register 'service.git.link_revision_to_topic' => {
 register 'service.git.create_tag' => {
     name    => _locl('Create a tag in a Git repository'),
     icon    => '/static/images/icons/git.svg',
-    #icon    => '/static/images/icons/git-repo.gif',
     form    => '/forms/git_create_tag.js',
     handler => \&create_tag,
 };

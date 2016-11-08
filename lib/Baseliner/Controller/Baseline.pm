@@ -9,17 +9,6 @@ use Baseliner::Sugar;
 use Baseliner::Core::Baseline;
 use v5.10;
 
-#register 'menu.admin.core.bl' => { label => _loc('List all Baselines'), url=>'/core/baselines', title=>_loc('Baselines')  };
-
-#register 'action.admin.baseline' => { name => 'Administer baselines'};
-
-# register 'menu.admin.baseline' => { label => _loc('Baselines'),
-#     url_comp=>'/baseline/grid', title=>_loc('Baselines'),
-#     icon=> '/static/images/icons/baseline.gif',
-#     action => 'action.admin.baseline',
-# };
-
-
 # used as a forward everywhere
 sub load_baselines : Private {
     my ($self,$c)=@_;

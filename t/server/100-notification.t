@@ -36,7 +36,7 @@ my $json;
 $url = '/ci/gridtree';
 %data = ('ci_form' => '/ci/user.js', '_is_leaf' => 'false',  'class' => 'BaselinerX::CI::user', 'classname' => 'BaselinerX::CI::user', 'click' => '[object Object]',
          'collection' => 'user', 'has_bl' => '0', 'has_collection' => '0', 'icon' => '/static/images/icons/user.svg', 'item' => 'user', 'limit' => '30', 'pretty' => 'true',
-         'query' => 'root', 'start' => '0', 'tab_icon' => '/static/images/icons/user.gif', 'ts' => '-', 'type' => 'class');
+         'query' => 'root', 'start' => '0', 'tab_icon' => '/static/images/icons/user.svg', 'ts' => '-', 'type' => 'class');
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );

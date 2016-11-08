@@ -522,7 +522,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         items: [
             {
                 text: _('Theme'),
-                icon:'/static/images/icons/wrench.gif',
+                icon:'/static/images/icons/wrench.svg',
                 menu: menu_theme
             }
         ]

@@ -3,7 +3,7 @@ use Moose;
 extends 'BaselinerX::GitBranch';
 sub icon {
     my $self = shift;
-    return sprintf '/static/images/icons/tag_%s.gif', $self->status;
+    return sprintf '/static/images/icons/tag_%s.svg', $self->status;
 }
 
 sub _click {

@@ -353,13 +353,6 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-# deprecated ------------
-
-#register 'menu.admin.features' => {
-#    label => 'List Features',
-#    url_comp=>'/comp/grid',
-#    title=>'Features', icon=>'/static/images/chromium/plugin.png' };
-#register 'menu.admin.features.install' => { label => 'Install Features', url_comp=>'/feature/install', title=>'Install', icon=>'/static/images/chromium/plugin.png'};
 
 sub details : Local {
     my ( $self, $c ) = @_;

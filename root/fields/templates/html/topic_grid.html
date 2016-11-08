@@ -59,7 +59,7 @@
                     <td style="font-size: <% $meta->{td_font_size} // 10 %>px; white-space:nowrap" class="fieldlet-html">
 <%
                             ( defined $$h{type} && $$h{type} eq 'checkbox' )
-                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.svg">' : '<img src="/static/images/icons/checkbox.png">')
+                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.svg">' : '<img src="/static/images/icons/checkbox.svg">')
                             : ( defined $$h{type} && $$h{type}  eq 'index')
                             ? ++$ix
                             : ref $val ? Util->_markdown(join("<br>", _array($val)), { tab_width=>2 }) : Util->_markdown($val, { tab_width=>2 })

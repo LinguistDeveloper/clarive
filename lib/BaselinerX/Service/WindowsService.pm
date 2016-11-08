@@ -9,7 +9,7 @@ with 'Baseliner::Role::Service';
 register 'service.scripting.windows_service' => {
     name        => _locl('Windows Service'),
     form        => '/forms/windows_service.js',
-    icon        => '/static/images/icons/services_new.png',
+    icon        => '/static/images/icons/services.svg',
     job_service => 1,
     handler     => \&run_windows_service,
 };

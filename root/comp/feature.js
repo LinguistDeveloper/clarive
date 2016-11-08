@@ -146,7 +146,7 @@
                 tbar: [
                     { icon:'/static/images/icons/refresh.svg', handler: function(){ self.store.reload() }, tooltip:_('Reload')  }, '-',
                     { text:_('Download Patches'), icon:'/static/images/icons/local.svg', handler: function(){ self.pull() } }, '-',
-                    { text:_('Checkout'), icon:'/static/images/icons/features/checkout.svg', handler: function(){ 
+                    { text:_('Checkout'), icon:'/static/images/icons/checkout-blue.svg', handler: function(){ 
                          if( self.sm.hasSelection() ) {
                              Baseliner.confirm( _('Selected features will be overwritten. A server restart may be necessary. If any changes are found, they will be stashed and the current version saved to the __rollback__ branch. Ok?'), 
                                     function(){
@@ -155,7 +155,7 @@
                              );
                          }
                     } }, '-',
-                    { text:_('Diff Only'), icon:'/static/images/icons/features/good.svg', handler: function(){ self.checkout(false) } }
+                    { text:_('Diff Only'), icon:'/static/images/icons/good.svg', handler: function(){ self.checkout(false) } }
                 ],
                 cm: self.cm
             });
@@ -303,7 +303,7 @@
         activeItem: 0,
         tbar: [
             { text: _('Features'),
-                icon: '/static/images/icons/features/plugin.svg',
+                icon: '/static/images/icons/plugin.svg',
                 pressed: true, allowDepress: false, enableToggle:true, toggleGroup:'upgrades-btn',
                 handler: function(){ card.getLayout().setActiveItem( features ) }
             },

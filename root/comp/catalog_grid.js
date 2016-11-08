@@ -186,7 +186,7 @@
     } ); 
     var button_by_project = new Ext.Button({
        text: _('Project'),
-       icon: '/static/images/icons/project.gif',
+       icon: '/static/images/icons/project.svg',
        cls: 'x-btn-text-icon',
        pressed: false,
        toggleGroup: 'grouping',

@@ -237,7 +237,7 @@
                             if( obj.more=='zip' ) {
                                img = '/static/images/icons/mime/file_extension_zip.svg';
                             } else {
-                               img = '/static/images/icons/save.png';
+                               img = '/static/images/icons/save.svg';
                         } 
                             ret += "<a href='/job/log/download_data?id=" + obj.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
                         } else {
@@ -250,7 +250,7 @@
                             }
                             else if( obj.file!=undefined && obj.file!='' && obj.data ) { // alternative file
                                 ret += "<a href='/job/log/highlight/" + obj.id + "' target='_blank'><img border=0 src='/static/images/icons/page_new.svg'></a> "
-                                ret += "&nbsp;<a href='/job/log/download_data?id=" + obj.id + "&file_name=" + obj.file + "' target='FrameDownload'><img border=0 src='/static/images/icons/save.png'/></a> " + datalen ;
+                                ret += "&nbsp;<a href='/job/log/download_data?id=" + obj.id + "&file_name=" + obj.file + "' target='FrameDownload'><img border=0 src='/static/images/icons/save.svg'/></a> " + datalen ;
                             }
                         }
                         var td_details_file = document.getElementById(td_id);
