@@ -4,6 +4,9 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use BaselinerX::GitElement;
+use File::Temp qw(tempdir);
+use Capture::Tiny qw(capture);
+use Git;
 use Try::Tiny;
 
 #with 'Baseliner::Role::Namespace::Create';
@@ -70,35 +73,206 @@ register 'service.git.create_branch' => {
     handler => \&create_branch,
 };
 
+register 'service.git.delete_reference' => {
+    name    => 'Delete a reference in a Git repository',
+    icon    => '/static/images/icons/git.svg',
+    form    => '/forms/git_delete_reference.js',
+    handler => \&delete_reference,
+};
+
+register 'service.git.merge' => {
+    name    => 'Merge a branch in a Git repository',
+    icon    => '/static/images/icons/git.svg',
+    form    => '/forms/git_merge_branch.js',
+    handler => \&merge_branch,
+};
+
+register 'service.git.rebase' => {
+    name    => 'Rebase a branch in a Git repository',
+    icon    => '/static/images/icons/git.svg',
+    form    => '/forms/git_rebase_branch.js',
+    handler => \&rebase_branch,
+};
+
 sub create_tag {
     my ($self, $c, $p) = @_;
 
-    my $repo_mid = $p->{repo} // _fail(_loc("Missing repo mid"));
+    my $repo_mids = $p->{repo} // _fail(_loc("Missing repo mid"));
     my $tag = $p->{tag} // _fail(_loc("Missing tag name"));
     my $sha = $p->{sha} // _fail(_loc("Missing sha"));
+    my $force = $p->{force};
 
-    my $repo = ci->new($repo_mid);
+    my $repo = ci->new($repo_mids);
     my $git = $repo->git;
 
-    $git->exec( 'tag', '-f', $tag, $sha );
+    for my $repo_mid (Util->_array_or_commas($repo_mids)) {
+        my $repo = ci->new($repo_mid);
+        my $git = $repo->git;
+
+        _debug "Creating tag '$tag' in '$repo_mid'";
+
+        $git->exec( 'tag', $force ? ('-f') : (), $tag, $sha );
+    }
+
+    return;
 }
 
 sub create_branch {
+    my ($self, $c, $p) = @_;
+
+    my $repo_mids = $p->{repo}   // _fail(_loc("Missing repo mid"));
+    my $branch    = $p->{branch} // _fail(_loc("Missing branch name"));
+    my $sha       = $p->{sha}    // _fail(_loc("Missing sha"));
+    my $force     = $p->{force};
+
+    my @revisions;
+    for my $repo_mid (Util->_array_or_commas($repo_mids)) {
+        my $repo = ref $repo_mid ? $repo_mid : ci->new($repo_mid);
+        my $git = $repo->git;
+
+        _debug "Creating branch '$branch' in '$repo_mid'";
+
+        $git->exec('branch', $force ? ('-f') : (), $branch, $sha);
+        my $sha = $git->exec('rev-parse', $branch);
+
+        my $revision = BaselinerX::CI::GitRevision->new(
+            name    => $branch,
+            repo    => $repo_mid,
+            sha     => $branch,
+            moniker => $sha
+        );
+        $revision->save;
+        push @revisions, $revision->mid;
+    }
+
+    return \@revisions;
+}
+
+sub delete_reference {
     my ( $self, $c, $p ) = @_;
 
-    my $repo_mids = $p->{repo}   // _fail( _loc("Missing repo mid") );
-    my $tag      = $p->{branch} // _fail( _loc("Missing branch name") );
-    my $sha      = $p->{sha}    // _fail( _loc("Missing sha") );
+    my $repo_mids = $p->{repo} // _fail( _loc("Missing repo mid") );
+    my $type      = $p->{type} // _fail( _loc("Missing type") );
+    my $sha       = $p->{sha}  // _fail( _loc("Missing sha") );
 
-    for my $repo_mid ( Util->_array_or_commas( $repo_mids )) {
+    for my $repo_mid ( Util->_array_or_commas($repo_mids) ) {
         my $repo = ci->new("$repo_mid");
-        my $git  = $repo->git;
 
-        if ( $p->{force} ) {
-            $git->exec( 'branch', '-f', $tag, $sha );
-        } else {
-            $git->exec( 'branch', $tag, $sha );
+        my $git = Git->repository( Directory => $repo->repo_dir );
+
+        my $resolved_type = $type;
+
+        if ($resolved_type eq 'any') {
+            my @refs = $git->command('show-ref', $sha);
+            if (grep {m#refs/heads/#} @refs) {
+                $resolved_type = 'branch';
+            } else {
+                $resolved_type = 'tag';
+            }
         }
+
+        _debug "Deleting '$sha' from '$repo_mid'";
+
+        if ($resolved_type eq 'tag') {
+            $git->command( 'tag', '-d', $sha );
+        } elsif ($resolved_type eq 'branch') {
+            $git->command( 'branch', '-D', $sha );
+        }
+    }
+}
+
+sub merge_branch {
+    my ( $self, $c, $p ) = @_;
+
+    my $repo_mids    = $p->{repo}         // _fail( _loc("Missing repo mid") );
+    my $topic_branch = $p->{topic_branch} // _fail( _loc("Missing topic_branch") );
+    my $into_branch  = $p->{into_branch}  // _fail( _loc("Missing into_branch") );
+    my $no_ff        = $p->{no_ff};
+    my $message      = $p->{message};
+    $message =~ s{"}{\\"}g if defined $message;
+
+    for my $repo_mid ( Util->_array_or_commas($repo_mids) ) {
+        my $repo = ci->new("$repo_mid");
+
+        my $tempdir = tempdir( CLEANUP => 1 );
+
+        _debug "Merging '$topic_branch' into '$into_branch' of '$repo_mid'";
+
+        capture {
+            Git::command( 'clone', $repo->repo_dir, $tempdir );
+
+            my $git = Git->repository( Directory => $tempdir );
+
+            $git->command( 'checkout', $topic_branch );
+            $git->command( 'checkout', $into_branch );
+
+            my $output = '';
+            try {
+                my ( $fh, $c ) = $git->command_output_pipe(
+                    'merge',
+                    $no_ff ? ('--no-ff') : (),
+                    $message ? ( '--no-log', '-m', $message ) : (),
+                    '--no-edit', $topic_branch
+                );
+                while (<$fh>) {
+                    $output .= $_;
+                }
+
+                $git->command_close_pipe( $fh, $c );
+            }
+            catch {
+                my $error = shift;
+
+                die "Merge failed: $error$output";
+            };
+
+            $git->command('push');
+        };
+    }
+}
+
+sub rebase_branch {
+    my ( $self, $c, $p ) = @_;
+
+    my $repo_mids = $p->{repo}     // _fail(_loc("Missing repo mid"));
+    my $branch    = $p->{branch}   // _fail(_loc("Missing from"));
+    my $upstream  = $p->{upstream} // _fail(_loc("Missing upstream"));
+
+    for my $repo_mid ( Util->_array_or_commas($repo_mids) ) {
+        my $repo = ci->new("$repo_mid");
+
+        my $tempdir = tempdir( CLEANUP => 1 );
+
+        _debug "Rebasing '$branch' on top of '$upstream' of '$repo_mid'";
+
+        capture {
+            Git::command( 'clone', $repo->repo_dir, $tempdir );
+
+            my $git = Git->repository( Directory => $tempdir );
+
+            $git->command( 'checkout', $upstream );
+            $git->command( 'checkout', $branch );
+
+            my $output = '';
+            try {
+                my ( $fh, $c ) = $git->command_output_pipe(
+                    'rebase',
+                    $upstream
+                );
+                while (<$fh>) {
+                    $output .= $_;
+                }
+
+                $git->command_close_pipe( $fh, $c );
+            }
+            catch {
+                my $error = shift;
+
+                die "Rebase failed: $error$output";
+            };
+
+            $git->command('push', '-f');
+        };
     }
 }
 

@@ -7,8 +7,10 @@ use TestUtils;
 
 use Time::Piece;
 use Test::TempDir::Tiny;
+use File::Temp qw(tempdir);
 use File::Basename qw(dirname);
 use File::Path qw(mkpath);
+use Capture::Tiny qw(capture);
 
 my %STORE = ();
 
@@ -25,6 +27,38 @@ sub create_repo {
     system(qq{cd $dir; git init$bare});
 
     return $dir;
+}
+
+sub clone {
+    my $class = shift;
+    my ($repo) = @_;
+
+    my $tempdir = tempdir( CLEANUP => 1 );
+
+    my $dir = $class->_parse_dir($repo);
+
+    capture {
+        system(qq{cd $tempdir; git clone $dir .});
+    };
+
+    return $tempdir;
+}
+
+sub push {
+    my $class = shift;
+    my ($repo, %params) = @_;
+
+    my $dir = $class->_parse_dir($repo);
+
+    my $extra = '';
+
+    if (my $branch = $params{upstream}) {
+        $extra = " --set-upstream origin $branch";
+    }
+
+    capture {
+        system(qq{cd $dir; git push$extra});
+    };
 }
 
 sub commit {

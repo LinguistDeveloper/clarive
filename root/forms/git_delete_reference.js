@@ -1,13 +1,6 @@
 (function(params) {
     var data = params.data || {};
 
-    var force = new Baseliner.CBox({
-        fieldLabel: _('Force if already exists?'),
-        name: 'force',
-        checked: data.force,
-        default_value: false
-    });
-
     return [
         Baseliner.ci_box({
             name: 'repo',
@@ -18,19 +11,22 @@
             singleMode: false,
             force_set_value: true,
             allowBlank: false
+        }),
+        new Baseliner.ComboDouble({
+            name: 'type',
+            fieldLabel: _('Type'),
+            value: data.type,
+            data: [
+                ['any', _('Any')],
+                ['branch', _('Branch')],
+                ['tag', _('Tag')]
+            ]
         }), {
             xtype: 'textfield',
-            fieldLabel: _('Sha'),
+            fieldLabel: _('Sha or Ref'),
             name: 'sha',
             value: data.sha,
             allowBlank: false
-        }, {
-            xtype: 'textfield',
-            fieldLabel: _('Tag'),
-            name: 'tag',
-            value: data.tag,
-            allowBlank: false
-        },
-        force
+        }
     ]
 })

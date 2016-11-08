@@ -1,13 +1,6 @@
 (function(params) {
     var data = params.data || {};
 
-    var force = new Baseliner.CBox({
-        fieldLabel: _('Force if already exists?'),
-        name: 'force',
-        checked: data.force,
-        default_value: false
-    });
-
     return [
         Baseliner.ci_box({
             name: 'repo',
@@ -20,17 +13,16 @@
             allowBlank: false
         }), {
             xtype: 'textfield',
-            fieldLabel: _('Sha'),
-            name: 'sha',
-            value: data.sha,
+            fieldLabel: _('Branch'),
+            name: 'branch',
+            value: data.branch,
             allowBlank: false
         }, {
             xtype: 'textfield',
-            fieldLabel: _('Tag'),
-            name: 'tag',
-            value: data.tag,
+            fieldLabel: _('Upstream Branch'),
+            name: 'upstream',
+            value: data.upstream,
             allowBlank: false
-        },
-        force
+        }
     ]
 })
