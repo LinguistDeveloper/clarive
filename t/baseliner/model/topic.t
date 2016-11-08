@@ -4028,6 +4028,89 @@ subtest 'check_permissions_change_status: throws an error when user has no permi
     }, qr/has no permissions to change status from 'New' to 'Finished'/;
 };
 
+subtest 'filter_children: returns the children closest' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_release_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule );
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release Parent',
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Changeset Child',
+        release     => $release_mid,
+    );
+
+    my $changeset_mid2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child2',
+        release     => $changeset_mid,
+    );
+    my $where = {};
+
+    $where->{'category.id'} = mdb->in($id_release_category);
+    my $model = _build_model();
+
+    $model->filter_children( $where, topic_mid => $release_mid, depth => 1 );
+
+    is_deeply $where->{mid}, { '$in' => [$changeset_mid] };
+
+};
+
+subtest 'filter_children: returns all the children of the topic' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_release_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule );
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release Parent',
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Changeset Child',
+        release     => $release_mid,
+    );
+
+    my $changeset_mid2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child2',
+        release     => $changeset_mid,
+    );
+    my $where = {};
+
+    $where->{'category.id'} = mdb->in($id_release_category);
+    my $model = _build_model();
+
+    $model->filter_children( $where, topic_mid => $release_mid );
+
+    is_deeply $where->{mid}, { '$in' => [ $changeset_mid, $changeset_mid2 ] };
+};
+
 done_testing();
 
 sub _setup {

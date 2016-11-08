@@ -1,4 +1,8 @@
-(function(params){
+(function(params) {
+    Cla.help_push({
+        title: _('Topic chart'),
+        path: 'rules/palette/dashlets/topics-chart'
+    });
     var data = params.data || {};
     var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
@@ -64,47 +68,54 @@
                 { xtype:'textfield', anchor:'100%', fieldLabel: _('Currency symbol to be shown'), name: 'symbol', value: data.symbol || ''},
                 { xtype:'numberfield', anchor:'100%', fieldLabel: _('Max characters in legend (0 = no limit)'), name: 'max_legend_length', value: data.max_legend_length || 0},
 
-              ]
-            }
-          ]
-        },
-        {
-            xtype: 'label',
-            text: _('Topics selection criteria'),
-            style: {
-                // 'margin': '10px',
-                'font-size': '12px',
-                'font-weight': 'bold'
-            }
-        },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
-          bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
-          items:[
-            { layout:'form', 
-              columnWidth: 1, 
-              bodyStyle: 'background:transparent;',
-              items: [
-                ccategory,
-                cstatus,
-                { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-                { xtype:'textfield', vtype: 'json', anchor: '100%', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition }
-              ]
-            }
-          ]
+            ]
+        }]
+    }, {
+        xtype: 'label',
+        text: _('Topics selection criteria'),
+        style: {
+            // 'margin': '10px',
+            'font-size': '12px',
+            'font-weight': 'bold'
         }
-
-        // {
-        //     xtype: 'radiogroup',
-        //     name: 'group_by',
-        //     anchor:'50%',
-        //     fieldLabel: _('Number of topics grouped by ...'),
-        //     defaults: {xtype: "radio",name: "group_by"},
-            // items: [
-            //     {boxLabel: _('Category'), inputValue: 'topics_by_category', checked: data.group_by  == 'topics_by_category'},
-            //     {boxLabel: _('Status'), inputValue: 'topics_by_status', checked: data.group_by == undefined || data.group_by == 'topics_by_status'}
-            // ]
-        // }
-    ]);
+    }, {
+        xtype: 'panel',
+        hideBorders: true,
+        layout: 'column',
+        bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
+        items: [{
+            layout: 'form',
+            columnWidth: 1,
+            bodyStyle: 'background:transparent;',
+            items: [
+                ccategory,
+                cstatus, {
+                    xtype: "checkbox",
+                    name: "not_in_status",
+                    checked: data.not_in_status == 'on' ? true : false,
+                    boxLabel: _('Exclude selected statuses?')
+                }, {
+                    xtype: 'textfield',
+                    vtype: 'json',
+                    anchor: '100%',
+                    fieldLabel: _('Advanced JSON/MongoDB condition for filter'),
+                    name: 'condition',
+                    value: data.condition
+                }
+            ]
+        }, {
+            layout: 'form',
+            bodyStyle: 'background:transparent;',
+            columnWidth: .5,
+            items: [
+                new Cla.ComboSingle({
+                    anchor: '100%',
+                    fieldLabel: _('Depth (For Dashboard inside of topics)'),
+                    name: 'depth',
+                    value: data.depth || '2',
+                    data: [1, 2, 3, 4, 5]
+                })
+            ]
+        }]
+    }]);
 })

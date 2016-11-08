@@ -475,7 +475,8 @@ sub topics_by_field : Local {
         max_legend_length   => { isa => 'PositiveInt',  default => 0},
         project_id          => { isa => 'Str', default => '' },
         topic_mid           => { isa => 'Str', default => '' },
-        condition           => { isa => 'Str', default => '' }
+        condition           => { isa => 'Str', default => '' },
+        depth               => { isa => 'PositiveInt', default => 5 }
       );
 
     my (@topics_by_category, $colors, @data );
@@ -488,11 +489,11 @@ sub topics_by_field : Local {
     my $result_type = $p->{result_type};
     my $sort_by_labels = $p->{sort_by_labels};
     my $max_legend_length = $p->{max_legend_length};
+    my $id_project        = $p->{project_id};
+    my $topic_mid         = $p->{topic_mid};
+    my $depth             = $p->{depth};
+    my $condition         = {};
 
-    my $id_project = $p->{project_id};
-    my $topic_mid = $p->{topic_mid};
-
-    my $condition = {};
     if ( $group_by eq 'topics_by_category') {
         $group_by = 'category.name';
     } elsif ( $group_by eq 'topics_by_status') {
@@ -533,7 +534,12 @@ sub topics_by_field : Local {
 
     $perm->inject_security_filter( $username, $where );
 
-    Baseliner::Model::Topic->new->filter_children( $where, id_project=>$id_project, topic_mid=>$topic_mid );
+    Baseliner::Model::Topic->new->filter_children(
+        $where,
+        id_project => $id_project,
+        topic_mid  => $topic_mid,
+        depth      => $depth
+    );
 
     try {
         @topics_by_category = $self->_data_to_aggregate(where => $where,
