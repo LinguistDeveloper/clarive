@@ -203,7 +203,7 @@ sub change_status {
         push @topic_rows, $topic;
     }
 
-    for my $topic ( @topic_rows ) {
+    for my $topic (@topic_rows) {
         my $old_status = $topic->{category_status};
         Baseliner::Model::Topic->new->check_permissions_change_status(
             username    => $username,
@@ -220,10 +220,10 @@ sub change_status {
         );
 
         Baseliner::Model::Topic->new->change_status(
-            change     => 1,
-            id_status  => $new_status->{id_status},
-            mid        => $topic->{mid},
-            username   => $config->{username} // 'clarive'
+            change    => 1,
+            id_status => $new_status->{id_status},
+            mid       => $topic->{mid},
+            username  => $config->{username} // 'clarive'
         );
     }
 }
