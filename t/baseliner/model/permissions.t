@@ -71,6 +71,25 @@ subtest 'users_with_roles: returns nothing when no users' => sub {
     is_deeply \@users, [];
 };
 
+subtest 'users_with_roles: filters users with roles and security' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role;
+    my $project = TestUtils->create_ci('project');
+    my $project2 = TestUtils->create_ci('project');
+
+    my $id_role2 = TestSetup->create_role;
+
+    my $user1 = TestSetup->create_user( username => 'user1', id_role => $id_role, project => $project );
+    my $user2 = TestSetup->create_user( username => 'user2', id_role => $id_role, project => $project2 );
+
+    my $permissions = _build_permissions();
+
+    my @users = $permissions->users_with_roles( roles => [$id_role], security => [ { project => $project2->mid } ] );
+
+    is_deeply \@users, [ 'user2' ];
+};
+
 subtest 'users_with_action: returns nothing when no users' => sub {
     _setup();
 

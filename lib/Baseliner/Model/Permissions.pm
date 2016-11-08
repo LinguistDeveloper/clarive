@@ -770,11 +770,18 @@ sub inject_bounds_filters ($self, $username, $action_key, $where, %options) {
 sub users_with_roles ($self, %p) {
     _check_parameters( \%p, qw/roles/ );
 
-    my @roles = _array $p{roles};
+    my @roles    = _array $p{roles};
+    my @security = _array $p{security};
 
     my @ors;
     for my $role (@roles) {
         push @ors, { "project_security.$role" => { '$exists' => '1' } };
+
+        foreach my $security (@security) {
+            foreach my $dimension (keys %$security) {
+                $ors[-1]->{"project_security.$role.$dimension"} = { '$in' => [ _array $security->{$dimension} ] };
+            }
+        }
     }
 
     my @users = map { $_->{name} } ci->user->find( { '$or' => \@ors } )->fields( { name => 1 } )->all;

@@ -114,9 +114,8 @@ sub filter_users_roles {
     my @roles        = _array $p{roles} or _throw 'Missing parameter roles';
     my $mid          = $p{mid};
     my $notify_scope = $p{notify_scope};
+
     my @projects;
-    my @users;
-    my @mega_ors;
 
     if ( !$mid ) {
         push @projects, $notify_scope->{project} ? { project => $notify_scope->{project} } : {};
@@ -138,29 +137,8 @@ sub filter_users_roles {
         }
     }
 
-    for my $project ( @projects ) {
-        my @ors;
-        my $where_project = {};
+    my @users = Baseliner::Model::Permissions->new->users_with_roles(roles => \@roles, security => \@projects);
 
-        for my $role (@roles) {
-            my $where_role = {};
-            $where_role->{"project_security.$role"} = { '$nin' => [undef] };
-            while ( my ( $k, $v ) = each %{ $project || {} } ) {
-                $where_role->{"project_security.$role.$k"} = { '$in' => [ undef, @$v ] };
-            }
-            push @ors, $where_role;
-        }
-        $where_project->{'$or'} = \@ors;
-        push @mega_ors, $where_project;
-    }
-
-    if ( @mega_ors ) {
-        my $where = {};
-        $where->{'$or'} = \@mega_ors;
-        @users = map {$_->{name}} _array(ci->user->find($where)->all);
-    } else {
-        @users = Baseliner::Model::Permissions->new->users_with_roles(roles => \@roles);
-    }
     return wantarray ? @users : \@users;
 }
 
