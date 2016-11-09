@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal;
 use Test::Deep;
 
 use TestEnv;
@@ -66,6 +67,26 @@ subtest 'ci_related: returns only mids whey requested' => sub {
 
     my $related = $service->ci_related( undef, { mid => $parent->mid, query_type => 'children', mids_only => 1 } );
     is $related->[0], $child->mid;
+};
+
+subtest 'ci_load: loads ci' => sub {
+    _setup();
+
+    my $ci = TestUtils->create_ci('status', name => 'New');
+
+    my $service = _build_service();
+
+    my $data = $service->ci_load( undef, { mid => $ci->mid } );
+
+    is $data->{name}, 'New';
+};
+
+subtest 'ci_load: throws when ci not found' => sub {
+    _setup();
+
+    my $service = _build_service();
+
+    like exception { $service->ci_load( undef, { mid => '123' } ) }, qr/CI 123 not found/;
 };
 
 done_testing;
