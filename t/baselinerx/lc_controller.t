@@ -1007,7 +1007,243 @@ subtest 'repository_details: returns details about ci repository' => sub {
         };
 };
 
+subtest 'promotes_and_demotes: builds correct variants for changeset' => sub {
+    _setup();
+
+    my $bl_common = TestUtils->create_ci( 'bl', bl => '*' );
+    my $bl_qa     = TestUtils->create_ci( 'bl', bl => 'QA' );
+    my $bl_prod   = TestUtils->create_ci( 'bl', bl => 'PROD' );
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I', bls => [ $bl_common->mid ] );
+    my $status_in_progress =
+      TestUtils->create_ci( 'status', name => 'In Progress', type => 'D', bls => [ $bl_qa->mid ] );
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'D', bls => [ $bl_prod->mid ] );
+
+    my $workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            job_type       => undef
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            job_type       => 'static'
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_finished->id_status,
+            job_type       => 'promote'
+        }
+    ];
+
+    my $id_category = TestSetup->create_category(
+        statuses => [ $status_new->id_status, $status_in_progress->id_status, $status_finished->id_status ],
+        workflow => $workflow
+    );
+
+    my $topic_mid =
+      TestSetup->create_topic( id_category => $id_category, status => $status_in_progress, username => $user->username );
+
+    my $topic_doc = mdb->topic->find_one( { mid => $topic_mid } );
+
+    my $controller = _build_controller();
+
+    my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $controller->promotes_and_demotes(
+        username   => $user->username,
+        topic      => $topic_doc,
+        id_project => $project->mid
+    );
+
+    cmp_deeply $statics,    {"sQA" . $status_in_progress->id_status => \1};
+    cmp_deeply $promotable, { "pPROD" . $status_finished->id_status => \1 };
+    cmp_deeply $demotable,  {};
+    cmp_deeply $menu_s, [
+        {
+            text => 'Deploy to In Progress (QA)',
+            icon => ignore(),
+            eval => {
+                id_project     => $project->mid,
+                job_type       => 'static',
+                bl_to          => 'QA',
+                status_to_name => 'In Progress',
+                status_to      => $status_in_progress->id_status,
+                id             => 'sQA' . $status_in_progress->id_status,
+                title          => 'Deploy',
+                is_release     => undef,
+                url            => ignore()
+            },
+            id_status_from => $status_in_progress->id_status
+        }
+    ];
+    cmp_deeply $menu_p,
+      [
+        {
+            text => 'Promote to Finished (PROD)',
+            icon => ignore(),
+            eval => {
+                id_project     => $project->mid,
+                job_type       => 'promote',
+                bl_to          => 'PROD',
+                status_to_name => 'Finished',
+                status_to      => $status_finished->id_status,
+                id             => 'pPROD' . $status_finished->id_status,
+                title          => 'To Promote',
+                is_release     => undef,
+                url            => ignore()
+            },
+            id_status_from => $status_in_progress->id_status
+        }
+      ];
+    cmp_deeply $menu_d, [];
+};
+
+subtest 'promotes_and_demotes: builds correct variants for release' => sub {
+    _setup();
+
+    my $bl_common = TestUtils->create_ci( 'bl', bl => '*' );
+    my $bl_qa     = TestUtils->create_ci( 'bl', bl => 'QA' );
+    my $bl_prod   = TestUtils->create_ci( 'bl', bl => 'PROD' );
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I', bls => [ $bl_common->mid ] );
+    my $status_in_progress =
+      TestUtils->create_ci( 'status', name => 'In Progress', type => 'D', bls => [ $bl_qa->mid ] );
+    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'D', bls => [ $bl_qa->mid ] );
+    my $status_production = TestUtils->create_ci( 'status', name => 'Production', type => 'D', bls => [ $bl_prod->mid ] );
+
+    my $workflow = [
+        {
+            id_role        => $id_role,
+            id_status_from => $status_new->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            job_type       => undef
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            job_type       => 'static'
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_finished->id_status,
+            job_type       => 'promote'
+        },
+        {
+            id_role        => $id_role,
+            id_status_from => $status_finished->id_status,
+            id_status_to   => $status_production->id_status,
+            job_type       => 'promote'
+        }
+    ];
+
+    my $id_changeset_rule = _create_release_form();
+    my $id_category       = TestSetup->create_category(
+        name         => 'Changeset',
+        id_rule      => $id_changeset_rule,
+        statuses     => [ $status_new->id_status, $status_in_progress->id_status, $status_finished->id_status ],
+        is_changeset => '1',
+        workflow     => $workflow
+    );
+
+    my $topic1_mid = TestSetup->create_topic(
+        id_category => $id_category,
+        status      => $status_new,
+        username    => $user->username
+    );
+    my $topic2_mid = TestSetup->create_topic(
+        id_category => $id_category,
+        status      => $status_in_progress,
+        username    => $user->username
+    );
+    my $topic22_mid = TestSetup->create_topic(
+        id_category => $id_category,
+        status      => $status_in_progress,
+        username    => $user->username
+    );
+    my $topic3_mid = TestSetup->create_topic(
+        id_category => $id_category,
+        status      => $status_finished,
+        username    => $user->username
+    );
+
+    my $id_release_rule = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        name       => 'Release',
+        id_rule    => $id_release_rule,
+        id_status  => [ $status_new->mid, $status_in_progress->mid, $status_finished->mid ],
+        is_release => '1',
+    );
+
+    my $release_topic_mid = TestSetup->create_topic(
+        id_category => $id_release_category,
+        status      => $status_in_progress,
+        username    => $user->username,
+        changesets  => [$topic1_mid, $topic2_mid, $topic22_mid, $topic3_mid]
+    );
+
+    my $release_topic_doc = mdb->topic->find_one( { mid => $release_topic_mid } );
+
+    my $controller = _build_controller();
+
+    my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $controller->promotes_and_demotes(
+        username   => $user->username,
+        topic      => $release_topic_doc,
+        id_project => $project->mid
+    );
+
+    cmp_deeply $statics, { "sQA" . $status_in_progress->id_status => \1 };
+    cmp_deeply $promotable,
+      { "pQA" . $status_finished->id_status => \1, "pPROD" . $status_production->id_status => \1 };
+    cmp_deeply $demotable, {};
+};
+
 done_testing;
+
+sub _create_changeset_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "release",
+                        release_field => 'changesets'
+                    },
+                    key  => "fieldlet.system.release",
+                    text => 'Release',
+                }
+            },
+        ]
+    );
+}
+
+sub _create_release_form {
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "changesets",
+                    },
+                    key  => "fieldlet.system.list_topics",
+                    text => 'Changesets',
+                }
+            },
+        ]
+    );
+}
 
 sub _build_controller {
     BaselinerX::LcController->new( application => '' );

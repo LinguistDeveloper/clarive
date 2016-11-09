@@ -860,13 +860,53 @@ sub status_list {
 }
 
 sub promotes_and_demotes {
+    my ( $self, %p ) = @_;
+
+    my $topic = $p{topic};
+
+    if ( $topic->{category}->{is_release} ) {
+        my $ci = ci->new( $topic->{mid} );
+
+        my @changesets_mids = map { $_->{mid} } $ci->children(
+            mids_only => 1,
+            rel_type  => 'topic_topic',
+            where     => { collection => 'topic', 'category.is_changeset' => '1' },
+            depth     => 1
+        );
+        my @changesets = mdb->topic->find( { mid => mdb->in(@changesets_mids) }, { _txt => 0 } )->all;
+        my %changesets_by_status = map { $_->{id_category_status} => $_ } @changesets;
+
+        my ( $all_statics, $all_promotable, $all_demotable ) = ( {}, {}, {} );
+        my ( $all_menu_s, $all_menu_p, $all_menu_d ) = ( [], [], [] );
+
+        foreach my $changeset ( values %changesets_by_status ) {
+            my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) =
+              $self->_promotes_and_demotes( %p, topic => $changeset );
+
+            $all_statics    = { %$all_statics,    %$statics };
+            $all_promotable = { %$all_promotable, %$promotable };
+            $all_demotable  = { %$all_demotable,  %$demotable };
+
+            push @$all_menu_s, @$menu_s;
+            push @$all_menu_p, @$menu_p;
+            push @$all_menu_d, @$menu_d;
+        }
+
+        return ( $all_statics, $all_promotable, $all_demotable, $all_menu_s, $all_menu_p, $all_menu_d );
+    }
+    else {
+        return $self->_promotes_and_demotes(%p);
+    }
+}
+
+sub _promotes_and_demotes {
     my ($self, %p ) = @_;
     my ( $username, $topic, $id_status_from, $id_project ) = @p{ qw/username topic id_status_from id_project/ };
     my ( @menu_s, @menu_p, @menu_d );
 
     my $job_mode = $p{job_mode} // 0;
 
-    $id_status_from //= $topic->{category_status}{id};
+    $id_status_from //= $topic->{category_status}{id} // $topic->{id_category_status};
     my %statuses = ci->status->statuses;
 
     _fail _loc('Missing topic parameter') unless $topic;
