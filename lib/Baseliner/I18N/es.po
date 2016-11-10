@@ -5752,16 +5752,12 @@ msgid "Config lifecycle releases"
 msgstr "Configurar releases de ciclo de vida"
 
 #: lib/BaselinerX/LcController.pm
-msgid "---- provider \".$repo->name.\" has %1 changesets"
-msgstr "---- el proveedor \".$repo->name.\" tiene %1 changesets"
+msgid "---- provider %1 has %2 changesets"
+msgstr "---- proveedor %1 tiene %2 cambios"
 
 #: lib/BaselinerX/LcController.pm
 msgid "Error detected: %1"
 msgstr "Error detectado: %1"
-
-#: lib/BaselinerX/LcController.pm
-msgid "---- provider $provider has %1 changesets"
-msgstr "---- el proveedor $provider tiene %1 changesets"
 
 #: lib/BaselinerX/LcController.pm
 msgid "Error loading changes for provider %1: %2"
@@ -15607,6 +15603,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "---- provider $provider has %1 changesets"
+#~ msgstr "---- el proveedor $provider tiene %1 changesets"
 
 #~ msgid "post job step event"
 #~ msgstr "enviar evento de fase de pase"
