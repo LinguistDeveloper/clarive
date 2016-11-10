@@ -353,6 +353,7 @@ sub related {
     my $include_event_mid = $config->{include_event_mid} && $config->{include_event_mid} eq 'on' ? '':$event_mid;
     my $query_type = $config->{query_type} // 'children';
     my @fields = $config->{fields} ? split(',',$config->{fields}):();
+    my $single = $config->{single};
     my $condition = {};
 
     my $ci = ci->new($mid);
@@ -370,6 +371,10 @@ sub related {
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
     my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
+
+    if ($single) {
+        return $related[0];
+    }
 
     return \@related;
 }
