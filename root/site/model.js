@@ -2549,29 +2549,34 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                 value: self.data[id]
             }, meta.field_attributes ));
         }
-        else if( meta.type == 'ci' ) {
-            var bp = { _whoami:'MetaForm', bl: bl };
-            if( meta.role && meta.role != 'CI' ) bp.role = meta.role;
-            if( meta.classname ) {
-                bp.class = "BaselinerX::CI::"+meta.classname;
+        else if (meta.type == 'ci') {
+            var bp = {
+                _whoami: 'MetaForm',
+                bl: bl
+            };
+            if (meta.role && meta.role != 'CI') bp.role = meta.role;
+            if (meta.classname) {
+                bp.class = "BaselinerX::CI::" + meta.classname;
             }
-            var store = new Baseliner.store.CI({ baseParams: bp });
-            store.on('load', function(){
-                if( self.data && self.data[id]!== undefined )
-                    field.setValue( self.data[id] );
+            var store = new Baseliner.store.CI({
+                baseParams: bp
+            });
+            store.on('load', function() {
+                if (self.data && self.data[id] !== undefined)
+                    field.setValue(self.data[id]);
             });
             field = new Baseliner.model.CISelect(Ext.apply({
                 store: store,
                 anchor: meta.anchor || '100%',
                 submitValue: false,
                 singleMode: true,
-                fieldLabel: _( meta.label || id),
+                fieldLabel: _(meta.label || id),
                 id: Ext.id(),
                 name: id,
                 hiddenName: id,
                 value: self.data[id],
                 allowBlank: false
-            }, meta.field_attributes ));
+            }, meta.field_attributes));
         }
         else if( meta.type == 'combo' ) {
             field = new Baseliner.ComboSingle(Ext.apply({
