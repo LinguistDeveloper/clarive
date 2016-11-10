@@ -536,6 +536,42 @@ register 'statement.if.var' => {
     },
 };
 
+register 'statement.if.var_condition' => {
+    text => 'IF var condition THEN',
+    type => 'if',
+    form => '/forms/if_var_condition.js',
+    data => {},
+    dsl  => sub {
+        my ( $self, $n, %p ) = @_;
+
+        my $conditions = [];
+        foreach my $key ( keys %$n ) {
+            if ( $key =~ m/^operand_a\[(\d+)\]$/ ) {
+                my $i = $1;
+
+                push @$conditions,
+                  {
+                    operand_a => $n->{"operand_a[$i]"},
+                    operator  => $n->{"operator[$i]"},
+                    options   => {
+                        ignore_case => !!$n->{"options[$i].ignore_case"},
+                    },
+                    operand_b => $n->{"operand_b[$i]"},
+                  };
+            }
+        }
+
+        sprintf(
+            q{
+            if ( condition_check( $stash, '%s', %s ) ) {
+                %s;
+            }
+        }, $n->{when}, Data::Dumper::Dumper($conditions),
+            $self->dsl_build( $n->{children}, %p )
+        );
+    },
+};
+
 register 'statement.if_not.var' => {
     text => _locl('IF var ne value THEN'),
     type => 'if',

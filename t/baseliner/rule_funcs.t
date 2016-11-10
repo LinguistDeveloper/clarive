@@ -464,6 +464,189 @@ subtest 'eval_code: evals code' => sub {
     is $ret->{ret}, 2;
 };
 
+subtest 'condition_check: returns result of boolean comparison' => sub {
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'is_true' } ] );
+    ok !condition_check( { foo => 0 },
+        all => [ { operand_a => 'foo', operator => 'is_true' } ] );
+
+    ok condition_check( { foo => 0 },
+        all => [ { operand_a => 'foo', operator => 'is_false' } ] );
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'is_false' } ] );
+};
+
+subtest 'condition_check: returns result of empty comparison' => sub {
+    ok condition_check( {}, all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok condition_check( { foo => undef }, all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok condition_check( { foo => '' },    all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok condition_check( { foo => [] },    all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok condition_check( { foo => {} },    all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok condition_check( { foo => [ {} ] }, all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+
+    ok !condition_check( { foo => 0 },   all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok !condition_check( { foo => [0] }, all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+    ok !condition_check( { foo => [ { 0 => 0 } ] }, all => [ { operand_a => 'foo', operator => 'is_empty' } ] );
+
+    ok !condition_check( {}, all => [ { operand_a => 'foo', operator => 'not_empty' } ] );
+};
+
+subtest 'condition_check: returns comparison result' => sub {
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '1' } ] );
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '2' } ] );
+
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => '1' } ] );
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => '2' } ] );
+};
+
+subtest 'condition_check: returns greater comparison result' => sub {
+    ok condition_check( { foo => 2 },
+        all => [ { operand_a => 'foo', operator => 'gt', operand_b => '1' } ] );
+
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'gt', operand_b => '2' } ] );
+
+    ok condition_check( { foo => 2 },
+        all => [ { operand_a => 'foo', operator => 'ge', operand_b => '2' } ] );
+
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'ge', operand_b => '2' } ] );
+};
+
+subtest 'condition_check: returns less comparison result' => sub {
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'lt', operand_b => '2' } ] );
+
+    ok !condition_check( { foo => 2 },
+        all => [ { operand_a => 'foo', operator => 'lt', operand_b => '1' } ] );
+
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'le', operand_b => '1' } ] );
+
+    ok !condition_check( { foo => 2 },
+        all => [ { operand_a => 'foo', operator => 'le', operand_b => '1' } ] );
+};
+
+subtest 'condition_check: returns has comparison result' => sub {
+    ok condition_check( { foo => [1, 2, 3] },
+        all => [ { operand_a => 'foo', operator => 'has', operand_b => '1' } ] );
+    ok !condition_check( { foo => [1, 2, 3] },
+        all => [ { operand_a => 'foo', operator => 'has', operand_b => '10' } ] );
+
+    ok condition_check( { foo => {1 => 2, 2 => 3}},
+        all => [ { operand_a => 'foo', operator => 'has', operand_b => '1' } ] );
+    ok !condition_check( { foo => {1 => 2, 2 => 3}},
+        all => [ { operand_a => 'foo', operator => 'has', operand_b => '10' } ] );
+
+    ok !condition_check( { foo => [1, 2, 3] },
+        all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '1' } ] );
+    ok condition_check( { foo => [1, 2, 3] },
+        all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '10' } ] );
+
+    ok !condition_check( { foo => {1 => 2, 2 => 3}},
+        all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '1' } ] );
+    ok condition_check( { foo => {1 => 2, 2 => 3}},
+        all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '10' } ] );
+};
+
+subtest 'condition_check: returns in comparison result' => sub {
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'in', operand_b => [1, 2, 3] } ] );
+    ok !condition_check( { foo => 10 },
+        all => [ { operand_a => 'foo', operator => 'in', operand_b => [1, 2, 3] } ] );
+
+    ok condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'in', operand_b => {1 => 1, 2 => 2} } ] );
+    ok !condition_check( { foo => 10 },
+        all => [ { operand_a => 'foo', operator => 'in', operand_b => {1 => 1, 2 => 2} } ] );
+
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => [1, 2, 3] } ] );
+    ok condition_check( { foo => 10 },
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => [1, 2, 3] } ] );
+
+    ok !condition_check( { foo => 1 },
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => {1 => 1, 2 => 2} } ] );
+    ok condition_check( { foo => 10 },
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => {1 => 1, 2 => 2} } ] );
+};
+
+subtest 'condition_check: returns like comparison result' => sub {
+    ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'like', operand_b => '\d' } ] );
+    ok !condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'like', operand_b => '[a-z]' } ] );
+
+    ok condition_check( { foo => 'BAR' },
+        all => [ { operand_a => 'foo', operator => 'like', operand_b => '[a-z]', options => {'ignore_case' => 1} } ] );
+
+    ok !condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'not_like', operand_b => '\d' } ] );
+    ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'not_like', operand_b => '[a-z]' } ] );
+};
+
+subtest 'condition_check: ignores case' => sub {
+    ok condition_check( { foo => 'foo' },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'FOO', options => {'ignore_case' => 1} } ] );
+};
+
+subtest 'condition_check: parses vars before comparison' => sub {
+    ok condition_check( { foo => 1, bar => 1 },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '${bar}' } ] );
+
+    ok !condition_check( { foo => 1, bar => 2 },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '${bar}' } ] );
+};
+
+subtest 'condition_check: returns correct result when all' => sub {
+    ok condition_check( { foo => 1, bar => 1, baz => 1 },
+        all => [
+            { operand_a => 'foo', operator => 'is_true' },
+            { operand_a => 'bar', operator => 'is_true' },
+            { operand_a => 'baz', operator => 'is_true' },
+        ] );
+
+    ok !condition_check( { foo => 0, bar => 1, baz => 0 },
+        all => [
+            { operand_a => 'foo', operator => 'is_true' },
+            { operand_a => 'bar', operator => 'is_true' },
+            { operand_a => 'baz', operator => 'is_true' },
+        ] );
+};
+
+subtest 'condition_check: returns correct result when any' => sub {
+    ok condition_check( { foo => 0, bar => 1, baz => 0 },
+        any => [
+            { operand_a => 'foo', operator => 'is_true' },
+            { operand_a => 'bar', operator => 'is_true' },
+            { operand_a => 'baz', operator => 'is_true' },
+        ] );
+
+    ok !condition_check( { foo => 0, bar => 0, baz => 0 },
+        any => [
+            { operand_a => 'foo', operator => 'is_true' },
+            { operand_a => 'bar', operator => 'is_true' },
+            { operand_a => 'baz', operator => 'is_true' },
+        ] );
+};
+
+subtest 'condition_check: returns correct result when none' => sub {
+    ok condition_check( { foo => 0, bar => 0, baz => 0 },
+        none => [
+            { operand_a => 'foo', operator => 'is_true' },
+            { operand_a => 'bar', operator => 'is_true' },
+            { operand_a => 'baz', operator => 'is_true' },
+        ] );
+
+    ok !condition_check( { foo => 1, bar => 0, baz => 0 },
+        none => [
+            { operand_a => 'foo', operator => 'is_true' },
+            { operand_a => 'bar', operator => 'is_true' },
+            { operand_a => 'baz', operator => 'is_true' },
+        ] );
+};
+
 done_testing();
 
 sub _mock_job {

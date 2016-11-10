@@ -3045,6 +3045,53 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
     }
 });
 
+//Baseliner.MultiComboDouble = Ext.extend(Ext.ux.form.SuperBoxSelect, {
+//    name: 'item',
+//    mode: 'local',
+//    triggerAction: 'all',
+//    editable: false,
+//    anchor: '100%',
+//    resizable: true,
+//    lazyRender: false,
+//    triggerAction: 'all',
+//    msgTarget: 'under',
+//    typeAhead: false,
+//    forceSelection: true,
+//    allowBlank: false,
+//    selectOnFocus: false,
+//    initComponent: function() {
+//        var self = this;
+//        var data = [];
+//        if (self.data) {
+//            Ext.each(self.data, function(v) {
+//                data.push(v);
+//            });
+//        }
+//        self.store = self.buildStore(data);
+//
+//        self.fieldLabel = self.fieldLabel || self.name;
+//        self.valueField = self.field || self.name;
+//        self.displayField = self.displayField || self.field || 'display_name';
+//        self.hiddenField = self.name;
+//        if (!self.value) self.value = data.length > 0 ? data[0][0] : null;
+//        Baseliner.MultiComboDouble.superclass.initComponent.call(this);
+//    },
+//    get_save_data: function() {
+//        var arr = [];
+//        this.items.each(function(r) {
+//            arr.push(r.value)
+//        });
+//        return arr;
+//    },
+//    buildStore: function(data) {
+//        var self = this;
+//        return new Ext.data.SimpleStore({
+//            fields: [self.name, 'display_name'],
+//            data: data
+//        });
+//    }
+//});
+
 Baseliner.ComboDoubleRemote = Ext.extend( Baseliner.ComboDouble, {
     mode: 'remote',
     initComponent: function(){
