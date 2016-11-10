@@ -398,6 +398,7 @@ sub index_all {
         event_log =>[
             [{ 'id_event'=>1 }],
             [{ 'id'=>1 }],
+            [{ 'ts'=>1 }],
         ],
         'fs.files' =>[
             [{ parent_mid=>1 }],
@@ -426,7 +427,8 @@ sub index_all {
             [{ to_mid  =>1, rel_type=>1 }],
             [{ to_mid=>1, from_mid =>1, rel_type=>1 }],
             [{ to_mid  =>1 }],
-            [{ from_mid  =>1 }],
+            [{ rel_type => 1 }],
+            [{ from_mid => 1 }],
             [{ from_mid=>1, to_mid=>1 }],
             [{ from_cl=>1 }],
             [{ to_cl=>1 }],
@@ -445,6 +447,8 @@ sub index_all {
             [{ step=>1, status=>1 }],
             [{ projects=>1 }],
             [{ projects => 1, collection => 1 }],
+            [{ projects => 1, collection => 1, bl => 1 }],
+            [{ 'projects.mid' => 1, collection => 1, starttime => -1 }],
             [{ collection=>1 }],
             [{ starttime=>-1 }],  # used by Dashboards.pm and monitor_json
             [{ collection=>1, name=>1 }],
@@ -452,6 +456,7 @@ sub index_all {
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
             [{ step => 1, status => 1, now => 1, collection => 1, host => 1 }],
+            [{ step => 1, status => 1, now => 1, collection => 1, host => 1, starttime => -1 }],
             [{ step => 1, status => 1, schedtime => 1, maxstarttime => 1, collection => 1, host => 1 }],
             [{'$**'=> "text"},{
                 %master_doc_weights ? (weights => \%master_doc_weights) : (),
