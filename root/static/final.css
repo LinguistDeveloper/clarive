@@ -852,6 +852,11 @@ img.img-custom-logo-file[src$='.svg'] {
    width: 208px;
 }
 
+img.x-topic-lib-inline-icon[src$='.svg'] {
+    height: 12px;
+    width: 12px;
+}
+
 .x-fieldlet-type-height {
     width: 50px !important;
     font: normal 12px tahoma, arial, helvetica, sans-serif;
