@@ -10,32 +10,32 @@
     var load_on_type = function( ty ) {
         if( !ty ) return ;
         if( ty == 'ci' ) {
-            ci_class.enable(); ci_class.show();
-            ci_role.enable(); ci_role.show();
+            classCombo.enable(); classCombo.show();
+            roleCombo.enable(); roleCombo.show();
             var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.enable(); var_ci_multiple.show();
             combo_opts.disable(); combo_opts.hide();
         } else if( ty == 'combo' ) {
-            ci_class.disable(); ci_class.hide();
-            ci_role.disable(); ci_role.hide();
+            classCombo.disable(); classCombo.hide();
+            roleCombo.disable(); roleCombo.hide();
             var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.enable(); combo_opts.show();
         } else if( ty == 'array' ) {
-            ci_class.disable(); ci_class.hide();
-            ci_role.disable(); ci_role.hide();
+            classCombo.disable(); classCombo.hide();
+            roleCombo.disable(); roleCombo.hide();
             var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
         } else if( ty == 'textarea' ) {
-            ci_class.disable(); ci_class.hide();
-            ci_role.disable(); ci_role.hide();
+            classCombo.disable(); classCombo.hide();
+            roleCombo.disable(); roleCombo.hide();
             var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
         } else {
-            ci_class.disable(); ci_class.hide();
-            ci_role.disable(); ci_role.hide();
+            classCombo.disable(); classCombo.hide();
+            roleCombo.disable(); roleCombo.hide();
             var_ci_mandatory.enable(); var_ci_mandatory.show();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.disable(); combo_opts.hide();
@@ -55,14 +55,15 @@
         load_on_type( var_type.getValue() );
     });
     
-    var ci_class =  new Baseliner.CIClassComboSimple({
+    var classCombo =  new Baseliner.CIClassComboSimple({
         name: 'var_ci_class',
         hidden: true,
         disabled: true,
+        baseParams: { role: params.rec.var_ci_role || 'role' },
         value: params.rec.var_ci_class
     });
 
-    var ci_role =  new Baseliner.ComboDoubleRemote({
+    var roleCombo =  new Baseliner.ComboDoubleRemote({
         fieldLabel: _('CI Role'),
         name: 'var_ci_role',
         hidden: true,
@@ -74,6 +75,14 @@
         valueField: 'role',
         fields: [ 'role', 'name' ],
         url: '/ci/roles'
+    });
+
+    roleCombo.on('select', function(param) {
+        classCombo.clearValue();
+        classCombo.store.baseParams = {
+            role: param.value
+        };
+        classCombo.store.load();
     });
 
     var var_ci_multiple = new Baseliner.CBox({
@@ -122,8 +131,8 @@
     load_on_type( params.rec.var_type ) ;
     var ret = [
         var_type,
-        ci_role,
-        ci_class,
+        roleCombo,
+        classCombo,
         var_ci_multiple,
         var_ci_mandatory,
         var_copy,
@@ -136,4 +145,3 @@
     );
     return ret;
 })
-
