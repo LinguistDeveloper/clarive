@@ -132,6 +132,7 @@ sub grid_insert {
     my ($self, $in, %opts) = @_;
     my $fh;
     if( !ref $in ) {
+        $in = Encode::encode('UTF-8', $in) if Encode::is_utf8($in);
         # open the string like a file
         my $basic_fh;
         open($basic_fh, '<', \$in) or _fail _loc('Error trying to open string asset: %1', $!);
