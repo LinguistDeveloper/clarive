@@ -44,13 +44,18 @@ around delete => sub {
 
 # adds extra data to _ci during loading
 after load_data => sub {
-    my ($class, $mid, $data ) = @_;
-    return {} unless $mid;
-    my $topic_data = model->Topic->get_data( undef, $mid, with_meta=>1 ) // {};
+    my ( $class, $mid, $data ) = @_;
+
+    my $topic_data;
+    if ( mdb->topic->find( { mid => $mid } )->count() ) {
+        $topic_data = model->Topic->get_data( undef, $mid, with_meta => 1 );
+    }
+    return {} unless $topic_data;
     delete $topic_data->{mid};
 
     # XXX avoid strange errors in parse_vars_raw during job run: can't call method value on unblessed ref MongoDB/OID.pm
     delete $topic_data->{category}{_id};
+
     # cannot return data and expect merge to be done outside anymore, merge has to be done here
     #    don't expect to see fields in the normal topic CI! They're only in _ci => {} in case you using _ci()
     $data->{$_} = $topic_data->{$_} for keys %$topic_data;
