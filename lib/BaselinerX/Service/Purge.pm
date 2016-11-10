@@ -141,8 +141,6 @@ sub run_once {
                 } catch {
                     _log "Error trying to delete job $job_name. Job skipped: ".shift;
                 }
-            } elsif( !$job->{purged} ) {
-                _log _loc('Job not ready to purge yet: %1 (%2)', $job_name, $job_mid);
             }
 
             if( $max_job_time->datetime lt $now_standard_date && -d $purged_job_path ) {
@@ -155,7 +153,7 @@ sub run_once {
         my $log_dir = Path::Class::dir( $logs_home );
         unless( $config_purge->{no_file_purge} || !$log_dir) {
             require Proc::Exists;
-            _log "\n\n\nAnalyzing logs....";
+            _log "Analyzing logs....";
             while (my $file = $log_dir->next) {
                 next unless -f $file;
                 if ( $file->basename =~ /(?<filename>.+)\.log$/ ){

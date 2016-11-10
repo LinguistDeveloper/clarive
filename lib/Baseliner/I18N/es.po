@@ -6840,10 +6840,6 @@ msgid "Purge Daemon"
 msgstr "Purgar Demonio"
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "Job not ready to purge yet: %1 (%2)"
-msgstr "El pase no está listo para purgarse aún: %1 (%2)"
-
-#: lib/BaselinerX/Service/Purge.pm
 msgid "Purging %1 auth events"
 msgstr "Purgando %1 eventos de autentica´ción"
 
@@ -15603,6 +15599,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Job not ready to purge yet: %1 (%2)"
+#~ msgstr "El pase no está listo para purgarse aún: %1 (%2)"
 
 #~ msgid "---- provider $provider has %1 changesets"
 #~ msgstr "---- el proveedor $provider tiene %1 changesets"
