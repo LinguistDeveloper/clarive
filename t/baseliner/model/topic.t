@@ -2209,6 +2209,35 @@ subtest 'build_in_and_nin_query: builds correct condition' => sub {
     is_deeply $model->build_in_and_nin_query( [ 1, 2, 3, '!1', '!2' ] ), { '$in' => [ 1, 2, 3 ], '$nin' => [ 1, 2 ] };
 };
 
+subtest 'change_status: changes topic status' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role();
+    my $user   = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $model = _build_model();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $topic_mid = TestSetup->create_topic(
+        status => $status,
+        title  => "Topic",
+        username => $user->username
+    );
+
+    my $status1 = TestUtils->create_ci( 'status', name => 'Change1', type => 'I' );
+    $model->change_status( mid => $topic_mid, id_status => $status1->id_status, change => 1, username => $user->username );
+
+    my $topic = mdb->topic->find_one({mid => $topic_mid});
+
+    is $topic->{id_category_status}, $status1->id_status;
+    is $topic->{category_status_id}, $status1->id_status;
+    is $topic->{category_status}->{id}, $status1->id_status;
+
+    my $ci_doc = ci->topic->find_one({mid => $topic_mid});
+    is $ci_doc->{id_category_status}, $status1->id_status;
+};
+
 subtest 'status_changes: returns all the status changes' => sub {
     my $model = _build_model();
 

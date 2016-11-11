@@ -2689,6 +2689,7 @@ sub update_category_status {
     if( !ref $mid_or_doc ) {
         # save back to mongo
         mdb->topic->update({ mid=>"$mid_or_doc" },{ '$set'=>$d });
+        mdb->master_doc->update({mid => "$mid_or_doc"}, {'$set' => {id_category_status => $id_category_status}});
     }
 
     $$doc{$_} = $$d{$_} for keys $d;   # merge hashes while maintaining original hash integrity
