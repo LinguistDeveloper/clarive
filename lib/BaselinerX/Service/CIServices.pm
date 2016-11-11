@@ -20,6 +20,13 @@ register 'service.ci.create' => {
     handler => \&ci_create,
 };
 
+register 'service.ci.load_related' => {
+    name => _locl('Load related CIs'),
+    form => '/forms/ci_related.js',
+    icon => '/static/images/icons/class.svg',
+    handler => \&ci_related,
+};
+
 sub ci_invoke {
     my ($self, $c, $config ) = @_;
 
@@ -66,6 +73,43 @@ sub ci_create {
     return $ci;
 
 }
+
+sub ci_related {
+    my ( $self, $c, $config ) = @_;
+
+    my $mid = $config->{mid} // die _loc("Missing mid");
+
+    my ($collection) = _array $config->{classname};
+    $collection =~ s{^BaselinerX::CI::}{} if $collection;
+
+    my $depth = $config->{depth} // 1;
+
+    my $query_type = $config->{query_type} // 'children';
+    if ( !grep { $query_type eq $_ } qw/children parents related/ ) {
+        die 'Unknown query type';
+    }
+
+    my $single     = $config->{single};
+    my $mids_only  = $config->{mids_only};
+
+    my $ci = ci->new($mid);
+
+    my @related = $ci->$query_type(
+        $collection ? (where => { collection => $collection }) : (),
+        $mids_only ? ( mids_only => 1 ) : ( docs_only => 1 ), depth => $depth
+    );
+
+    if ($mids_only) {
+        @related = map { $_->{mid} } @related;
+    }
+
+    if ($single) {
+        return $related[0];
+    }
+
+    return \@related;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

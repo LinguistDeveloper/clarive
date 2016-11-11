@@ -23,6 +23,51 @@ subtest 'ci_create: creates ci with parameters' => sub {
     is $ci->name, 'New';
 };
 
+subtest 'ci_related: returns related cis' => sub {
+    _setup();
+
+    my $child = TestUtils->create_ci('GitRepository');
+    my $parent = TestUtils->create_ci( 'project', repositories => [ $child->mid ] );
+
+    my $service = _build_service();
+
+    my $children = $service->ci_related( undef, { mid => $parent->mid, query_type => 'children' } );
+    is @$children, 1;
+    is $children->[0]->{mid}, $child->mid;
+
+    my $parents = $service->ci_related( undef, { mid => $child->mid, query_type => 'parents' } );
+    is @$parents, 1;
+    is $parents->[0]->{mid}, $parent->mid;
+
+    my $related = $service->ci_related( undef, { mid => $child->mid, query_type => 'related' } );
+    is @$related, 1;
+    is $related->[0]->{mid}, $parent->mid;
+};
+
+subtest 'ci_related: returns one related ci in single mode' => sub {
+    _setup();
+
+    my $child = TestUtils->create_ci('GitRepository');
+    my $parent = TestUtils->create_ci( 'project', repositories => [ $child->mid ] );
+
+    my $service = _build_service();
+
+    my $related = $service->ci_related( undef, { mid => $parent->mid, query_type => 'children', single => 'on' } );
+    is $related->{mid}, $child->mid;
+};
+
+subtest 'ci_related: returns only mids whey requested' => sub {
+    _setup();
+
+    my $child = TestUtils->create_ci('GitRepository');
+    my $parent = TestUtils->create_ci( 'project', repositories => [ $child->mid ] );
+
+    my $service = _build_service();
+
+    my $related = $service->ci_related( undef, { mid => $parent->mid, query_type => 'children', mids_only => 1 } );
+    is $related->[0], $child->mid;
+};
+
 done_testing;
 
 sub _setup {
