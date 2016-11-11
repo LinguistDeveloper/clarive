@@ -7,10 +7,12 @@ use Test::Fatal;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
+use TestSetup;
 
 use JSON ();
 use Baseliner::Role::CI;
 use Baseliner::Core::Registry;
+use BaselinerX::CI::variable;
 use BaselinerX::Type::Event;
 use BaselinerX::Type::Statement;
 
@@ -19,8 +21,6 @@ $Baseliner::_no_cache++;
 
 my $RE_ts = qr/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 my $RE_t  = qr/^\d+\.\d+$/;
-
-use BaselinerX::Type::Event;
 
 use_ok 'Baseliner::Model::Events';
 
@@ -279,6 +279,24 @@ subtest 'new_event: rethrows error if catch block not provided' => sub {
     }, qr/here/;
 };
 
+subtest 'run_once: runs event' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(rule_when => 'post-offline', rule_type => 'event');
+
+    my $id_event = mdb->event->insert({event_key => 'some.event', event_status => 'new'});
+
+    my $events = _build_model();
+
+    $events->run_once(undef, {});
+
+    my $event = mdb->event->find_one({_id => $id_event});
+
+    is $event->{event_status}, 'ok';
+};
+
+done_testing;
+
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Action',
@@ -402,5 +420,3 @@ sub _create_rule {
 sub _build_model {
     return Baseliner::Model::Events->new();
 }
-
-done_testing;

@@ -106,6 +106,11 @@ sub get {
     # load all values for the keyinto a temp hash
     my $where;
     $where->{ns} = $p{ns} if $p{ns};
+
+    # $key is always ASCII, there is no need for it be Unicode, but MongoDB driver warns about /u flags, that is why we
+    # remove utf8 flag manually
+    Encode::_utf8_off($key);
+
     $where->{'$or'} = [{key => qr/^$key\./}, {key => qr/^$key$/}];
 
     my @rs = mdb->config->find($where)->fields(
