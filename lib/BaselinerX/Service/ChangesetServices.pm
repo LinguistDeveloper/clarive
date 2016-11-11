@@ -64,7 +64,7 @@ register 'service.changeset.update' => {
     icon    => '/static/images/icons/changesets.svg',
     form    => '/forms/changeset_update.js',
     job_service  => 1,
-    handler => \&changeset_update,
+    handler => \&update_changesets,
 };
 
 register 'service.topic.status' => {
@@ -118,66 +118,78 @@ sub topic_status {
     }
 }
 
-sub changeset_update {
+sub update_changesets {
     my ( $self, $c, $config ) = @_;
 
-    my $stash    = $c->stash;
-    my $job      = $c->stash->{job};
-    my $log      = $job->logger;
-    my $bl       = $job->bl;
-    my $job_type = $job->job_type;
-    my @changesets;
+    my $stash = $c->stash;
+    my $job   = $c->stash->{job};
 
-    my $category       = $config->{category};
-    my $status_on_ok   = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_fail} : $config->{status_on_ok};
-    my $status_on_rollback = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
+    my $log      = $job->logger;
+    my $job_type = $job->job_type;
+
+    my $is_rollback = !!$stash->{rollback};
+    my $cache_key   = '_update_changesets';
 
     if ( $job_type eq 'static' ) {
-        $self->log->info( _loc("Changesets status not updated. Static job." ) );
+        $self->log->info( _loc("Changesets status not updated. Static job.") );
         return;
     }
 
-    my $status = $status_on_ok || $stash->{status_to};
-    if ( !$status ) {
-        my $ci_self_status = ci->bl->search_ci( bl => $bl);
-        ($status) = grep {$_->{type} eq 'D'} _array($ci_self_status->parents( where=>{collection => 'status'}));
+    my $status_to;
+    my $status_to_rollback;
+
+    if ( $job->is_failed( status => 'last_finish_status' ) ) {
+        $status_to          = $config->{status_on_fail};
+        $status_to_rollback = $config->{status_on_rollback_fail};
+    }
+    else {
+        $status_to          = $config->{status_on_ok};
+        $status_to_rollback = $config->{status_on_rollback_ok};
     }
 
-    $stash->{update_baselines_changesets} //= {};
+    if ( $job_type eq 'demote' ) {
+        ( $status_to, $status_to_rollback ) = ( $status_to_rollback, $status_to );
+    }
+
+    $stash->{$cache_key} //= {};
 
     for my $cs ( _array( $stash->{changesets} ) ) {
-        if( length $category && $cs->id_category_status == $category) {
-            $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->title, $category) );
-            next;
-        }
+        my $id_next_status = $status_to;
 
-        if( $stash->{rollback} ) {
+        if ($is_rollback) {
+
             # rollback to previous status
-            $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
-            if( !length $status ) {
-                _debug _loc('No last status data for changeset %1. Skipped.', $cs->title);
+            $id_next_status = $status_to_rollback || $stash->{$cache_key}->{ $cs->mid };
+
+            if ( !$id_next_status ) {
+                _debug _loc( 'No last status data for changeset %1. Skipped.', $cs->title );
                 next;
             }
-        } elsif ($job_type eq 'demote') {
-            $status = $status_on_rollback || $stash->{state_to};
-        } else {
+        }
+        else {
             # save for rollback
             _debug "Saving changeset status for rollback: " . $cs->mid . " = " . $cs->id_category_status;
-            $stash->{update_baselines_changesets}{ $cs->mid } = $cs->id_category_status;
+
+            $stash->{$cache_key}->{ $cs->mid } = $cs->id_category_status;
         }
-        my $status_name = ci->status->find_one({ id_status=>''.$status })->{name};
-        _fail _loc('Status row not found for status `%1`', $status_name) unless $status_name;
-        $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
-        Baseliner->model('Topic')->change_status(
-           change          => 1,
-           username        => $job->username,
-           id_status       => $status,
-           bl              => $stash->{bl},
-           #id_old_status   => $cs->id_category_status,
-           mid             => $cs->mid,
+
+        next unless $id_next_status;
+
+        my $next_status = ci->status->find_one( { id_status => '' . $id_next_status } );
+        _fail _loc( 'Status row not found for status `%1`', $id_next_status ) unless $next_status;
+
+        $log->info( _loc( 'Moving changeset %1 (#%2) to status *%3* (%4)', $cs->title, $cs->mid, $next_status->{name}, $id_next_status ) );
+
+        Baseliner::Model::Topic->new->change_status(
+            change    => 1,
+            username  => $job->username,
+            id_status => $id_next_status,
+            bl        => $stash->{bl},
+            mid       => $cs->mid,
         );
     }
 
+    return 1;
 }
 
 sub update_baselines {

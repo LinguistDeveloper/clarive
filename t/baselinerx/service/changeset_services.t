@@ -1,13 +1,14 @@
 use strict;
 use warnings;
-use lib 't/lib';
 
 use Test::More;
 use Test::Deep;
 use Test::MonkeyMock;
+
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
+use TestSetup;
 use TestGit;
 
 use BaselinerX::CI::GitItem;
@@ -591,6 +592,300 @@ subtest 'job_items: returns project count' => sub {
     is_deeply $result, { project_count => 1 };
 };
 
+subtest 'update_changesets: updates changesets on success' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job   = _mock_job();
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_ok => $status2->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status2->id_status;
+};
+
+subtest 'update_changesets: does not do anything when static job' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job( job_type => sub { 'static' } );
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_ok => $status2->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status->id_status;
+};
+
+subtest 'update_changesets: updates changesets on failure' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Error',       type => 'G' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job( is_failed => sub { 1 } );
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_fail => $status3->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status3->id_status;
+};
+
+subtest 'update_changesets: updates changesets to rollback success status when demote' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job   = _mock_job(job_type => sub { 'demote' });
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_rollback_ok => $status->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status->id_status;
+};
+
+subtest 'update_changesets: updates changesets to rollback failure status when demote' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job( is_failed => sub { 1 }, job_type => sub { 'demote' } );
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_rollback_fail => $status->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status->id_status;
+};
+
+subtest 'update_changesets: leaves previous status on failure when it was not specified' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Error',       type => 'G' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job( is_failed => sub { 1 } );
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status->id_status;
+};
+
+subtest 'update_changesets: updates changesets on rollback success' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Error',       type => 'G' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job();
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ],
+        rollback => 1
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_rollback_ok => $status3->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status3->id_status;
+};
+
+subtest 'update_changesets: updates changesets on rollback failure' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Error',       type => 'G' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job( is_failed => sub { 1 } );
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ],
+        rollback => 1
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_rollback_fail => $status3->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status3->id_status;
+};
+
+subtest 'update_changesets: sets previous status on rollback success when status not passed' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Error',       type => 'G' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job();
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_ok => $status2->id_status } );
+
+    $stash->{rollback} = 1;
+    $service->update_changesets( $c, { status_on_ok => $status2->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status->id_status;
+};
+
+subtest 'update_changesets: sets previous status on rollback failure when status not passed' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'In Progress', type => 'G' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'D' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Error',       type => 'G' );
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $changeset_mid = TestSetup->create_topic( status => $status, username => $user->username );
+
+    my $job = _mock_job( is_failed => sub { 1 } );
+    my $stash = {
+        job        => $job,
+        changesets => [ ci->new($changeset_mid) ]
+    };
+    my $c = _mock_c( stash => $stash );
+
+    my $service = _build_service();
+
+    $service->update_changesets( $c, { status_on_fail => $status3->id_status } );
+
+    $stash->{rollback} = 1;
+    $service->update_changesets( $c, { status_on_fail => $status3->id_status } );
+
+    my $changeset = mdb->topic->find_one( { mid => $changeset_mid } );
+
+    is $changeset->{id_category_status}, $status->id_status;
+};
+
 done_testing;
 
 sub _setup {
@@ -602,6 +897,10 @@ sub _setup {
         'BaselinerX::Type::Event',
         'BaselinerX::Type::Service',
         'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Fieldlet',
+        'BaselinerX::Fieldlets',
+        'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules',
     );
 
     mdb->rule->drop;
@@ -623,17 +922,17 @@ sub _mock_job {
     my (%params) = @_;
 
     my $logger = $params{logger} || _mock_logger();
+    my $is_failed = $params{is_failed};
+    my $job_type = $params{job_type};
 
     my $job = Test::MonkeyMock->new;
-    $job->mock(
-        is_failed => $params{is_failed} || sub { 0 },
-        when => sub { $_[0] eq 'status' && $_[1] eq 'last_finish_status' }
-    );
-    $job->mock( rollback => $params{rollback} || sub { 0 } );
+    $job->mock( is_failed => $is_failed        || sub { 0 } );
+    $job->mock( rollback  => $params{rollback} || sub { 0 } );
     $job->mock( logger   => sub { $logger } );
-    $job->mock( job_type => sub { 'promote' } );
+    $job->mock( job_type => $job_type || sub { 'promote' } );
     $job->mock( job_dir  => sub { '/job/dir' } );
     $job->mock( bl       => sub { 'TEST' } );
+    $job->mock( username => sub { 'clarive' } );
 
     return $job;
 }
