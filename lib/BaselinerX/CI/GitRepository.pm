@@ -25,7 +25,7 @@ sub icon       { '/static/images/icons/git.svg' }
 sub has_bl { 1 }
 
 service 'create_tags' => {
-    name    => _loc('Create tags'),
+    name    => _loc('Create system tags'),
     form    => '/forms/repo_create_tags.js',
     icon    => '/static/images/icons/git.svg',
     handler => \&create_tags_handler
@@ -62,9 +62,8 @@ sub get_system_tags {
             }
         }
     }
-    else {
-        @tags = @bls;
-    }
+
+    push @tags, @bls;
 
     return @tags;
 }
@@ -72,17 +71,31 @@ sub get_system_tags {
 sub create_tags_handler {
     my ( $self, $c, $config ) = @_;
 
+    my $repo;
+
+    # Rule mode
+    if ($config->{repo}) {
+        my ($repo_mid) = _array $config->{repo};
+
+        $repo = ci->new($repo_mid);
+    }
+
+    # Service mode
+    else {
+        $repo = $self;
+    }
+
     my $ref        = $config->{'ref'};
     my $existing   = $config->{'existing'} || 'detect';
     my $tag_filter = join '|', split ',', ($config->{'tag_filter'} // '');
 
-    my $git = $self->git;
+    my $git = $repo->git;
 
     if ( !$ref ) {
-        ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
+        ($ref) = reverse $git->exec( 'rev-list', $repo->default_branch // 'HEAD' );
     }
 
-    my @tags = $self->get_system_tags;
+    my @tags = $repo->get_system_tags;
 
     @tags = grep { /^(?:$tag_filter)$/ } @tags if $tag_filter;
 
