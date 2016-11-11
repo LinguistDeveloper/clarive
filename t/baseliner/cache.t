@@ -46,7 +46,7 @@ subtest 'set: works around mongo bug when inserting values in parallel' => sub {
 
                 usleep 10_000 * int( rand(10) );
 
-                die 'set returned false' unless $cache->set( $key, 'bar' );
+                $cache->set( $key, 'bar' );
 
                 exit 0;
             }
