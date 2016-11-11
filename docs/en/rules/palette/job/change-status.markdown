@@ -11,4 +11,4 @@ Service for changing topic status from one status to another. Form to configure 
 
 **New Status**: Combo box to choose the new status to go to.
 
-**User**: This field can be used to choose the user that make the transition.
+**User**: This field can be used to choose the user that make the transition. User needs permissions to do the status transition.

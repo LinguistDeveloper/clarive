@@ -16,4 +16,4 @@ icon: topic
 * Indica el estado al que va a transitar el tópico.
 
 ### Usuario
-* Permite definir el autor de la transición entre tópicos.
+* Permite definir el autor de la transición entre tópicos. El usuario necesita permiso para hacer la transición de estados.

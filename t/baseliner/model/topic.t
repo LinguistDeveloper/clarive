@@ -3941,6 +3941,93 @@ subtest 'get_fieldlets_from_default_form: fails if no id_rule' => sub {
     like exception { $model->get_fieldlets_from_default_form(); }, qr/Id not provided/;
 };
 
+subtest 'check_permissions_change_status: returns true when user has permissions to change status' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role;
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'In Progress', type => 'I' );
+
+    my $workflow = [
+        {   id_role        => $id_role,
+            id_status_from => $status->id_status,
+            id_status_to   => $status2->id_status,
+            job_type       => 'promote'
+        }
+    ];
+    my $id_rule     = TestSetup->create_rule_form();
+    my $id_category = TestSetup->create_category(
+        name     => 'Category',
+        id_rule  => $id_rule,
+        workflow => $workflow
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => "Topic"
+    );
+    my $model  = _build_model();
+    my $output = $model->check_permissions_change_status(
+        username    => $user->username,
+        id_category => $id_category,
+        old_status  => $status,
+        new_status  => $status2,
+        topic_mid   => $topic_mid
+    );
+
+    ok $output;
+};
+
+subtest 'check_permissions_change_status: throws an error when user has no permissions to change status' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role;
+    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New',         type => 'I' );
+    my $status2 = TestUtils->create_ci( 'status', name => 'In Progress', type => 'I' );
+    my $status3 = TestUtils->create_ci( 'status', name => 'Finished',    type => 'I' );
+
+    my $workflow = [
+        {   id_role        => $id_role,
+            id_status_from => $status->id_status,
+            id_status_to   => $status2->id_status,
+            job_type       => 'promote'
+        }
+    ];
+    my $id_rule     = TestSetup->create_rule_form();
+    my $id_category = TestSetup->create_category(
+        name     => 'Category',
+        id_rule  => $id_rule,
+        workflow => $workflow
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => "Topic"
+    );
+
+    my $model = _build_model();
+
+    like exception {
+        $model->check_permissions_change_status(
+            username    => $user->username,
+            id_category => $id_category,
+            old_status  => $status,
+            new_status  => $status3,
+            topic_mid   => $topic_mid
+        );
+    }, qr/has no permissions to change status from 'New' to 'Finished'/;
+};
+
 done_testing();
 
 sub _setup {
