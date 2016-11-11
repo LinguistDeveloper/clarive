@@ -510,7 +510,7 @@ register 'fieldlet.system.list_topics' => {
     type        => 'listbox',
     rel_type    => 'topic_topic',
     section_default => 'head',
-    section_allowed => ['head','more','details']
+    section_allowed => ['head','more']
 };
 
 

@@ -191,20 +191,26 @@ if (imagen.width()>600) { captura.show(); }
 
 
 % if( _array $fields->{details} ) {
-%    my $did = int rand 999999;
-        <tr>
-            <td colspan=2 id="<% $did %>" style="white-space: nowrap; display: none;">
-% foreach my $field ( _array $fields->{details} ) {
-%   if ($field->{html}){
-        <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
+%   my @ids;
+    <tr>
+%   foreach my $field ( _array $fields->{details} ) {
+%       my $id = int rand 999999;
+        <td colspan=2 id="<% $id %>" style="white-space: nowrap; display: none;">
+%       if ($field->{html}){
+            <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
+%       }
+%       if ($field->{type} eq 'generic') {
+%           push @ids, $id;
+%       }
 %   }
-%}
-            </td>
-        </tr>
+        </td>
+    </tr>
+%   foreach my $id (@ids) {
         <script>
-            var dtd = Ext.fly( '<% $did %>' );
+            var dtd = Ext.fly( '<% $id %>' );
             if( dtd.dom.innerHTML.trim().length > 0 ) dtd.show();
         </script>
+%   }
 % }
                 </tbody>
             </table>
