@@ -18,7 +18,8 @@
             xtype: 'textfield',
             fieldLabel: _('Proxy Timeout (s)'),
             name: 'proxy_timeout',
-            anchor: '10%',
+            anchor: '20%',
+            boxMinWidth: 30,
             allowBlank: true
         },
         new Baseliner.ComboSingle({
