@@ -134,8 +134,9 @@ sub inbox : Local {
 sub to_and_cc : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $query = quotemeta($p->{query} // '');
+    my $query = $p->{query} // '';
     my $deny_email = $p->{denyEmail};
+
     try {
         my @data;
         #my $id = 1;
@@ -151,8 +152,8 @@ sub to_and_cc : Local {
             }
         } ci->user->find()->all, mdb->role->find()->all;
         if( $query ) {
-            my $re = qr/$p->{query}/i;
-            @data = grep { join( ',',values(%$_) ) =~ $re } @data ;
+            my $re = join '|', map { quotemeta $_ } split /\|/, $query;
+            @data = grep { join( ',',values(%$_) ) =~ qr/$re/i } @data ;
             if(!$deny_email){
                 push @data, { type=>'Email', name=>$_, long=>'', id=>$_, ns=>$_ } for split /\|/, $query;
             }
