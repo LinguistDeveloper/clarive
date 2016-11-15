@@ -390,7 +390,7 @@ Cla.ci_loc = function(cls){
     return trans;
 }
 
-// from /root/static/images/icons/mime/*
+// from /root/static/images/icons/file-extension/*
 var extensions_available = {
 "3gp":0, "7z":0, "ace":0, "ai":0, "aif":0, "aiff":0, "amr":0, "asf":0, "asx":0, "bat":0, "bin":0,
 "bmp":0, "bup":0, "cab":0, "cbr":0, "cda":0, "cdl":0, "cdr":0, "chm":0, "dat":0, "divx":0, "dll":0,
@@ -415,7 +415,7 @@ Baseliner.render_extensions = function(value,metadata,rec,rowIndex,colIndex,stor
     value = value.toLowerCase();
     var extension = extensions_available[ value ];
     if( extension == undefined ) value = 'bin'; // no icon available
-    return _("<img src='%1' alt='%2'>", "/static/images/icons/mime/file_extension_" + value + ".svg", value );
+    return _("<img src='%1' alt='%2'>", "/static/images/icons/file-extension/file-extension-" + value + ".svg", value );
 }
 
 // JsonStore with Error Handling
@@ -4119,7 +4119,7 @@ Baseliner.UploadFilesPanel = Ext.extend(Ext.Panel, {
             if (asset_mid != undefined) {
                 value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, asset_mid, self.url_download);
             } else {
-                var icon = IC('catalog-folder.png');
+                var icon = IC('catalog-folder.svg');
                 value = String.format('<img  style="vertical-align:middle" src="{0}" alt="edit" /><span style="margin-left: 4px;"><b>{1}</span>', icon, value);
             }
             value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' + value + '</div>';

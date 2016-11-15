@@ -356,7 +356,7 @@
            } else if( value.more!='' && value.more!=undefined && value.data ) {
                var img;
                if( value.more=='zip' ) {
-                  img = '/static/images/icons/mime/file_extension_zip.svg';
+                  img = '/static/images/icons/file-extension/file-extension-zip.svg';
                } else {
                   img = '/static/images/icons/save.svg';
            }

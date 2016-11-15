@@ -45,14 +45,6 @@ register 'action.ci.admin' => {
     extends => ['action.ci.view']
 };
 
-# register 'menu.tools.ci' => {
-#     label    => 'CI Viewer',
-#     url_comp => '/comp/ci-viewer-tree.js',
-#     title    => 'CI Viewer',
-#     icon     => '/static/images/ci/ci.svg',
-#     actions  => ['action.ci.admin']
-# };
-
 register 'action.search.ci' => { name => _locl('Search CIs') };
 
 # gridtree - the adjacency list treegrid
@@ -578,7 +570,7 @@ sub tree_object_info {
             type      => 'depend_from',
             class     => '-',
             classname => '-',
-            icon      => '/static/images/ci/out.svg',
+            icon      => '/static/images/icons/out.svg',
             ts        => '',
             versionid => '',
         },
@@ -591,7 +583,7 @@ sub tree_object_info {
             type      => 'depend_to',
             class     => '-',
             classname => '-',
-            icon      => '/static/images/ci/in.svg',
+            icon      => '/static/images/icons/in.svg',
             ts        => '',
             versionid => '',
         },

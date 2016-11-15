@@ -5,6 +5,7 @@ with 'Baseliner::Role::CI';
 has only_parsed => qw(is rw isa BoolCheckbox coerce 1 default 0);
 
 sub icon { '/static/images/icons/nature.svg' }
+
 sub filter_items {
     my ($self, %p )=@_;
     my @includes = map { qr/$_/i } Util->_array( $self->include );

@@ -557,7 +557,7 @@
     var button_cis = new Ext.Button({
         text: _('Dependencies'),
         disabled: true,
-        icon:'/static/images/icons/ci-grey.svg',
+        icon:'/static/images/icons/dependencies.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = jc_grid.getSelectionModel();

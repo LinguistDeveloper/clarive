@@ -84,7 +84,7 @@
             },
             new Ext.Toolbar.Button({
                 text: '<% _loc('Details') %>',
-                icon:'/static/images/chromium/databaseTable.svg',
+                icon:'/static/images/icons/database-table.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
