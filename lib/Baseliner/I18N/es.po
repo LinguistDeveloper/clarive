@@ -14024,7 +14024,7 @@ msgstr "Modo Local"
 
 #: root/forms/ship_remote.js
 msgid "Local Files"
-msgstr ""
+msgstr "Ficheros Locales"
 
 #: root/forms/ship_remote.js
 msgid "Relative Path"
@@ -14088,7 +14088,7 @@ msgstr "Fallar si los ficheros no existen"
 
 #: root/forms/ship_remote.js
 msgid "Exist Mode Remote"
-msgstr ""
+msgstr "Existe Modo Remoto"
 
 #: root/forms/ship_remote.js
 msgid "Skip, if file already sent by any task in job chain"
@@ -14114,7 +14114,7 @@ msgstr "Tamaño máximo de fragmento"
 
 #: root/forms/ship_remote.js
 msgid "Copy File Attributes"
-msgstr ""
+msgstr "Copiar Atributos de Fichero"
 
 #: root/forms/shortcut.js
 msgid "Stash Data"
