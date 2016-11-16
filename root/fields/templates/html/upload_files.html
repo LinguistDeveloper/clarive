@@ -9,7 +9,7 @@
 </%perl>
 % if( _array( $data->{$meta->{id_field}} ) && !($meta->{hidden}+0)) {
     <tr>
-        <td colspan=2 id='td-tree-<%$id%>'>
+        <td colspan=2 id='td-tree-<%$id%>'  style="background: transparent">
                 <b><% _loc( $meta->{name_field} || $meta->{id_field} ) %>:</b>
                 <br>
                 <br>
