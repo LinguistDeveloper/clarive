@@ -242,9 +242,9 @@ subtest 'find: builds correct query when field sorting is in group keys' => sub 
     cmp_deeply $job_list[0]->{job_contents}->{list_apps}, ['Project_A'];
     cmp_deeply $job_list[1]->{bl}, 'QA';
     cmp_deeply $job_list[1]->{job_contents}->{list_apps}, ['Project_B'];
-    cmp_deeply $job_list[2]->{bl}, 'QA';
+    cmp_deeply $job_list[2]->{bl}, 'PROD';
     cmp_deeply $job_list[2]->{job_contents}->{list_apps}, [ 'Project_C', 'Project_D' ];
-    cmp_deeply $job_list[3]->{bl}, 'PROD';
+    cmp_deeply $job_list[3]->{bl}, 'QA';
     cmp_deeply $job_list[3]->{job_contents}->{list_apps}, [ 'Project_C', 'Project_D' ];
 };
 
@@ -333,11 +333,11 @@ subtest 'find: builds correct query when groupby field is not nested' => sub {
     my @job_list = $find->all;
 
     cmp_deeply $job_list[0]->{bl},     'QA';
-    cmp_deeply $job_list[0]->{status}, 'FINISHED';
+    cmp_deeply $job_list[0]->{status}, 'READY';
     cmp_deeply $job_list[1]->{bl},     'QA';
     cmp_deeply $job_list[1]->{status}, 'READY';
     cmp_deeply $job_list[2]->{bl},     'QA';
-    cmp_deeply $job_list[2]->{status}, 'READY';
+    cmp_deeply $job_list[2]->{status}, 'FINISHED';
     cmp_deeply $job_list[3]->{bl},     'PROD';
     cmp_deeply $job_list[3]->{status}, 'FINISHED';
 };
