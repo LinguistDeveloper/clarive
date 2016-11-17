@@ -7,6 +7,7 @@ use base 'Exporter';
 our @EXPORT = qw(debug config version);
 
 use Cwd ();
+use File::chdir;
 my $root;
 
 BEGIN {
@@ -69,6 +70,8 @@ sub setup {
         push @WARNINGS, longmess( $_[0] );
         warn @_;
     };
+
+    $CWD = $ENV{CLARIVE_HOME};
 }
 
 END {
