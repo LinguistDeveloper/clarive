@@ -15,11 +15,11 @@ sub run_update {
 
     my @root = ( 'ci', 'comp', 'dashlets', 'email', 'fields', 'forms', 'reports', 'site', );
 
-    my @dirs = ( 'lib', map { "root/$_" } @root );
+    my @dirs = map { "$ENV{CLARIVE_HOME}/$_" } ( 'lib', map { "root/$_" } @root );
 
     warn "Generating i18n files. This can take awhile...\n";
 
-    open my $fh, '>', 'messages.po';
+    open my $fh, '>', '/tmp/messages.po';
 
     print $fh qq{msgid ""},                                     "\n";
     print $fh qq{msgstr ""},                                    "\n";
@@ -52,23 +52,23 @@ sub run_update {
     close $fh;
 
     warn "Making sure translations are unique...\n";
-    system("msguniq messages.po > messages.po.uniq");
+    system("msguniq /tmp/messages.po > /tmp/messages.po.uniq");
 
-    $self->_remove_header('messages.po.uniq');
+    $self->_remove_header('/tmp/messages.po.uniq');
 
     warn "Merging translations...\n";
-    my @i18n_files = glob "lib/Baseliner/I18N/*.po";
+    my @i18n_files = glob "$ENV{CLARIVE_HOME}/lib/Baseliner/I18N/*.po";
     for my $file (@i18n_files) {
         File::Copy::move( $file, "$file.bak" );
-        system("msgmerge --no-fuzzy-matching $file.bak messages.po.uniq | msguniq > $file");
+        system("msgmerge --no-fuzzy-matching $file.bak /tmp/messages.po.uniq | msguniq > $file");
         unlink "$file.bak";
     }
 
     warn "Done\n";
 
-    unlink 'messages.po';
-    unlink 'messages.po.uniq';
-    unlink 'messages.mo';
+    unlink '/tmp/messages.po';
+    unlink '/tmp/messages.po.uniq';
+    unlink '/tmp/messages.mo';
 
     return 1;
 }
@@ -98,6 +98,8 @@ sub _process {
         if ( defined $id && $id ne '' ) {
             $id =~ s{\\}{\\\\}g;
             $id =~ s{"}{\\"}g;
+
+            $file =~ s/^$ENV{CLARIVE_HOME}\/?//;
 
             print $out_fh "#: $file\n";
             print $out_fh qq{msgid "$id"\n};
