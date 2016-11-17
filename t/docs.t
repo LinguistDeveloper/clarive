@@ -13,7 +13,7 @@ use HTTP::Tiny;
 our $ROOT;
 
 subtest 'links in markdown files work' => sub {
-    my $root = "docs";
+    my $root = "$ENV{CLARIVE_HOME}/docs";
     opendir my $dir, $root or die $!;
     my @languages = grep { !/^\./ && "$root/$_" } readdir $dir;
     closedir $dir;
