@@ -59,7 +59,7 @@ elif [ "$1" == "prove" ]; then
     ARGV=( "$@" )
 
     if [ $# -eq 0 ]; then
-        ARGV[0]=t;
+        ARGV[0]=$CLARIVE_HOME/t;
     fi
 
     perl $LOCALDIR/bin/forkprove -MCatalyst -MMongoDB -Ilib -It/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib -r "${ARGV[@]}"
@@ -69,7 +69,7 @@ elif [ "$1" == "proveui" ]; then
     ARGV=( "$@" )
 
     if [ $# -eq 0 ]; then
-        ARGV[0]=tselenium;
+        ARGV[0]=$CLARIVE_HOME/tselenium;
     fi
 
     perl $LOCALDIR/bin/prove -Ilib -It/lib -Itselenium/lib -I$CLARIVE_HOME/lib -I$CLARIVE_HOME/t/lib  -I$CLARIVE_HOME/tselenium/lib -r "${ARGV[@]}"
@@ -79,7 +79,7 @@ elif [ "$1" == "cover" ]; then
     ARGV=( "$@" )
 
     if [ $# -eq 0 ]; then
-        ARGV[0]=t;
+        ARGV[0]=$CLARIVE_HOME/t;
     fi
 
     cover -delete -silent
