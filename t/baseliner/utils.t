@@ -40,6 +40,8 @@ use Baseliner::Utils qw(
 use Capture::Tiny qw(capture_merged);
 use Clarive::mdb;
 
+my $PATH_UNLIKELY_TO_EXIST = '/unlikely/to/exist';
+
 ####### _pointer
 
 subtest '_pointer returns value from valid structures' => sub {
@@ -898,8 +900,8 @@ subtest 'zip_dir: throws an error when zipfile path does not exist' => sub {
     my $tmp  = tempdir();
 
     like exception {
-        zip_dir( $self, source_dir => $tmp, zipfile => '/unknown' );
-    }, qr/Could not create zip file `\/unknown`/;
+        zip_dir( $self, source_dir => $tmp, zipfile => $PATH_UNLIKELY_TO_EXIST );
+    }, qr/Could not create zip file `$PATH_UNLIKELY_TO_EXIST`/;
 };
 
 subtest 'zip_dir: throws an error when source_dir path does not exist' => sub {
@@ -907,8 +909,8 @@ subtest 'zip_dir: throws an error when source_dir path does not exist' => sub {
     my $file = File::Temp->new;
 
     like exception {
-        zip_dir( $self, source_dir => '/unknown', zipfile => $file );
-    }, qr/Could not find dir `\/unknown` to zip/;
+        zip_dir( $self, source_dir => $PATH_UNLIKELY_TO_EXIST, zipfile => $file );
+    }, qr/Could not find dir `$PATH_UNLIKELY_TO_EXIST` to zip/;
 };
 
 subtest 'zip_dir: returns true when zipfile path exists' => sub {
