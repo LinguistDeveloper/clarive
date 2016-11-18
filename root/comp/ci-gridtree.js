@@ -333,7 +333,7 @@
     };
     var render_datadiv = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value == undefined ) return '';
-        return '<code>' + value + '</code>'; //<img src="/static/images/icons/expandall.gif" onclick="Baseliner.ci_data_win(' + rec.data.mid + ')" />';
+        return '<code>' + value + '</code>';
     };
     var render_mapping_long = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value == undefined ) return '';

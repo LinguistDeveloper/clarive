@@ -272,15 +272,6 @@ msgstr "S0002: Usuario no encontrado: %1"
 msgid "Auth error: %1"
 msgstr "Error de autenticación: %1"
 
-#: lib/Baseliner/Controller/Baseline.pm
-msgid "List all Baselines"
-msgstr "Listar todos los entornos"
-
-#: lib/Baseliner/Controller/Baseline.pm root/dashlets/baselines.html
-#: root/site/common.js
-msgid "Baselines"
-msgstr "Entornos"
-
 #: lib/Baseliner/Controller/Baseline.pm root/site/common.js root/site/model.js
 msgid "Common"
 msgstr "Común"
@@ -12157,6 +12148,10 @@ msgstr ""
 msgid "Jobs Daily (7 days)"
 msgstr ""
 
+#: root/dashlets/baselines.html root/site/common.js
+msgid "Baselines"
+msgstr "Entornos"
+
 #: root/dashlets/baselines.html
 msgid "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
 msgstr "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
@@ -15623,6 +15618,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "List all Baselines"
+#~ msgstr "Listar todos los entornos"
 
 #~ msgid "Job not ready to purge yet: %1 (%2)"
 #~ msgstr "El pase no está listo para purgarse aún: %1 (%2)"

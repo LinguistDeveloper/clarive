@@ -1027,7 +1027,7 @@ sub avatar : Local {
         $username       = $c->username;
     }
 
-    my $default_icon = "root/static/images/icons/user.svg";
+    my $default_icon = "root/static/images/icons/user.png";
 
     my $file = try {
         my $file = _dir( $c->path_to("/root/identicon") );

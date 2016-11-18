@@ -166,7 +166,7 @@ sub topic_categories_to_rules {
             $attributes->{active}   = '1';
             $attributes->{disabled} = \0;
             $attributes->{expanded} = \0;
-            $attributes->{icon}     = $icon;    #;// '/static/images/icons/lock_small.png';
+            $attributes->{icon}     = $icon;
             if (   $fieldlet->{params}->{html}
                 && $fieldlet->{params}->{js}
                 && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'

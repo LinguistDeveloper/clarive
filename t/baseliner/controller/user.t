@@ -277,7 +277,7 @@ subtest 'avatar: returns default avatar when generation fails' => sub {
     my $tempdir = tempdir();
 
     _dir("$tempdir/root/static/images/icons/")->mkpath;
-    TestUtils->write_file( "DEFAULT", "$tempdir/root/static/images/icons/user.svg" );
+    TestUtils->write_file( "DEFAULT", "$tempdir/root/static/images/icons/user.png" );
 
     my $c = _build_c( username => 'root', path_to => $tempdir );
     $c = Test::MonkeyMock->new($c);
@@ -293,7 +293,7 @@ subtest 'avatar: returns default avatar when generation fails' => sub {
 
     my ($file) = $c->mocked_call_args('serve_static_file');
 
-    like $file, qr{$tempdir/root/static/images/icons/user.svg};
+    like $file, qr{$tempdir/root/static/images/icons/user.png};
     is _file($file)->slurp, 'DEFAULT';
 };
 

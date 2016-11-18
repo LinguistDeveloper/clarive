@@ -337,7 +337,7 @@ subtest 'meta key with attributes sent to service op' => sub {
                 [
                     {
                         "attributes" => {
-                            'icon'                => '/static/images/icons/script-local.png',
+                            'icon'                => '/static/images/icons/cog_java.svg',
                             'palette'             => 0,
                             'disabled'            => 0,
                             'who'                 => 'root',

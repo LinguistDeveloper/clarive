@@ -359,7 +359,6 @@ sub palette : Local {
         Baseliner::Core::Registry->starts_with( 'statement.' );
         push @tree, {
             icon     => '/static/images/icons/controller.svg',
-            #icon     => '/static/images/icons/control.gif',
             text     => _loc('Control'),
             draggable => \0,
             expanded => \1,

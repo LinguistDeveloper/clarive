@@ -270,15 +270,6 @@ msgstr ""
 msgid "Auth error: %1"
 msgstr ""
 
-#: lib/Baseliner/Controller/Baseline.pm
-msgid "List all Baselines"
-msgstr ""
-
-#: lib/Baseliner/Controller/Baseline.pm root/dashlets/baselines.html
-#: root/site/common.js
-msgid "Baselines"
-msgstr ""
-
 #: lib/Baseliner/Controller/Baseline.pm root/site/common.js root/site/model.js
 msgid "Common"
 msgstr ""
@@ -11996,6 +11987,10 @@ msgstr ""
 
 #: root/dashlets/bar_jobs.html root/dashlets/jobs_by_hour.html
 msgid "Jobs Daily (7 days)"
+msgstr ""
+
+#: root/dashlets/baselines.html root/site/common.js
+msgid "Baselines"
 msgstr ""
 
 #: root/dashlets/baselines.html

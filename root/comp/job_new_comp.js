@@ -198,16 +198,11 @@
                 ]
         });
 
-// '<div class="search-item"><img src="/static/images/icons/time.gif"/>\t{displayText}</b></div>',
     var time_tpl = new Ext.XTemplate(
         '<tpl for=".">',
         '<div class="search-item"><img src="/static/images/icons/slot.svg"/><span><b>{displayText}</span></b></div>',
         '</tpl>'
         );
-
-// var resultRange = new Ext.XTemplate(
-    // '<tpl for="."><div class="search-item {type}">{displayText}</div></tpl>'
-    // );
 
     var job_time  = new Ext.form.ComboBox({
         name: 'job_combo',

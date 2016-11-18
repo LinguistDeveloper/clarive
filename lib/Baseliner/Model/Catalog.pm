@@ -12,15 +12,6 @@ use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
 
-# register 'menu.tools.catalog' => {
-#     label    => 'Catalog',
-#     title    => 'Catalog',
-#     action   => 'action.catalog.view',
-#     url_comp => '/catalog/init_catalog',
-#     icon     => '/static/images/icons/catalog.png',
-#     tab_icon => '/static/images/icons/catalog.png',
-# };
-
 register 'action.catalog.view' => {
     name => _locl('View catalog')
 };

@@ -8,9 +8,7 @@ use Moose::Role;
 
 requires 'name';
 
-has icon => qw(is rw isa Str default /static/images/icons/lc/branch_obj.svg);
-#has id_project => qw(is rw isa Num required 1);
-#has project => qw(is rw isa Num required 1);
+has icon => qw(is rw isa Str default /static/images/icons/branch_obj.svg);
 
 sub node_url { '/lifecycle/list_repo_contents' }
 

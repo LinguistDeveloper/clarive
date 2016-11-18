@@ -240,7 +240,7 @@ td.slot_hover { border: #000 1px dashed }
 .job-calendar .boton {  }
 .job-calendar select { width: 160px; }
 
-.expandall { background-image: '/static/images/icons/expandall.gif' }
+.expandall { background-image: '/static/images/icons/expandall.svg' }
 .colapseall { background-image: '/static/images/icons/collapseall.svg' }
 
 /*****************   Search box ********************/

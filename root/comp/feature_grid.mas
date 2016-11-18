@@ -21,7 +21,7 @@
     };
 
     var render_plugin = function(value,metadata,rec,rowIndex,colIndex,store) {
-        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/chromium/plugin.svg' />" ;
+        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/plugin.svg' />" ;
     };
 
     var ps = 15;

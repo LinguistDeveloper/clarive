@@ -46,31 +46,6 @@ sub node_menu {
             icon => '/static/images/icons/delete.svg'
         };
     };
-    # push @menu,
-    #     {
-    #     text => 'Deploy',
-    #     eval => { url => '/comp/git/deploy.js', title => 'Deploy' },
-    #     icon => '/static/images/silk/arrow_right.gif'
-    #     };
-    # $self->promotable and push @menu,
-    #     {
-    #     text => 'To Promote',
-    #     eval => { url => '/comp/git/promote.js', title => 'Promote' },
-    #     icon => '/static/images/silk/arrow_down.gif'
-    #     };
-    # $self->demotable and push @menu,
-    #     {
-    #     text => 'Demote',
-    #     eval => { url => '/comp/git/demote.js', title => 'Demote' },
-    #     icon => '/static/images/silk/arrow_up.gif'
-    #     };
-    # push @menu,
-    #     {
-    #     text => 'Create Tag...',
-    #     eval => { url => '/comp/git/tag_commit.js', title => 'Create Tag...' },
-    #     icon => '/static/images/icons/tag.gif',
-    #     data => { sha => $sha },
-    #     };
     \@menu;
 }
 

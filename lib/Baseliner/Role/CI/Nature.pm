@@ -5,20 +5,6 @@ with 'Baseliner::Role::CI';
 has only_parsed => qw(is rw isa BoolCheckbox coerce 1 default 0);
 
 sub icon { '/static/images/icons/nature.svg' }
-=sub icon { '/static/images/nature/nature.png' }
-
-head2 filter_items
-
-From a list of items, filter the ones that belong to this
-nature.
-
-Params:
-
-    items => array of items
-    callback => sub {} for each item, return false to prevent item from being added
-    save => bool - commit items to CI
-
-=cut
 sub filter_items {
     my ($self, %p )=@_;
     my @includes = map { qr/$_/i } Util->_array( $self->include );

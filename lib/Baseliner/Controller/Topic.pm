@@ -2407,23 +2407,6 @@ sub topic_fieldlet_nodes : Local {
     $c->forward('View::JSON');
 }
 
-=pod
-
----
-node1:
-  topic_mid: '131290'
-node2:
-  click:
-    icon: /static/images/icons/topic.png
-    title: 'Paquete #103132'
-    type: comp
-    url: /topic/view?topic_mid=103132
-  on_drop:
-    url: /lifecycle/release_drop
-  topic_mid: '103132'
-
-=cut
-
 sub topic_drop : Local {
     my ($self, $c) = @_;
 

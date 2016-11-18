@@ -2084,9 +2084,6 @@ Baseliner.RowDragger = Ext.extend(Ext.util.Observable, {
         var mainBody = grid.getView().mainBody;
     },
     renderer : function(v, p, record){
-        //p.cellAttr = 'rowspan="2"';
-        //return '<div class="x-grid3-row-expander">&#160;</div>';
-        //return '<div class="x-grid3-row-expander"><img src="/static/images/icons/handle.png" />&#160;</div>';
         return '<img src="/static/images/icons/handle.svg" />';
     }
 });
