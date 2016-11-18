@@ -39,10 +39,10 @@ subtest 'to_and_cc: with params' => sub {
             success => \1,
             data    => [
                 {
-                    id   => 'user\/1300',
+                    id   => 'user/1300',
                     long => '',
-                    name => 'user\/1300',
-                    ns   => 'user\/1300',
+                    name => 'user/1300',
+                    ns   => 'user/1300',
                     type => 'Email'
                 }
             ],
@@ -124,11 +124,10 @@ subtest 'to_and_cc: returns a new parameter created by query type Email' => sub 
 
     cmp_deeply $c->stash->{json}->{data},
     [
-        {
-            id => 'mi\@email\.com',
+        {   id   => 'mi@email.com',
             long => ignore(),
-            ns => 'mi\@email\.com',
-            name => 'mi\@email\.com',
+            ns   => 'mi@email.com',
+            name => 'mi@email.com',
             type => 'Email'
         }
     ];
