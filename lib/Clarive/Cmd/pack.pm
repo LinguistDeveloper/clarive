@@ -29,6 +29,7 @@ has nsis         => qw(is rw isa Str);
 has compile      => qw(is rw isa Bool);
 has fatpack      => qw(is rw isa Bool);
 has encode       => qw(is rw isa Bool);
+has destdir      => qw(is rw isa Str default /tmp/);
 
 my $BINARY_NAME = 'cla.exe';
 my $BINARY_PATH = "bin/$BINARY_NAME";
@@ -260,7 +261,7 @@ EOF
 
     print "Archiving '$dist'";
 
-    my $destdir = "/tmp/";
+    my $destdir = $self->destdir;
     mkdir $destdir;
 
     my $final_archive_path;
