@@ -136,34 +136,62 @@ register 'config.job.log' => {
 
 register 'event.job.new' => {
     description => _locl('New job'),
-    vars => ['username', 'bl', 'jobname', 'id_job'],
-    notify => {
-        scope => ['project','bl'],
-    }
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify      => { scope => [ 'project', 'bl' ], }
 };
 
 register 'event.job.delete' => {
     description => _locl('Job deleted'),
-    vars => ['username', 'bl', 'jobname', 'id_job'],
-    notify => {
-        scope => ['project','bl'],
-    }
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify      => { scope => [ 'project', 'bl' ], }
 };
 
 register 'event.job.cancel' => {
     description => _locl('Job cancelled'),
-    vars => ['username', 'bl', 'jobname', 'id_job'],
-    notify => {
-        scope => ['project','bl'],
-    }
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify      => { scope => [ 'project', 'bl' ], }
 };
 
 register 'event.job.cancel_running' => {
     description => _locl('Running job cancelled'),
-    vars => ['username', 'bl', 'jobname', 'id_job'],
-    notify => {
-        scope => ['project','bl'],
-    }
+    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
+    notify      => { scope => [ 'project', 'bl' ], }
+};
+
+register 'event.job.unpaused' => {
+    description => _locl('Job Unpaused'),
+    vars        => [ 'username', 'self' ],
+    notify      => { scope => ['project'] }
+};
+
+register 'event.job.paused' => {
+    description => _locl('Job Paused'),
+    vars        => ['self'],
+    notify      => { scope => ['project'] }
+};
+
+register 'event.job.trapped' => {
+    description => _locl('Job Trapped'),
+    vars        => [ 'username', 'stash', 'output' ],
+    notify      => { scope => ['project'] }
+};
+
+register 'event.job.untrapped' => {
+    description => _locl('Job Untrapped'),
+    vars        => [ 'comments', 'self' ],
+    notify      => { scope => ['project'] }
+};
+
+register 'event.job.trappedpause' => {
+    description => _locl('Job Trapped Pause'),
+    vars        => [ 'comments', 'self' ],
+    notify      => { scope => ['project'] }
+};
+
+register 'event.job.expired' => {
+    description => _locl('Job Expired'),
+    vars        => ['ci'],
+    notify      => { scope => ['project'] }
 };
 
 

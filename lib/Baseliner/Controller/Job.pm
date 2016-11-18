@@ -444,27 +444,6 @@ sub refresh_now : Local {
     $c->forward('View::JSON');
 }
 
-register 'event.job.new' => {
-    description => _locl('New job'),
-    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
-    notify => { scope => ['bl'] }
-};
-register 'event.job.delete' => {
-    description => _locl('Job deleted'),
-    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
-    notify => { scope => ['bl'] }
-};
-register 'event.job.cancel' => {
-    description => _locl('Job cancelled'),
-    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
-    notify => { scope => ['bl'] }
-};
-register 'event.job.cancel_running' => {
-    description => _locl('Running job cancelled while running'),
-    vars        => [ 'username', 'bl', 'jobname', 'id_job' ],
-    notify => { scope => ['bl'] }
-};
-
 sub submit : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;

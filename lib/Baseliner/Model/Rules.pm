@@ -21,11 +21,6 @@ register 'event.rule.failed' => {
     vars => ['rc', 'ret', 'rule', 'rule_name']
 };
 
-register 'event.rule.trap' => {
-    description => _locl('Rule error trapped'),
-    vars => ['job_name','bl', 'step', 'output']
-};
-
 register 'event.rule.create' => {
     description => _locl('Rule created'),
     vars => ['rule_name','rule_type','username']

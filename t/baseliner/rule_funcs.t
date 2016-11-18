@@ -283,14 +283,7 @@ subtest 'error_trap: returns undef on ignore' => sub {
 subtest 'error_trap: creates event' => sub {
     _setup();
 
-    my $job_logger = _mock_job_logger();
-
-    my $job = Test::MonkeyMock->new;
-    $job->mock( rollback    => sub { 0 } );
-    $job->mock( logger      => sub { $job_logger } );
-    $job->mock( update      => sub { } );
-    $job->mock( load        => sub { { status => 'SKIPPING' } } );
-    $job->mock( trap_action => sub { } );
+    my $job = _mock_job( status => 'SKIPPING' );
     my $stash = { job => $job };
 
     error_trap(
@@ -303,10 +296,11 @@ subtest 'error_trap: creates event' => sub {
         code                => sub { die 'error' }
     );
 
-    my $event = mdb->event->find_one;
+    my $event = mdb->event->find_one( { event_key => 'event.job.trapped' } );
 
-    is $event->{event_key}, 'event.rule.trap';
+    is $event->{event_key}, 'event.job.trapped';
 };
+
 
 #subtest 'error_trap: traps action if timeout expired' => sub {
 #    _setup();
@@ -335,15 +329,7 @@ subtest 'error_trap: creates event' => sub {
 subtest 'error_trap: sets last trap action when status is SKIPPING' => sub {
     _setup();
 
-    my $job_logger = _mock_job_logger();
-
-    my $job = Test::MonkeyMock->new;
-    $job->mock( rollback    => sub { 0 } );
-    $job->mock( logger      => sub { $job_logger } );
-    $job->mock( update      => sub { } );
-    $job->mock( load        => sub { { status => 'SKIPPING' } } );
-    $job->mock( trap_action => sub { } );
-
+    my $job = _mock_job( status => 'SKIPPING' );
     my $stash = { job => $job };
 
     error_trap(
@@ -354,7 +340,7 @@ subtest 'error_trap: sets last trap action when status is SKIPPING' => sub {
         trap_rollback       => 1,
         mode                => '',
         code                => sub { die 'error' }
-      );
+    );
 
     is $stash->{_last_trap_action}, 'skip';
 };
@@ -362,26 +348,20 @@ subtest 'error_trap: sets last trap action when status is SKIPPING' => sub {
 subtest 'error_trap: sets last trap action when status is RETRYING' => sub {
     _setup();
 
-    my $job_logger = _mock_job_logger();
-
-    my $job = Test::MonkeyMock->new;
-    $job->mock( rollback    => sub { 0 } );
-    $job->mock( logger      => sub { $job_logger } );
-    $job->mock( update      => sub { } );
-    $job->mock( load        => sub { { status => 'RETRYING' } } );
-    $job->mock( trap_action => sub { } );
-
+    my $job = _mock_job( status => 'RETRYING' );
     my $stash = { job => $job };
 
-    like exception { error_trap(
-        stash               => $stash,
-        trap_timeout        => 1,
-        trap_timeout_action => 'action',
-        trap_max_retry      => 1,
-        trap_rollback       => 1,
-        mode                => '',
-        code                => sub { die 'error' }
-    )}, qr/Max retries reached/;
+    like exception {
+        error_trap(
+            stash               => $stash,
+            trap_timeout        => 1,
+            trap_timeout_action => 'action',
+            trap_max_retry      => 1,
+            trap_rollback       => 1,
+            mode                => '',
+            code                => sub { die 'error' }
+            )
+    }, qr/Max retries reached/;
 
     is $stash->{_last_trap_action}, 'retry';
 };
@@ -486,6 +466,23 @@ subtest 'eval_code: evals code' => sub {
 
 done_testing();
 
+sub _mock_job {
+    my (%params) = @_;
+
+    my $project    = TestUtils->create_ci_project();
+    my $job_logger = _mock_job_logger();
+    my $job        = Test::MonkeyMock->new;
+
+    $job->mock( rollback    => sub {0} );
+    $job->mock( logger      => sub {$job_logger} );
+    $job->mock( update      => sub { } );
+    $job->mock( load        => sub { { status => $params{status} } } );
+    $job->mock( trap_action => sub { } );
+    $job->mock( projects    => sub {$project} );
+
+    return $job;
+}
+
 sub _mock_job_logger {
     my $job_logger = Test::MonkeyMock->new;
     $job_logger->mock( info  => sub { } );
@@ -503,11 +500,14 @@ sub _setup {
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Service',
         'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Config',
+        'BaselinerX::Type::Menu',
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
         'BaselinerX::Service::Scripting',
         'Baseliner::Model::Rules',
         'Baseliner::Model::Topic',
+        'BaselinerX::Job'
     );
 
     TestUtils->cleanup_cis;

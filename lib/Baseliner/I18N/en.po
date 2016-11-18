@@ -1069,22 +1069,6 @@ msgstr ""
 msgid "Stash saved ok"
 msgstr ""
 
-#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Job.pm
-msgid "New job"
-msgstr ""
-
-#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Job.pm
-msgid "Job deleted"
-msgstr ""
-
-#: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Job.pm
-msgid "Job cancelled"
-msgstr ""
-
-#: lib/Baseliner/Controller/Job.pm
-msgid "Running job cancelled while running"
-msgstr ""
-
 #: lib/Baseliner/Controller/Job.pm
 msgid "Job already cancelled"
 msgstr ""
@@ -2922,10 +2906,6 @@ msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
-msgstr ""
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Rule error trapped"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -5650,7 +5630,43 @@ msgid "Level"
 msgstr ""
 
 #: lib/BaselinerX/Job.pm
+msgid "New job"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job deleted"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job cancelled"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
 msgid "Running job cancelled"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Unpaused"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Paused"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Trapped"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Untrapped"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Trapped Pause"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Job Expired"
 msgstr ""
 
 #: lib/BaselinerX/Lc.pm
@@ -11604,7 +11620,7 @@ msgstr ""
 
 #: root/comp/topic/topic_lib.js
 msgid "Add Comment"
-msgstr "Comment"
+msgstr ""
 
 #: root/comp/topic/topic_lib.js root/forms/eval_remote.js
 #: root/forms/server_code.js root/forms/stmt_eval.js root/forms/stmt_for.js

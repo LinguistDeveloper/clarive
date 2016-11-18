@@ -454,6 +454,10 @@ sub resume {
         $self->logger->info( Util->_loc('Job resumed by user %1', $p->{username}) );
         $self->status( 'RUNNING' );
         $self->save;
+
+        my @projects = map { $_->{mid} } _array( $self->projects );
+        event_new 'event.job.unpaused' =>
+            { notify => { project => \@projects }, username => $p->{username}, self => $self };
         $msg = _loc('Job resumed by user %1', $p->{username});
     } else {
         Util->_fail( Util->_loc('Job was not paused') );
@@ -701,10 +705,21 @@ sub reject {
 
 sub trap_action {
     my ($self, $p)=@_;
-    my $comments = $p->{comments} // _('no comment');
+    my $comments = $p->{comments} // _loc('no comment');
     my $action = $p->{action} // '';
+
     if ( $self->status =~ /TRAPPED/ ) {
         my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : $action eq 'pause' ? 'TRAPPED_PAUSED' :'ERROR';
+
+        my @projects = map { $_->{mid} } _array( $self->projects );
+        if ( $job_status =~ /TRAPPED_PAUSED/ ) {
+            event_new 'event.job.trappedpause' =>
+                { notify => { project => \@projects }, comments => $p->{comments}, self => $self };
+        }
+        else {
+            event_new 'event.job.untrapped' =>
+                { notify => { project => \@projects }, comments => $p->{comments}, self => $self };
+        }
         $self->logger->warn( _loc("Task response '*%1*' by *%2*: %3", _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
         $self->status( $job_status );
         $self->save;
@@ -1359,6 +1374,9 @@ sub pause {
         $self->update( status=>'PAUSED' );
         $p{reason} ||= _loc('unspecified');
         $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
+
+        my @projects = map { $_->{mid} } _array( $self->projects );
+        event_new 'event.job.paused' => { notify => { project => \@projects }, self => $self };
 
         my $timeout = $p{timeout} || $self->pause_timeout;
         my $freq    = $p{frequency} || $self->pause_frequency;

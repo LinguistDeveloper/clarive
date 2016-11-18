@@ -7,6 +7,7 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::RuleRunner;
 use Baseliner::Model::Rules;
+use Baseliner::Sugar;
 
 with 'Baseliner::Role::Service';
 
@@ -281,30 +282,29 @@ sub precompile_rule {
 # expired or pid alive
 sub check_job_expired {
     my ($self, $config)=@_;
-    #_log( "Checking for expired jobs..." );
+
     my $rs = ci->job->find({
             maxstarttime => { '$lt' => _now },
             status => mdb->in('READY','APPROVAL'),
     });
-    while( my $doc = $rs->next ) {
-        my $ci = ci->new( $doc->{mid} ) or do { _error _loc('Job ci not found for id_job=%1', $doc->{id}); next };
-        $ci->logger->error( _loc("Job %1 expired (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
-        $ci->status('EXPIRED');
-        $ci->endtime( _now );
-        $ci->save;
-    }
+    while ( my $doc = $rs->next ) {
+        my $ci = ci->new( $doc->{mid} ) or do { _error _loc( 'Job ci not found for id_job=%1', $doc->{id} ); next };
+        my $message
+            = $doc->{status} eq 'READY'
+            ? _loc( "Job %1 expired (mid=%3, maxstartime=%2)", $doc->{name}, $doc->{maxstarttime}, $doc->{mid} )
+            : _loc(
+            "Job %1 approval time expired (mid=%3, maxapprovaltime=%2)",
+            $doc->{name}, $doc->{maxapprovaltime},
+            $doc->{mid}
+            );
 
-    #_log( "Checking for expired jobs..." );
-    $rs = ci->job->find({
-            maxapprovaltime => { '$lt' => _now },
-            status => mdb->in('APPROVAL'),
-    });
-    while( my $doc = $rs->next ) {
-        my $ci = ci->new( $doc->{mid} ) or do { _error _loc('Job ci not found for id_job=%1', $doc->{id}); next };
-        $ci->logger->error( _loc("Job %1 approval time expired (mid=%3, maxapprovaltime=%2)" , $doc->{name}, $doc->{maxapprovaltime}, $doc->{mid} ) );
+        $ci->logger->error($message);
         $ci->status('EXPIRED');
-        $ci->endtime( _now );
+        $ci->endtime(_now);
         $ci->save;
+
+        my @projects = map { $_->{mid} } _array( $ci->projects );
+        event_new 'event.job.expired' => { notify => { project => \@projects }, ci => $ci };
     }
     # some jobs are running with pid, and some without,
     #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
