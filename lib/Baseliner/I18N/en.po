@@ -5026,11 +5026,11 @@ msgstr ""
 
 #: lib/BaselinerX/CI/user.pm
 msgid "class_date_format"
-msgstr ""
+msgstr "%m/%d/%Y"
 
 #: lib/BaselinerX/CI/user.pm
 msgid "class_date_time"
-msgstr ""
+msgstr "%l:%M%p"
 
 #: lib/BaselinerX/CI/worker_agent.pm
 msgid "Could not find a worker capable of %1"
@@ -14540,15 +14540,15 @@ msgstr ""
 
 #: root/site/common.js root/site/prefs.js
 msgid "momentjs_date_format"
-msgstr ""
+msgstr "MM/DD/YYYY"
 
 #: root/site/common.js root/site/prefs.js
 msgid "momentjs_time_format"
-msgstr ""
+msgstr "HH:mm"
 
 #: root/site/common.js root/site/globals.js root/site/prefs.js
 msgid "js_date_format"
-msgstr ""
+msgstr "m/d/Y"
 
 #: root/site/common.js
 msgid "js_time_format"
@@ -15149,11 +15149,11 @@ msgstr ""
 
 #: root/site/prefs.js
 msgid "js_dt_format"
-msgstr ""
+msgstr "m/d/Y h:i:s"
 
 #: root/site/prefs.js
 msgid "js_dtd_format"
-msgstr ""
+msgstr "D m/d/Y h:i:s"
 
 #: root/site/prefs.js
 msgid "Saved ok"
