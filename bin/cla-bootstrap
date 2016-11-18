@@ -29,6 +29,8 @@ fi
 
 echo 'Installing dependencies...'
 
+cd $CLARIVE_BASE/clarive
+
 bin/cla stew install . "${ARGV[@]}"
 
 if [[ "$OPT_DEV" == 1 ]]; then
@@ -36,3 +38,5 @@ if [[ "$OPT_DEV" == 1 ]]; then
 
     bin/cla stew install clarive-dev "${ARGV[@]}"
 fi
+
+cd -

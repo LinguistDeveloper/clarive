@@ -568,7 +568,7 @@ subtest 'save_to_file: shows an error when try to create the unknown folder' => 
     cmp_deeply $c->stash,
         {
         json => {
-            msg     => re(qr/Cannot save: mkdir \/unknown/),
+            msg     => re(qr/Cannot save: /),
             success => \0
         }
         };

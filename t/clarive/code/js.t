@@ -248,7 +248,7 @@ subtest 'rethrows perl error' => sub {
                 hello => sub { die 'error' }
             }
           )
-    }, qr{Error: error at t/clarive/code/js.t line \d+.};
+    }, qr{Error: error at .*?t/clarive/code/js.t line \d+.};
 };
 
 subtest 'exceptions catch internal errors' => sub {
