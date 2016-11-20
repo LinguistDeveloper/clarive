@@ -1503,6 +1503,127 @@ subtest 'statement.var.push: pushes vars flattening then first' => sub {
     is_deeply $code->( { foo => ['bar'] } )->{foo}, ['bar'];
 };
 
+subtest 'statement.if.any_bl: checks if current bl' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => 'statement.if.any_bl',
+                "data" => {
+                    bls => 'TEST'
+                }
+            },
+            children => [
+                {
+                    "attributes" => {
+                        "key"  => "statement.perl.code",
+                        "data" => {
+                            "code" => q{$stash->{ok} = 1}
+                        },
+                    }
+                }
+            ],
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils qw{parse_vars _array _any}; /
+      . q/sub { my $stash = shift; %s; return $stash }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    ok $code->( { bl => 'TEST' } )->{ok};
+    ok !$code->( { bl => 'QA' } )->{ok};
+};
+
+subtest 'statement.if.any_bl: checks if current bl from multiple bls' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => 'statement.if.any_bl',
+                "data" => {
+                    bls => [ 'TEST', 'QA' ]
+                }
+            },
+            children => [
+                {
+                    "attributes" => {
+                        "key"  => "statement.perl.code",
+                        "data" => {
+                            "code" => q{$stash->{ok} = 1}
+                        },
+                    }
+                }
+            ],
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils qw{parse_vars _array _any}; /
+      . q/sub { my $stash = shift; %s; return $stash }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    ok $code->( { bl => 'TEST' } )->{ok};
+    ok $code->( { bl => 'QA' } )->{ok};
+    ok !$code->( { bl => 'PROD' } )->{ok};
+};
+
+subtest 'statement.if.any_bl: checks if current bl using mids' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci('bl', bl => 'TEST');
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => 'statement.if.any_bl',
+                "data" => {
+                    bls => [ $bl->mid, 'QA' ]
+                }
+            },
+            children => [
+                {
+                    "attributes" => {
+                        "key"  => "statement.perl.code",
+                        "data" => {
+                            "code" => q{$stash->{ok} = 1}
+                        },
+                    }
+                }
+            ],
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils qw{parse_vars _array _any}; /
+      . q/sub { my $stash = shift; %s; return $stash }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    ok $code->( { bl => 'TEST' } )->{ok};
+    ok $code->( { bl => 'QA' } )->{ok};
+    ok !$code->( { bl => 'PROD' } )->{ok};
+};
+
 done_testing;
 
 sub _setup {
