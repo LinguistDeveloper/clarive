@@ -352,7 +352,7 @@ msgstr "Error de CI: %1"
 msgid "Invalid data format: form data is not hash"
 msgstr "Formato de datos inválido: los datos no son un hash"
 
-#: lib/Baseliner/Controller/CI.pm
+#: lib/Baseliner/Controller/CI.pm lib/BaselinerX/Service/CIServices.pm
 msgid "CI %1 not found"
 msgstr "CI %1 no encontrado"
 
@@ -6013,6 +6013,10 @@ msgstr "Crear CI"
 #: lib/BaselinerX/Service/CIServices.pm
 msgid "Load related CIs"
 msgstr "Cargar CIs relacionados"
+
+#: lib/BaselinerX/Service/CIServices.pm
+msgid "Load CI data"
+msgstr "Cargar datos de CI"
 
 #: lib/BaselinerX/Service/CallWebService.pm
 msgid "Web Request"
@@ -13632,6 +13636,11 @@ msgstr "Nombrado"
 msgid "Positional"
 msgstr "Posicional"
 
+#: root/forms/ci_load.js root/forms/ci_related.js root/forms/topic_related.js
+#: root/forms/topic_update.js
+msgid "Mid"
+msgstr ""
+
 #: root/forms/ci_related.js root/forms/topic_related.js
 msgid "Single?"
 msgstr "Único?"
@@ -13642,11 +13651,6 @@ msgstr ""
 
 #: root/forms/ci_related.js root/forms/topic_related.js
 msgid "Query type"
-msgstr ""
-
-#: root/forms/ci_related.js root/forms/topic_related.js
-#: root/forms/topic_update.js
-msgid "Mid"
 msgstr ""
 
 #: root/forms/create_job.js

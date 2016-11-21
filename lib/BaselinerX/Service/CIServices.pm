@@ -27,6 +27,13 @@ register 'service.ci.load_related' => {
     handler => \&ci_related,
 };
 
+register 'service.ci.load' => {
+    name => _locl('Load CI data'),
+    form => '/forms/ci_load.js',
+    icon => '/static/images/icons/class.svg',
+    handler => \&ci_load,
+};
+
 sub ci_invoke {
     my ($self, $c, $config ) = @_;
 
@@ -108,6 +115,17 @@ sub ci_related {
     }
 
     return \@related;
+}
+
+sub ci_load {
+    my ( $self, $c, $config ) = @_;
+
+    my $mid = $config->{mid} // _fail( _loc("Missing mid") );
+
+    my $ci_doc = mdb->master_doc->find_one( { mid => "$mid" } );
+    _fail( _loc( "CI %1 not found", $mid ) ) unless $ci_doc;
+
+    return $ci_doc;
 }
 
 no Moose;
