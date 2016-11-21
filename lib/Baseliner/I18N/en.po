@@ -4280,7 +4280,7 @@ msgid "Could not checkout to file '%1': %2"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "Create tags"
+msgid "Create system tags"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
@@ -4638,7 +4638,7 @@ msgstr ""
 
 #: lib/BaselinerX/CI/job.pm root/ci/review.js root/comp/feature.js
 #: root/fields/system/html/field_revisions.html
-#: root/forms/git_create_branch.js
+#: root/forms/git_create_branch.js root/forms/repo_create_tags.js
 msgid "Repository"
 msgstr ""
 

@@ -178,7 +178,7 @@ subtest 'create_tags_service_handler: creates project tags' => sub {
 
     my @tags = TestGit->tags($repo);
 
-    is_deeply [ sort @tags ], [qw/project-PROD project-TEST/];
+    is_deeply [ sort @tags ], [qw/PROD TEST project-PROD project-TEST/];
 };
 
 subtest 'create_tags_service_handler: filters by tags when projects' => sub {
@@ -262,7 +262,23 @@ subtest 'create_tags_service_handler: creates release and project tags' => sub {
 
     my @tags = TestGit->tags($repo);
 
-    is_deeply [ sort @tags ], [qw/1.1-PROD 1.1-TEST project-PROD project-TEST/];
+    is_deeply [ sort @tags ], [qw/1.1-PROD 1.1-TEST PROD TEST project-PROD project-TEST/];
+};
+
+subtest 'create_tags_service_handler: creates tags for another repo' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'bl', bl => 'TEST' );
+    TestUtils->create_ci( 'bl', bl => 'PROD' );
+
+    my $repo = TestUtils->create_ci_GitRepository();
+    TestGit->commit($repo);
+
+    BaselinerX::CI::GitRepository->create_tags_handler( undef, { repo => $repo->mid } );
+
+    my @tags = TestGit->tags($repo);
+
+    is_deeply [ sort @tags ], [qw/PROD TEST/];
 };
 
 subtest 'update_baselines: moves baselines up in promote' => sub {
@@ -1233,7 +1249,7 @@ subtest 'get_system_tags: get tags with project' => sub {
 
     my @tags = $repo->get_system_tags($repo);
 
-    is_deeply \@tags, [qw/1.0-SUPPORT/];
+    is_deeply \@tags, [qw/1.0-SUPPORT SUPPORT/];
 };
 
 subtest 'get_system_tags: get tags with release,project but without release' => sub {
@@ -1251,7 +1267,7 @@ subtest 'get_system_tags: get tags with release,project but without release' => 
 
     my @tags = $repo->get_system_tags($repo);
 
-    is_deeply \@tags, [qw/1.0-SUPPORT/];
+    is_deeply \@tags, [qw/1.0-SUPPORT SUPPORT/];
 };
 
 subtest 'get_system_tags: get tags with release,project' => sub {
@@ -1290,7 +1306,7 @@ subtest 'get_system_tags: get tags with release,project' => sub {
 
     my @tags = $repo->get_system_tags($repo);
 
-    is_deeply \@tags, [qw/3.0-SUPPORT 1.0-SUPPORT/];
+    is_deeply \@tags, [qw/3.0-SUPPORT 1.0-SUPPORT SUPPORT/];
 };
 
 subtest 'get_system_tags: gets tags of bls actives' => sub {
