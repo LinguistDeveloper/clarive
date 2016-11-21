@@ -59,18 +59,16 @@ Ext.onReady(function(){
         var tab = tabpanel.getActiveTab();
         var tab_id = tab.getId();
         var info = Cla.tabInfo[tab_id];
-        //console.log( info );
-        // current_state from within tab
-        var current_state = tab.get_current_state ? tab.get_current_state() : {};
-        var title = current_state.title!=undefined 
-                ? current_state.title : tab.get_title 
-                ? tab.get_title() : tab.title;
+        var currentState = tab.get_current_state ? tab.get_current_state() : {};
+        var title = currentState.title != undefined ?
+            currentState.title : tab.get_title ?
+            tab.get_title() : tab.title;
         var title_field = new Ext.form.TextField({ fieldLabel: _('Favorite Name'), value: title });
         if( !info.favorite_this ) {
             Cla.message(_('Favorite'),_('Current tab does not support saving as favorite'));
             return; // tab opening mode does not favoriting
         }
-        var tabfav = info.favorite_this(); 
+        var tabfav = info.favorite_this();
         var opp = function(){
             var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite_new');
             var fav_data = {
@@ -80,7 +78,7 @@ Ext.onReady(function(){
                     icon: icon,
                     title: title_field.getValue(),
                     tabfav: tabfav,
-                    current_state: current_state,
+                    current_state: currentState,
                     type:'eval'
                 }
             };
@@ -110,7 +108,7 @@ Ext.onReady(function(){
         var win = new Cla.Window({
             height: 300, width: 800,
             layout:'form',
-            labelWidth: 100, 
+            labelWidth: 100,
             defaults: { anchor:'100%' },
             bodyStyle: 'padding: 20px; background-color: #fff',
             title: _('Save Favorite: %1', title),
@@ -118,7 +116,7 @@ Ext.onReady(function(){
             items: [ title_field ]
         });
         win.show();
-        
+
     };
     Cla.toggleCalendar = function(btn){
         var bc = Cla.calpanel;
@@ -144,40 +142,51 @@ Ext.onReady(function(){
         tab.setTitle( '&nbsp;' );
     };
     Cla.help_button.on('click', Cla.help_off );
-    
 
+    if (Prefs.site.show_lifecycle && Prefs.stash.can_lifecycle) {
+        Cla.explorer = new Cla.Explorer({
+            fixed: 1,
+            width: '28%',
+            collapsed: true,
+            stateful: true,
+            stateId: 'clarive-explorer'
+        });
+    }
     var tbar_items = [
         function(){/*
-          <button class="hamburger hamburger-vertical">
+          <button class="hamburger hamburger-vertical [%= ( Cla.explorer && Cla.explorer.collapsed ? 'active' : '' ) %]">
             <span class="icon"></span>
           </button>
         */}.heredoc()
     ];
-    if( Prefs.logo_file ) {
-            tbar_items.push( '<div class="div-logo-file"><div class="div-logo-file-custom"><img src="'+Prefs.logo_file +'" class="img-custom-logo-file"/></div><div class="div-logo-powered"><img src="/static/images/logo/powered_by_clarive.svg" class="img-main-logo-powered"/></div></div>' );
+
+    if (Prefs.logo_file) {
+        tbar_items.push('<div class="div-logo-file"><div class="div-logo-file-custom"><img src="' + Prefs.logo_file +
+            '" class="img-custom-logo-file"/></div><div class="div-logo-powered"><img src="/static/images/logo/powered_by_clarive.svg"' +
+            ' class="img-main-logo-powered"/></div></div>' );
     } else {
-            tbar_items.push( '<img src="'+Prefs.stash.theme_dir+'/images/'+ Prefs.logo_filename +'" class="img-main-logo-file"/>' );
+        tbar_items.push('<img src="' + Prefs.stash.theme_dir + '/images/' + Prefs.logo_filename + '" class="img-main-logo-file"/>');
     }
     tbar_items.push('-');
 
-    if( Prefs.site.show_menu && Prefs.stash.can_menu ) { 
-        Ext.each( Prefs.menus, function(menu){
-            tbar_items.push( menu );    
+    if (Prefs.site.show_menu && Prefs.stash.can_menu) {
+        Ext.each(Prefs.menus, function(menu) {
+            tbar_items.push(menu);
         });
     }
     tbar_items.push('->');
-    if( Prefs.site.show_search ) 
-        tbar_items.push( search_box );
-    
-    tbar_items.push( Cla.help_button );
+    if (Prefs.site.show_search)
+        tbar_items.push(search_box);
+
+    tbar_items.push(Cla.help_button);
 
     Cla.share_button = new Ext.Button({
-       icon: '/static/images/icons/favorite_grey.svg',
-       cls: 'x-btn-icon',
-       tooltip: _('Add to Favorites...'),
-       handler: function(){
-                Cla.favorite_this();
-            }
+        icon: '/static/images/icons/favorite_grey.svg',
+        cls: 'x-btn-icon',
+        tooltip: _('Add to Favorites...'),
+        handler: function() {
+            Cla.favorite_this();
+        }
     });
     tbar_items.push( Cla.share_button );
     // TODO: fix calendar to show again in main menu => Change Prefs.site.show_calendar to
@@ -192,7 +201,7 @@ Ext.onReady(function(){
                 Cla.toggleCalendar( south_panel );
             }
         });
-        tbar_items.push( south_panel ); 
+        tbar_items.push( south_panel );
     }
     Cla.share_button = new Ext.Button({
        icon: '/static/images/icons/share_this.svg',
@@ -253,7 +262,7 @@ Ext.onReady(function(){
 
     tbar_items.push( '-');
 
-    if( Prefs.is_logged_in ) { 
+    if( Prefs.is_logged_in ) {
         var user_menu = [
              { text: _('Inbox'),
                  handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.svg" } ); },
@@ -262,36 +271,42 @@ Ext.onReady(function(){
              { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/action.svg' },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
-        
-        //if( Prefs.stash.can_change_password ) {
+
         if( Prefs.stash.can_change_password ) {
             user_menu.push({ text: _('Change password'), cls: 'ui-user-menu-change-password', handler: function(){ Cla.change_password(); }, icon:'/static/images/icons/password.svg' });
         }
         if( Prefs.stash.can_surrogate ) {
             user_menu.push({ text: _('Surrogate...'), cls: 'ui-user-menu-surrogate', handler: function(){ Cla.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.svg' });
         }
-        
-        user_menu.push({ text: _('Logout') , cls: 'ui-user-menu-logout', handler: function(){ Cla.logout(); }, index: 999, icon: '/static/images/icons/logout.svg', cls: 'ui-user-menu-logout' });
+        user_menu.push({
+            text: _('Logout'),
+            handler: function() {
+                Cla.logout();
+            },
+            index: 999,
+            icon: '/static/images/icons/logout.svg',
+            cls: 'ui-user-menu-logout'
+        });
         tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu, cls: 'ui-user-menu' });
     } else {
         tbar_items.push({ text: _('Login'), handler: function(){ Cla.login(); } });
     }
-    
+
     Cla.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
         height: Prefs.toolbar_height,
-        items: tbar_items 
+        items: tbar_items
     });
-    Cla.main_toolbar.on('afterlayout',function(){
-        if( Cla.hamburguer_installed) return;
+    Cla.main_toolbar.on('afterlayout', function() {
+        if (Cla.hamburguer_installed) return;
         Cla.hamburguer_installed = true;
-        $('.hamburger').click(function(){
-            if( Cla.explorer.collapsed ) {
-                this.classList.remove('active');
+        $('.hamburger').click(function() {
+            if (Cla.explorer.collapsed) {
+                $('.hamburger').removeClass('active');
                 Cla.explorer.expand(true);
             } else {
-                this.classList.add('active');
+                $('.hamburger').addClass('active');
                 Cla.explorer.collapse(true);
             }
         });
@@ -314,32 +329,32 @@ Ext.onReady(function(){
             }
         });
     }
-    
+
     var tabs = [];
     if( Prefs.site.show_main ) {
         tabs.push({title:_('Main'), closable: false, autoLoad: '/site/main.html', scripts: true, cls: 'tab-style' });
     } else if( Prefs.site.show_portal ) {
         tabs.push({ xtype: 'panel', title:_('Portal'), layout: 'border', closable: false, items: Cla.portal });
-    } 
+    }
 
     var menuTab = new Ext.ux.TabCloseMenu({
         closeTabText: _('Close Tab'),
         closeOtherTabsText: _('Close Other Tabs'),
-        closeAllTabsText: _('Close All Tabs')        
+        closeAllTabsText: _('Close All Tabs')
     });
 
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
-            defaults: { autoScroll: true }, 
+            defaults: { autoScroll: true },
             //plugins: [menuTab],
             plugins: [menuTab,  new Ext.ux.panel.DraggableTabs({  block_first_tab: true })],
             enableTabScroll: true,
             layoutOnTabChange: true,
             listeners:{
                 beforeadd: function(tabp,panel){
-                    if( panel.closable === undefined ) panel.closable = true; 
+                    if( panel.closable === undefined ) panel.closable = true;
                 }
             },
-            activeTab: 0, 
+            activeTab: 0,
             items: tabs
     });
     if( Prefs.site.show_dashboard ) {
@@ -350,16 +365,13 @@ Ext.onReady(function(){
         });
     }
 
-    if( Prefs.site.show_lifecycle && Prefs.stash.can_lifecycle ) 
-        Cla.explorer = new Cla.Explorer({ fixed: 1 });
-
     var mains = [];
     if( !Prefs.site.show_tabs ) {
         mains.push(
-            new Ext.TabPanel({ 
+            new Ext.TabPanel({
                 region: 'center',
                 id:'main-panel',
-                defaults: { closable: false, autoScroll: true }, 
+                defaults: { closable: false, autoScroll: true },
                  plugins: [menuTab,  new Ext.ux.panel.DraggableTabs({ block_first_tab: true })],
                 resizeTabs: true,
                 enableTabScroll: true,
@@ -372,13 +384,13 @@ Ext.onReady(function(){
         mains.push( Cla.main_toolbar );
         if( Prefs.site.show_lifecycle && Cla.explorer ) {
             mains.push( Cla.explorer );
-        } 
+        }
         if( Prefs.site.show_calendar ) {
             mains.push( Cla.calpanel );
-        } 
+        }
         mains.push( tab_panel );
     }
-    
+
     Cla.main = new Ext.Panel({
         layout: 'border', items: mains
     });
@@ -386,21 +398,29 @@ Ext.onReady(function(){
     if( Prefs.site.banner ) {
         var banner = Prefs.site.banner;
         var height = parseInt( banner.height );
-        var banner_panel = new Ext.Panel({ region:'north', 
-            style: { height: height + 'px', 'z-index': 1000, position: 'absolute', background: 'transparent' }, //'height: 80px; z-index: 10000; position: absolute; background: transparent', 
-            bodyStyle: 'z-index: 10000; position: absolute; background: transparent;', 
-            bodyCfg: { height: '1000px' },
-            autoLoad:{ url: banner.url, scripts: true } });
+        var banner_panel = new Ext.Panel({
+            region: 'north',
+            style: {
+                height: height + 'px',
+                'z-index': 1000,
+                position: 'absolute',
+                background: 'transparent'
+            },
+            bodyStyle: 'z-index: 10000; position: absolute; background: transparent;',
+            bodyCfg: {
+                height: '1000px'
+            },
+            autoLoad: {
+                url: banner.url,
+                scripts: true
+            }
+        });
         var banner_bottom = Ext.apply( Cla.main.initialConfig, { region: 'center', style: { top: height } } );
         Cla.main = new Ext.Panel({
             layout: 'border',
             items: [ banner_panel, new Ext.Panel(banner_bottom) ]
         });
-        //banner = new Ext.Component({ });
-        //banner.on( 'afterrender', function(){ 
-       // banner.update({ url: "$banner", scripts: true });
-        //});
-    } 
+    }
 
     Cla.viewport = new Ext.Viewport({
         layout: 'card',
@@ -411,16 +431,16 @@ Ext.onReady(function(){
     });
 
     var tabpanel = Ext.getCmp('main-panel');
-    
+
     if( false ) // disabled for now
         tabpanel.on('tabchange', function(tp,tab){
-            if( tab && tab.id ) 
-                window.location.hash = '!/tab:' + tab.id;   
+            if( tab && tab.id )
+                window.location.hash = '!/tab:' + tab.id;
         });
-    
+
     var first_comp = tabpanel.getComponent( 0 );
     if( first_comp != undefined ) {
-        if( first_comp.tab_icon ) 
+        if( first_comp.tab_icon )
             tabpanel.changeTabIcon( first_comp, first_comp.tab_icon );
         else
             tabpanel.changeTabIcon( first_comp, icon_home );
@@ -434,12 +454,12 @@ Ext.onReady(function(){
                 Cla.portalAddCompUrl({ title: _( portlet.title ),
                     portlet_key: portlet.key, url_portlet: portlet.url_comp, url_max: portlet.url_max });
             } else {
-                Cla.portalAddUrl({ title: _(portlet.title), 
+                Cla.portalAddUrl({ title: _(portlet.title),
                     portlet_key: portlet.key, url_portlet: portlet.url, url_max: portlet.url_max });
             }
         });
     }
-    // Start background tasks 
+    // Start background tasks
     //  ----- disabled for now ---- Cla.startRunner();
 
     // Check open tab
@@ -468,7 +488,7 @@ Ext.onReady(function(){
         var tabpanel = Ext.getCmp('main-panel');
         tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
         tabpanel.header.hide();
-    }    
+    }
 
     // VERSION checker
     //
@@ -484,9 +504,9 @@ Ext.onReady(function(){
                     Cla.version = res.version;
                     if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh);
                 } else if( Cla.version != res.version ) {
-                    Cla.confirm(_('Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?', 
+                    Cla.confirm(_('Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?',
                         Cla.version, res.version), function(){
-                            window.location.href = window.location.href; 
+                            window.location.href = window.location.href;
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     },function(){
                         Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/icons/error.svg' } );
@@ -498,10 +518,10 @@ Ext.onReady(function(){
             },
             error: function(res){
                 if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
-            }    
+            }
         });
     };
-    
+
     if( Cla.version_started == undefined ) {
         setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh );
         Cla.version_started = true;
@@ -512,7 +532,7 @@ Ext.onReady(function(){
     moment.locale( Prefs.language );
 
     // global key captures
-    /* 
+    /*
     window.history.forward(1);
     document.onkeydown = function disableKeys(evt) {
         evt = (evt) ? evt : ((event) ? event : null);
@@ -522,11 +542,11 @@ Ext.onReady(function(){
                 return Cla.eventKey( k );
             } catch(e){}
         }
-    };  
+    };
     */
-       
+
 });
-        
+
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
     window.onbeforeunload=  function(){ if( Cla.is_in_edit() ) return '' };
 }
