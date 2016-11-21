@@ -2291,6 +2291,7 @@ msgid "Required field %1 is empty"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
+#: lib/BaselinerX/Service/CIServices.pm
 #: lib/BaselinerX/Service/TopicServices.pm root/comp/lifecycle/deploy.js
 msgid "Missing mid"
 msgstr ""
@@ -5929,6 +5930,10 @@ msgstr ""
 msgid "Create CI"
 msgstr ""
 
+#: lib/BaselinerX/Service/CIServices.pm
+msgid "Load related CIs"
+msgstr ""
+
 #: lib/BaselinerX/Service/CallWebService.pm
 msgid "Web Request"
 msgstr ""
@@ -7812,7 +7817,7 @@ msgstr ""
 msgid "Value"
 msgstr ""
 
-#: root/ci/variable.js
+#: root/ci/variable.js root/forms/ci_related.js
 msgid "CI Role"
 msgstr ""
 
@@ -13294,7 +13299,7 @@ msgid "select data type..."
 msgstr ""
 
 #: root/fields/templates/config/origin_issue_chart_pie.js
-#: root/fields/templates/config/status_chart_pie.js
+#: root/fields/templates/config/status_chart_pie.js root/forms/ci_related.js
 #: root/forms/topic_related.js
 msgid "Depth"
 msgstr ""
@@ -13439,7 +13444,8 @@ msgstr ""
 msgid "Status on Rollback Failure"
 msgstr ""
 
-#: root/forms/ci_create.js root/forms/ci_invoke.js root/site/model.js
+#: root/forms/ci_create.js root/forms/ci_invoke.js root/forms/ci_related.js
+#: root/site/model.js
 msgid "CI Class"
 msgstr ""
 
@@ -13458,6 +13464,23 @@ msgstr ""
 
 #: root/forms/ci_invoke.js
 msgid "Positional"
+msgstr ""
+
+#: root/forms/ci_related.js root/forms/topic_related.js
+msgid "Single?"
+msgstr ""
+
+#: root/forms/ci_related.js
+msgid "Mids only?"
+msgstr ""
+
+#: root/forms/ci_related.js root/forms/topic_related.js
+msgid "Query type"
+msgstr ""
+
+#: root/forms/ci_related.js root/forms/topic_related.js
+#: root/forms/topic_update.js
+msgid "Mid"
 msgstr ""
 
 #: root/forms/create_job.js
@@ -14067,23 +14090,11 @@ msgid ""
 msgstr ""
 
 #: root/forms/topic_related.js
-msgid "Single?"
-msgstr ""
-
-#: root/forms/topic_related.js
 msgid "Filter statuses"
 msgstr ""
 
 #: root/forms/topic_related.js
 msgid "Filter categories"
-msgstr ""
-
-#: root/forms/topic_related.js
-msgid "Query type"
-msgstr ""
-
-#: root/forms/topic_related.js root/forms/topic_update.js
-msgid "Mid"
 msgstr ""
 
 #: root/forms/topic_related.js
