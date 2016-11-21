@@ -9678,7 +9678,7 @@ msgid "Users and roles"
 msgstr ""
 
 #: root/comp/lifecycle/report_edit.js root/comp/notifications.js
-#: root/forms/remove_file.js root/forms/topic_related.js
+#: root/forms/remove_file.js
 msgid "Fields"
 msgstr "Campos"
 
@@ -14239,6 +14239,10 @@ msgid ""
 msgstr ""
 "Datos del tópico. Escribir el id_field en Clave y el string o variable "
 "(${variable}) en Valor"
+
+#: root/forms/topic_related.js
+msgid "Single?"
+msgstr "Único?"
 
 #: root/forms/topic_related.js
 msgid "Filter statuses"

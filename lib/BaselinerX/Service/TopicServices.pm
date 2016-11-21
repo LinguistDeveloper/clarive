@@ -342,34 +342,43 @@ sub remove_file {
 sub related {
     my ( $self, $c, $config ) = @_;
 
-    my $return = [];
-    my $stash = $c->stash;
-    my $event_mid = $stash->{mid};
-    my $mid = $config->{mid} // die _loc("Missing mid");
-    my $statuses = $config->{related_status} // [];
-    my $not_in_statuses = $config->{not_in_status} // 'off';
-    my $categories = $config->{related_categories} // [];
-    my $depth = $config->{depth} // 1;
-    my $include_event_mid = $config->{include_event_mid} && $config->{include_event_mid} eq 'on' ? '':$event_mid;
+    my $stash             = $c->stash;
+    my $event_mid         = $stash->{mid};
+    my $mid               = $config->{mid} // die _loc("Missing mid");
+    my @statuses          = _array $config->{related_status};
+    my $not_in_statuses   = $config->{not_in_status};
+    my @categories        = _array $config->{related_categories};
+    my $depth             = $config->{depth} // 1;
+    my $include_event_mid = $config->{include_event_mid} && $config->{include_event_mid} eq 'on' ? '' : $event_mid;
+
     my $query_type = $config->{query_type} // 'children';
-    my @fields = $config->{fields} ? split(',',$config->{fields}):();
+    if ( !grep { $query_type eq $_ } qw/parents children related/ ) {
+        die 'Unknown query type';
+    }
+
+    my $single    = $config->{single};
     my $condition = {};
 
-    my $ci = ci->new($mid);
-    my $where = { collection => 'topic'};
-    $where->{mid} = {'$ne' => $include_event_mid} if $include_event_mid;
-    $condition->{'category.id'} = mdb->in($categories) if $categories;
-    if ( $statuses ) {
-        if ( $not_in_statuses eq 'on' ) {
-            $condition->{'category_status.id'} = mdb->nin($statuses);
-        } else {
-            $condition->{'category_status.id'} = mdb->in($statuses);
+    my $where = { collection => 'topic' };
+    $where->{mid} = { '$ne' => $include_event_mid } if $include_event_mid;
+    $condition->{'category.id'} = mdb->in(@categories) if @categories;
+    if (@statuses) {
+        if ( $not_in_statuses && $not_in_statuses eq 'on' ) {
+            $condition->{'category_status.id'} = mdb->nin(@statuses);
+        }
+        else {
+            $condition->{'category_status.id'} = mdb->in(@statuses);
         }
     }
 
-    my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
+    my $ci = ci->new($mid);
+    my @related_mids = map { $_->{mid} } $ci->$query_type( where => $where, mids_only => 1, depth => $depth );
     $condition->{mid} = mdb->in(@related_mids);
-    my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
+    my @related = mdb->topic->find($condition)->fields( { _txt => 0 } )->all;
+
+    if ($single) {
+        return $related[0];
+    }
 
     return \@related;
 }

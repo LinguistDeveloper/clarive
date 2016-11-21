@@ -514,6 +514,105 @@ subtest 'upload: uploads file' => sub {
     is $status, '200';
 };
 
+subtest 'related: returns related topics' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'G' );
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        name      => 'Release',
+        id_rule   => $id_release_rule,
+        id_status => [ $status->mid ],
+    );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_changeset_rule,
+        id_status => [ $status->mid ]
+    );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release',
+        status      => $status,
+        username    => 'root'
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset',
+        status      => $status,
+        release     => $release_mid,
+        username    => 'root'
+    );
+
+    my $c = mock_catalyst_c( stash => {} );
+
+    my $gs = _build_topic_services();
+
+    my $parents = $gs->related( $c, { mid => $changeset_mid, query_type => 'parents' } );
+    is @$parents, 1;
+    is $parents->[0]->{title}, 'Release';
+
+    my $children = $gs->related( $c, { mid => $release_mid, query_type => 'children' } );
+    is @$children, 1;
+    is $children->[0]->{title}, 'Changeset';
+
+    my $related = $gs->related( $c, { mid => $release_mid, query_type => 'related' } );
+    is @$related, 1;
+    is $related->[0]->{title}, 'Changeset';
+};
+
+subtest 'related: returns one related topic in single mode' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'G' );
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_release_rule     = _create_release_form();
+    my $id_release_category = TestSetup->create_category(
+        name      => 'Release',
+        id_rule   => $id_release_rule,
+        id_status => [ $status->mid ],
+    );
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name      => 'Changeset',
+        id_rule   => $id_changeset_rule,
+        id_status => [ $status->mid ]
+    );
+
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release',
+        status      => $status,
+        username    => 'root'
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset',
+        status      => $status,
+        release     => $release_mid,
+        username    => 'root'
+    );
+
+    my $c = mock_catalyst_c( stash => {} );
+
+    my $gs = _build_topic_services();
+
+    my $parent = $gs->related( $c, { mid => $changeset_mid, query_type => 'parents', single => 'on' } );
+    is $parent->{title}, 'Release';
+};
+
 done_testing();
 
 sub _build_topic_services {
@@ -535,7 +634,35 @@ sub _create_release_form {
                     },
                     "key" => "fieldlet.system.projects",
                 }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "changesets",
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name => 'Changesets'
+                }
             }
+        ],
+    );
+}
+
+sub _create_changeset_form {
+    my (%params) = @_;
+
+    return TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        id_field       => 'release',
+                        release_field => 'changesets'
+                    },
+                    "key" => "fieldlet.system.release",
+                    name  => 'Release',
+                }
+            },
         ],
     );
 }

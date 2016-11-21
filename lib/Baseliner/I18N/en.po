@@ -9534,7 +9534,7 @@ msgid "Users and roles"
 msgstr ""
 
 #: root/comp/lifecycle/report_edit.js root/comp/notifications.js
-#: root/forms/remove_file.js root/forms/topic_related.js
+#: root/forms/remove_file.js
 msgid "Fields"
 msgstr ""
 
@@ -14064,6 +14064,10 @@ msgstr ""
 msgid ""
 "Topic data. Type id_field in Key and string or variable (${variable}) in "
 "Value"
+msgstr ""
+
+#: root/forms/topic_related.js
+msgid "Single?"
 msgstr ""
 
 #: root/forms/topic_related.js
