@@ -58,8 +58,6 @@ sub items {
 
     my $type = $p{type} // 'promote';
     my $tag = $p{tag} // _fail _loc('Missing parameter tag');
-    my $bl = $p{bl} // _fail _loc('Missing parameter bl');
-    my $project = $p{project};
 
     # TODO Comprobar si tengo last_commit
     my $repo = $self->repo;
@@ -73,34 +71,22 @@ sub items {
     my @items;
     if ( $type eq 'demote' ) {
         @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha . "~1" );
-        $diff_shas = [$tag_sha, $rev_sha . "~1"];
-    } else {
-        if ( $rev_sha ne $tag_sha ) {
-            Util->_debug( "BL and REV distinct" );
-            @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
-            $diff_shas = [ $tag_sha, $rev_sha ];
-        } else {
-            Util->_debug( "BL and REV equal" );
 
-            if ( $type eq 'promote' ) {
-                my ($job, $found_tag_sha) = $self->_find_sha_from_previous_jobs($project, $repo, $rev_sha, $bl);
-
-                if ($found_tag_sha) {
-                    _warn _loc("Tag %3 sha set to %1 as it was in previous job %2", $found_tag_sha, $job->{name}, $tag);
-                    @items = $git->exec( qw/diff --name-status/, $found_tag_sha, $rev_sha );
-                    $diff_shas = [ $found_tag_sha, $rev_sha ];
-                } else {
-                    _fail _loc("No last job detected for commit %1.  Cannot redeploy it", $tag_sha);
-                }
-            } else {
-                @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-                @items = map { my $item = 'M   ' . $_; } @items;
-                $diff_shas = [ $tag_sha ];
-            }
-        }
+        $diff_shas = [ $tag_sha, $rev_sha . "~1" ];
     }
-    my %repo_items = $self->repo_items( $diff_shas );
+    elsif ( $type eq 'promote' ) {
+        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
 
+        $diff_shas = [ $tag_sha, $rev_sha ];
+    }
+    else {
+        @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+        @items = map { my $item = 'M   ' . $_; } @items;
+
+        $diff_shas = [$tag_sha];
+    }
+
+    my %repo_items = $self->repo_items( $diff_shas );
 
 
     @items = map {
@@ -116,61 +102,6 @@ sub items {
         );
     } @items;
     return @items;
-}
-
-sub _find_sha_from_previous_jobs {
-    my $self = shift;
-    my ($project, $repo, $rev_sha, $bl) = @_;
-
-    my $git = $repo->git;
-
-    my @refs;
-    foreach my $ref ($git->exec(qw/show-ref/)) {
-        my ($name) = $ref =~ m#^$rev_sha refs/(?:heads|tags)/(.*)$#;
-
-        push @refs, $name if $name;
-    }
-
-    my $sha = ci->GitRevision->search_ci( sha => mdb->in($rev_sha, @refs) );
-    return unless $sha;
-
-    my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
-
-    if ( scalar(@topics) eq 0 ) {
-        _fail _loc("No changesets for this sha");
-    } elsif ( scalar(@topics) gt 1 ) {
-        _fail _loc("This sha is contained in more than one changeset");
-    }
-    my $cs = $topics[0];
-
-    my (@last_jobs) = map {
-        $_->{mid}
-    } sort {
-        $b->{endtime} cmp $a->{endtime}
-    } grep {
-        $_->{final_status} eq 'FINISHED' && $_->{bl} eq $bl
-    } ci->new($cs)->jobs;
-
-    return unless @last_jobs;
-
-    my $last_job;
-    my $job;
-    my $st;
-
-    for $last_job ( @last_jobs ) {
-        $job = ci->new($last_job);
-        $st = $job->stash;
-        if ( my $bl_original = $st->{bl_original}) {
-            my $key = $repo->tags_mode eq 'project' ? $project->mid : '*';
-            my $tag_sha = $bl_original->{$repo->mid}->{$key}->{previous};
-
-            if ($tag_sha && $tag_sha->sha ne $rev_sha) {
-                return ($job, $tag_sha->sha);
-            }
-        }
-    }
-
-    return;
 }
 
 sub sha_long {

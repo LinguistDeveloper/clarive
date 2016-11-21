@@ -4449,12 +4449,6 @@ msgid "*Git* Job Elements %1"
 msgstr "Elementos de pase *Git* %1"
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid ""
-"Projects are required when moving baselines for repositories with tags_mode "
-"project"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRepository.pm
 msgid "Promote baseline $tag to $top_rev: tag -f $tag $top_rev"
 msgstr ""
 
@@ -7539,11 +7533,7 @@ msgid "Only environment"
 msgstr ""
 
 #: root/ci/GitRepository.js
-msgid "Project + environment"
-msgstr ""
-
-#: root/ci/GitRepository.js
-msgid "Release,Project + environment"
+msgid "Release + environment"
 msgstr ""
 
 #: root/ci/GitRevision.js

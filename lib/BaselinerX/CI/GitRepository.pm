@@ -34,12 +34,10 @@ service 'create_tags' => {
 sub get_system_tags {
     my $self = shift;
 
-    my @tags;
     my @bls = grep { $_ ne '*' } map { $_->{bl}} ci->bl->find({active => '1'})->all;
+    my @tags = @bls;
 
-    my @tags_modes = $self->tags_mode ? ( split /,/, $self->tags_mode ) : ();
-
-    if ( grep { $_ eq 'project' } @tags_modes ) {
+    if ($self->tags_mode eq 'release') {
         my @projects = map { ci->new( $_->{mid} ) } $self->related(
             where     => { collection => 'project' },
             docs_only => 1
@@ -48,22 +46,14 @@ sub get_system_tags {
         _fail _loc( 'Projects are required when creating baselines ' . 'for repositories with tags_mode project' )
           unless @projects;
 
-        foreach my $bl (@bls) {
-            push @tags, map { $self->bl_to_tag( $bl, $_ ) } @projects;
-        }
+        my @release_versions = $self->_find_release_versions_by_projects( \@projects );
 
-        if ( grep { $_ eq 'release' } @tags_modes ) {
-            my @release_versions = $self->_find_release_versions_by_projects( \@projects );
-
-            foreach my $release_version (@release_versions) {
-                foreach my $bl (@bls) {
-                    push @tags, $self->bl_to_tag( $bl, $release_version );
-                }
+        foreach my $release_version (@release_versions) {
+            foreach my $bl (@bls) {
+                push @tags, $self->bl_to_tag( $bl, $release_version );
             }
         }
     }
-
-    push @tags, @bls;
 
     return @tags;
 }
@@ -133,7 +123,10 @@ sub git {
 sub group_items_for_revisions {
     my ($self,%p) = @_;
     my $revisions = $p{revisions};
+    my $project = $p{project};
     my $type = $p{type} || 'promote';
+    my $bl = $p{bl};
+    my $tag = $p{tag};
     my @items;
     if( $self->revision_mode eq 'show' ) {
         my %all_revs = map { $_->sha_long => $_ } _array($revisions);
@@ -148,27 +141,32 @@ sub group_items_for_revisions {
         # TODO --- in demote, blob is empty for deleted items status=D, which in demote are changed to status=A
         @items = values %items_uniq;
     } else {
-        my $bl = $p{bl} or _fail _loc('Missing parameter bl needed for top revision');
-
-        my $prefix;
-        if ($self->tags_mode eq 'project') {
-            $prefix = $p{project};
-        }
-        elsif ($self->tags_mode eq 'release,project') {
-            $prefix = $self->_find_release_version_by_revisions($revisions);
-
-            if (!$prefix) {
-                $prefix = $p{project};
-            }
-        }
-
-        my $tag = $self->bl_to_tag($bl, $prefix);
+        my $tag = $p{tag} or _fail _loc('Missing parameter tag needed for top revision');
 
         my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
         if( !$top_rev ) {
             _fail(_loc('Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag))
         }
-        @items = $top_rev->items( bl=>$bl, tag=>$tag, type=>$type, project=>$p{project} );
+
+        if ( $type eq 'promote' ) {
+            my $rev_sha = $top_rev->sha_long;
+            my $tag_sha = $self->git->exec( qw/rev-parse/, $tag );
+
+            if ( $rev_sha eq $tag_sha ) {
+                my ( $job, $found_tag_sha ) = $self->_find_sha_from_previous_jobs( $project, $rev_sha, $bl, $tag );
+
+                if ($found_tag_sha) {
+                    $tag = $found_tag_sha;
+                    _warn _loc( "Tag %3 sha set to %1 as it was in previous job %2", $found_tag_sha, $job->{name},
+                        $tag );
+                }
+                else {
+                    _fail _loc( "No last job detected for commit %1.  Cannot redeploy it", $tag_sha );
+                }
+            }
+        }
+
+        @items = $top_rev->items( tag=>$tag, type=>$type );
     }
     # prepend path prefix for repo
     #  my $rel_path = $self->rel_path;
@@ -209,8 +207,6 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         $shas{$sha}++;
     }
 
-    _debug "looking for top revision among shas: " . join ',', keys %shas;
-
     # get the tag sha
     my $tag_sha = try {
         $git->exec('rev-parse', $tag);
@@ -220,7 +216,11 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
             $self->name)
     };
 
-    my @sorted = $self->_order_revisions(keys %shas, $tag_sha);
+    my @shas = ( keys(%shas) );
+
+    _debug "Looking for top revision among shas: " . join ',', map { substr $_, 0, 8 } @shas;
+
+    my @sorted = $self->_order_revisions(@shas);
 
     my $top_rev;
     if ($type eq 'promote') {
@@ -314,20 +314,7 @@ sub checkout {
     my ( $self, %p ) = @_;
 
     my $dir = $p{dir} // _fail 'Missing parameter dir';
-    my $bl  = $p{bl}  // _fail 'Missing parameter bl';
-
-    my $tag = $bl;
-    if ( $self->tags_mode eq 'project' ) {
-        $tag = $self->bl_to_tag( $bl, $p{project} );
-    }
-    elsif ($self->tags_mode eq 'release,project') {
-        my $revisions = $p{revisions} or _fail 'Missing parameter revisions';
-
-        my $prefix = $self->_find_release_version_by_revisions($revisions);
-        $prefix //= $p{project};
-
-        $tag = $self->bl_to_tag( $bl, $prefix );
-    }
+    my $tag = $p{tag} // _fail 'Missing parameter tag';
 
     my $git = $self->git;
 
@@ -437,80 +424,51 @@ sub list_elements {
     return @elems;
 } ## end sub list_elements
 
-method update_baselines( :$job, :$revisions, :$bl, :$type, :$ref=undef ) {
+method update_baselines( :$job, :$revisions, :$tag, :$type ) {
     my $git = $self->git;
 
-    my @projects;
+    my $top_rev = $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
 
-    if ( $self->tags_mode eq 'project' || $self->tags_mode eq 'release,project' ) {
-        foreach my $project ( _array( $job->{projects} ) ) {
-            next
-              unless $project->{repositories}
-              && grep { $self->mid eq $_->{mid} } @{ $project->{repositories} };
+    $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
+    my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
+    my $previous = BaselinerX::CI::GitRevision->new( sha=>$tag_sha, name=>$tag );
+    my $out='';
 
-            push @projects, $project;
-        }
-
-        _fail _loc( 'Projects are required when moving baselines for repositories with tags_mode project' )
-          unless @projects;
-    }
-    else {
-        @projects = ('*');
-    }
-
-    my $release_version = $self->_find_release_version_by_revisions($revisions);
-
-    my %retval;
-    for my $project ( @projects ) {
-        my $retval_key = $project eq '*' ? '*' : ($release_version || $project->mid);
-
-        my $tag = $self->bl_to_tag($bl, $release_version || $project);
-
-        my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
-
-        $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
-        my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
-        my $previous = BaselinerX::CI::GitRevision->new( sha=>$tag_sha, name=>$tag );
-        my $out='';
-
-        # no need to update if it's already there
-        if ( $top_rev eq $tag_sha ) {
-            $retval{$retval_key} = {
-                current  => BaselinerX::CI::GitRevision->new(sha => $top_rev, name => $tag),
-                previous => $previous,
-                output   => $out
-            };
-
-            next;
-        }
-
-        # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
-        #    to a undefined deployment situation
-
-        if( $type eq 'promote' ) {
-            _debug( _loc("Promote baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
-            $out = $git->exec( qw/tag -f/, $tag, $top_rev );
-            _log _loc( "Promoted baseline %1 to %2", $tag, $top_rev);
-        }
-        elsif( $type eq 'demote' ) {
-            _debug( _loc("Demote baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
-            $out = $git->exec( qw/tag -f/, $tag, $top_rev );
-            _log _loc( "Demoted baseline %1 to %2", $tag, $top_rev), data=>$out;
-        }
-        elsif( $type eq 'static' ) {
-            _debug( _loc("Updating baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
-            $out = $git->exec( qw/tag -f/, $tag, $top_rev );
-            _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
-        }
-
-        $retval{$retval_key} = {
-            current  => BaselinerX::CI::GitRevision->new(sha => $top_rev, name => $tag),
+    # no need to update if it's already there
+    if ( $top_rev eq $tag_sha ) {
+        return {
+            current  => BaselinerX::CI::GitRevision->new( sha => $top_rev, name => $tag ),
             previous => $previous,
-            output   => $out
+            output   => $out,
+            tag      => $tag
         };
     }
 
-    return \%retval;
+    # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
+    #    to a undefined deployment situation
+
+    if( $type eq 'promote' ) {
+        _debug( _loc("Promote baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
+        $out = $git->exec( qw/tag -f/, $tag, $top_rev );
+        _log _loc( "Promoted baseline %1 to %2", $tag, $top_rev);
+    }
+    elsif( $type eq 'demote' ) {
+        _debug( _loc("Demote baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
+        $out = $git->exec( qw/tag -f/, $tag, $top_rev );
+        _log _loc( "Demoted baseline %1 to %2", $tag, $top_rev), data=>$out;
+    }
+    elsif( $type eq 'static' ) {
+        _debug( _loc("Updating baseline $tag to $top_rev: tag -f $tag $top_rev" ) );
+        $out = $git->exec( qw/tag -f/, $tag, $top_rev );
+        _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
+    }
+
+    return {
+        current  => BaselinerX::CI::GitRevision->new( sha => $top_rev, name => $tag ),
+        previous => $previous,
+        output   => $out,
+        tag      => $tag
+    };
 }
 
 sub get_last_commit {
@@ -621,7 +579,7 @@ method commits_for_branch( :$branch, :$project, :$page=1, :$page_size=30, :$show
     my $git  = $self->git;
     if( $revision_mode eq 'diff' ){
         my $tag = [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
-        $tag = $self->bl_to_tag($tag, $project);
+        $tag = $self->bl_to_tag($tag);
         my $skip = ($page-1) * $page_size;
 
         # check if tag exists
@@ -650,13 +608,7 @@ method bl_to_tag(Maybe[Str] $bl = undef, Any $prefix = undef) {
 
     return unless $bl;
 
-    return $bl if $self->tags_mode eq 'bl';
-
-    _fail 'prefix is required' unless $prefix;
-
-    if (ref $prefix) {
-        $prefix = $prefix->moniker or _fail 'prefix has to have moniker';
-    }
+    return $bl unless $prefix;
 
     return sprintf( '%s-%s', $prefix, $bl);
 }
@@ -766,6 +718,68 @@ sub _find_release_version_by_revisions {
     return unless my ($release_version_field) =
       $topics_model->get_meta_fields_by_key( $release->{mid}, 'fieldlet.system.release_version' );
     return $release->{$release_version_field};
+}
+
+sub _find_sha_from_previous_jobs {
+    my $self = shift;
+    my ($project, $rev_sha, $bl, $tag) = @_;
+
+    my $git = $self->git;
+
+    my @refs;
+    foreach my $ref ($git->exec(qw/show-ref/)) {
+        my ($name) = $ref =~ m#^$rev_sha refs/(?:heads|tags)/(.*)$#;
+
+        push @refs, $name if $name;
+    }
+
+    my $sha = ci->GitRevision->search_ci( sha => mdb->in($rev_sha, @refs) );
+    return unless $sha;
+
+    my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
+
+    if ( scalar(@topics) eq 0 ) {
+        _fail _loc("No changesets for this sha");
+    } elsif ( scalar(@topics) gt 1 ) {
+        _fail _loc("This sha is contained in more than one changeset");
+    }
+    my $cs = $topics[0];
+
+    my (@last_jobs) = map {
+        $_->{mid}
+    } sort {
+        $b->{endtime} cmp $a->{endtime}
+    } grep {
+        $_->{final_status} eq 'FINISHED' && $_->{bl} eq $bl
+    } ci->new($cs)->jobs;
+
+    return unless @last_jobs;
+
+    my $last_job;
+    my $job;
+    my $st;
+
+    for $last_job ( @last_jobs ) {
+        $job = ci->new($last_job);
+        $st = $job->stash;
+        if ( my $bl_original = $st->{bl_original}) {
+            my $repo_original = $bl_original->{ $self->mid }->{ $project->mid };
+
+            next unless $repo_original;
+
+            if ($bl ne $tag) {
+                next unless $repo_original->{tag} && $repo_original->{tag} eq $tag;
+            }
+
+            my $tag_sha = $repo_original->{previous};
+
+            if ($tag_sha && $tag_sha->sha ne $rev_sha) {
+                return ($job, $tag_sha->sha);
+            }
+        }
+    }
+
+    return;
 }
 
 1;
