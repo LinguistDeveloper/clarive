@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use Test::Deep;
 use Test::More;
 use Test::Fatal;
 
@@ -128,6 +129,50 @@ subtest 'new_event: creates new activity' => sub {
     is $activity->{event_status}, 'new';
     is $activity->{module},       'main';
     is $activity->{username},     'root';
+};
+
+subtest 'new_event: does not create new activity entry' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.job.new', {} );
+
+    my $events = _build_model();
+
+    $events->new_event( 'event.job.new' => { username => 'root', bl => '*' } => sub { } );
+
+    my $activity = mdb->activity->find_one( { event_key => 'event.job.new' } );
+
+    is $activity, undef;
+};
+
+subtest 'new_event: creates new activity entry' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'BaselinerX::Type::Event', 'event.topic.create', { vars => ['var'] } );
+
+    my $events = _build_model();
+
+    $events->new_event( 'event.topic.create' => { username => 'root', mid => '123', var => 'test' } => sub { } );
+
+    my $activity = mdb->activity->find_one( { event_key => 'event.topic.create' } );
+
+    cmp_deeply $activity,
+      {
+        'username' => 'root',
+        'text'     => ignore(),
+        'level'    => ignore(),
+        'event_id' => ignore(),
+        'vars'     => {
+            'var' => 'test',
+            'ts'  => ignore()
+        },
+        'mid'       => '123',
+        'module'    => ignore(),
+        'ts'        => ignore(),
+        '_id'       => ignore(),
+        'ev_level'  => ignore(),
+        'event_key' => 'event.topic.create'
+      };
 };
 
 subtest 'new_event: creates log' => sub {
