@@ -1,4 +1,9 @@
 (function(params) {
+    Cla.help_push({
+        title: _('Change Topic Status If Matches'),
+        path: 'rules/palette/workflow/transition-match'
+    });
+
     var data = params.data || {};
 
     var rolesBox = new Cla.RoleBox({
@@ -16,6 +21,7 @@
     var statusesToBox = new Baseliner.StatusBox({
         name: 'statuses_to',
         fieldLabel: _('To Status'),
+        allowBlank: false,
         value: data.statuses_to || ''
     });
 

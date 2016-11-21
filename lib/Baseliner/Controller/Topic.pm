@@ -2071,6 +2071,25 @@ sub children : Local {
     $c->forward('View::JSON');
 }
 
+sub get_category_default_workflow : Local {
+    my ( $self, $c ) = @_;
+
+    my $id_category = $c->req->params->{id_category};
+    _fail _loc("Missing category_id") unless $id_category;
+
+    try {
+        my $id_rule = Baseliner::Model::Topic->new->get_category_default_workflow($id_category);
+        $c->stash->{json} =
+          { success => \1, data => $id_rule, msg => _loc( 'Default workflow rule for category %1', $id_category ) };
+    }
+    catch {
+        $c->stash->{json} =
+          { success => \0, msg => _loc( 'Default workflow rule for category %1 not found', $id_category ) };
+    };
+
+    $c->forward('View::JSON');
+}
+
 sub report_data_replace {
     my ($self, $data, $show_desc ) = @_;
     my @mids;

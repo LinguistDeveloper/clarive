@@ -3838,6 +3838,75 @@ subtest 'topic_fieldlet_nodes: returns fieldlets of a form' => sub {
     is( scalar @{$fieldlets}, scalar @check_fieldlets );
 };
 
+subtest 'get_category_default_workflow: fails if no parameters' => sub {
+    _setup();
+
+    my $c          = _build_c();
+    my $controller = _build_controller();
+
+    like exception { $controller->get_category_default_workflow($c) }, qr/Missing category_id/;
+};
+
+subtest 'get_category_default_workflow: returns undef if category no exists' => sub {
+    _setup();
+
+    my $c = _build_c( req => { params => { id_category => '123' } } );
+    my $controller = _build_controller();
+
+    $controller->get_category_default_workflow($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "Default workflow rule for category 123",
+            'data'    => undef,
+            'success' => \1
+        }
+      };
+};
+
+
+subtest 'get_category_default_workflow: returns undef if no default_workflow configured' => sub {
+    _setup();
+
+    my $id_category = TestSetup->create_category();
+    my $c           = _build_c( req => { params => { id_category => $id_category } } );
+    my $controller  = _build_controller();
+
+    $controller->get_category_default_workflow($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "Default workflow rule for category $id_category",
+            'data'    => undef,
+            'success' => \1
+        }
+      };
+};
+
+
+subtest 'get_category_default_workflow: returns workflow rule_id' => sub {
+    _setup();
+
+    my $id_rule     = TestSetup->create_rule();
+    my $id_category = TestSetup->create_category( default_workflow => $id_rule );
+    my $c           = _build_c( req => { params => { id_category => $id_category } } );
+    my $controller  = _build_controller();
+
+    $controller->get_category_default_workflow($c);
+
+    cmp_deeply $c->stash,
+      {
+        'json' => {
+            'msg'     => "Default workflow rule for category $id_category",
+            'data'    => $id_rule,
+            'success' => \1
+        }
+      };
+};
+
+
 done_testing;
 
 sub _create_user_with_drop_rules {

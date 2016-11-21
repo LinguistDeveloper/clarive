@@ -18,9 +18,10 @@ subtest 'workflow_transition_match: basic workflow' => sub {
     _setup();
 
     my $stash = {
-        rule_context => 'workflow',
-        user_roles   => { '2' => 1 },
-        id_category  => '1',
+        rule_context   => 'workflow',
+        user_roles     => { '2' => 1 },
+        id_status_from => '10',
+        id_category    => '1',
     };
     my $config = {
         categories    => [ '1',  '2', '3' ],
@@ -31,19 +32,12 @@ subtest 'workflow_transition_match: basic workflow' => sub {
     };
 
     my $rv = launch( 'service.workflow.transition_match', 'transition test', $stash, $config, '' );
-
     is_deeply(
         $stash->{workflow},
         [
             {
                 id_role        => '2',
                 id_status_from => '10',
-                id_status_to   => '99',
-                job_type       => 'promote',
-            },
-            {
-                id_role        => '2',
-                id_status_from => '11',
                 id_status_to   => '99',
                 job_type       => 'promote',
             },
@@ -72,14 +66,14 @@ subtest 'workflow_transition_match: filtered out results by role' => sub {
     is_deeply( $stash->{workflow}, [] );
 };
 
-subtest 'workflow_transition_match: all_workflow flag overrides role control' => sub {
+subtest 'workflow_transition_match: complete_workflow flag overrides role control' => sub {
     _setup();
 
     my $stash = {
-        rule_context => 'workflow',
-        user_roles   => { '3' => 1 },
-        id_category  => '1',
-        all_workflow => 1,
+        rule_context       => 'workflow',
+        user_roles         => { '3' => 1 },
+        id_category        => '1',
+        _complete_workflow => 1,
     };
     my $config = {
         categories    => ['1'],
@@ -131,14 +125,14 @@ subtest 'workflow_transition_match: filtered out results by category' => sub {
     is_deeply( $stash->{workflow}, [] );
 };
 
-subtest 'workflow_transition_match: all_workflow overrides filtered out results by category' => sub {
+subtest 'workflow_transition_match: complete_workflow overrides filtered out results by category' => sub {
     _setup();
 
     my $stash = {
-        rule_context => 'workflow',
-        user_roles   => { '1' => 1 },
-        id_category  => '2',
-        all_workflow => 1,
+        rule_context       => 'workflow',
+        user_roles         => { '1' => 1 },
+        id_category        => '2',
+        _complete_workflow => 1,
     };
     my $config = {
         categories    => ['1'],
@@ -185,10 +179,10 @@ subtest 'workflow_transition_match: filter by status_from' => sub {
     _setup();
 
     my $stash = {
-        rule_context => 'workflow',
-        user_roles   => { '2' => 1 },
-        id_category  => '1',
-        status_from  => ['11'],
+        rule_context   => 'workflow',
+        user_roles     => { '2' => 1 },
+        id_category    => '1',
+        id_status_from => ['11'],
     };
     my $config = {
         categories    => [ '1',  '2', '3' ],
@@ -213,15 +207,15 @@ subtest 'workflow_transition_match: filter by status_from' => sub {
     );
 };
 
-subtest 'workflow_transition_match: all_workflow overrides filter by status_from' => sub {
+subtest 'workflow_transition_match: complete_workflow overrides filter by status_from' => sub {
     _setup();
 
     my $stash = {
-        rule_context => 'workflow',
-        user_roles   => { '2' => 1 },
-        id_category  => '1',
-        status_from  => ['11'],
-        all_workflow => 1,
+        rule_context       => 'workflow',
+        user_roles         => { '2' => 1 },
+        id_category        => '1',
+        status_from        => ['11'],
+        _complete_workflow => 1,
     };
     my $config = {
         categories    => [ '1',  '2', '3' ],
@@ -302,15 +296,15 @@ subtest 'workflow_transition_match: filter by status_to' => sub {
     );
 };
 
-subtest 'workflow_transition_match: all_workflow overrides filter by status_to' => sub {
+subtest 'workflow_transition_match: complete_workflow overrides filter by status_to' => sub {
     _setup();
 
     my $stash = {
-        rule_context => 'workflow',
-        user_roles   => { '2' => 1 },
-        id_category  => '1',
-        status_to    => '55',
-        all_workflow => 1,
+        rule_context       => 'workflow',
+        user_roles         => { '2' => 1 },
+        id_category        => '1',
+        status_to          => '55',
+        _complete_workflow => 1,
     };
     my $config = {
         categories    => [ '1',  '2', '3' ],
@@ -476,7 +470,7 @@ subtest 'statment.workflow.if_status_from: no match' => sub {
     ok !$stash->{ret};
 };
 
-subtest 'statment.workflow.if_status_from: all_workflow override' => sub {
+subtest 'statment.workflow.if_status_from: complete_workflow override' => sub {
     _setup();
 
     local $Data::Dumper::Terse = 1;
@@ -502,8 +496,8 @@ subtest 'statment.workflow.if_status_from: all_workflow override' => sub {
         }
     );
     my $stash = {
-        id_status_from => '22',
-        all_workflow   => 1,
+        id_status_from     => '22',
+        _complete_workflow => 1,
     };
 
     my $ret = eval "use Baseliner::Utils; $code";
@@ -578,7 +572,7 @@ subtest 'statment.workflow.if_role: no match' => sub {
     ok !$stash->{ret};
 };
 
-subtest 'statment.workflow.if_role: all_workflow override' => sub {
+subtest 'statment.workflow.if_role: complete_workflow override' => sub {
     _setup();
 
     local $Data::Dumper::Terse = 1;
@@ -604,8 +598,8 @@ subtest 'statment.workflow.if_role: all_workflow override' => sub {
         }
     );
     my $stash = {
-        user_roles   => { '22' => 1 },
-        all_workflow => 1,
+        user_roles         => { '22' => 1 },
+        _complete_workflow => 1,
     };
 
     my $ret = eval "use Baseliner::Utils; $code";
@@ -680,7 +674,7 @@ subtest 'statment.workflow.if_project: no match' => sub {
     ok !$stash->{ret};
 };
 
-subtest 'statment.workflow.if_project: all_workflow override' => sub {
+subtest 'statment.workflow.if_project: complete_workflow override' => sub {
     _setup();
 
     local $Data::Dumper::Terse = 1;
@@ -706,8 +700,8 @@ subtest 'statment.workflow.if_project: all_workflow override' => sub {
         }
     );
     my $stash = {
-        projects     => ['22'],
-        all_workflow => 1,
+        projects           => ['22'],
+        _complete_workflow => 1,
     };
 
     my $ret = eval "use Baseliner::Utils; $code";
@@ -720,11 +714,8 @@ done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Statement',
-        'BaselinerX::Type::Service',
-        'BaselinerX::CI',
-        'BaselinerX::Workflow',
-        'Baseliner::Model::Rules',
+        'BaselinerX::Type::Event',   'BaselinerX::Type::Statement',
+        'BaselinerX::Type::Service', 'BaselinerX::CI',
+        'BaselinerX::Workflow',      'Baseliner::Model::Rules',
     );
 }

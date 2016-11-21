@@ -1149,15 +1149,13 @@ sub next_status_for_user {
 
     }
     else {
-        my @user_roles =
-          Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic_mid );
+        my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic_mid );
         my $user_roles = +{ map { $_ => 1 } @user_roles };
 
         my $id_status_from = $p{id_status_from};
         my $statuses       = +{ ci->status->statuses };
-
+        my @all_to_status;
         if ( my $id_rule = $cat_doc->{default_workflow} ) {
-
             my @workflow = $self->_run_workflow_rule(
                 id_rule        => $id_rule,
                 category       => $cat_doc,
@@ -1171,7 +1169,7 @@ sub next_status_for_user {
 
             my %uniq;
 
-            @to_status =
+            @all_to_status =
               sort { $$a{seq} <=> $$b{seq} }
               grep { $uniq{ $$_{id_status} } // ( $uniq{ $$_{id_status} } = 0 ) + 1 }    # make unique by status_to
               map {
@@ -1183,16 +1181,15 @@ sub next_status_for_user {
                     statuses_name_from => $$sfrom{name},
                     status_bl_from     => $$sfrom{bl},
                     id_status          => $$_{id_status_to},
-                    id_role            => $$_{id_role},
                     status_name        => $$sto{name},
                     status_type        => $$sto{type},
                     status_bl          => $$sto{bl},
                     status_description => $$sto{description},
-                    id_category        => $$_{id_category},
+                    id_category        => $id_category,
                     job_type           => $$_{job_type},
                     seq                => ( $$sto{seq} // 0 )
                 };
-              } @workflow;
+              } grep { $user_roles->{ $$_{id_role} } && $$_{id_status_from} eq $id_status_from } @workflow;
         }
         else {
             my ( $to_state_override, @workflow ) =
@@ -1200,7 +1197,7 @@ sub next_status_for_user {
                 $id_status_from );
 
             my %uniq;
-            my @all_to_status =
+            @all_to_status =
               sort { $$a{seq} <=> $$b{seq} }
               grep { $uniq{ $$_{id_status} } // ( $uniq{ $$_{id_status} } = 0 ) + 1 }    # make unique by status_to
               map {
@@ -1227,34 +1224,67 @@ sub next_status_for_user {
                 my %tos = map { $_ => $_ } _array $to_state_override;
                 @all_to_status = grep { $tos{ $_->{id_status_to} } } @all_to_status;
             }
+        }
+        my @no_deployable_status = grep { $_->{status_type} ne 'D' } @all_to_status;
+        my @deployable_status    = grep { $_->{status_type} eq 'D' } @all_to_status;
 
-            my @no_deployable_status = grep { $_->{status_type} ne 'D' } @all_to_status;
-            my @deployable_status    = grep { $_->{status_type} eq 'D' } @all_to_status;
+        push @to_status, @no_deployable_status;
 
-            push @to_status, @no_deployable_status;
+        my $permissions = Baseliner::Model::Permissions->new;
+        foreach my $status (@deployable_status) {
+            if ( $status->{job_type} eq 'promote' || $status->{job_type} eq 'demote' ) {
+                my $can_change_status_logically = $permissions->user_has_action(
+                    $username,
+                    'action.topics.logical_change_status',
+                    bounds => { id_category => $id_category }
+                );
 
-            my $permissions = Baseliner::Model::Permissions->new;
-            foreach my $status (@deployable_status) {
-                if ( $status->{job_type} eq 'promote' || $status->{job_type} eq 'demote' ) {
-                    my $can_change_status_logically = $permissions->user_has_action(
-                        $username,
-                        'action.topics.logical_change_status',
-                        bounds => { id_category => $id_category }
-                    );
-
-                    if ($can_change_status_logically) {
-                        push @to_status, $status;
-                    }
-                }
-                else {
+                if ($can_change_status_logically) {
                     push @to_status, $status;
                 }
             }
+            else {
+                push @to_status, $status;
+            }
         }
-    }
 
+    }
     return @to_status;
 }
+
+sub get_category_workflow {
+    my ( $self, %p ) = @_;
+
+    my $id_category = $p{id_category};
+    my $username    = $p{username};
+
+    my $cat_doc = mdb->category->find_one( { id => "$id_category" }, { _id => 0, fieldlets => 0 } )
+      // _fail( _loc( "Category %1 not found", $id_category ) );
+
+    my @workflow;
+    if ( my $id_rule = $cat_doc->{default_workflow} ) {
+        my %user_roles = map { $_ => 1 } Baseliner::Model::Permissions->new->user_roles_ids($username);
+        delete $cat_doc->{workflow} if $cat_doc->{workflow};
+        try {
+            @workflow = $self->new->_run_workflow_rule(
+                id_rule            => $id_rule,
+                id_category        => $id_category,
+                category           => $cat_doc,
+                username           => $username,
+                user_roles         => \%user_roles,
+                _complete_workflow => 1,
+            );
+        }
+        catch {
+            return;
+        }
+    }
+    else {
+        @workflow = _array( $cat_doc->{workflow} );
+    }
+    return @workflow;
+}
+
 
 sub _run_workflow_rule {
     my $self = shift;
@@ -1273,17 +1303,21 @@ sub _run_workflow_rule {
     }
 
     try {
-        my $rule_runner = Baseliner::RuleRunner->new;
-        $rule_runner->find_and_run_rule(
-            id_rule => $id_rule,
-            stash   => $stash
-        );
+        my $is_rule_active = Baseliner::Model::Rules->new->is_rule_active( id_rule => $id_rule );
+        if ($is_rule_active) {
+            my $rule_runner = Baseliner::RuleRunner->new;
+            $rule_runner->find_and_run_rule(
+                id_rule => $id_rule,
+                stash   => $stash
+            );
+        }
     }
     catch {
         my $err = shift;
         _fail( _loc( 'Error running the topic workflow: %1', $err ) )
           if $err;
     };
+
     my %cat_status = map { $_ => 1 } _array( $category->{statuses} );
 
     _fail _loc( 'Category `%1` does not have any statuses available', $category->{name} ) unless %cat_status;
@@ -3286,6 +3320,19 @@ sub search_query {
     } @rows;
 }
 
+sub get_category_default_workflow {
+    my ( $self, $id_category ) = @_;
+
+    _fail _loc("Missing category_id") unless $id_category;
+
+    my $category = mdb->category->find_one( { id => $id_category } );
+    my $category_workflow_id = $category->{default_workflow};
+    if ( $category_workflow_id && Baseliner::Model::Rules->new->is_rule_active( id_rule => $category_workflow_id ) ) {
+        return $category_workflow_id;
+    }
+    return undef;
+}
+
 sub getAction {
     my ( $self, $type ) = @_;
     my $action;
@@ -3308,15 +3355,17 @@ sub user_workflow {
     my ( $self, $username, %p ) = @_;
 
     my $categories = $p{categories};
+    my $status_from = $p{status_from};
+    my $topic_mid = $p{topic_mid};
 
     return Baseliner::Model::Permissions->new->is_root( $username )
         ? $self->root_workflow( $categories )
-        : $self->non_root_workflow( $username, $categories );
+        : $self->non_root_workflow( $username, $categories, $status_from, $topic_mid );
 }
 
 sub non_root_workflow {
     my $self = shift;
-    my ( $username, $categories ) = @_;
+    my ( $username, $categories, $status_from, $topic_mid ) = @_;
 
     my @workflow;
 
@@ -3325,24 +3374,23 @@ sub non_root_workflow {
     my %user_roles = map { $_ => 1 } Baseliner::Model::Permissions->new->user_roles_ids($username);
 
     my $where_id = ref $categories ? { id => mdb->in(@$categories) } : {};
-    my @all_categories = mdb->category->find($where_id)->fields( { id => 1, default_workflow => 1 } )->all;
-
+    my @all_categories = mdb->category->find($where_id)->fields( { _id => 0, id => 1, default_workflow => 1 } )->all;
     my @rule_categories   = grep { length $_->{default_workflow} } @all_categories;
     my @static_categories = grep { !length $_->{default_workflow} } @all_categories;
-
     for my $cat (@rule_categories) {
         my $id_rule     = $cat->{default_workflow};
         my $id_category = $cat->{id};
 
         my $cat_doc = mdb->category->find_one( { id => $id_category }, { workflow => 0, _id => 0, fieldlets => 0 } )
           || _fail _loc('Category not found');
-
         my @wkf = $self->_run_workflow_rule(
-            id_rule     => $id_rule,
-            id_category => $id_category,
-            category    => $cat_doc,
-            username    => $username,
-            user_roles  => \%user_roles,
+            id_rule        => $id_rule,
+            id_category    => $id_category,
+            category       => $cat_doc,
+            username       => $username,
+            user_roles     => \%user_roles,
+            id_status_from => $status_from // '',
+            topic_mid      => $topic_mid || undef,
         );
 
         for my $trans (@wkf) {
@@ -3426,26 +3474,7 @@ sub category_workflow {
     my %statuses = ci->status->statuses;
     my %stat_to;
 
-    my $cat_doc = mdb->category->find_one( { id => "$id_category" } )
-      // _fail( _loc( "Category %1 not found", $id_category ) );
-
-    my @workflow;
-
-    if ( my $id_rule = $cat_doc->{default_workflow} ) {
-        my %user_roles = map { $_ => 1 } Baseliner::Model::Permissions->new->user_roles_ids($username);
-
-        @workflow = $self->new->_run_workflow_rule(
-            id_rule      => $id_rule,
-            id_category  => $id_category,
-            category     => $cat_doc,
-            username     => $username,
-            user_roles   => \%user_roles,
-            all_workflow => 1,
-        );
-    }
-    else {
-        @workflow = _array( $cat_doc->{workflow} );
-    }
+    my @workflow = $self->get_category_workflow(id_category => $id_category, username=>$username);
 
     for (@workflow) {
         push @{ $stat_to{ $$_{id_role} }{ $$_{id_status_from} } }, $_;

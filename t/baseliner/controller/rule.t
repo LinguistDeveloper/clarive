@@ -1127,6 +1127,52 @@ subtest 'default: creates correct event.rule.ws with rule error' => sub {
     }
 };
 
+subtest 'workflow_rule_tree: returns error if no category_id given' => sub {
+    _setup();
+
+    my $c          = mock_catalyst_c();
+    my $controller = _build_controller();
+
+    $controller->workflow_rule_tree($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \0,
+        msg     => 'Missing parameter id_category'
+    };
+};
+
+
+subtest 'workflow_rule_tree: returns error if category does not exists' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c( req => { params => { id_category => '123' } } );
+    my $controller = _build_controller();
+
+    $controller->workflow_rule_tree($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \0,
+        msg     => ' rule_id not found'
+    };
+};
+
+subtest 'workflow_rule_tree: returns workflow rule_tree of category' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_workflow();
+    my $id_category = TestSetup->create_category(default_workflow=>$id_rule);
+    my $c       = mock_catalyst_c( req => { params => { id_category => $id_category } } );
+    my $controller = _build_controller();
+
+    $controller->workflow_rule_tree($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \1,
+        data    => ignore(),
+        msg     => "Rule tree of $id_rule loaded successfully"
+    };
+};
+
 done_testing;
 
 sub _setup {

@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use Test::Deep;
 use Test::More;
 use Test::LongString;
 use Test::Fatal;
@@ -31,19 +32,21 @@ subtest 'does compile when config flag is conditional and rule is on' => sub {
 
     $rules->compile_rules( rule_precompile => 'depends' );
 
-    my $rule = mdb->rule->find_one({id => '1'});
-    ok( Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
+    my $rule = mdb->rule->find_one({id => $id_rule});
+    ok( Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does not compile when config flag is conditional and rule is off' => sub {
-    _setup( rule_compile_mode => 'none' );
+    _setup();
+
+    my $id_rule = _create_rule(rule_compile_mode => 'none');
 
     my $rules = _build_model();
 
     $rules->compile_rules( rule_precompile => 'depends' );
 
-    my $rule = mdb->rule->find_one({id => '1'});
-    ok(!Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
+    my $rule = mdb->rule->find_one({id => $id_rule});
+    ok(!Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does compile when config flag is on and rule is off' => sub {
@@ -55,42 +58,47 @@ subtest 'does compile when config flag is on and rule is off' => sub {
 
     $rules->compile_rules( rule_precompile => 'always' );
 
-    my $rule = mdb->rule->find_one({id => '1'});
-    ok( Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
+    my $rule = mdb->rule->find_one({id => $id_rule});
+    ok( Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does compile when config flag is on and rule is on' => sub {
-    _setup( rule_compile_mode => 'precompile' );
+    _setup();
 
     my $id_rule = _create_rule(rule_compile_mode => 'precompile');
+
     my $rules = _build_model();
 
     $rules->compile_rules( rule_precompile => 'always' );
 
-    my $rule = mdb->rule->find_one({id => '1'});
-    ok( Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
+    my $rule = mdb->rule->find_one({id => $id_rule});
+    ok( Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does not compile when config flag is off and rule is on' => sub {
-    _setup( rule_compile_mode => 'precompile' );
+    _setup();
+
+    my $id_rule = _create_rule(rule_compile_mode => 'precompile');
 
     my $rules = _build_model();
 
     $rules->compile_rules( rule_precompile => 'none' );
 
-    my $rule = mdb->rule->find_one({id => '1'});
-    ok(!Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
+    my $rule = mdb->rule->find_one({id => $id_rule});
+    ok(!Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'does not compile when config flag is off and rule is off' => sub {
-    _setup( rule_compile_mode => 'none', ts => "2015-06-30 13:44:11" );
+    _setup();
+
+    my $id_rule = _create_rule(rule_compile_mode => 'none', ts => "2015-06-30 13:44:11" );
 
     my $rules = _build_model();
 
     $rules->compile_rules( rule_precompile => 'none' );
 
-    my $rule = mdb->rule->find_one({id => '1'});
-    ok(!Baseliner::RuleCompiler->new( id_rule => '1', version_id => '' . $rule->{_id} )->is_loaded );
+    my $rule = mdb->rule->find_one({id => $id_rule});
+    ok(!Baseliner::RuleCompiler->new( id_rule => $id_rule, version_id => '' . $rule->{_id} )->is_loaded );
 };
 
 subtest 'statement.call' => sub {
@@ -400,11 +408,13 @@ subtest 'meta key with attributes sent to service op' => sub {
 subtest 'delete_rule: actually deletes the rule' => sub {
     _setup();
 
+    my $id_rule = _create_rule();
+
     my $rules = _build_model();
 
-    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+    $rules->delete_rule( id_rule => $id_rule, username => 'john_doe' );
 
-    my $rule = mdb->rule->find_one( { id => '1' } );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
 
     ok !$rule;
 };
@@ -412,11 +422,13 @@ subtest 'delete_rule: actually deletes the rule' => sub {
 subtest 'delete_rule: creates a delete version' => sub {
     _setup();
 
+    my $id_rule = _create_rule();
+
     my $rules = _build_model();
 
-    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+    $rules->delete_rule( id_rule => $id_rule, username => 'john_doe' );
 
-    my $version = mdb->rule_version->find_one( { id => '1', deleted => '1' } );
+    my $version = mdb->rule_version->find_one( { id => $id_rule, deleted => '1' } );
 
     ok $version;
 };
@@ -424,9 +436,11 @@ subtest 'delete_rule: creates a delete version' => sub {
 subtest 'delete_rule: creates the correct event' => sub {
     _setup();
 
+    my $id_rule = _create_rule();
+
     my $rules = _build_model();
 
-    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+    $rules->delete_rule( id_rule => $id_rule, username => 'john_doe' );
 
     my @events = mdb->event->find( { event_key => 'event.rule.delete' } )->all;
 
@@ -454,7 +468,7 @@ subtest 'save_rule: actually creates a new rule' => sub {
 
     my @rules = mdb->rule->find( {} )->all;
 
-    is scalar @rules, 2;
+    is scalar @rules, 1;
 };
 
 subtest 'save_rule: returns the rule id' => sub {
@@ -668,12 +682,14 @@ subtest 'save_rule: creates the correct event for new rule' => sub {
 subtest 'restore_rule: actually restores the rule' => sub {
     _setup();
 
+    my $id_rule = _create_rule();
+
     my $rules = _build_model();
 
-    $rules->delete_rule( id_rule => '1', username => 'john_doe' );
+    $rules->delete_rule( id_rule => $id_rule, username => 'john_doe' );
 
-    $rules->restore_rule( id_rule => '1' );
-    my $rule = mdb->rule->find_one( { id => '1' } );
+    $rules->restore_rule( id_rule => $id_rule );
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
 
     ok $rule;
 };
@@ -805,7 +821,8 @@ subtest 'tag_version: tags version' => sub {
             "children" => []
         },
     ];
-    my $id_rule = '1';
+
+    my $id_rule = _create_rule();
 
     $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
     Baseliner::Model::Rules->new->write_rule(
@@ -837,7 +854,7 @@ subtest 'tag_version: throws when unknown version' => sub {
 subtest 'tag_version: throws when tag already exists' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     Baseliner::Model::Rules->new->write_rule(
         id_rule  => $id_rule,
@@ -865,7 +882,7 @@ subtest 'tag_version: throws when tag already exists' => sub {
 subtest 'tag_version: does not throw when saving same tag with same version' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     Baseliner::Model::Rules->new->write_rule(
         id_rule  => $id_rule,
@@ -897,7 +914,8 @@ subtest 'untag_version: untags version' => sub {
             "children" => []
         },
     ];
-    my $id_rule = '1';
+
+    my $id_rule = _create_rule();
 
     $rule_tree->[0]->{attributes}->{text} = 'CHECK2';
     Baseliner::Model::Rules->new->write_rule(
@@ -922,7 +940,7 @@ subtest 'untag_version: untags version' => sub {
 subtest 'list_versions: returns rule versions' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     mock_time '2015-01-01' => sub {
         Baseliner::Model::Rules->new->write_rule(
@@ -950,7 +968,7 @@ subtest 'list_versions: returns rule versions' => sub {
 subtest 'list_versions: returns rule versions only with tags' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     mock_time '2015-01-01' => sub {
         Baseliner::Model::Rules->new->write_rule(
@@ -980,7 +998,7 @@ subtest 'list_versions: returns rule versions only with tags' => sub {
 subtest 'resolve_rule: loads rule by id' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     my $model = _build_model();
 
@@ -991,6 +1009,8 @@ subtest 'resolve_rule: loads rule by id' => sub {
 
 subtest 'resolve_rule: loads rule by name' => sub {
     _setup();
+
+    _create_rule();
 
     my $model = _build_model();
 
@@ -1010,7 +1030,7 @@ subtest 'resolve_rule: throws when cannot load by id' => sub {
 subtest 'resolve_rule: loads rule version id' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     Baseliner::Model::Rules->new->write_rule(
         id_rule  => $id_rule,
@@ -1029,15 +1049,17 @@ subtest 'resolve_rule: loads rule version id' => sub {
 subtest 'resolve_rule: throws when cannot load by version id' => sub {
     _setup();
 
+    my $id_rule = _create_rule();
+
     my $model = _build_model();
 
-    like exception { $model->resolve_rule(id_rule => '1', version_id => '123') }, qr/Version `123` of rule `1` not found/;
+    like exception { $model->resolve_rule(id_rule => $id_rule, version_id => '123') }, qr/Version `123` of rule `$id_rule` not found/;
 };
 
 subtest 'resolve_rule: loads rule version tag' => sub {
     _setup();
 
-    my $id_rule = '1';
+    my $id_rule = _create_rule();
 
     Baseliner::Model::Rules->new->write_rule(
         id_rule  => $id_rule,
@@ -1057,10 +1079,12 @@ subtest 'resolve_rule: loads rule version tag' => sub {
 subtest 'resolve_rule: throws when cannot load by version tag' => sub {
     _setup();
 
+    my $rule_id = _create_rule();
+
     my $model = _build_model();
 
-    like exception { $model->resolve_rule( id_rule => '1', version_tag => '123' ) },
-      qr/Version tag `123` of rule `1` not found/;
+    like exception { $model->resolve_rule( id_rule => $rule_id, version_tag => '123' ) },
+      qr/Version tag `123` of rule `$rule_id` not found/;
 };
 
 subtest 'compile_wsdl: returns the wsdl compiled' => sub {
@@ -1298,11 +1322,48 @@ subtest 'get_rules_info: returns only allowed rules' => sub {
     is $rows[0]->{id}, $id_rule;
 };
 
+subtest 'get_rule_tree: fails if rule_id missing' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->get_rule_tree() }, qr/Missing id_rule/;
+};
+
+subtest 'get_rule_tree: fails if rule is not found' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->get_rule_tree("123") }, qr/Rule 123 not found/;
+};
+
+subtest 'get_rule_tree: returns rule_tree' => sub {
+    _setup();
+
+    my $code    = "return 'hi there'";
+    my $iso_ts  = '2016-01-01T00:00:00';
+    my $id_rule = _create_rule( code => $code, ts => $iso_ts );
+
+    my $model = _build_model();
+
+    my $rule_tree = $model->get_rule_tree($id_rule);
+
+    like $rule_tree, qr/return 'hi there'/;
+};
+
+subtest 'is_rule_active: returns boolean with rule status' => sub {
+    _setup();
+
+    my $id_rule_active = _create_rule( id => 1 );
+    my $model = _build_model();
+
+    ok $model->is_rule_active( id_rule => $id_rule_active );
+};
+
 done_testing;
 
 sub _setup {
-    my (%params) = @_;
-
     TestUtils->setup_registry(
         'BaselinerX::Type::Statement',
         'BaselinerX::CI',
@@ -1320,25 +1381,27 @@ sub _setup {
     );
 
     TestUtils->cleanup_cis;
+
+    mdb->event->drop;
+    mdb->rule->drop;
+    mdb->rule_version->drop;
+    mdb->index_all('sem');
 }
 
 sub _create_rule {
     my (%params) = @_;
 
+    my $active = exists $params{active} ? $params{active} : "1";
     my $code = $params{code} || q%return 'hi there';%;
     my $ts   = $params{ts}   || '' . Class::Date->now();
+    my $rule_id = $params{id} || '1';
     my $iso_ts = $ts;
     $iso_ts =~ s/\s/T/;
 
-    mdb->event->drop;
-    mdb->role->drop;
-    mdb->rule->drop;
-    mdb->rule_version->drop;
-
     mdb->rule->insert(
         {
-            id                => '1',
-            "rule_active"     => "1",
+            id                => $rule_id,
+            "rule_active"     => $active,
             "wsdl"            => "",
             "rule_type"       => "chain",
             "rule_desc"       => "",
@@ -1357,7 +1420,7 @@ qq%[{"attributes":{"text":"CHECK","icon":"/static/images/icons/job.svg","key":"s
         }
     );
 
-    mdb->index_all('sem');
+    return $rule_id;
 }
 
 sub _build_model {

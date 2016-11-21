@@ -1082,6 +1082,30 @@ sub tree_structure : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub workflow_rule_tree : Local {
+    my ( $self, $c ) = @_;
+
+    my $p           = $c->req->parameters;
+    my $id_category = $p->{id_category};
+
+    if ($id_category) {
+        my $id_rule = Baseliner::Model::Topic->new->get_category_default_workflow($id_category);
+        try {
+            my $rule_tree = Baseliner::Model::Rules->new->get_rule_tree($id_rule);
+            $c->stash->{json} =
+              { success => \1, data => $rule_tree, msg => _loc( 'Rule tree of %1 loaded successfully', $id_rule ) };
+        }
+        catch {
+            $c->stash->{json} = { success => \0, msg => _loc( '%1 rule_id not found', $id_rule ) };
+        }
+    }
+    else {
+        $c->stash->{json} = { success => \0, msg => _loc('Missing parameter id_category') };
+    }
+
+    $c->forward('View::JSON');
+}
+
 sub add_custom_folder : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;

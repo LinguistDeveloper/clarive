@@ -394,6 +394,105 @@ subtest 'category_workflow: returns rule workflow' => sub {
       };
 };
 
+subtest 'get_category_workflow: returns category static workflow' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+    my $bl          = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+    my $id_role     = TestSetup->create_role();
+    my $status1     = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $id_category = "$base_params->{category}";
+    my $workflow    = [
+        {
+            id_role        => $id_role,
+            id_status_from => $base_params->{status},
+            id_status_to   => $status1->mid,
+            job_type       => 'promote'
+        }
+    ];
+    mdb->category->update( { id => $id_category },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+
+    my $model = _build_model();
+
+    my @ret = $model->get_category_workflow( id_category => $id_category, username => 'root' );
+
+    cmp_deeply $ret[0],
+      {
+        id_role        => $id_role,
+        id_status_from => $base_params->{status},
+        id_status_to   => $status1->mid,
+        job_type       => 'promote'
+      };
+};
+
+subtest 'get_category_workflow: returns category rule workflow' => sub {
+    _setup();
+
+    my $base_params = TestSetup->_topic_setup();
+    my $bl          = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
+    my $id_role     = TestSetup->create_role();
+    my $status1     = TestUtils->create_ci( 'status', name => 'Deploy', type => 'D', bls => [ $bl->mid ] );
+
+    my $id_category    = "$base_params->{category}";
+    my $id_status_from = "$base_params->{status}";
+    my $id_status_to   = $status1->id_status;
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'Workflow',
+        rule_type => 'workflow',
+        rule_when => 'post-offline',
+        rule_tree => [
+            {
+                attributes => {
+                    leaf           => \1,
+                    nested         => 0,
+                    holds_children => \0,
+                    run_sub        => \1,
+                    palette        => \0,
+                    text           => "CODE",
+                    key            => "statement.perl.code",
+                    name           => 'workflow from code',
+                    ts             => "2015-06-30T13=>42=>57",
+                    who            => "root",
+                    expanded       => \0,
+                    data           => {
+                        code => sprintf(
+                            q{
+                            $stash->{workflow} = [
+                                {
+                                    id_role        => '%s',
+                                    id_status_from => '%s',
+                                    id_status_to   => '%s',
+                                    job_type       => 'promote',
+                                }
+                            ];
+                        }, $id_role, $id_status_from, $id_status_to
+                        )
+                    },
+                },
+                children => [],
+            },
+        ],
+    );
+
+    mdb->category->update( { id => "$base_params->{category}" },
+        { '$set' => { workflow => [], default_workflow => $id_rule }, '$push' => { statuses => $id_status_to } } );
+
+    my $model = _build_model();
+    my @ret = $model->get_category_workflow( id_category => $id_category, username => 'root' );
+
+    cmp_deeply $ret[0],
+      {
+        id_role        => $id_role,
+        id_status_from => $id_status_from,
+        id_status_to   => $id_status_to,
+        job_type       => 'promote'
+      };
+};
+
+
 subtest 'topic_projects: returns project' => sub {
     _setup();
 
@@ -4437,6 +4536,46 @@ subtest 'filter_children: returns all the children of the topic' => sub {
     $model->filter_children( $where, topic_mid => $release_mid );
 
     is_deeply $where->{mid}, { '$in' => [ $changeset_mid, $changeset_mid2 ] };
+};
+
+subtest 'get_category_default_workflow: fails if id_category is not present' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    like exception { $model->get_category_default_workflow() }, qr/Missing category_id/;
+};
+
+subtest 'get_category_default_workflow: returns empty if default workflow is not set' => sub {
+    _setup();
+
+    my $model = _build_model();
+    my $id_rule = _create_form();
+    my $id_category = TestSetup->create_category(
+        name       => 'Category',
+        id_rule    => $id_rule,
+    );
+
+    my $default_workflow = $model->get_category_default_workflow($id_category);
+
+    is $default_workflow, undef;
+};
+
+subtest 'get_category_default_workflow: returns default workflow set' => sub {
+    _setup();
+
+    my $model = _build_model();
+    my $id_rule = _create_form();
+    my $id_workflow = TestSetup->create_rule_workflow();
+    my $id_category = TestSetup->create_category(
+        name       => 'Category',
+        default_workflow => $id_workflow,
+        id_rule    => $id_rule,
+    );
+
+    my $default_workflow = $model->get_category_default_workflow($id_category);
+
+    is $default_workflow, $id_workflow;
 };
 
 done_testing();

@@ -1,11 +1,11 @@
 package BaselinerX::Workflow;
 use Moose;
-
 use Try::Tiny;
+use Array::Utils qw(intersect);
 
 use Baseliner::Sugar;
 use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(:logging _locl _any _array);
+use Baseliner::Utils qw(:logging _locl _any _array _dump _warn);
 
 use v5.10;
 
@@ -46,6 +46,11 @@ sub workflow_transition {
               ? ( $stash->{id_status_from} )
               : _array( $stash->{category}{statuses} );
 
+            if ( $job_type && $stash->{_statuses_from} ) {
+                my @statuses_from_job = _array $stash->{_statuses_from};
+                @statuses = intersect @statuses, @statuses_from_job;
+            }
+
             for my $status_from (@statuses) {
                 push @{ $stash->{workflow} },
                   {
@@ -63,37 +68,44 @@ sub workflow_transition_match {
     my $self = shift;
     my ( $c, $config ) = @_;
 
-    my $statuses_to = $config->{statuses_to}
-      // _fail( _loc("Missing 'statuses_to' configuration for workflow transition") );
-    my $statuses_from = $config->{statuses_from}
-      // _fail( _loc("Missing 'statuses_from' configuration for workflow transition") );
-    my $roles = $config->{roles} // _fail( _loc("Missing 'roles' configuration for workflow transition") );
-    my $categories = $config->{categories}
-      // _fail( _loc("Missing 'categories' configuration for workflow transition") );
-    my $job_type = $config->{job_type} // '';
-
     my $stash       = $c->stash;
     my $user_roles  = $stash->{user_roles} // {};
     my $id_category = $stash->{id_category} // '';
 
+    my $statuses_to = $config->{statuses_to}
+      // _fail( _loc("Missing 'statuses_to' configuration for workflow transition") );
+    my $statuses_from  = $config->{statuses_from} || $stash->{category}->{statuses};
+    my $id_status_from = $stash->{id_status_from} || $statuses_from;
+    my $roles          = $config->{roles}         || $user_roles;
+    my $categories = $config->{categories} // [];
+    my $job_type   = $config->{job_type}   // '';
+
+    my @user_roles_id = keys %$user_roles;
+    my @common_roles;
+    if ( $stash->{_complete_workflow} ) {
+        @common_roles = @$roles ? @$roles : @user_roles_id;
+    }
+    else {
+        @common_roles = @$roles ? intersect @user_roles_id, @$roles : @user_roles_id;
+    }
+
     $stash->{workflow} //= [];
 
-    if ( $stash->{all_workflow} || _any { $_ eq $id_category } _array($categories) ) {
-
-        for my $id_role ( grep { $stash->{all_workflow} || $user_roles->{$_} } _array($roles) ) {
-
+    if ( $stash->{_complete_workflow} || !_array($categories) || _any { $_ eq $id_category } _array($categories) ) {
+        for my $id_role (@common_roles) {
             for my $status_from ( _array($statuses_from) ) {
                 next
-                  if !$stash->{all_workflow}
-                  && defined $stash->{status_from}
-                  && !_any { $status_from eq $_ } _array( $stash->{status_from} );
-
+                  if !$stash->{_complete_workflow}
+                  && !_any { $status_from eq $_ } _array($id_status_from);
+                next
+                  if $job_type
+                  && $stash->{_statuses_from}
+                  && !( _any { $status_from eq $_ } _array( $stash->{_statuses_from} ) );
                 for my $status_to ( _array($statuses_to) ) {
                     next
-                      if !$stash->{all_workflow}
+                      if !$stash->{_complete_workflow}
                       && defined $stash->{status_to}
                       && !_any { $status_to eq $_ } _array( $stash->{status_to} );
-
                     push @{ $stash->{workflow} },
                       {
                         id_role        => $id_role,
@@ -119,9 +131,10 @@ register 'statement.workflow.if_status_from' => {
         local $Data::Dumper::Terse = 1;
         sprintf(
             q{
-            if( $stash->{all_workflow}
+            $stash->{_statuses_from} = %s;
+            if( $stash->{_complete_workflow}
                 || ( length $stash->{id_status_from}
-                     && _any { $stash->{id_status_from} eq $_ } grep { defined } _array(%s) ) ) {
+                     && _any { $stash->{id_status_from} eq $_ } grep { defined } _array($stash->{_statuses_from}) ) ) {
                     %s
             }
 
@@ -141,7 +154,7 @@ register 'statement.workflow.if_role' => {
 
         sprintf(
             q{
-            if( $stash->{all_workflow}
+            if( $stash->{_complete_workflow}
                 || ( ref $stash->{user_roles} eq 'HASH'
                      && _any { $stash->{user_roles}->{$_} } grep { defined } _array(%s) )) {
                     %s
@@ -164,7 +177,7 @@ register 'statement.workflow.if_project' => {
         local $Data::Dumper::Terse = 1;
         sprintf(
             q{
-            if( $stash->{all_workflow}
+            if( $stash->{_complete_workflow}
                 || ( ref $stash->{projects} eq 'ARRAY'
                      && _any { my $first = $_; _any { $first eq $_ } _array( $stash->{projects} ) } _array( %s ) )) {
                     %s

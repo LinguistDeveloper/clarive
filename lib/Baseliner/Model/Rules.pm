@@ -288,6 +288,17 @@ sub _is_true {
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
+sub get_rule_tree {
+    my ( $self, $id_rule ) = @_;
+
+    _fail _loc("Missing id_rule") unless $id_rule;
+
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    _fail _loc( "Rule %1 not found", $id_rule ) unless $rule;
+
+    return $rule->{rule_tree};
+}
+
 sub all_nodes {
     my ($self, %p )=@_;
     my @nodes = $self->build_tree( $p{id_rule} );
@@ -1268,6 +1279,12 @@ sub include_rule {
         _fail( _loc("Error building DSL for rule '%1': %2", $id_rule, shift() ) );
     };
     return $dsl;
+}
+
+sub is_rule_active {
+    my ( $self, %p ) = @_;
+    my $rule = mdb->rule->find_one( { id => $p{id_rule}, rule_active => mdb->true }, { id => 1 } );
+    return $rule ? 1 : 0;
 }
 
 sub get_rules_info {

@@ -1497,7 +1497,7 @@ Baseliner.StatusBox = function(opt) {
         resizable: true,
         mode: 'remote',
         fieldLabel: _('To'),
-        emptyText: _('Select Statuses'),
+        //  emptyText: _('Select Statuses'),
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
         + '<div style="float:left; margin-right: 5px"><img src={[ IC("state") ]} />'
@@ -1530,7 +1530,7 @@ Baseliner.CategoryBox = function(opt) {
         resizable: true,
         mode: 'remote',
         fieldLabel: _('Category'),
-        emptyText: _('Select Topic Category'),
+        //emptyText: _('Select Topic Category'),
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
         displayFieldTpl: tpl,
