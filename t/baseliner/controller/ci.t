@@ -1899,6 +1899,61 @@ subtest 'tree_objects: returns cis with filtering with AND condition' => sub {
     is $tree[1]->{name}, $status2->{name};
 };
 
+subtest 'store: returns cis' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status' );
+
+    my $c = _build_c( req => { params => { } } );
+
+    my $controller = _build_controller();
+
+    $controller->store($c);
+
+    my $data = $c->stash->{json}->{data};
+    is @$data, 1;
+    is $data->[0]->{mid}, $status->mid;
+};
+
+subtest 'store: returns cis filtered by class' => sub {
+    _setup();
+
+    my $bl = TestUtils->create_ci('bl');
+    my $status = TestUtils->create_ci( 'status' );
+
+    my $c = _build_c( req => { params => { class => 'bl' } } );
+
+    my $controller = _build_controller();
+
+    $controller->store($c);
+
+    my $data = $c->stash->{json}->{data};
+    is @$data, 1;
+    is $data->[0]->{mid}, $bl->mid;
+};
+
+subtest 'store: returns cis with vars' => sub {
+    _setup();
+
+    my $variable =
+      TestUtils->create_ci( 'variable', type => 'ci', var_type => 'ci', var_ci_class => 'status', var_ci_role => 'CI' );
+    my $another_variable =
+      TestUtils->create_ci( 'variable', type => 'ci', var_type => 'ci', var_ci_class => 'bl', var_ci_role => 'CI' );
+
+    my $status = TestUtils->create_ci('status');
+
+    my $c = _build_c( req => { params => { class => 'status', with_vars => 1 } } );
+
+    my $controller = _build_controller();
+
+    $controller->store($c);
+
+    my $data = $c->stash->{json}->{data};
+    is @$data, 2;
+    is $data->[0]->{mid}, $status->mid;
+    is $data->[1]->{mid}, '${variable:' . $variable->mid . '}';
+};
+
 done_testing;
 
 sub _create_changeset_form {
