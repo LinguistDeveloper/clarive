@@ -1,3 +1,16 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: clarive\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2016-07-27 14:53+0200\n"
+"Last-Translator: clarive\n"
+"Language-Team: clarive\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.8\n"
+
 #: lib/Baseliner/CI.pm
 msgid "Unexpected reference when loading CI: "
 msgstr ""
@@ -1666,6 +1679,18 @@ msgid "Error setting up WSDL operations: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
+msgid "Rule tree of %1 loaded successfully"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "%1 rule_id not found"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Missing parameter id_category"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule folder %1 added successfully"
 msgstr ""
 
@@ -2277,6 +2302,18 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Error rendering kanban: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
+msgid "Missing category_id"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "Default workflow rule for category %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "Default workflow rule for category %1 not found"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
@@ -2945,6 +2982,10 @@ msgid "Invalid rule tree json data: not an array"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "Missing id_rule"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Could not find rule key `%1`"
 msgstr ""
 
@@ -3494,6 +3535,10 @@ msgid "Error closing Topic: %1"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "Category %1 not found"
+msgstr ""
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "Error running the topic workflow: %1"
 msgstr ""
 
@@ -3559,10 +3604,6 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Cannot update topic category, topic not found: %1"
-msgstr ""
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Category %1 not found"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
@@ -5712,10 +5753,6 @@ msgid "Error loading changes for provider %1: %2"
 msgstr ""
 
 #: lib/BaselinerX/LcController.pm
-msgid "Category %1 not found for topic %2"
-msgstr ""
-
-#: lib/BaselinerX/LcController.pm
 msgid "Missing topic parameter"
 msgstr ""
 
@@ -7183,11 +7220,11 @@ msgstr ""
 msgid "Config Baseliner"
 msgstr ""
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_transition.js
 msgid "Change Topic Status"
 msgstr ""
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_transition_match.js
 msgid "Change Topic Status If Matches"
 msgstr ""
 
@@ -7195,27 +7232,15 @@ msgstr ""
 msgid "Missing 'statuses_to' configuration for workflow transition"
 msgstr ""
 
-#: lib/BaselinerX/Workflow.pm
-msgid "Missing 'statuses_from' configuration for workflow transition"
-msgstr ""
-
-#: lib/BaselinerX/Workflow.pm
-msgid "Missing 'roles' configuration for workflow transition"
-msgstr ""
-
-#: lib/BaselinerX/Workflow.pm
-msgid "Missing 'categories' configuration for workflow transition"
-msgstr ""
-
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_if_status.js
 msgid "IF From Status IS"
 msgstr ""
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_if_role.js
 msgid "IF Role IS"
 msgstr ""
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_if_project.js
 msgid "IF Project IS"
 msgstr ""
 
@@ -11728,6 +11753,10 @@ msgstr ""
 
 #: root/comp/topic/topic_lib.js
 msgid "Open life cycle"
+msgstr ""
+
+#: root/comp/topic/topic_lib.js
+msgid "Open workflow"
 msgstr ""
 
 #: root/comp/topic/topic_lib.js

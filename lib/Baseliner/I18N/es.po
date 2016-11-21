@@ -1512,7 +1512,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Rule Designer"
-msgstr ""
+msgstr "Creador de Reglas"
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "SOAP WS ready to return"
@@ -1574,7 +1574,7 @@ msgstr "Flujo de Trabajo"
 
 #: lib/Baseliner/Controller/Rule.pm root/ci/status.js
 msgid "Generic"
-msgstr ""
+msgstr "Genérico"
 
 #: lib/Baseliner/Controller/Rule.pm lib/BaselinerX/Job.pm root/comp/job_new.js
 #: root/comp/lifecycle/deploy.js root/comp/log_grid.js
@@ -1695,6 +1695,18 @@ msgid "Error setting up WSDL operations: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
+msgid "Rule tree of %1 loaded successfully"
+msgstr "Árbol de la regla %1 cargado correctamente"
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "%1 rule_id not found"
+msgstr "%1 rule_id no encontrado"
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Missing parameter id_category"
+msgstr "Falta el parámetro category_id"
+
+#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule folder %1 added successfully"
 msgstr ""
 
@@ -1743,7 +1755,7 @@ msgstr "Iniciar"
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Error building diagram: %1"
-msgstr ""
+msgstr "Error construyendo el diagrama: %1"
 
 #: lib/Baseliner/Controller/Scheduler.pm
 msgid "Admin Scheduler"
@@ -2315,6 +2327,19 @@ msgstr "Estado de la categoría no encontrado para los tópicos"
 msgid "Error rendering kanban: %1"
 msgstr "Error cargando el kanban: %1"
 
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Topic.pm
+msgid "Missing category_id"
+msgstr "Falta category_id"
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "Default workflow rule for category %1"
+msgstr "Regla por defecto de Flujo de Trabajo para la categoría %1"
+
+#: lib/Baseliner/Controller/Topic.pm
+msgid "Default workflow rule for category %1 not found"
+msgstr ""
+"Regla por defecto de Flujo de Trabajo para la categoría %1 no encontrada"
+
 #: lib/Baseliner/Controller/Topic.pm
 msgid "Changed status"
 msgstr "Estado cambiado"
@@ -2419,7 +2444,7 @@ msgstr "Categorías de administrador"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "Missing category id"
-msgstr ""
+msgstr "Falta category id"
 
 #: lib/Baseliner/Controller/TopicAdmin.pm
 msgid "System fields"
@@ -2992,6 +3017,10 @@ msgid "Invalid rule tree json data: not an array"
 msgstr "Datos json inválidos en el árbol de regla: no es un array"
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "Missing id_rule"
+msgstr "Falta id_rule"
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "Could not find rule key `%1`"
 msgstr "No se ha encontrado la clave de regla `%1`"
 
@@ -3545,8 +3574,12 @@ msgid "Error closing Topic: %1"
 msgstr "Error cerrando tópico: %1"
 
 #: lib/Baseliner/Model/Topic.pm
+msgid "Category %1 not found"
+msgstr "Categoría %1 no encontrada"
+
+#: lib/Baseliner/Model/Topic.pm
 msgid "Error running the topic workflow: %1"
-msgstr ""
+msgstr "Error ejecutando el ciclo de vida del tópico: %1"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Category `%1` does not have any statuses available"
@@ -3615,10 +3648,6 @@ msgstr ""
 #: lib/Baseliner/Model/Topic.pm
 msgid "Cannot update topic category, topic not found: %1"
 msgstr "No puedo actualizar categoría de tópico, tópico no encontrado: %1"
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "Category %1 not found"
-msgstr "Categoría %1 no encontrada"
 
 #: lib/Baseliner/Model/Topic.pm
 msgid "Cannot update topic category status, topic not found: %1"
@@ -5092,11 +5121,11 @@ msgstr ""
 
 #: lib/BaselinerX/CI/topic.pm
 msgid "No mid, can't change status"
-msgstr ""
+msgstr "No hay mid, no se puede cambiar el estado"
 
 #: lib/BaselinerX/CI/topic.pm
 msgid "Could not find status `%1`"
-msgstr ""
+msgstr "No se puede encontrar el estado `%1`"
 
 #: lib/BaselinerX/CI/topic_file.pm
 msgid "Could now checkout topic file '%1'"
@@ -5799,10 +5828,6 @@ msgstr "Error detectado: %1"
 #: lib/BaselinerX/LcController.pm
 msgid "Error loading changes for provider %1: %2"
 msgstr "Error cargando cambios para el proveedor %1: %2"
-
-#: lib/BaselinerX/LcController.pm
-msgid "Category %1 not found for topic %2"
-msgstr "Categoría %1 no encontrada para el tópico %2"
 
 #: lib/BaselinerX/LcController.pm
 msgid "Missing topic parameter"
@@ -7299,41 +7324,30 @@ msgstr ""
 msgid "Config Baseliner"
 msgstr "Configurar Baseliner"
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_transition.js
 msgid "Change Topic Status"
-msgstr ""
+msgstr "Cambiar Estado del Tópico"
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_transition_match.js
 msgid "Change Topic Status If Matches"
-msgstr ""
+msgstr "Cambiar Estado del Tópico Si Coincide"
 
 #: lib/BaselinerX/Workflow.pm
 msgid "Missing 'statuses_to' configuration for workflow transition"
 msgstr ""
+"Falta la configuración 'statuses_to' para la transición del ciclo de vida"
 
-#: lib/BaselinerX/Workflow.pm
-msgid "Missing 'statuses_from' configuration for workflow transition"
-msgstr ""
-
-#: lib/BaselinerX/Workflow.pm
-msgid "Missing 'roles' configuration for workflow transition"
-msgstr ""
-
-#: lib/BaselinerX/Workflow.pm
-msgid "Missing 'categories' configuration for workflow transition"
-msgstr ""
-
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_if_status.js
 msgid "IF From Status IS"
-msgstr ""
+msgstr "IF Estado Origen ES"
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_if_role.js
 msgid "IF Role IS"
-msgstr ""
+msgstr "IF Rol ES"
 
-#: lib/BaselinerX/Workflow.pm
+#: lib/BaselinerX/Workflow.pm root/forms/workflow_if_project.js
 msgid "IF Project IS"
-msgstr ""
+msgstr "IF Projecto ES"
 
 #: lib/Clarive/Api.pm
 msgid "Could not find key %1 in registry"
@@ -10833,7 +10847,7 @@ msgstr "Borrar Acciones Inválidas"
 #: root/comp/rule_flowchart.js root/site/lifecycle-graph.js
 #: root/site/timeline-graph.js
 msgid "Overview"
-msgstr ""
+msgstr "Resumen"
 
 #: root/comp/rule_flowchart.js
 msgid "Export as SVG"
@@ -10841,15 +10855,15 @@ msgstr "Exportar como SVG"
 
 #: root/comp/rule_flowchart.js
 msgid "Zoom In"
-msgstr ""
+msgstr "Acercar"
 
 #: root/comp/rule_flowchart.js
 msgid "Zoom Out"
-msgstr ""
+msgstr "Alejar"
 
 #: root/comp/rule_flowchart.js root/comp/rules.js
 msgid "Flowchart"
-msgstr ""
+msgstr "Diagrama de Flujo"
 
 #: root/comp/rule_new.js
 msgid "Event Type"
@@ -11278,7 +11292,7 @@ msgstr "Ignorar Mayúsculas"
 
 #: root/comp/rules.js
 msgid "Blame By Time"
-msgstr ""
+msgstr "Atribuir por tiempo"
 
 #: root/comp/rules.js
 msgid "Expand All"
@@ -11326,7 +11340,7 @@ msgstr "Atrás"
 
 #: root/comp/rules.js
 msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
-msgstr ""
+msgstr "La regla `%1` ha cambiado, pero no se ha guardado. ¿Salir sin guardar?"
 
 #: root/comp/rules.js root/site/main.js
 msgid "Close Tab"
@@ -11741,15 +11755,15 @@ msgstr ""
 
 #: root/comp/topic/topic_admin.js
 msgid "Form Rule"
-msgstr ""
+msgstr "Regla de Formulario"
 
 #: root/comp/topic/topic_admin.js root/site/model.js
 msgid "Defined in the Workflow Tab"
-msgstr ""
+msgstr "Definido en la pestaña de Flujo de trabajo"
 
 #: root/comp/topic/topic_admin.js
 msgid "Workflow Rule: %1"
-msgstr ""
+msgstr "Flujo de trabajo de la Regla: %1"
 
 #: root/comp/topic/topic_admin.js
 msgid "A brief description of the category"
@@ -11895,6 +11909,10 @@ msgstr ""
 #: root/comp/topic/topic_lib.js
 msgid "Open life cycle"
 msgstr "Abrir Ciclo de vida"
+
+#: root/comp/topic/topic_lib.js
+msgid "Open workflow"
+msgstr "Abrir flujo de trabajo"
 
 #: root/comp/topic/topic_lib.js
 msgid "Open timeline"
@@ -14042,7 +14060,7 @@ msgstr "Pausa (s)"
 
 #: root/forms/rule_list.js
 msgid "Rule To Be Invoked"
-msgstr ""
+msgstr "Regla a ser invocada"
 
 #: root/forms/script_local.js root/forms/script_remote.js
 #: root/forms/wait_for_children.js root/forms/windows_service.js
@@ -14443,31 +14461,31 @@ msgstr "detener"
 #: root/forms/workflow_if_project.js root/forms/workflow_if_role.js
 #: root/forms/workflow_if_status.js
 msgid "IF INPUT MATCH..."
-msgstr ""
+msgstr "SI COINCIDE ENTRADA"
 
 #: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
 msgid "Deployment Type"
-msgstr ""
+msgstr "Tipo de Despliegue"
 
 #: root/forms/workflow_transition.js
 msgid "SET TOPIC STATUS TO..."
-msgstr ""
+msgstr "PONER ESTADO DEL TÓPICO A"
 
 #: root/forms/workflow_transition_match.js
 msgid "Select Topic Categories"
-msgstr ""
+msgstr "Seleccionar Categorías de Tópicos"
 
 #: root/forms/workflow_transition_match.js
 msgid "IF INPUT MATCH THESE..."
-msgstr ""
+msgstr "SI ENTRADA COINCIDE CON"
 
 #: root/forms/workflow_transition_match.js
 msgid "THEN SET TOPIC STATUS TO..."
-msgstr ""
+msgstr "ENTONCES PONER EL ESTADO DEL TÓPICO A"
 
 #: root/forms/write_config.js
 msgid "Input Type"
-msgstr ""
+msgstr "Tipo de Entrada"
 
 #: root/forms/write_config.js
 msgid "From Stash Variable"
@@ -15422,7 +15440,7 @@ msgstr "seleccione usuarios o roles"
 
 #: root/site/model.js
 msgid "Select Roles"
-msgstr ""
+msgstr "Seleccionar Roles"
 
 #: root/site/model.js
 msgid "Select CI Role"
@@ -15430,11 +15448,11 @@ msgstr "Seleccione el Rol CI"
 
 #: root/site/model.js
 msgid "Select CI Classes"
-msgstr ""
+msgstr "Seleccionar Clases de CI"
 
 #: root/site/model.js
 msgid "Select Statuses"
-msgstr ""
+msgstr "Seleccionar Estados"
 
 #: root/site/model.js
 msgid "Select Topic Category"
@@ -15760,6 +15778,9 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "Error Loading Library"
+#~ msgstr "Error Cargando Librería"
+
 #~ msgid "Topic %1 does not match category %2. Skipped"
 #~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
 
@@ -15771,6 +15792,9 @@ msgstr "destino"
 
 #~ msgid "List all Baselines"
 #~ msgstr "Listar todos los entornos"
+
+#~ msgid "Category %1 not found for topic %2"
+#~ msgstr "Categoría %1 no encontrada para el tópico %2"
 
 #~ msgid "Job not ready to purge yet: %1 (%2)"
 #~ msgstr "El pase no está listo para purgarse aún: %1 (%2)"
@@ -15829,6 +15853,18 @@ msgstr "destino"
 #~ "CAUTION: If activated, varible names will be changed in rules when "
 #~ "renamed in cis. USE AT YOUR OWN RISK"
 #~ msgstr "CUIDADO: Si se activa, los nombres de variable"
+
+#~ msgid "Missing 'statuses_from' configuration for workflow transition"
+#~ msgstr ""
+#~ "Falta la configuración 'statuses_from' para la transición del ciclo de "
+#~ "vida"
+
+#~ msgid "Missing 'roles' configuration for workflow transition"
+#~ msgstr "Falta la configuración 'roles' para la transición del ciclo de vida"
+
+#~ msgid "Missing 'categories' configuration for workflow transition"
+#~ msgstr ""
+#~ "Falta la configuración 'categories' para la transición del ciclo de vida"
 
 #~ msgid "Owner of the Topic (Blank for 'clarive')"
 #~ msgstr "Propietario del tópico (En blanco para 'clarive')"
