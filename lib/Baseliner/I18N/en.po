@@ -6052,10 +6052,6 @@ msgid "Changesets status not updated. Static job."
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-msgid "Topic %1 does not match category %2. Skipped"
-msgstr ""
-
-#: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "No last status data for changeset %1. Skipped."
 msgstr ""
 
@@ -6064,7 +6060,7 @@ msgid "Status row not found for status `%1`"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-msgid "Moving changeset %1 (#%2) to stage *%3*"
+msgid "Moving changeset %1 (#%2) to status *%3* (%4)"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm

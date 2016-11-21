@@ -6134,10 +6134,6 @@ msgid "Changesets status not updated. Static job."
 msgstr "Estado de Changesets no actualizado. Pase estático."
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-msgid "Topic %1 does not match category %2. Skipped"
-msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
-
-#: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "No last status data for changeset %1. Skipped."
 msgstr "No hay fecha de último estado para el changeset %1. Saltado."
 
@@ -6146,8 +6142,8 @@ msgid "Status row not found for status `%1`"
 msgstr "Fila de estado no encontrada para estado `%1`"
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-msgid "Moving changeset %1 (#%2) to stage *%3*"
-msgstr "Moviendo changeset %1 (#%2) a etapa *%3*"
+msgid "Moving changeset %1 (#%2) to status *%3* (%4)"
+msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Updating baseline for %1 project(s) to %2"
@@ -15633,6 +15629,12 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Topic %1 does not match category %2. Skipped"
+#~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
+
+#~ msgid "Moving changeset %1 (#%2) to stage *%3*"
+#~ msgstr "Moviendo changeset %1 (#%2) a etapa *%3*"
 
 #~ msgid "Create tags"
 #~ msgstr "Crear etiquetas"
