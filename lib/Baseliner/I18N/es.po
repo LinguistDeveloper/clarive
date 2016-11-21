@@ -4333,8 +4333,8 @@ msgid "Could not checkout to file '%1': %2"
 msgstr "No pude hacer checkout a fichero '%1': %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "Create tags"
-msgstr "Crear etiquetas"
+msgid "Create system tags"
+msgstr "Crear etiquetas de sistema"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid ""
@@ -4705,7 +4705,7 @@ msgstr "Revisiones"
 
 #: lib/BaselinerX/CI/job.pm root/ci/review.js root/comp/feature.js
 #: root/fields/system/html/field_revisions.html
-#: root/forms/git_create_branch.js
+#: root/forms/git_create_branch.js root/forms/repo_create_tags.js
 msgid "Repository"
 msgstr "Repositorio"
 
@@ -15633,6 +15633,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Create tags"
+#~ msgstr "Crear etiquetas"
 
 #~ msgid "List all Baselines"
 #~ msgstr "Listar todos los entornos"
