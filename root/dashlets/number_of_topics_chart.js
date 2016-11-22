@@ -11,8 +11,8 @@
     var numberfield_group = params.data.numberfield_group || '';
     var group_by = params.data.group_by || 'category.name';
     var sort_by_labels = params.data.sort_by_labels || 'off';
-    var max_legend_length = params.data.max_legend_length || 0;
-
+    var maxLegendLength = params.data.max_legend_length || 0;
+    var depth = params.data.depth;
 
     Cla.ajax_json('/dashboard/topics_by_field', {
         topic_mid: topic_mid,
@@ -27,7 +27,8 @@
         result_type: result_type,
         _ignore_conn_errors: true,
         sort_by_labels: sort_by_labels,
-        max_legend_length: max_legend_length
+        max_legend_length: maxLegendLength,
+        depth: depth
     }, function(res) {
         Cla.ajax_json('/user/user_data', {}, function(ret) {
             var decimal_zone = ret.data.decimal;

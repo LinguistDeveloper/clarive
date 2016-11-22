@@ -1998,7 +1998,6 @@ msgstr ""
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
 #: root/dashlets/filtered_topics.html root/dashlets/lastjobs.html
 #: root/dashlets/list_jobs.js root/dashlets/my_topics.html
-#: root/dashlets/number_of_topics_chart_config.js
 #: root/dashlets/pending_jobs.html root/dashlets/swarm_config.js
 #: root/fields/system/js/field_status.js root/forms/topic_create.js
 #: root/reports/listado_jobs.js root/site/common.js root/site/model.js
@@ -3406,10 +3405,9 @@ msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm lib/BaselinerX/Fieldlets.pm
 #: root/comp/lifecycle/tasks.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js
-#: root/dashlets/number_of_topics_chart_config.js
-#: root/dashlets/swarm_config.js root/email/generic_post.html
-#: root/email/generic_topic.html root/fields/system/js/field_category.js
+#: root/comp/topic/topic_lib_grid.js root/dashlets/swarm_config.js
+#: root/email/generic_post.html root/email/generic_topic.html
+#: root/fields/system/js/field_category.js
 #: root/fields/templates/config/origin_issue_chart_pie.js
 #: root/fields/templates/config/status_chart_pie.js root/forms/catalog_task.js
 #: root/forms/topic_create.js
@@ -12583,6 +12581,10 @@ msgid "My Topics"
 msgstr ""
 
 #: root/dashlets/number_of_topics_chart_config.js
+msgid "Topic chart"
+msgstr ""
+
+#: root/dashlets/number_of_topics_chart_config.js
 msgid "Select or type the grouping field"
 msgstr ""
 
@@ -12652,7 +12654,7 @@ msgid "Max characters in legend (0 = no limit)"
 msgstr ""
 
 #: root/dashlets/number_of_topics_chart_config.js
-msgid "Number of topics grouped by ..."
+msgid "Depth (For Dashboard inside of topics)"
 msgstr ""
 
 #: root/dashlets/pending_jobs.html

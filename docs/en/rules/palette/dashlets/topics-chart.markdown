@@ -55,3 +55,7 @@ Select one o more status to configure the table.
 ### Advanced JSON/MongoDB condition for filter
 
 Allows to use a JSON format o MongoDB query to add a condition.
+
+### Depth
+
+Select the depth range (1-5) in search of topics. This field is used only in the dashboards inside of topics.

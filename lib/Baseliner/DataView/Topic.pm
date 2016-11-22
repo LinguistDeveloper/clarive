@@ -44,7 +44,6 @@ sub build_where {
     my (%params) = @_;
 
     my $id_project = $params{id_project};
-    my $topic_mid  = $params{topic_mid};
 
     my $where         = $params{where} || {};
     my $valuesqry     = $params{valuesqry};
@@ -133,7 +132,7 @@ sub build_where {
             }
         }
 
-        Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project, topic_mid => $topic_mid );
+        Baseliner::Model::Topic->new->filter_children( $where, id_project => $id_project );
 
         if ($filter) {
             foreach my $cond (keys %$filter) {

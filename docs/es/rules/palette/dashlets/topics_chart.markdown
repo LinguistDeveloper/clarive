@@ -42,3 +42,6 @@ icon: chart_pie
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
     Donde *id* es la clave una de la categoría. Dicho id se puede consultar a través del REPL.
+
+### Depth
+* Selecciona el rango de profundidad (1-5) en la búsqueda de tópicos. Este campo se utilizará únicamente en los dashboards dentro de los tópicos.

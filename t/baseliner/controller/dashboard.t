@@ -847,6 +847,135 @@ subtest 'topics_by_field: truncates labels' => sub {
     is_deeply $data, [ [ Categ => 2 ], [Categ => 1] ];
 };
 
+subtest 'topics_by_field: groups topics by field in a topic' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_release_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule );
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_rule );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.topics.view',
+                bounds => [ { id_category => $id_release_category } ]
+            },
+            {   action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release Parent',
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child',
+        release     => $release_mid,
+    );
+
+    my $changeset_mid2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child2',
+        release     => $changeset_mid,
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $developer->username,
+        req      => {
+            params => {
+                'group_threshold' => '1',
+                'group_by'        => 'topics_by_category',
+                topic_mid         => $release_mid,
+            }
+        }
+    );
+
+    $controller->topics_by_field($c);
+
+    my $stash = $c->stash;
+
+    my $topics_list = $stash->{json}->{topics_list};
+
+    is_deeply $topics_list, { Changeset => [ $changeset_mid, $changeset_mid2 ] };
+};
+
+subtest 'topics_by_field: filter topics by depth in a topic' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project;
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_release_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule );
+
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_rule );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {   action => 'action.topics.view',
+                bounds => [ { id_category => $id_release_category } ]
+            },
+            {   action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $release_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_release_category,
+        title       => 'Release Parent',
+    );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child',
+        release     => $release_mid,
+    );
+
+    my $changeset_mid2 = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Changeset Child2',
+        release     => $changeset_mid,
+    );
+
+    my $developer = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $developer->username,
+        req      => {
+            params => {
+                'group_threshold' => '1',
+                'group_by'        => 'topics_by_category',
+                topic_mid         => $release_mid,
+                depth             => 1
+            }
+        }
+    );
+
+    $controller->topics_by_field($c);
+
+    my $stash = $c->stash;
+
+    my $topics_list = $stash->{json}->{topics_list};
+
+    is_deeply $topics_list, { Changeset => [$changeset_mid] };
+};
+
 subtest 'topics_burndown_ng: sends correct default args to dashboard' => sub {
     _setup();
 
