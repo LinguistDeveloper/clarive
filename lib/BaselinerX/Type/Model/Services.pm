@@ -6,6 +6,7 @@ use Try::Tiny;
 use Carp;
 use Baseliner::Utils;
 use Baseliner::Core::Registry;
+use Capture::Tiny qw(tee_merged);
 
 sub search_for {
     my ($self, %p) = @_;
@@ -65,7 +66,7 @@ sub launch {
     my $ret;
     if( $p{capture} ) {
         require Capture::Tiny;
-        my ($output) = _capture_tee(sub {
+        my ($output) = tee_merged(sub {
             $ret = $service->run( $c, $config_data );
         });
         utf8::downgrade( $output );

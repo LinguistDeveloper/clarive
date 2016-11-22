@@ -8,7 +8,8 @@ use Baseliner::Sem;
 use BaselinerX::CI::variable;
 use Baseliner::Model::Rules;
 use Baseliner::RuleCompiler;
-use Baseliner::Utils qw(_fail _loc _debug _error _capture_tee);
+use Baseliner::Utils qw(_fail _loc _debug _error);
+use Capture::Tiny qw(tee_merged);
 
 has tidy_up => qw(is ro), default => sub { 1 };
 
@@ -57,7 +58,7 @@ sub run_rules {
         my ( $runner_output, $rc, $ret, $err );
         my $id_rule = $rule->{id};
         try {
-            ($runner_output) = _capture_tee(
+            ($runner_output) = tee_merged(
                 sub {
                     try {
                         $ret = $self->_dsl_run( rule => $rule, stash => $stash, simple_error => $simple_error );
@@ -242,7 +243,7 @@ sub run_dsl {
     $rule->compile;
 
     local $Baseliner::no_log_color = 1;
-    my ($output) = _capture_tee( sub { $rule->run( stash => $stash ) } );
+    my ($output) = tee_merged( sub { $rule->run( stash => $stash ) } );
 
     if ( my $err = $rule->errors ) {
         _fail $err;

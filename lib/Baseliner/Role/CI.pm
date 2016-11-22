@@ -3,10 +3,11 @@ use Moose::Role;
 use v5.10;
 
 use Try::Tiny;
+use Capture::Tiny qw(tee_merged);
 require Baseliner::CI;
 use Baseliner::Core::Registry;
 use Baseliner::Types;
-use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any _capture_tee);
+use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
 use Data::Compare ();
 use experimental 'autoderef';
@@ -1010,7 +1011,7 @@ sub run_service {
     my $config = \%p;
     my ($return_data, $output, $rc);
     try {
-        ($output) = _capture_tee( sub{
+        ($output) = tee_merged( sub{
             $return_data = $reg->run_container( $stash, $config, $self_or_class );
         });
     } catch {
