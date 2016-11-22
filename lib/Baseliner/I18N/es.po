@@ -15186,7 +15186,7 @@ msgstr "Tópicos: %1"
 msgid "Related: %1"
 msgstr "Relacionados: %1"
 
-#: root/site/explorer.js root/site/graph.js
+#: root/site/explorer.js root/site/globals.js root/site/graph.js
 msgid "%1: %2"
 msgstr "%1: %2"
 
@@ -15201,6 +15201,10 @@ msgstr ""
 #: root/site/explorer.js
 msgid "Are you sure you want to delete the search %1?"
 msgstr "¿Está seguro de que quiere borrar la búsqueda %1?"
+
+#: root/site/globals.js
+msgid "Error Loading Library"
+msgstr "Error Cargando Librería"
 
 #: root/site/graph.js
 msgid "Redraw"
@@ -15777,9 +15781,6 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
-
-#~ msgid "Error Loading Library"
-#~ msgstr "Error Cargando Librería"
 
 #~ msgid "Topic %1 does not match category %2. Skipped"
 #~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
