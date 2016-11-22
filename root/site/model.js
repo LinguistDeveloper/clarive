@@ -424,6 +424,106 @@ Baseliner.UserAndRoleBox = function(c) {
 };
 Ext.extend( Baseliner.UserAndRoleBox, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.RoleBox = Ext.extend(Baseliner.SuperBox, {
+    firstload: true,
+    allowBlank: true,
+    singleMode: false,
+    loadingText: _('Searching...'),
+    emptyText: _('Select Roles'),
+    paging: false,
+    pageSize: 0,
+    forceSelection: false,
+    msgTarget: 'under',
+    triggerAction: 'all',
+    resizable: true,
+    mode: 'remote',
+    fieldLabel: _('Roles'),
+    typeAhead: true,
+    name: 'roles',
+    displayField: 'role',
+    hiddenName: 'id',
+    valueField: 'id',
+    initComponent: function() {
+        var self = this;
+        self.store = new Baseliner.JsonStore({
+            root: 'data',
+            remoteSort: true,
+            autoLoad: false,
+            totalProperty: "totalCount",
+            baseParams: self.baseParams || {
+                start: 0,
+                limit: self.ps || 99999999
+            },
+            url: '/role/json',
+            fields: [{
+                name: 'id'
+            }, {
+                name: 'role'
+            }, {
+                name: 'actions'
+            }, {
+                name: 'description'
+            }, {
+                name: 'mailbox'
+            }]
+        });
+        self.store.on('load', function() {
+            if (self.firstload) { // For default value purpose
+                self.firstload = false;
+                self.setValue(self.value);
+            }
+        });
+        Cla.RoleBox.superclass.initComponent.call(this);
+    }
+});
+
+Baseliner.RuleBox = Ext.extend(Baseliner.SuperBox, {
+    name: 'rule',
+    hiddenName: 'rule',
+    valueField: 'id',
+    displayField: 'rule_name',
+    fieldLabel: _("Rule"),
+    emptyText: _('Defined in the Workflow Tab'),
+    singleMode: true,
+    forceSelection: true,
+    $firstload: true,
+    initComponent: function() {
+        var self = this;
+        self.store = new Baseliner.JsonStore({
+            url: '/rule/list',
+            root: 'data',
+            remoteSort: true,
+            autoLoad: false,
+            totalProperty: 'totalCount',
+            fields: ['id', 'rule_name', 'icon'],
+            baseParams: self.baseParams || {} //  rule_type: 'workflow'
+        });
+
+        self.store.on('load', function() {
+            if (self.$firstload) { // For default value purpose
+                self.$firstload = false;
+                self.setValue(self.value);
+            }
+        });
+        Cla.RuleBox.superclass.initComponent.call(this);
+    },
+    itemSelector: 'div.search-item',
+    tpl: new Ext.XTemplate(
+        '<tpl for=".">',
+        '<div class="search-item ui-ci-class"><span id="boot" style="background: transparent">',
+        '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{rule_name}</strong>',
+        '</span></div>',
+        '</tpl>'
+    ),
+    displayFieldTpl: new Ext.XTemplate(
+        '<tpl for=".">',
+        '<span id="boot" class="ui-ci-class" style="background: transparent">',
+        '<div style="float:left; margin-right: 5px; margin-top: -2px"><img src="{icon}" /></div><strong>{rule_name}</strong>',
+        '</span>',
+        '</tpl>'
+    )
+});
+
 Baseliner.DashboardBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var store = new Baseliner.JsonStore({
@@ -1397,6 +1497,7 @@ Baseliner.StatusBox = function(opt) {
         resizable: true,
         mode: 'remote',
         fieldLabel: _('To'),
+        //  emptyText: _('Select Statuses'),
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item" style="margin-top: -2px">'
         + '<div style="float:left; margin-right: 5px"><img src={[ IC("state") ]} />'
@@ -1428,7 +1529,8 @@ Baseliner.CategoryBox = function(opt) {
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',
-        fieldLabel: _('To'),
+        fieldLabel: _('Category'),
+        //emptyText: _('Select Topic Category'),
         typeAhead: true,
         tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
         displayFieldTpl: tpl,

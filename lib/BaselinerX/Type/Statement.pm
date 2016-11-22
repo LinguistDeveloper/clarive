@@ -4,6 +4,9 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Try::Tiny;
 
+has palette_area => qw(is rw default control);
+has dsl => ( is => 'rw', isa => 'CodeRef', required => 1 );
+
 with 'Baseliner::Role::Registrable';
 with 'Baseliner::Role::Palette';
 

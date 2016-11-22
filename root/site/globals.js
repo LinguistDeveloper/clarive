@@ -9,6 +9,7 @@ This is non reloadable, otherwise everything is reset.
 Ext.ns('Baseliner');
 Ext.ns('Baseliner.store');
 Ext.ns('Baseliner.model');
+Ext.ns('Prefs');
 window.Cla = Baseliner;
 
 Baseliner.tabInfo = {};
@@ -16,7 +17,6 @@ Baseliner.keyMap = {};
 Baseliner.in_edit = {};
 Ext.Ajax.timeout = 60000;
 Baseliner.DEBUG = <% Baseliner->debug ? 'true' : 'false' %>;
-Prefs = {};
 
 IC = function(icon){
     var path = '/static/images/icons/';

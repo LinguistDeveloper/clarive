@@ -78,6 +78,7 @@ sub update_category : Local {
                         description => $p->{description} ? $p->{description} : '',
                         default_grid  => $p->{default_grid},
                         default_form => $p->{default_form} // $p->{default_field}, ## FIXME default_field is legacy
+                        default_workflow => $p->{default_workflow},
                         dashboard    => $p->{dashboard},
                     };
                     my $iss = $assign_type->($category);
@@ -99,19 +100,24 @@ sub update_category : Local {
                 my $id_category = $p->{id};
                 my $iss = $assign_type->({});
                 my $old = mdb->category->find_one({ id=>"$id_category" });
-                mdb->category->update({ id=>"$id_category" }, {
-                    '$set' => {
-                        name          => $p->{name},
-                        acronym       => $p->{acronym},
-                        color         => $p->{category_color},
-                        description   => $p->{description},
-                        default_grid  => $p->{default_grid},
-                        default_form => $p->{default_form},
-                        dashboard    => $p->{dashboard},
-                        ( $idsstatus ? (statuses=>$idsstatus) : () ),
-                        %$iss
+                mdb->category->update(
+                    { id => "$id_category" },
+                    {
+                        '$set' => {
+                            name             => $p->{name},
+                            acronym          => $p->{acronym},
+                            color            => $p->{category_color},
+                            description      => $p->{description},
+                            default_grid     => $p->{default_grid},
+                            default_form     => $p->{default_form},
+                            default_workflow => $p->{default_workflow},
+                            dashboard        => $p->{dashboard},
+                            ( $idsstatus ? ( statuses => $idsstatus ) : () ),
+                            %$iss
+                        }
                     }
-                });
+                );
+
                 # change all topics
 
                 if( $old->{name} ne $p->{name} || $old->{color} ne $p->{category_color} ) {
@@ -274,103 +280,66 @@ sub update_status : Local {
 }
 
 sub update_category_admin : Local {
-    my ($self,$c)=@_;
-    my $p = $c->req->params;
-    my $id_category = $p->{id};
-    my $idsroles = $p->{idsroles};
-    my $status_from = $p->{status_from};
+    my ( $self, $c ) = @_;
+    my $p            = $c->req->params;
+    my $id_category  = $p->{id};
+    my $idsroles     = $p->{idsroles};
+    my $status_from  = $p->{status_from};
     my $idsstatus_to = $p->{idsstatus_to};
-    my $job_type = $p->{job_type};
+    my $job_type     = $p->{job_type};
 
-    cache->remove_like( qr/^topic:/ );
+    cache->remove_like(qr/^topic:/);
     Baseliner::Core::Registry->reload_all;
 
-    foreach my $role (_array $idsroles){
-        mdb->category->update({ id=>"$id_category" },
-            { '$pull'=>{ workflow=>{ id_role=>"$role", id_status_from=>"$status_from", id_status_to=>mdb->in($idsstatus_to), job_type =>"$job_type" } } },
-            { multiple=>1 }
+    foreach my $role ( _array $idsroles) {
+        mdb->category->update(
+            { id => "$id_category" },
+            {
+                '$pull' => {
+                    workflow => {
+                        id_role        => "$role",
+                        id_status_from => "$status_from",
+                        id_status_to   => mdb->in($idsstatus_to),
+                        job_type       => "$job_type"
+                    }
+                }
+            },
+            { multiple => 1 }
         );
-        if($idsstatus_to){
-            mdb->category->update({ id=>"$id_category" },
-                { '$addToSet'=>{ workflow=>{
-                    id_role         => $role,
-                    id_status_from  => $status_from,
-                    job_type        => $job_type,
-                    id_status_to    => $_,
-            }}},{ multiple=>1 }) for _array( $idsstatus_to );
+        if ($idsstatus_to) {
+            mdb->category->update(
+                { id => "$id_category" },
+                {
+                    '$addToSet' => {
+                        workflow => {
+                            id_role        => $role,
+                            id_status_from => $status_from,
+                            job_type       => $job_type,
+                            id_status_to   => $_,
+                        }
+                    }
+                },
+                { multiple => 1 }
+            ) for _array($idsstatus_to);
         }
     }
-    $c->stash->{json} = { success => \1, msg=>_loc('Categories admin') };
+    $c->stash->{json} = { success => \1, msg => _loc('Categories admin') };
     $c->forward('View::JSON');
 }
 
 sub list_workflow : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
-    my @rows;
+
+    my $id_category = $p->{categoryId} // _fail _loc('Missing category id');
 
     cache->remove_like( qr/^topic:/ );
 
-    my %roles = mdb->role->find_hash_one( id=>{},{role=>1,_id=>0});
-    my %statuses = ci->status->statuses;
-    my %stat_to;
-    my $doc_category = mdb->category->find_one({ id=> "$p->{categoryId}" });
-    _fail(_loc("Category %1 not found", $p->{categoryId})) if !$doc_category;
+    my $model = $self->_build_topic;
 
-    my @cat_wkf = _array( $doc_category->{workflow} );
-    push @{ $stat_to{$$_{id_role}}{$$_{id_status_from}} }, $_ for @cat_wkf;
-    my %wkf_unique;
-    $wkf_unique{ join(',',@{ $_ }{qw(id_role id_status_from)}) } = $_ for @cat_wkf;
-    my @wkf =
-        sort {
-            # complex sort needed... look into aggregation framework for better sorting on group
-            sprintf('%09d%09d%09d', $$a{id_role}, $$a{id_status_from}, $statuses{ $$a{id_status_from} }{seq} )
-            <=>
-            sprintf('%09d%09d%09d', $$b{id_role}, $$b{id_status_from}, $statuses{ $$b{id_status_from} }{seq} )
-        } values %wkf_unique;
+    my @rows = $model->category_workflow( $id_category, $c->username );
 
-    for my $rec ( @wkf ) {
-        my @sts = sort { $statuses{$$a{id_status_from}}<=>$statuses{$$b{id_status_from}} }
-            _array( $stat_to{ $$rec{id_role} }{ $$rec{id_status_from} } );
-
-        # Grid for workflow configuration: right side field
-        my @statuses_to;
-        my @statuses_to_type;
-        for my $status_to ( @sts ) {
-            my $name = $statuses{ $status_to->{id_status_to} }{name};
-            my $type = $statuses{ $status_to->{id_status_to} }{type};
-            # show
-            my $job_type = $status_to->{job_type};
-            if( $job_type && $job_type ne 'none' ) {
-                $name = sprintf '%s [%s]', $name, lc( _loc($job_type) );
-                $type = sprintf '%s [%s]', $type, lc( _loc($job_type) );
-            }
-            push @statuses_to,  $name;
-            push @statuses_to_type, $type
-        }
-
-        my $role = $roles{ $$rec{id_role} } // next;
-        my $status = $statuses{ $$rec{id_status_from} } // next;
-
-        push @rows, {
-             role           => $$role{role},
-             role_job_type  => $$rec{job_type},
-             status_from    => $$status{name},
-             status_type    => $$status{type},
-             status_time    => $$status{ts},
-             status_color   => $$status{color},
-             id_category    => $p->{categoryId},
-             id_role        => $$rec{id_role},
-             id_status_from => $$rec{id_status_from},
-             statuses_to    => \@statuses_to,
-             statuses_to_type => \@statuses_to_type
-
-        };
-    }
-    $cnt = @rows;
-
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar @rows };
     $c->forward('View::JSON');
 }
 
@@ -888,6 +857,12 @@ sub import_category : Local {
         $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
     };
     $c->forward('View::JSON');
+}
+
+sub _build_topic {
+    my $self = shift;
+
+    return Baseliner::Model::Topic->new;
 }
 
 no Moose;

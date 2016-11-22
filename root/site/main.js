@@ -169,16 +169,16 @@ Ext.onReady(function(){
     }
     tbar_items.push('-');
 
-    if (Prefs.site.show_menu && Prefs.stash.can_menu) {
-        Ext.each(Prefs.menus, function(menu) {
-            tbar_items.push(menu);
+    if( Prefs.site.show_menu && Prefs.stash.can_menu ) {
+        Ext.each( Prefs.menus, function(menu){
+            tbar_items.push( menu );
         });
     }
     tbar_items.push('->');
-    if (Prefs.site.show_search)
-        tbar_items.push(search_box);
+    if( Prefs.site.show_search )
+        tbar_items.push( search_box );
 
-    tbar_items.push(Cla.help_button);
+    tbar_items.push( Cla.help_button );
 
     Cla.share_button = new Ext.Button({
         icon: '/static/images/icons/favorite_grey.svg',

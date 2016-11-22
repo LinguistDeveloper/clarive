@@ -470,6 +470,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'description' },
                 {  name: 'default_grid' },
                 {  name: 'default_form' },
+                {  name: 'default_workflow' },
                 {  name: 'dashboard' },
                 {  name: 'type' },
                 {  name: 'statuses' },
@@ -994,9 +995,23 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: true,
             tooltip: _('Open life cycle'),
-            handler: function(){ self.show_life_cicle() },
-            //hidden: self.viewKanban==undefined?true:!self.viewKanban,
-            allowDepress: false, toggleGroup: self.toggle_group
+            handler: function() {
+                self.show_life_cicle()
+            },
+            allowDepress: false,
+            toggleGroup: self.toggle_group
+        });
+
+        self.btn_workflow = new Ext.Toolbar.Button({
+            icon: IC('workflow.svg'),
+            cls: 'x-btn-icon',
+            enableToggle: true,
+            tooltip: _('Open workflow'),
+            handler: function() {
+                self.show_workflow()
+            },
+            allowDepress: false,
+            toggleGroup: self.toggle_group
         });
 
         self.btn_timeline = new Ext.Toolbar.Button({
@@ -1256,11 +1271,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         }
     },
-    create_toolbar : function(){
+    create_toolbar: function() {
         var self = this;
         var tb;
-
-        if ( self.topic_mid ) {
+        if (self.topic_mid) {
             tb = new Ext.Toolbar({
                 isFormField: true,
                 items: [
@@ -1273,14 +1287,22 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_save_form,
                     '->',
                     self.btn_deploy,
-                   // '-',
+                    // '-',
                     self.btn_change_status,
                     self.btn_docgen,
                     self.btn_kanban,
                     self.btn_graph,
                     self.btn_timeline,
-                    self.btn_life_cicle,
                 ]
+            });
+            Baseliner.ajaxEval('/topic/get_category_default_workflow', {
+                id_category: self.id_category
+            }, function(res) {
+                if (res.data) {
+                    tb.addItem(self.btn_workflow);
+                } else {
+                    tb.addItem(self.btn_life_cicle);
+                }
             });
         } else {
             tb = new Ext.Toolbar({
@@ -1325,6 +1347,24 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         });
 
+    },
+    show_workflow: function() {
+        var self = this;
+        if (self.flowchart) {
+            self.getLayout().setActiveItem(self.flowchart);
+            return;
+        };
+        Cla.use(['/static/gojs/go-debug.js', '/comp/rule_flowchart.js'], function() {
+            Baseliner.ajaxEval('/rule/workflow_rule_tree', {
+                id_category: self.id_category
+            }, function(res) {
+                self.flowchart = new Cla.RuleFlowchart({
+                    json: res.data
+                });
+                self.add(self.flowchart);
+                self.getLayout().setActiveItem(self.flowchart);
+            });
+        });
     },
     show_timeline: function(){
         var self = this;

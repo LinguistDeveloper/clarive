@@ -288,6 +288,17 @@ sub _is_true {
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
+sub get_rule_tree {
+    my ( $self, $id_rule ) = @_;
+
+    _fail _loc("Missing id_rule") unless $id_rule;
+
+    my $rule = mdb->rule->find_one( { id => $id_rule } );
+    _fail _loc( "Rule %1 not found", $id_rule ) unless $rule;
+
+    return $rule->{rule_tree};
+}
+
 sub all_nodes {
     my ($self, %p )=@_;
     my @nodes = $self->build_tree( $p{id_rule} );
@@ -1211,42 +1222,51 @@ register 'statement.if.last_trap_action' => {
 register 'statement.if.rollback' => {
     text => _locl('IF ROLLBACK'),
     type => 'if',
-    data => { rollback=>'1', },
-    dsl => sub {
-        my ($self, $n , %p) = @_;
-        sprintf(q{
+    data => { rollback => '1', },
+    dsl  => sub {
+        my ( $self, $n, %p ) = @_;
+        sprintf(
+            q{
             if( $stash->{rollback} eq '%s' ) {
                 %s
             }
-        }, $n->{rollback}, $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{rollback}, $self->dsl_build( $n->{children}, %p )
+        );
     },
 };
 
 register 'statement.include' => {
-    text => _locl('INCLUDE rule'),
-    icon => '/static/images/icons/cog_perl.svg',
-    holds_children => 0,
-    data => { id_rule=>'', },
-    dsl => sub {
-        my ($self, $n , %p) = @_;
+    text            => _locl('INCLUDE rule'),
+    icon            => '/static/images/icons/cog_perl.svg',
+    form            => '/forms/rule_list.js',
+    holds_children  => 0,
+    show_in_palette => 0,
+    data            => { id_rule => '', },
+    dsl             => sub {
+        my ( $self, $n, %p ) = @_;
         my $dsl = $self->include_rule( $n->{id_rule}, %p );
-        sprintf(q{
+        sprintf(
+            q{
                 %s;
-        }, $dsl );
+        }, $dsl
+        );
     },
 };
 
 register 'statement.call' => {
     text => _locl('CALL rule'),
     icon => '/static/images/icons/cog.svg',
+    form           => '/forms/rule_list.js',
     holds_children => 0,
-    data => { id_rule=>'', },
-    dsl => sub {
-        my ($self, $n , %p) = @_;
+    data           => { id_rule => '', },
+    dsl            => sub {
+        my ( $self, $n, %p ) = @_;
 
-        sprintf(q{
+        sprintf(
+            q{
             call(parse_vars({id_rule => '%s'}, $stash)->{id_rule}, $stash);
-        }, $n->{id_rule});
+        }, $n->{id_rule}
+        );
     },
 };
 
@@ -1259,6 +1279,12 @@ sub include_rule {
         _fail( _loc("Error building DSL for rule '%1': %2", $id_rule, shift() ) );
     };
     return $dsl;
+}
+
+sub is_rule_active {
+    my ( $self, %p ) = @_;
+    my $rule = mdb->rule->find_one( { id => $p{id_rule}, rule_active => mdb->true }, { id => 1 } );
+    return $rule ? 1 : 0;
 }
 
 sub get_rules_info {
@@ -1290,16 +1316,20 @@ sub get_rules_info {
             { '$sort'=>mdb->ixhash( $sort=>$dir ) }
     ],{ cursor=>1 });
     my @rules;
-    while (my $rule = $rs->next) {
-        $rule->{event_name} = Baseliner->registry->get( $rule->{rule_event} )->name if $rule->{rule_event};
+    while ( my $rule = $rs->next ) {
+        if ( my $ev = $rule->{rule_event} ) {
+            my $reg = Baseliner->registry->get($ev);
+            $rule->{event_name} = $reg->name if $reg;
+        }
         push @rules, $rule;
     }
+
     if($p->{destination} && $p->{destination} eq 'tree'){
         my $expanded = $p->{query} ? \1 : \0;
         my $ids = $p->{ids};
         my $where = {};
         $where->{id} = mdb->in($ids) if length $ids;
-        my @rule_types = sort ('dashboard','form','event','report','pipeline','webservice','independent');
+        my @rule_types = sort ( 'dashboard', 'form', 'event', 'report', 'pipeline', 'webservice', 'independent', 'workflow' );
         my $folder_structure = [];
         for my $rule_type (@rule_types){
             my $text = uc(substr $rule_type,0,1).substr($rule_type,1);

@@ -62,6 +62,155 @@ subtest 'palette: returns no elements when show_in_palette = 0' => sub {
     ok !grep { $_->{key} eq 'fieldlet.not_in_palette' } @{$elements[0]->{children}};
 };
 
+subtest 'palette: basic tree parents' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => {
+            params => {}
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    my @parents = map { $$_{text} } @{ $c->stash->{json} };
+    is_deeply \@parents, ['Control', 'Workflow', 'Generic', 'Job', 'Dashlets', 'Fieldlets', 'Rules'];
+};
+
+subtest 'palette: children nodes' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'statement.testfoo', { dsl=>sub{} } );
+    Baseliner::Core::Registry->add( 'main', 'dashlet.testfoo', { } );
+    Baseliner::Core::Registry->add( 'main', 'fieldlet.testfoo', { } );
+    Baseliner::Core::Registry->add( 'main', 'fieldlet.notfoo', { show_in_palette=>0 } );
+    Baseliner::Core::Registry->add( 'main', 'service.jobfoo', { job_service=>1 } );
+    Baseliner::Core::Registry->add( 'main', 'service.genericfoo', { } );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => { params => {} }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    my @json = @{ $c->stash->{json} };
+    my @children = map { @{ $$_{children} || [] } } @json;
+
+    ok ! grep { $$_{key} eq 'fieldlet.notfoo' } @children;
+
+    cmp_deeply \@json, supersetof(
+        superhashof({ text=>'Control', children=>supersetof( superhashof({ key=>'statement.testfoo' }) ) }),
+        superhashof({ text=>'Dashlets', children=>supersetof( superhashof({ key=>'dashlet.testfoo' }) ) }),
+        superhashof({ text=>'Fieldlets', children=>supersetof( superhashof({ key=>'fieldlet.testfoo' }) ) }),
+        superhashof({ text=>'Generic', children=>supersetof( superhashof({ key=>'service.genericfoo' }) ) }),
+        superhashof({ text=>'Job', children=>supersetof( superhashof({ key=>'service.jobfoo' }) ) }),
+    );
+
+};
+
+subtest 'palette: reassign children palette' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'statement.testfoo', { dsl=>sub{}, palette_area=>'dashlet' } );
+    Baseliner::Core::Registry->add( 'main', 'service.testfoo', { palette_area=>'generic' } );
+    Baseliner::Core::Registry->add( 'main', 'service.testbar', { palette_area=>'dashlet' } );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => { params => {} }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    cmp_deeply $c->stash->{json}, supersetof(
+        superhashof({ text=>'Dashlets', children=>supersetof( superhashof({ key=>'statement.testfoo' }), superhashof({ key=>'service.testbar' }) ) }),
+        superhashof({ text=>'Generic', children=>supersetof( superhashof({ key=>'service.testfoo' }) ) }),
+    );
+
+};
+
+subtest 'palette: rules in palette' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'foorule',
+        rule_type => 'independent',
+        rule_when => 'post-offline',
+        rule_tree => []
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => { params => {} }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    cmp_deeply $c->stash->{json}, supersetof(
+        superhashof({ text=>'Rules', children=>supersetof( superhashof({ key=>'statement.call', text=>'foorule' }) ) })
+    );
+
+};
+
+subtest 'palette: query' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'fieldlet.testfoobar', { name=>'FOOBAR', palette_area=>'fieldlet' } );
+    Baseliner::Core::Registry->add( 'main', 'fieldlet.testabcfoo', { name=>'ABCFOO', palette_area=>'fieldlet' } );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => { params => { query=>'FOOBAR' } }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->palette($c);
+
+    cmp_deeply $c->stash->{json}, supersetof(
+        superhashof({ text=>'Fieldlets', children=>[ superhashof({ text=>'FOOBAR' }) ] })
+    );
+
+};
+
+subtest 'list: filters by rule type array' => sub {
+    _setup();
+
+    my $id_rule = _create_rule();
+
+    my $c = mock_catalyst_c( req => { params => { } } );
+    my $controller = _build_controller();
+    $controller->list($c);
+
+    cmp_deeply $c->stash->{json}{data}, [ superhashof({ rule_type=>'independent' }) ];
+};
+
+subtest 'grid: filters by rule type array' => sub {
+    _setup();
+
+    my $id_rule = _create_rule();
+
+    my $c = mock_catalyst_c( username => 'root', req => { params => { } } );
+    my $controller = _build_controller();
+
+    $controller->grid($c);
+
+    cmp_deeply $c->stash->{json}, {
+        totalCount=> 1,
+        data => ignore()
+    };
+};
+
 subtest 'stmts_load: returns error when no rule id' => sub {
     _setup();
 
@@ -978,19 +1127,92 @@ subtest 'default: creates correct event.rule.ws with rule error' => sub {
     }
 };
 
+subtest 'workflow_rule_tree: returns error if no category_id given' => sub {
+    _setup();
+
+    my $c          = mock_catalyst_c();
+    my $controller = _build_controller();
+
+    $controller->workflow_rule_tree($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \0,
+        msg     => 'Missing parameter id_category'
+    };
+};
+
+
+subtest 'workflow_rule_tree: returns error if category does not exists' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c( req => { params => { id_category => '123' } } );
+    my $controller = _build_controller();
+
+    $controller->workflow_rule_tree($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \0,
+        msg     => ' rule_id not found'
+    };
+};
+
+subtest 'workflow_rule_tree: returns workflow rule_tree of category' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule_workflow();
+    my $id_category = TestSetup->create_category(default_workflow=>$id_rule);
+    my $c       = mock_catalyst_c( req => { params => { id_category => $id_category } } );
+    my $controller = _build_controller();
+
+    $controller->workflow_rule_tree($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \1,
+        data    => ignore(),
+        msg     => "Rule tree of $id_rule loaded successfully"
+    };
+};
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry(
         'BaselinerX::Type::Action',
         'BaselinerX::Type::Event',
+        'BaselinerX::Type::Config',
         'BaselinerX::Type::Fieldlet',
         'BaselinerX::Type::Statement',
         'BaselinerX::Type::Service',
+        'BaselinerX::Type::Dashlet',
         'BaselinerX::CI',
         'BaselinerX::Fieldlets',
         'Baseliner::Model::Topic',
         'Baseliner::Model::Rules',
+        'BaselinerX::Service::ChangesetServices',
+        'BaselinerX::Service::CIServices',
+        'BaselinerX::Service::CallWebService',
+        'BaselinerX::Service::Catalog' ,
+        'BaselinerX::Service::CreateJob',
+        'BaselinerX::Service::DBServices',
+        'BaselinerX::Service::Dispatcher',
+        'BaselinerX::Service::FileManagement',
+        'BaselinerX::Service::FootprintElements',
+        'BaselinerX::Service::Init',
+        'BaselinerX::Service::JobDaemon',
+        'BaselinerX::Service::LDAPServices',
+        'BaselinerX::Service::Parsing',
+        'BaselinerX::Service::PauseSuspend',
+        'BaselinerX::Service::Purge',
+        'BaselinerX::Service::RenameItems',
+        'BaselinerX::Service::SchedulerService',
+        'BaselinerX::Service::Scripting',
+        'BaselinerX::Service::Sed',
+        'BaselinerX::Service::ServerService',
+        'BaselinerX::Service::Sleep',
+        'BaselinerX::Service::SystemMessages',
+        'BaselinerX::Service::Templating',
+        'BaselinerX::Service::TopicServices',
+        'BaselinerX::Service::ValidateStashVariables',
     );
 
     TestUtils->cleanup_cis;
@@ -1020,6 +1242,7 @@ sub _create_rule {
             id        => "$id_rule",
             rule_seq  => $id_rule,
             rule_type => 'independent',
+            rule_active => mdb->true,
             %params,
         }
     );
@@ -1043,5 +1266,4 @@ sub _register_fieldlet {
             name => 'cis',
             @_
     });
-
 }

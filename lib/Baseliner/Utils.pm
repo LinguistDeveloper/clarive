@@ -565,14 +565,20 @@ Or if you don't know the fields:
 
 sub query_grep {
     my (%p) = @_;
-    if( $p{all_fields} ) {
-        $p{fields} = [ sort keys +{ map { $_=>undef } map { keys $_ } _array( $p{rows} ) } ];
+
+    if ( !defined $p{query} ) {
+        return _array( $p{rows} );
     }
-    _throw( 'Missing field list' ) unless ref $p{fields};
-    my $wh = mdb->query_build( %p );
+    if ( $p{all_fields} ) {
+        $p{fields} = [ sort keys +{ map { $_ => undef } map { keys $_ } _array( $p{rows} ) } ];
+    }
+    _throw('Missing field list') unless ref $p{fields};
+
+    my $wh = mdb->query_build(%p);
+
     my @ret;
     for my $row ( _array( $p{rows} ) ) {
-        push @ret,$row if _probe_one_row('and',$row,$wh);
+        push @ret, $row if _probe_one_row( 'and', $row, $wh );
     }
     return @ret;
 }

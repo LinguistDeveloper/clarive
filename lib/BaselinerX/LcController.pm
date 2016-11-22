@@ -827,19 +827,23 @@ sub status_list {
 
     my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic->{mid} );
 
-    my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow($username);
+    my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow(
+        $username,
+        categories  => [ $topic->{category}->{id} ],
+        status_from => $status,
+        topic_mid   => $topic->{mid}
+    );
 
-    my $category = mdb->category->find_one( { id => '' . $topic->{category}->{id} }, { workflow => 1 } );
-    _fail _loc( 'Category %1 not found for topic %2', $topic->{category}->{id}, $topic->{mid} ) unless $category;
-
-    my @workflow = _array $category->{workflow};
+    my @workflow = Baseliner::Model::Topic->new->get_category_workflow(
+        id_category => $topic->{category}->{id},
+        username    => $username
+    );
 
     my %seen;
 
     my @available_statuses;
     foreach my $workflow (@workflow) {
         next unless $workflow->{job_type} && $workflow->{job_type} eq $dir;
-
         next unless grep { $workflow->{id_role} eq $_ } @user_roles;
 
         next unless $workflow->{id_status_from} eq $status;

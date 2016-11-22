@@ -1118,12 +1118,12 @@ sub list_category : Local {
                     default_grid  => $category->{default_grid},
                     default_form  => $category->{default_form}
                       // $category->{default_field},    ## FIXME default_field is legacy
-                    dashboard => $category->{dashboard},
-                    statuses  => \@statuses,
-                    fields    => \@fieldlets,
-
-                    #priorities    => \@priorities
+                    default_workflow => $category->{default_workflow},
+                    dashboard        => $category->{dashboard},
+                    statuses         => \@statuses,
+                    fields           => \@fieldlets,
                 };
+
             }
         }
         $cnt = @rows;
@@ -2008,7 +2008,6 @@ sub kanban_status : Local {
         } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        # my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
         my @transitions = model->Topic->user_workflow( $c->username, categories=>[keys %cats] );
 
         my %workflow;
@@ -2069,6 +2068,25 @@ sub children : Local {
     my $mid = $c->req->params->{mid};
     my @chi = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_topic' })->all;
     $c->stash->{json} = { success=>\1, msg=>'', children=>\@chi };
+    $c->forward('View::JSON');
+}
+
+sub get_category_default_workflow : Local {
+    my ( $self, $c ) = @_;
+
+    my $id_category = $c->req->params->{id_category};
+    _fail _loc("Missing category_id") unless $id_category;
+
+    try {
+        my $id_rule = Baseliner::Model::Topic->new->get_category_default_workflow($id_category);
+        $c->stash->{json} =
+          { success => \1, data => $id_rule, msg => _loc( 'Default workflow rule for category %1', $id_category ) };
+    }
+    catch {
+        $c->stash->{json} =
+          { success => \0, msg => _loc( 'Default workflow rule for category %1 not found', $id_category ) };
+    };
+
     $c->forward('View::JSON');
 }
 

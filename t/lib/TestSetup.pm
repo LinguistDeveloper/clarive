@@ -345,6 +345,18 @@ sub create_rule_workflow {
     );
 }
 
+sub create_rule_workflow {
+    my $class = shift;
+    my (%params) = @_;
+
+    return $class->create_rule(
+        rule_name => 'Workflow',
+        rule_type => "workflow",
+        rule_when => 'post-offline',
+        %params
+    );
+}
+
 sub create_rule_form_changeset {
     my $class = shift;
     my (%params) = @_;
