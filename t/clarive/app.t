@@ -138,6 +138,7 @@ subtest 'version: detects version from .git' => sub {
     TestGit->tag($repo);
 
     mkdir "$tempdir/config";
+    mkdir "$tempdir/clarive";
 
     TestUtils->write_file("---\n", "$tempdir/config/acmetest.yml");
 
@@ -157,6 +158,7 @@ subtest 'version: returns nothing when cannot detect version' => sub {
     my $tempdir = tempdir();
 
     mkdir "$tempdir/config";
+    mkdir "$tempdir/clarive";
 
     TestUtils->write_file("---\n", "$tempdir/config/acmetest.yml");
 
