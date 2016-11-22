@@ -120,7 +120,7 @@ sub random_string {
     my $text = '';
     $text .= $alpha[int(rand(@alpha))] for 1 .. $len;
 
-    return $len;
+    return $text;
 }
 
 sub mock_catalyst_req {

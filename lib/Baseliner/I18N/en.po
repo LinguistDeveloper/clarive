@@ -156,7 +156,7 @@ msgstr ""
 #: root/comp/lifecycle/run/message.mas root/comp/log.html
 #: root/comp/log_grid.js root/comp/message_grid.js
 #: root/comp/revision/grid_live.mas root/comp/run/message.mas root/comp/sms.js
-#: root/forms/store_file.js root/site/runner.js
+#: root/forms/git_merge_branch.js root/forms/store_file.js root/site/runner.js
 msgid "Message"
 msgstr ""
 
@@ -4688,7 +4688,9 @@ msgstr ""
 
 #: lib/BaselinerX/CI/job.pm root/ci/review.js root/comp/feature.js
 #: root/fields/system/html/field_revisions.html
-#: root/forms/git_create_branch.js root/forms/repo_create_tags.js
+#: root/forms/git_create_branch.js root/forms/git_create_tag.js
+#: root/forms/git_delete_reference.js root/forms/git_merge_branch.js
+#: root/forms/git_rebase_branch.js root/forms/repo_create_tags.js
 msgid "Repository"
 msgstr ""
 
@@ -5461,6 +5463,26 @@ msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
 msgid "Missing branch name"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Missing type"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Missing topic_branch"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Missing into_branch"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Missing from"
+msgstr ""
+
+#: lib/BaselinerX/GitServices.pm
+msgid "Missing upstream"
 msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
@@ -7320,9 +7342,9 @@ msgstr ""
 #: root/comp/monitor_grid.js root/comp/revision/grid.mas root/comp/rule_new.js
 #: root/comp/rules.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/forms/catalog_task.js root/forms/parse_config.js
-#: root/forms/write_config.js root/site/common.js root/site/explorer.js
-#: root/site/model.js
+#: root/forms/catalog_task.js root/forms/git_delete_reference.js
+#: root/forms/parse_config.js root/forms/write_config.js root/site/common.js
+#: root/site/explorer.js root/site/model.js
 msgid "Type"
 msgstr ""
 
@@ -8810,6 +8832,7 @@ msgid "Date"
 msgstr ""
 
 #: root/comp/feature.js root/fields/templates/config/revisions.js
+#: root/forms/git_delete_reference.js root/forms/git_rebase_branch.js
 msgid "Branch"
 msgstr ""
 
@@ -11088,7 +11111,8 @@ msgstr ""
 msgid "Rollback Rule"
 msgstr ""
 
-#: root/comp/rules.js
+#: root/comp/rules.js root/forms/git_create_tag.js
+#: root/forms/git_delete_reference.js
 msgid "Tag"
 msgstr ""
 
@@ -12620,7 +12644,8 @@ msgstr ""
 msgid "Select topics in statuses"
 msgstr ""
 
-#: root/dashlets/list_topics_config.js root/forms/topic_get_with_condition.js
+#: root/dashlets/list_topics_config.js root/forms/git_delete_reference.js
+#: root/forms/topic_get_with_condition.js
 msgid "Any"
 msgstr ""
 
@@ -13714,7 +13739,7 @@ msgstr ""
 msgid "Move to new sha if branch exists?"
 msgstr ""
 
-#: root/forms/git_create_branch.js
+#: root/forms/git_create_branch.js root/forms/git_delete_reference.js
 msgid "Sha or Ref"
 msgstr ""
 
@@ -13723,15 +13748,27 @@ msgid "Branch Name"
 msgstr ""
 
 #: root/forms/git_create_tag.js
-msgid "Repository mid"
+msgid "Force if already exists?"
 msgstr ""
 
 #: root/forms/git_create_tag.js
 msgid "Sha"
 msgstr ""
 
-#: root/forms/git_create_tag.js
-msgid "Tag Name"
+#: root/forms/git_merge_branch.js
+msgid "No Fast-Forward?"
+msgstr ""
+
+#: root/forms/git_merge_branch.js
+msgid "Topic Branch"
+msgstr ""
+
+#: root/forms/git_merge_branch.js
+msgid "Into Branch"
+msgstr ""
+
+#: root/forms/git_rebase_branch.js
+msgid "Upstream Branch"
 msgstr ""
 
 #: root/forms/if_last_trap_action.js
