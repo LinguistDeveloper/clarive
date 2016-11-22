@@ -903,6 +903,10 @@ msgid "revisions"
 msgstr ""
 
 #: lib/Baseliner/Controller/GitTree.pm
+msgid "Show next"
+msgstr ""
+
+#: lib/Baseliner/Controller/GitTree.pm
 msgid "(and %1 more...)"
 msgstr ""
 

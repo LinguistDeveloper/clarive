@@ -615,23 +615,31 @@ sub close_branch {
     }
 }
 
-method commits_for_branch( :$branch, :$project ) {
-    my $git = $self->git;
+method commits_for_branch( :$branch, :$project, :$page=1, :$page_size=30, :$show_commit_tag=1 ) {
     my $revision_mode = $self->revision_mode;
     my @rev_list;
-
+    my $git  = $self->git;
     if( $revision_mode eq 'diff' ){
         my $tag = [ grep { $_ ne '*' } map { $_->bl } sort { $a->seq <=> $b->seq } BaselinerX::CI::bl->search_cis ]->[0];
         $tag = $self->bl_to_tag($tag, $project);
+        my $skip = ($page-1) * $page_size;
 
         # check if tag exists
-        my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty=>1 });
-        Util->_fail( Util->_loc('Error: could not find tag %1 in repository. Repository tags are configured?', $tag) ) unless $bl_exists;
-        my $commit_tag = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=1', $tag );
-        @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=30', $tag."...".$branch );
-        push @rev_list, $commit_tag;
+        my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty => 1 } );
+        Util->_fail( Util->_loc( 'Error: could not find tag %1 in repository. Repository tags are configured?', $tag ) )
+            unless $bl_exists;
+        $page_size++;
+        @rev_list = $git->exec(
+            'rev-list',     '--pretty=oneline', '--right-only', "--max-count=$page_size",
+            "--skip=$skip", $tag . "..." . $branch
+        );
+
+        if ($show_commit_tag) {
+            my $commit_tag = $git->exec( 'rev-list', '--pretty=oneline', '--right-only', '--max-count=1', $tag );
+            push @rev_list, $commit_tag;
+        }
     } else {
-        @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=30', $branch);
+        @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only',"--max-count=$page_size", $branch);
     }
 
     return @rev_list;

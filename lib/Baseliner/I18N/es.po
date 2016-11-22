@@ -912,6 +912,10 @@ msgid "revisions"
 msgstr "revisiones"
 
 #: lib/Baseliner/Controller/GitTree.pm
+msgid "Show next"
+msgstr "Mostrar Siguientes"
+
+#: lib/Baseliner/Controller/GitTree.pm
 msgid "(and %1 more...)"
 msgstr "(y %1 mas...)"
 
@@ -15879,6 +15883,9 @@ msgstr "destino"
 #~ msgstr ""
 #~ "Reintento de escritura en cache a causa del bug de clave duplicada en "
 #~ "mongo 3.2 para el upset. Clave: %1"
+
+#~ msgid "Next commit set"
+#~ msgstr "Commits siguientes"
 
 #~ msgid ""
 #~ "CAUTION: If activated, variable names will be changed in rules when "

@@ -1193,7 +1193,7 @@ subtest 'commits_for_branch: gets tag from bl diff repository' => sub {
 
     TestUtils->create_ci( 'bl', bl => 'TEST' );
 
-    my @commits = $repo->commits_for_branch( branch => 'master', project => '' );
+    my @commits = $repo->commits_for_branch( branch => 'master', project => 'test_project' );
     is scalar @commits, 3;
     like $commits[0], qr/^[a-z0-9]{40} third$/;
     like $commits[1], qr/^[a-z0-9]{40} second$/;
@@ -1203,7 +1203,8 @@ subtest 'commits_for_branch: gets tag from bl diff repository' => sub {
 subtest 'commits_for_branch: gets tag from bl individual commits repository' => sub {
     _setup();
 
-    my $repo = TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2', revision_mode=>'show' );
+    my $repo =
+      TestUtils->create_ci_GitRepository( exclude => [ '^new', 'master' ], include => 'new2', revision_mode => 'show' );
     TestGit->commit( $repo, message => 'initial' );
     TestGit->commit( $repo, message => 'first' );
     TestGit->tag( $repo, tag => 'TEST' );
@@ -1324,6 +1325,193 @@ subtest 'get_system_tags: gets tags of bls actives' => sub {
     is $tags[0], 'TEST';
     is $tags[1], 'COMMON';
 };
+
+subtest 'commits_for_branch: shows all commits when page_size is bigger' => sub {
+    _setup();
+    my $tag       = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        page            => 1,
+        page_size       => 40,
+        show_commit_tag => 1,
+        project         => 'test_project'
+    );
+    is scalar @commits, 4;
+};
+
+subtest 'commits_for_branch: hides tagged commits when show_commit_tag=0' => sub {
+    _setup();
+
+    my $tag       = 'tag_1';
+
+    my $repo = TestUtils->create_ci_GitRepository();
+
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        project         => 'test_project',
+        page            => 1,
+        page_size       => 40,
+        show_commit_tag => 0
+    );
+    is scalar @commits, 3;
+};
+
+subtest 'commits_for_branch: paging second page with show_commit_tag=0' => sub {
+    _setup();
+
+    my $tag       = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository();
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        project         => 'test_project',
+        page            => 2,
+        page_size       => 2,
+        show_commit_tag => 0
+    );
+    is scalar @commits, 1;
+};
+
+subtest 'commits_for_branch: paging second page with show_commit_tag=0 and page_size>available commits' => sub {
+    _setup();
+
+    my $tag  = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository();
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        project         => 'test_project',
+        page            => 2,
+        page_size       => 40,
+        show_commit_tag => 0
+    );
+    is scalar @commits, 0;
+};
+
+subtest 'commits_for_branch: paging all commits with show_commit_tag=1 and revision_mode set to show' => sub {
+    _setup();
+
+    my $tag = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'show' );
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        page            => 1,
+        page_size       => 40,
+        show_commit_tag => 1,
+        project         => 'test_project'
+    );
+    is scalar @commits, 4;
+};
+
+subtest 'commits_for_branch: paging all commits with show_commit_tag=0 and revision_mode set to show' => sub {
+    _setup();
+
+    my $tag       = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'show' );
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        project         => 'test_project',
+        page            => 1,
+        page_size       => 40,
+        show_commit_tag => 0
+    );
+    is scalar @commits, 4;
+};
+
+subtest 'commits_for_branch: paging second page with show_commit_tag=0 and revision_mode set to show' => sub {
+    _setup();
+
+    my $tag       = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'show' );
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        project         => 'test_project',
+        page            => 2,
+        page_size       => 2,
+        show_commit_tag => 0
+    );
+    is scalar @commits, 2;
+};
+
+subtest
+'commits_for_branch: paging second page with show_commit_tag=0 and page_size>available commits and revision_mode set to show'
+  => sub {
+    _setup();
+    my $tag       = 'tag_1';
+    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'show' );
+    my $repo_path = $repo->repo_dir;
+    TestGit->commit($repo_path);
+    TestGit->tag( $repo_path, tag => $tag );
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+    TestGit->commit($repo_path);
+
+    BaselinerX::CI::bl->new( bl => $tag )->save;
+    my @commits = $repo->commits_for_branch(
+        branch          => 'master',
+        project         => 'test_project',
+        page            => 2,
+        page_size       => 40,
+        show_commit_tag => 0
+    );
+    is scalar @commits, 4;
+  };
 
 done_testing;
 

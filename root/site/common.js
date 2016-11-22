@@ -1,4 +1,3 @@
-
 Ext.Panel.prototype.setTabTip = function(msg) {
     var tabPanel = this.findParentByType(Ext.TabPanel);
     if (tabPanel) {
@@ -2320,41 +2319,57 @@ Baseliner.CheckColumn = Ext.extend(Ext.grid.Column, {
  *
  */
 
-Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
+Baseliner.Tree = Ext.extend(Ext.tree.TreePanel, {
     useArrows: true,
     autoScroll: true,
     animate: true,
     enableDD: true,
     containerScroll: true,
     rootVisible: false,
-    constructor: function(c){
+    constructor: function(c) {
         var self = this;
 
         Baseliner.Tree.superclass.constructor.call(this, Ext.apply({
             loader: new Baseliner.TreeLoader({
-                        dataUrl: c.dataUrl,
-                        requestMethod: this.requestMethod,
-                        baseParams: c.baseParams }),
-            root: { nodeType: 'async', text: '/', draggable: false, id: '/' }
-        }, c) );
+                dataUrl: c.dataUrl,
+                requestMethod: this.requestMethod,
+                baseParams: c.baseParams
+            }),
+            root: {
+                nodeType: 'async',
+                text: '/',
+                draggable: false,
+                id: '/'
+            }
+        }, c));
 
-        self.on('contextmenu', self.menu_click );
-        self.on('beforenodedrop', self.drop_handler );
-        self.on('nodedragover',self.handle_allow_drop);
-        self.on('beforechildrenrendered', function(node){
+        self.on('contextmenu', self.menu_click);
+        self.on('beforenodedrop', self.drop_handler);
+        // Paging commits
+        self.addEvents('paging');
+        self.on('paging', function(obj, n, res) {
+            var parent = n.parentNode;
+            parent.removeChild(parent.childNodes[parent.childNodes.length - 1]);
+            parent.appendChild(res);
+        });
+
+        // auto Topic drawing
+        self.on('beforechildrenrendered', function(node) {
             node.eachChild(function(n) {
                 Cla.style_topic_node(n);
             });
         });
-        self.on('click', function(n, ev){
-                self.click_handler({ node: n });
+        self.on('click', function(n, ev) {
+            self.click_handler({
+                node: n
+            });
         });
-        self.loader.on('load', function(n){
-			if(self.onload){
-				self.onload();
-			};
+        self.loader.on('load', function(n) {
+            if (self.onload) {
+                self.onload();
+            };
         });
-        self.addEvents('beforerefresh','afterrefresh');
+        self.addEvents('beforerefresh', 'afterrefresh');
     },
     handle_allow_drop: function(dragOverEvent) {
         if (dragOverEvent.target.attributes.id_favorite && dragOverEvent.dropNode.attributes.id_favorite) {
@@ -2363,7 +2378,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         }
         return false;
     },
-    drop_handler : function(e) {
+    drop_handler: function(e) {
         var self = this;
         // from node:1 , to_node:2
         e.cancel = true;
@@ -2405,8 +2420,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
 
             try {
                 n1.parentNode.removeChild(n1);
-            } catch (err) {
-            }
+            } catch (err) {}
 
             var n1_copy = cloneNode(n1);
 
@@ -2525,7 +2539,13 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         } else if (c.type == 'html') {
             Baseliner.add_tab(c.url, _(c.title), params);
         } else if (c.type == 'eval') {
-            Baseliner.ajax_json(c.url, params, function(res) {});
+            Baseliner.ajax_json(c.url, params, function(res) {
+                if (params.event_paging && n.ownerTree) {
+                    params.parent_id = n.ownerTree.id;
+                    var obj = Ext.getCmp(n.ownerTree.id);
+                    obj.fireEvent(params.event_paging, obj, n, res);
+                }
+            });
         } else if (c.type == 'iframe') {
             Baseliner.add_iframe(c.url, _(c.title), params);
         } else if (c.type == 'download') {
@@ -2534,39 +2554,38 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             Baseliner.message('Invalid or missing click.type', '');
         }
     },
-    refresh : function(callback){
+    refresh: function(callback) {
         var self = this;
         var sm = self.getSelectionModel();
         var node = sm.getSelectedNode();
 
-        if( node ){
+        if (node) {
             //self.refresh_node( node );
-            if (!node.attributes.is_refreshing){
-                self.fireEvent('beforerefresh', self,node);
+            if (!node.attributes.is_refreshing) {
+                self.fireEvent('beforerefresh', self, node);
                 node.attributes.is_refreshing = true;
-                self.refresh_node( node, callback );
+                self.refresh_node(node, callback);
             }
-        }
-        else 
+        } else
             self.refresh_all(callback);
     },
-    refresh_all : function(callback){
-        this.getLoader().load(this.getRootNode( ));
-		this.onload = callback;
+    refresh_all: function(callback) {
+        this.getLoader().load(this.getRootNode());
+        this.onload = callback;
     },
-    refresh_node : function(node, callback){
+    refresh_node: function(node, callback) {
         var self = this;
-        if( node != undefined ) {
+        if (node != undefined) {
             var is = node.isExpanded();
-            self.loader.load( node, function(){
+            self.loader.load(node, function() {
                 self.fireEvent('afterrefresh', self, node);
                 node.attributes.is_refreshing = false;
-                if( Ext.isFunction(callback) ) callback(node); 
+                if (Ext.isFunction(callback)) callback(node);
             });
-            if( is ) node.expand();
+            if (is) node.expand();
         }
     }
-	
+
 });
 
 Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
