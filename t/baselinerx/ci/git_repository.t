@@ -969,15 +969,15 @@ subtest 'checkout: returns checked out items' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
 
-    my $sha = TestGit->commit($repo);
+    my $sha = TestGit->commit($repo, content => 'hello');
     TestGit->tag( $repo, tag => 'TEST' );
-    my $sha2 = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo, content => 'bye');
 
     my $retval = $repo->checkout( dir => $dir, bl => 'TEST' );
 
     cmp_deeply $retval,
       {
-        'ls'     => [ re(qr/100644 blob f599e28\s+3\s+README/) ],
+        'ls'     => [ re(qr/100644 blob ce01362\s+6\s+README/) ],
         'output' => undef
       };
 };
