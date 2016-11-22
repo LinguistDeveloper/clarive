@@ -1,6 +1,6 @@
 package BaselinerX::CI::job;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _now :other _array _capture_tee _ts);
+use Baseliner::Utils qw(:logging _now :other _array _ts);
 use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::JobLogger;
@@ -8,6 +8,7 @@ use Baseliner::RuleRunner;
 use Try::Tiny;
 use v5.10;
 use experimental 'autoderef';
+use Capture::Tiny qw(tee_merged);
 with 'Baseliner::Role::CI::Internal';
 
 has job_name           => qw(is rw isa Str);   # initial job_name, overwrites the gen_job_mask system
@@ -479,11 +480,10 @@ sub run_inproc {
         Util->_fail( Util->_loc('Cannot start job since status %1 != %2', $self->status, 'READY') );
     }
     $self->logger->info( Util->_loc('User %1 has started job in process', $p->{username}) );
-    require Capture::Tiny;
     Util->_log(Util->_loc('************** Starting JOB IN-PROC %1 ***************', $self->name) );
     my ($err,$out);
     try {
-        ($out) = _capture_tee( sub {
+        ($out) = tee_merged( sub {
             $self->run( same_exec=>1 );
         });
     } catch {
