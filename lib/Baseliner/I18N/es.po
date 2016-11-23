@@ -1235,7 +1235,7 @@ msgstr ""
 #: root/comp/daemon_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/rules.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_info.mas root/site/common.js
+#: root/comp/user_info.mas root/forms/if_var_condition.js root/site/common.js
 msgid "All"
 msgstr "Todos"
 
@@ -7600,9 +7600,9 @@ msgstr "Secuencia"
 #: root/comp/role_grid.js root/comp/rules.js root/comp/topic/topic_admin.js
 #: root/fields/templates/config/combo.js root/fields/templates/config/pills.js
 #: root/forms/create_job.js root/forms/db_deploy_sql.js
-#: root/forms/parse_config.js root/forms/script_local.js
-#: root/forms/write_config.js root/site/lifecycle-graph.js
-#: root/site/timeline-graph.js
+#: root/forms/if_var_condition.js root/forms/parse_config.js
+#: root/forms/script_local.js root/forms/write_config.js
+#: root/site/lifecycle-graph.js root/site/timeline-graph.js
 msgid "Options"
 msgstr "Opciones"
 
@@ -8004,7 +8004,8 @@ msgstr "Variable"
 
 #: root/ci/value.js root/comp/ci-data.html root/comp/configlist/grid.mas
 #: root/comp/configlist/resolve_value.mas root/forms/ci_invoke.js
-#: root/forms/set_var.js root/forms/variable_value.js root/site/model.js
+#: root/forms/if_var_condition.js root/forms/set_var.js
+#: root/forms/variable_value.js root/site/model.js
 msgid "Value"
 msgstr "Valor"
 
@@ -8750,9 +8751,9 @@ msgstr "Resolver"
 
 #: root/comp/daemon_grid.js root/fields/system/html/list_topics.html
 #: root/fields/templates/html/ci_grid.html
-#: root/fields/templates/html/grid_editor.html
+#: root/fields/templates/html/grid_editor.html root/forms/if_var_condition.js
 msgid "None"
-msgstr "No hay"
+msgstr "Ninguno"
 
 #: root/comp/daemon_grid.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sem.js root/site/common.js
@@ -9488,6 +9489,7 @@ msgstr "Probabilidad de Éxito"
 
 #: root/comp/job_new.js root/comp/monitor_grid.js root/comp/rules.js
 #: root/comp/topic/topic_lib_grid.js root/dashlets/status_changes.html
+#: root/forms/if_var_condition.js
 msgid "When"
 msgstr "Cuándo"
 
@@ -9681,7 +9683,7 @@ msgstr "Nueva Búsqueda"
 msgid "ComboBox"
 msgstr ""
 
-#: root/comp/lifecycle/report_edit.js
+#: root/comp/lifecycle/report_edit.js root/forms/if_var_condition.js
 msgid "Operator"
 msgstr "Operador"
 
@@ -12812,7 +12814,7 @@ msgid "Select topics in statuses"
 msgstr "Seleccionar tópicos en estados"
 
 #: root/dashlets/list_topics_config.js root/forms/git_delete_reference.js
-#: root/forms/topic_get_with_condition.js
+#: root/forms/if_var_condition.js root/forms/topic_get_with_condition.js
 msgid "Any"
 msgstr "Cualquiera"
 
@@ -13960,6 +13962,98 @@ msgstr "Última acción Capturada en el pase"
 msgid "Cut Path"
 msgstr "Ruta cortada"
 
+#: root/forms/if_var_condition.js
+msgid "IF var condition"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "Ignore case"
+msgstr "Ignorar mayúsculas"
+
+#: root/forms/if_var_condition.js
+msgid "Numeric"
+msgstr "Numérico"
+
+#: root/forms/if_var_condition.js
+msgid "IS TRUE"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "IS FALSE"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "IS EMPTY"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "NOT EMPTY"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "EQUALS"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "NOT EQUALS"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "GREATER THAN"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "GREATER THAN OR EQUALS TO"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "LESS THAN"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "LESS THAN OR EQUALS TO"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "LIKE (regular expression)"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "NOT LIKE (regular expression)"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "IN"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "NOT IN"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "HAS"
+msgstr ""
+
+#: root/forms/if_var_condition.js
+msgid "NOT HAS"
+msgstr ""
+
+#: root/forms/if_var_condition.js root/forms/stmt_for.js
+msgid "Stash Variable"
+msgstr "Variable de Stash"
+
+#: root/forms/if_var_condition.js
+msgid "Remove"
+msgstr "Eliminar"
+
+#: root/forms/if_var_condition.js
+msgid "Condition"
+msgstr "Condición"
+
+#: root/forms/if_var_condition.js
+msgid "Add condition"
+msgstr "Añadir condición"
+
 #: root/forms/ldap_search.js
 msgid "LDAP user"
 msgstr ""
@@ -14325,10 +14419,6 @@ msgstr ""
 #: root/forms/shortcut.js
 msgid "Source Key"
 msgstr ""
-
-#: root/forms/stmt_for.js
-msgid "Stash Variable"
-msgstr "Variable de Stash"
 
 #: root/forms/store_file.js
 msgid "Filename"

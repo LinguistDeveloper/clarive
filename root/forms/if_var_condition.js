@@ -1,4 +1,5 @@
 (function(params) {
+    Cla.help_push({ title:_('IF var condition'), path:'rules/palette/control/if-var-condition' });
     var data = params.data || {};
 
     var conditionContainerCounter = 0;
