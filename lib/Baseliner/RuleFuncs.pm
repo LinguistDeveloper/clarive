@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Try::Tiny;
-use Baseliner::Utils qw(:logging parse_vars _array _get_dotted_keys _clone);
+use Baseliner::Utils qw(:logging parse_vars _array _get_dotted_keys _clone is_number _pointer);
 use Baseliner::Sugar qw(event_new);
 use Baseliner::Core::Registry;
 use Clarive::ci;
@@ -27,6 +27,7 @@ use Exporter::Tidy default => [
       stash_has_nature
       variables_for_bl
       eval_code
+      condition_check
       )
 ];
 
@@ -475,6 +476,155 @@ sub eval_code {
     my ($lang, $code, $stash) = @_;
 
     Clarive::Code->new->eval_code($code, lang => $lang, stash => $stash);
+}
+
+sub condition_check {
+    my ( $stash, $when, $conditions ) = @_;
+
+    my @values;
+    foreach my $condition (@$conditions) {
+        my $operand_a = _pointer $condition->{operand_a}, $stash;
+        my $operator  = $condition->{operator};
+        my $options   = $condition->{options};
+        my $operand_b = Util->parse_vars( $condition->{operand_b}, $stash );
+
+        my $value = !!_condition_check( $operand_a, $operator, $options, $operand_b );
+
+        if ( $when eq 'all' ) {
+            return 0 unless $value;
+        }
+        elsif ( $when eq 'any' ) {
+            return 1 if $value;
+        }
+        elsif ( $when eq 'none' ) {
+            return 0 if $value;
+        }
+    }
+
+    if ( $when eq 'all' ) {
+        return 1;
+    }
+    elsif ( $when eq 'any' ) {
+        return 0;
+    }
+    elsif ( $when eq 'none' ) {
+        return 1;
+    }
+}
+
+sub _condition_check {
+    my ( $operand_a, $operator, $options, $operand_b ) = @_;
+
+    $operand_a //= '';
+    $operand_b //= '';
+
+    if ( $operator eq 'is_true' || $operator eq 'is_false' ) {
+        my $ret = Util->_any( sub { $_ }, Util->_array($operand_a) );
+
+        return $operator eq 'is_true' ? $ret : !$ret;
+    }
+    elsif ( $operator eq 'is_empty' || $operator eq 'not_empty' ) {
+        my @values = Util->_array($operand_a);
+
+        my $ret;
+        if (@values) {
+            $ret = 0;
+            foreach my $value (@values) {
+                if ( ref $value ) {
+                    if ( ref $value eq 'HASH' ) {
+                        $ret = !%$value;
+                    }
+                }
+                else {
+                    $ret = !length $value;
+                }
+
+                last if $ret;
+            }
+        }
+        else {
+            $ret = 1;
+        }
+
+        return $operator eq 'is_empty' ? $ret : !$ret;
+    }
+    elsif ( $operator eq 'eq' || $operator eq 'not_eq' ) {
+        if ( $options->{ignore_case} ) {
+            $operand_a = lc($operand_a);
+            $operand_b = lc($operand_b);
+        }
+
+        my $ret = $operand_a eq $operand_b;
+
+        return $operator eq 'eq' ? $ret : !$ret;
+    }
+    elsif ( $operator eq 'ge' ) {
+        if ( $options->{ignore_case} ) {
+            $operand_a = lc($operand_a);
+            $operand_b = lc($operand_b);
+        }
+
+        return $operand_a ge $operand_b;
+    }
+    elsif ( $operator eq 'gt' ) {
+        if ( $options->{ignore_case} ) {
+            $operand_a = lc($operand_a);
+            $operand_b = lc($operand_b);
+        }
+
+        return $operand_a gt $operand_b;
+    }
+    elsif ( $operator eq 'le' ) {
+        if ( $options->{ignore_case} ) {
+            $operand_a = lc($operand_a);
+            $operand_b = lc($operand_b);
+        }
+
+        return $operand_a le $operand_b;
+    }
+    elsif ( $operator eq 'lt' ) {
+        if ( $options->{ignore_case} ) {
+            $operand_a = lc($operand_a);
+            $operand_b = lc($operand_b);
+        }
+
+        return $operand_a lt $operand_b;
+    }
+    elsif ( $operator eq 'like' ) {
+        return $operand_a =~ ( $options->{ignore_case} ? qr{$operand_b}i : qr{$operand_b} );
+    }
+    elsif ( $operator eq 'not_like' ) {
+        return $operand_a !~ ( $options->{ignore_case} ? qr{$operand_b}i : qr{$operand_b} );
+    }
+    elsif ( $operator eq 'in' || $operator eq 'not_in' ) {
+        my $var_val = $operand_a;
+        my $ret     = Util->_any(
+            sub {
+                $options->{ignore_case}
+                  ? lc($var_val) eq lc($_)
+                  : $var_val eq $_;
+            },
+            Util->_array( ref $operand_b eq 'HASH' ? %$operand_b : $operand_b )
+        );
+
+        return $operator eq 'in' ? $ret : !$ret;
+    }
+    elsif ( $operator eq 'has' || $operator eq 'not_has' ) {
+        my $var_val = $operand_a;
+        my $ret     = Util->_any(
+            sub {
+                $options->{ignore_case}
+                  ? lc($operand_b) eq lc($_)
+                  : $operand_b eq $_;
+            },
+            Util->_array( ref $var_val eq 'HASH' ? %{$var_val} : $var_val )
+        );
+
+        return $operator eq 'has' ? $ret : !$ret;
+    }
+    else {
+        _fail "Unknown operator '$operator'";
+    }
 }
 
 1;

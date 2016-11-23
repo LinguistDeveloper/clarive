@@ -1361,6 +1361,54 @@ subtest 'is_rule_active: returns boolean with rule status' => sub {
     ok $model->is_rule_active( id_rule => $id_rule_active );
 };
 
+subtest 'dsl_build: builds if var condition dsl' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"      => "statement.if.var_condition",
+                "text"     => "IF",
+                "data"     => {
+                    'when' => 'any',
+
+                    "operand_a[0]"           => "foo",
+                    "operand_b[0]"           => "bar",
+                    "operator[0]"            => "eq",
+                    "options[0].ignore_case" => "on",
+
+                    "operand_a[1]"           => "foo",
+                    "operand_b[1]"           => "",
+                    "operator[1]"            => "is_empty",
+                }
+            },
+            "children" => [
+                {
+                    "attributes" => {
+                        "key"      => "statement.perl.code",
+                        "text"     => "CODE",
+                        "data"     => {
+                            code => 'return 1'
+                        }
+                    },
+                }
+            ]
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code = sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils 'parse_vars'; sub { my $stash = shift; %s }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    ok $code->( {} );
+    ok $code->( { foo => 'bar' } );
+};
+
 done_testing;
 
 sub _setup {
