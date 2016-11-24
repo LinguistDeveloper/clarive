@@ -543,6 +543,11 @@ sub create_topic {
 
     my $status = delete $params{status} || TestUtils->create_ci( 'status', name => 'New', type => 'I' );
     my $username = delete $params{username} || 'developer';
+
+    if ( !ci->user->find_one( { username => $username } ) ) {
+        $class->create_user( username => $username );
+    }
+
     my $id_category =
       delete $params{id_category}
       || do {

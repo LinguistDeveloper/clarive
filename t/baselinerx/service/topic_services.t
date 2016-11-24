@@ -5,6 +5,8 @@ use Test::More;
 use Test::Fatal;
 use Test::Deep;
 use Test::TempDir::Tiny;
+use Test::MonkeyMock;
+
 use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils;
@@ -613,7 +615,49 @@ subtest 'related: returns one related topic in single mode' => sub {
     is $parent->{title}, 'Release';
 };
 
+subtest 'update: updates topic fields' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->create_topic;
+
+    my $services = _build_topic_services();
+
+    my $c = _mock_context( stash => {} );
+
+    $services->update( $c, { mid => $topic_mid, variables => { foo => 'bar' } } );
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+
+    is $topic->{foo}, 'bar';
+};
+
+subtest 'update: parses var names before saving' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->create_topic;
+
+    my $services = _build_topic_services();
+
+    my $c = _mock_context( stash => { field => 'foo' } );
+
+    $services->update( $c, { mid => $topic_mid, variables => { '${field}' => 'bar' } } );
+
+    my $topic = mdb->topic->find_one( { mid => $topic_mid } );
+
+    is $topic->{foo}, 'bar';
+};
+
 done_testing();
+
+sub _mock_context {
+    my (%params) = @_;
+
+    my $mock = Test::MonkeyMock->new;
+
+    $mock->mock( stash => sub { $params{stash} } );
+
+    return $mock;
+}
 
 sub _build_topic_services {
     return BaselinerX::Service::TopicServices->new();
