@@ -1298,10 +1298,12 @@ register 'statement.call' => {
     dsl            => sub {
         my ( $self, $n, %p ) = @_;
 
+        my ($id_rule) = _array $n->{id_rule};
+
         sprintf(
             q{
             call(parse_vars({id_rule => '%s'}, $stash)->{id_rule}, $stash);
-        }, $n->{id_rule}
+        }, $id_rule
         );
     },
 };
