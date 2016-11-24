@@ -274,11 +274,12 @@ sub update {
     $data->{action} = 'update';
     $data->{username} = $user;
 
-    for my $field ( keys %$variables) {
-        $data->{$field} = $variables->{$field};
+    for my $field ( keys %$variables ) {
+        my $resolved_field = parse_vars $field, $stash;
+        $data->{$resolved_field} = $variables->{$field};
     }
 
-    Baseliner->model('Topic')->update(
+    Baseliner::Model::Topic->new->update(
         $data
     );
 }
