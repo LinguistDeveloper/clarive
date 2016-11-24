@@ -3167,6 +3167,10 @@ msgid "SET VAR"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "PUSH VAR"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "SET EXPR"
 msgstr ""
 
@@ -7995,15 +7999,15 @@ msgstr "API Key"
 msgid "Phone"
 msgstr "Teléfono"
 
-#: root/ci/value.js root/forms/file_foreach.js root/forms/set_expr.js
-#: root/forms/set_var.js root/forms/variable_value.js
+#: root/ci/value.js root/forms/file_foreach.js root/forms/push_var.js
+#: root/forms/set_expr.js root/forms/set_var.js root/forms/variable_value.js
 #: root/forms/variable_values.js root/site/model.js
 msgid "Variable"
 msgstr "Variable"
 
 #: root/ci/value.js root/comp/ci-data.html root/comp/configlist/grid.mas
 #: root/comp/configlist/resolve_value.mas root/forms/ci_invoke.js
-#: root/forms/if_var_condition.js root/forms/set_var.js
+#: root/forms/if_var_condition.js root/forms/push_var.js root/forms/set_var.js
 #: root/forms/variable_value.js root/site/model.js
 msgid "Value"
 msgstr "Valor"
@@ -14142,6 +14146,10 @@ msgstr "No falla en tiempo de espera"
 #: root/forms/pause_job.js
 msgid "Reason"
 msgstr "Motivo"
+
+#: root/forms/push_var.js
+msgid "Keep values unique?"
+msgstr "¿Mantenere los valores únicos?"
 
 #: root/forms/remove_file.js
 msgid "Remove Files"

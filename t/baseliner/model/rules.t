@@ -1409,6 +1409,70 @@ subtest 'dsl_build: builds if var condition dsl' => sub {
     ok $code->( { foo => 'bar' } );
 };
 
+subtest 'statement.var.push: pushes vars' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => 'statement.var.push',
+                "data" => {
+                    variable => 'foo',
+                    value    => 'bar',
+                    uniq     => 0
+                }
+            }
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils qw{parse_vars _unique _array}; /
+      . q/sub { my $stash = shift; %s; return $stash }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    is_deeply $code->()->{foo}, ['bar'];
+    is_deeply $code->( { foo => undef } )->{foo}, ['bar'];
+    is_deeply $code->( { foo => '123' } )->{foo}, ['123', 'bar'];
+    is_deeply $code->( { foo => ['123'] } )->{foo}, [ '123', 'bar' ];
+    is_deeply $code->( { foo => ['bar'] } )->{foo}, [ 'bar', 'bar' ];
+};
+
+subtest 'statement.var.push: pushes vars uniquely' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => 'statement.var.push',
+                "data" => {
+                    variable => 'foo',
+                    value    => 'bar',
+                    uniq     => 1
+                }
+            }
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils qw{parse_vars _unique _array}; /
+      . q/sub { my $stash = shift; %s; return $stash }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    is_deeply $code->( { foo => ['bar'] } )->{foo}, ['bar'];
+};
+
 done_testing;
 
 sub _setup {
