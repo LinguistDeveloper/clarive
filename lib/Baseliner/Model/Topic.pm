@@ -889,6 +889,7 @@ sub update {
 
                     my ($topic) = $self->save_data($meta, undef, $p);
                     $topic_mid    = $topic->mid;
+
                     $status = $topic->id_category_status;
                     $return = _loc('Topic added');
                     $category = $topic->get_category;
@@ -2069,6 +2070,8 @@ sub save_data {
             # NEW TOPIC
             $row{created_by}         = $data->{username};
             $row{modified_by}        = $data->{username};
+            $row{id_category}        = $data->{id_category} if $data->{id_category};
+            $row{category}           = mdb->category->find_one({id => $row{id_category}});
             $row{id_category_status} = $data->{id_category_status} if $data->{id_category_status};
 
             # TODO force mid from field here

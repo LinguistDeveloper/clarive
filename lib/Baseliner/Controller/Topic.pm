@@ -628,7 +628,7 @@ sub view : Local {
             $c->stash->{category_color} = $category->{color};
 
             $c->stash->{dashboard} = $category->{dashboard};
-            if ( $category->{is_changeset} ) {
+            if ( $category->{is_changeset} || $category->{is_release} ) {
                 my $menu = $self->get_menu_deploy( { topic_mid => $topic_mid, username => $c->username } );
                 $c->stash->{menu_deploy} = _encode_json($menu);
             }

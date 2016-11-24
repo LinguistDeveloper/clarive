@@ -926,7 +926,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     Baseliner.ajaxEval( '/topic/json', { topic_mid: obj.topic.topic_mid}, function(rec) {
                         var db_status = rec.topic_data.id_category_status;
                         var form_status = obj.topic.state_id;
-                        if (db_status != form_status){
+
+                        // In case of Releases the status can be different, so we ignore this check for them
+                        if (!rec.topic_data.category.is_release && db_status != form_status){
                             Ext.Msg.confirm( _('Confirmation'), _('Topic changed status before. Do you  want to refresh the topic?'),
                                 function(btn){
                                     if(btn == 'yes') {
