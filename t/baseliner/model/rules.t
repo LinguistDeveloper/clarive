@@ -108,7 +108,7 @@ subtest 'statement.call' => sub {
 
     my $dsl = $statement->{param}->{dsl};
 
-    my $code = $dsl->( undef, { id_rule => '123' } );
+    my $code = $dsl->( undef, { id_rule => ['123'] } );
 
     my $package = 'test_statement_call_' . int( rand(1000) );
 

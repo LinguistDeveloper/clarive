@@ -5,9 +5,7 @@
             name: 'id_rule',
             value: data.id_rule,
             fieldLabel: _('Rule To Be Invoked'),
-            baseParams: {
-                rule_type: ['independent']
-            }
+            baseParams: {}
         })
     ]
 })
