@@ -20,6 +20,8 @@ use_ok 'BaselinerX::Service::ChangesetServices';
 subtest 'update_baselines: calls repo update_baselines with correct params' => sub {
     _setup();
 
+    my $project = TestUtils->create_ci_project();
+
     my $repo = TestUtils->create_ci_GitRepository();
 
     my $sha = TestGit->commit($repo);
@@ -35,6 +37,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
             job             => $job,
             project_changes => [
                 {
+                    project => $project,
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -56,13 +59,15 @@ subtest 'update_baselines: calls repo update_baselines with correct params' => s
       {
         'revisions' => [$rev],
         'type'      => 'promote',
-        'bl'        => 'TEST',
+        'tag'       => 'TEST',
         'job'       => $job
       };
 };
 
 subtest 'update_baselines: groups revisions' => sub {
     _setup();
+
+    my $project = TestUtils->create_ci_project();
 
     my $repo1 = TestUtils->create_ci_GitRepository();
     my $sha11 = TestGit->commit($repo1);
@@ -90,6 +95,7 @@ subtest 'update_baselines: groups revisions' => sub {
             job             => $job,
             project_changes => [
                 {
+                    project => $project,
                     repo_revisions_items => [
                         {
                             repo      => $repo1,
@@ -127,7 +133,7 @@ subtest 'update_baselines: groups revisions' => sub {
       {
         'revisions' => bag( $rev11, $rev12 ),
         'type'      => 'promote',
-        'bl'        => 'TEST',
+        'tag'        => 'TEST',
         'job'       => $job
       };
 
@@ -137,13 +143,16 @@ subtest 'update_baselines: groups revisions' => sub {
       {
         'revisions' => bag( $rev21, $rev22 ),
         'type'      => 'promote',
-        'bl'        => 'TEST',
+        'tag'        => 'TEST',
         'job'       => $job
       };
 };
 
 subtest 'update_baselines: groups revisions with different projects' => sub {
     _setup();
+
+    my $project1 = TestUtils->create_ci_project();
+    my $project2 = TestUtils->create_ci_project();
 
     my $repo1 = TestUtils->create_ci_GitRepository();
     my $sha11 = TestGit->commit($repo1);
@@ -171,7 +180,7 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
             job             => $job,
             project_changes => [
                 {
-                    project              => 'one',
+                    project => $project1,
                     repo_revisions_items => [
                         {
                             repo      => $repo1,
@@ -186,7 +195,7 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
                     ]
                 },
                 {
-                    project              => 'two',
+                    project => $project2,
                     repo_revisions_items => [
                         {
                             repo      => $repo2,
@@ -214,7 +223,7 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
       {
         'revisions' => bag( $rev11, $rev12 ),
         'type'      => 'promote',
-        'bl'        => 'TEST',
+        'tag'       => 'TEST',
         'job'       => $job
       };
 
@@ -224,13 +233,15 @@ subtest 'update_baselines: groups revisions with different projects' => sub {
       {
         'revisions' => bag( $rev21, $rev22 ),
         'type'      => 'promote',
-        'bl'        => 'TEST',
+        'tag'       => 'TEST',
         'job'       => $job
       };
 };
 
-subtest 'update_baselines: saves to stash retval' => sub {
+subtest 'update_baselines: saves bl_original' => sub {
     _setup();
+
+    my $project = TestUtils->create_ci_project();
 
     my $repo = TestUtils->create_ci_GitRepository();
 
@@ -245,10 +256,8 @@ subtest 'update_baselines: saves to stash retval' => sub {
     $repo->mock(
         update_baselines => sub {
             {
-                'some-key' => {
-                    current  => $top_rev,
-                    previous => $rev
-                }
+                current  => $top_rev,
+                previous => $rev
             };
         }
     );
@@ -258,6 +267,7 @@ subtest 'update_baselines: saves to stash retval' => sub {
         job             => $job,
         project_changes => [
             {
+                project => $project,
                 repo_revisions_items => [
                     {
                         repo      => $repo,
@@ -277,7 +287,7 @@ subtest 'update_baselines: saves to stash retval' => sub {
     cmp_deeply $stash->{bl_original},
       {
         $repo->mid => {
-            'some-key' => {
+            $project->mid => {
                 current  => $top_rev,
                 previous => $rev
             }
@@ -287,6 +297,8 @@ subtest 'update_baselines: saves to stash retval' => sub {
 
 subtest 'update_baselines: calls repo update_baselines with correct params in rollback mode' => sub {
     _setup();
+
+    my $project = TestUtils->create_ci_project();
 
     my $repo = TestUtils->create_ci_GitRepository();
 
@@ -300,10 +312,8 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
     $repo->mock(
         update_baselines => sub {
             {
-                'some-key' => {
-                    current  => $rev,
-                    previous => $prev_rev,
-                }
+                current  => $rev,
+                previous => $prev_rev,
             };
         }
     );
@@ -313,9 +323,10 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
         stash => {
             bl_original => {
                 $repo->mid => {
-                    'some-key' => {
+                    $project->mid => {
                         previous => $prev_rev,
                         current  => $rev,
+                        tag      => 'TEST',
                         output   => '',
                     }
                 }
@@ -323,6 +334,7 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
             job             => $job,
             project_changes => [
                 {
+                    project              => $project,
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -342,16 +354,17 @@ subtest 'update_baselines: calls repo update_baselines with correct params in ro
     my (%args) = $repo->mocked_call_args('update_baselines');
     cmp_deeply \%args,
       {
-        'revisions' => [],
+        'revisions' => [$prev_rev],
         'type'      => 'promote',
-        'bl'        => 'TEST',
+        'tag'       => 'TEST',
         'job'       => $job,
-        'ref'       => $prev_rev
       };
 };
 
 subtest 'update_baselines: does nothing in rollback when no original bl found' => sub {
     _setup();
+
+    my $project = TestUtils->create_ci_project();
 
     my $repo = TestUtils->create_ci_GitRepository();
 
@@ -368,6 +381,7 @@ subtest 'update_baselines: does nothing in rollback when no original bl found' =
             job             => $job,
             project_changes => [
                 {
+                    project => $project,
                     repo_revisions_items => [
                         {
                             repo      => $repo,
@@ -429,7 +443,7 @@ subtest 'checkout_bl: calls repo checkout with correct params' => sub {
     my (%args) = $repo->mocked_call_args('checkout');
     cmp_deeply \%args,
       {
-        'bl'      => 'TEST',
+        'tag'     => 'TEST',
         'dir'     => '/job/dir/Project/path/to/rel',
         'project' => $project,
         revisions => [$rev]
@@ -475,7 +489,7 @@ subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub 
     my (%args1) = $repo1->mocked_call_args('checkout');
     cmp_deeply \%args1, {
         'project' => $project,
-        'bl'      => 'TEST',
+        'tag'     => 'TEST',
         'dir'     => '/job/dir/Project/path/to/repo1.git',
         revisions => undef,
     };
@@ -483,7 +497,7 @@ subtest 'checkout_bl_all_repos: calls repo checkout with correct params' => sub 
     my (%args2) = $repo2->mocked_call_args('checkout');
     cmp_deeply \%args2, {
         'project' => $project,
-        'bl'      => 'TEST',
+        'tag'     => 'TEST',
         'dir'     => '/job/dir/Project/path/to/repo2.git',
         revisions => undef,
     };

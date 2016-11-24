@@ -4397,43 +4397,56 @@ msgstr ""
 "proyecto tags_mode"
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "Missing parameter bl needed for top revision"
-msgstr ""
+msgid "Missing parameter tag needed for top revision"
+msgstr "Falta el parámetro tag necesario para la revisión más reciente"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid ""
 "Could not find top revision in repository %1 for tag %2. Attempting to "
 "redeploy to environment?"
 msgstr ""
+"No se puede encontrar la revisión más reciente en el repositorio %1 para el "
+"tag %2.¿Está intentando volver a desplegar de nuevo al entorno?"
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "Tag %3 sha set to %1 as it was in previous job %2"
+msgstr "Tag %3 sha establecida a %1 como estaba en el job anterior %2"
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "No last job detected for commit %1.  Cannot redeploy it"
+msgstr ""
+"No se ha detectado el último job para el commit %2. No se puede desplegar de "
+"nuevo"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Error: revision `%1` not found in repository %2"
-msgstr ""
+msgstr "Error: la revision `%1` no se ha encontrado en el repositorio %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Error: tag `%1` not found in repository %2"
-msgstr ""
+msgstr "Error: El tag `%1` no se ha encontrado en el repositorio %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Tag %1 (sha %2) is already on top"
-msgstr ""
+msgstr "La etiqueta %1 (sha %2) ya está en el top"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Tag %1 (sha %2) is already at the bottom"
-msgstr ""
+msgstr "La etiqueta %1 (sha %2) ya está al principio"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Looking for common history between %1 and %2"
-msgstr ""
+msgstr "Buscando el historial común entre %1 y %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Revision [%1] is not in the top revision's history"
 msgstr ""
-"La revisión [%1] no está en la historia de la revisión que se va a pasar"
+"La revisión [%1] no esta al principio del historial de revisionesLa revisión "
+"[%1] no está en la historia de la revisión que se va a pasar"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Could not find or create directory %1: %2"
-msgstr ""
+msgstr "No se puede encontrar o crear el directorio %1: %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "No files for ref %1 in repository. Skipping"
@@ -4441,7 +4454,7 @@ msgstr "No hay archivos en el repositorio para la referencia %1. Omitiendo"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "*Git*: checkout of repository %1 (%2) into `%3`"
-msgstr ""
+msgstr "Git*: checkout del repostorio %1 (%2) en `%3`"
 
 # features/gitscm/lib/BaselinerX/GitServices.pm (111)
 #: lib/BaselinerX/CI/GitRepository.pm lib/BaselinerX/GitServices.pm
@@ -4449,14 +4462,8 @@ msgid "*Git* Job Elements %1"
 msgstr "Elementos de pase *Git* %1"
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid ""
-"Projects are required when moving baselines for repositories with tags_mode "
-"project"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRepository.pm
 msgid "Promote baseline $tag to $top_rev: tag -f $tag $top_rev"
-msgstr ""
+msgstr "Promocionando baseline $tag a $top_rev: tag -f $tag $top_rev"
 
 # #-#-#-#-#  es.po  #-#-#-#-#
 # features/gitscm/lib/BaselinerX/GitServices.pm (152)
@@ -4466,7 +4473,7 @@ msgstr "Línea Base promocionada de %1 a %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Demote baseline $tag to $top_rev: tag -f $tag $top_rev"
-msgstr ""
+msgstr "Devolviendo baseline $tag a $top_rev: tag -f $tag $top_rev"
 
 # #-#-#-#-#  es.po  #-#-#-#-#
 # features/gitscm/lib/BaselinerX/GitServices.pm (163)
@@ -4476,7 +4483,7 @@ msgstr "Línea Base devuelta de %1 a %2"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Updating baseline $tag to $top_rev: tag -f $tag $top_rev"
-msgstr ""
+msgstr "Actualizando baseline $tag a $top_rev: tag -f $tag $top_rev"
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Updated baseline %1 to %2"
@@ -4491,34 +4498,22 @@ msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid "Not all given commits were found: %1"
-msgstr ""
+msgstr "No todos los commits dados han sido encontrados: %1"
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "No changesets for this sha"
+msgstr "No hay changesets para este sha"
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "This sha is contained in more than one changeset"
+msgstr "Este sha está incluido en más de un changeset"
 
 #: lib/BaselinerX/CI/GitRevision.pm
 msgid "Missing parameter tag"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRevision.pm
-msgid "Missing parameter bl"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "Tag %3 sha set to %1 as it was in previous job %2"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "No last job detected for commit %1.  Cannot redeploy it"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
 msgid "Could not find diff-tree data for item '%1'"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "No changesets for this sha"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "This sha is contained in more than one changeset"
 msgstr ""
 
 #: lib/BaselinerX/CI/asset.pm
@@ -6219,12 +6214,20 @@ msgid "Updating baseline for %1 project(s) to %2"
 msgstr "Actualizando baseline para %1 proyecto(s) a %2"
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-msgid "Updating baseline %1 for repository %2, job type %3"
-msgstr "Actualizando el entorno %1 para el repositorio %2, tipo de pase %3"
+msgid "Searching for original baseline in %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Rollbacking baseline %1 for repository %2, job type %3"
+msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Could not find previous revision for repository: %1 (%2)"
 msgstr "No pude encontrar revisión previa para el repositorio: %1 (%2)"
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Updating baseline %1 for repository %2, job type %3"
+msgstr "Actualizando el entorno %1 para el repositorio %2, tipo de pase %3"
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Baseline update of %1 item(s) completed"
@@ -7539,11 +7542,7 @@ msgid "Only environment"
 msgstr ""
 
 #: root/ci/GitRepository.js
-msgid "Project + environment"
-msgstr ""
-
-#: root/ci/GitRepository.js
-msgid "Release,Project + environment"
+msgid "Release + environment"
 msgstr ""
 
 #: root/ci/GitRevision.js

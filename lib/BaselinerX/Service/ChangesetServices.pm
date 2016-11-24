@@ -203,61 +203,80 @@ sub update_baselines {
 
     my %rev_repos;
 
-    if ( !$job->is_failed( status => 'last_finish_status')) {
-        my @project_changes = @{ $stash->{project_changes} || [] };
-        $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
+    return if $job->is_failed( status => 'last_finish_status');
 
-        # first, group revisions by repository
-        for my $pc ( @project_changes ) {
-            my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
-            next unless ref $repo_revisions_items eq 'ARRAY';
-            for my $rri ( @$repo_revisions_items ) {
-                my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+    my @project_changes = @{ $stash->{project_changes} || [] };
+    $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
 
-                # TODO if 2 projects share a repository, need to create different tags with project in str?
-                for my $revision ( _array( $revisions ) ) {
-                    $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
-                    $rev_repos{ $revision->repo->mid }{ $revision->mid } = $revision;
-                }
+    # first, group revisions by repository
+    for my $pc ( @project_changes ) {
+        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+        next unless ref $repo_revisions_items eq 'ARRAY';
+        for my $rri ( @$repo_revisions_items ) {
+            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+
+            # TODO if 2 projects share a repository, need to create different tags with project in str?
+            for my $revision ( _array( $revisions ) ) {
+                $rev_repos{ $revision->repo->mid }{ 'project' } //= $project;
+                $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
+                $rev_repos{ $revision->repo->mid }{ $revision->mid } = $revision;
             }
         }
+    }
 
-        # now update
-        for my $revgroup ( values %rev_repos ) {
-            my $repo = delete $revgroup->{repo};
+    # now update
+    for my $revgroup ( values %rev_repos ) {
+        my $project = delete $revgroup->{project};
+        my $repo = delete $revgroup->{repo};
+
+        my $updated_baselines;
+
+        if( $job->rollback ) {
+            my $previous_ref;
+            my $previous_tag;
+            my $bl_original = $stash->{bl_original};
+
+            $log->info( _loc( 'Searching for original baseline in %1', $repo->name ) );
+
+            if ( my $repo_stash = $bl_original->{ $repo->mid } ) {
+                if ( my $project_stash = $repo_stash->{ $project->mid } ) {
+                    $previous_ref = $project_stash->{previous};
+                    $previous_tag = $project_stash->{tag};
+                }
+            }
+
+            if ( $previous_ref && $previous_tag ) {
+                $log->info( _loc('Rollbacking baseline %1 for repository %2, job type %3', $previous_tag, $repo->name, $type ) );
+
+                $updated_baselines = $repo->update_baselines(
+                    job       => $job,
+                    revisions => [$previous_ref],
+                    tag       => $previous_tag,
+                    type      => $type
+                );
+            }
+            else {
+                _warn _loc( 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid );
+            }
+        } else {
             my $revisions = [ values %$revgroup ];
-            my $out;
-            $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $bl, $repo->name, $type ) );
-            if( $job->rollback ) {
-                my $ref;
-                my $bl_original = $stash->{bl_original};
 
-                if ( my $repo_stash = $bl_original->{ $repo->mid } ) {
-                    foreach my $key ( keys %$repo_stash ) {
-                        next unless my $previous = $repo_stash->{$key};
-                        last if $ref = $previous->{previous};
-                    }
-                }
-
-                if ($ref) {
-                    $out = $repo->update_baselines(
-                        job       => $job,
-                        ref       => $ref,
-                        revisions => [],
-                        bl        => $bl,
-                        type      => $type
-                    );
-                } else {
-                    _warn _loc('Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid);
-                }
-            } else {
-                $out = $repo->update_baselines( job => $job, revisions => $revisions, bl=>$bl, type=>$type );
+            my $prefix;
+            if ($repo->tags_mode eq 'release') {
+                $prefix = $self->_find_release_version_by_revisions($revisions);
             }
 
-            # save previous revision by repo mid
-            $stash->{bl_original}{$repo->mid} = $out;
-            $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
+            my $tag = $repo->bl_to_tag($bl, $prefix);
+
+            $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $tag, $repo->name, $type ) );
+
+            $updated_baselines = $repo->update_baselines( job => $job, revisions => $revisions, tag => $tag, type => $type );
         }
+
+        # save previous revision by repo mid
+        $stash->{bl_original}->{ $repo->mid }->{ $project->mid } = $updated_baselines;
+
+        $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $updated_baselines );
     }
 }
 
@@ -376,7 +395,21 @@ sub job_items {
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
             $log->debug( _loc('Grouping items for revision'), { revisions=>$revs, repository=>$repo } );
-            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, bl=>$bl, project=>$project );
+
+            my $tag = $bl;
+            if ( $repo->tags_mode eq 'release' ) {
+                my $prefix = $self->_find_release_version_by_revisions($revs);
+                $tag = $repo->bl_to_tag( $bl, $prefix );
+            }
+
+            my @repo_items = $repo->group_items_for_revisions(
+                revisions => $revs,
+                type      => $type,
+                bl        => $bl,
+                tag       => $tag,
+                project   => $project
+            );
+
             push @items, map {
                 my $it = $_;
                 $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;
@@ -489,13 +522,20 @@ sub _checkout_repo {
     my $log     = $job->logger;
     my $job_dir = $job->job_dir;
 
+    my $prefix;
+    if ($repo->tags_mode eq 'release') {
+        $prefix = $self->_find_release_version_by_revisions($revisions);
+    }
+
+    my $tag = $repo->bl_to_tag( $bl, $prefix );
+
     my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
     $log->info(
         _loc( 'Checking out baseline %1 for project %2, repository %3: %4',
-            $bl, $project->name, $repo->name, $dir_prefixed )
+            $tag, $project->name, $repo->name, $dir_prefixed )
     );
 
-    my $co_info = $repo->checkout( bl => $bl, dir => $dir_prefixed, project => $project, revisions => $revisions );
+    my $co_info = $repo->checkout( tag => $tag, dir => $dir_prefixed, project => $project, revisions => $revisions );
 
     my @ls = _array( $co_info->{ls} );
     $log->info( _loc( 'Baseline checkout of %1 item(s) completed', scalar(@ls) ), join( "\n", @ls ) );
@@ -660,6 +700,35 @@ sub request_approval {
         $job->maxapprovaltime($maxapprovaltime);
     };
     1;
+}
+
+sub _find_release_version_by_revisions {
+    my $self = shift;
+    my ($revisions) = @_;
+
+    return unless $revisions && @$revisions;
+
+    my $changeset_rel;
+    foreach my $revision (@$revisions) {
+        ($changeset_rel) = $revision->parents( where => { collection => 'topic' }, mids_only => 1 );
+        last if $changeset_rel;
+    }
+
+    my $changeset = mdb->topic->find_one({mid => $changeset_rel->{mid}});
+    return unless $changeset;
+
+    require Baseliner::Model::Topic;
+    my $topics_model = Baseliner::Model::Topic->new;
+    return unless my ($release_field) =
+      $topics_model->get_meta_fields_by_key( $changeset->{mid}, 'fieldlet.system.release' );
+    return unless my ($release_mid) = _array $changeset->{$release_field};
+
+    my $release = mdb->topic->find_one({mid => $release_mid});
+    return unless $release;
+
+    return unless my ($release_version_field) =
+      $topics_model->get_meta_fields_by_key( $release->{mid}, 'fieldlet.system.release_version' );
+    return $release->{$release_version_field};
 }
 
 no Moose;
