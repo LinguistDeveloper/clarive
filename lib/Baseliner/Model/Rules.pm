@@ -977,6 +977,27 @@ register 'statement.var.set' => {
     },
 };
 
+register 'statement.var.push' => {
+    text => _locl('PUSH VAR'), data => {},
+    type => 'let',
+    holds_children => 0,
+    form => '/forms/push_var.js',
+    dsl => sub {
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            do {
+                my $variable = '%s';
+                $stash->{$variable} = [ _array $stash->{$variable} ];
+                push @{ $stash->{$variable} }, parse_vars( '%s', $stash );
+
+                if ( '%s' ) {
+                    $stash->{$variable} = [ _unique _array $stash->{$variable} ];
+                }
+            };
+        }, $n->{variable}, $n->{value}, $n->{uniq} // 1 );
+    },
+};
+
 register 'statement.var.set_expr' => {
     text => _locl('SET EXPR'), data => {},
     type => 'let',
