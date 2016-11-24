@@ -4343,13 +4343,21 @@ msgid ""
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "Missing parameter bl needed for top revision"
+msgid "Missing parameter tag needed for top revision"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
 msgid ""
 "Could not find top revision in repository %1 for tag %2. Attempting to "
 "redeploy to environment?"
+msgstr ""
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "Tag %3 sha set to %1 as it was in previous job %2"
+msgstr ""
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "No last job detected for commit %1.  Cannot redeploy it"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
@@ -4425,32 +4433,20 @@ msgstr ""
 msgid "Not all given commits were found: %1"
 msgstr ""
 
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "No changesets for this sha"
+msgstr ""
+
+#: lib/BaselinerX/CI/GitRepository.pm
+msgid "This sha is contained in more than one changeset"
+msgstr ""
+
 #: lib/BaselinerX/CI/GitRevision.pm
 msgid "Missing parameter tag"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRevision.pm
-msgid "Missing parameter bl"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "Tag %3 sha set to %1 as it was in previous job %2"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "No last job detected for commit %1.  Cannot redeploy it"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
 msgid "Could not find diff-tree data for item '%1'"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "No changesets for this sha"
-msgstr ""
-
-#: lib/BaselinerX/CI/GitRevision.pm
-msgid "This sha is contained in more than one changeset"
 msgstr ""
 
 #: lib/BaselinerX/CI/asset.pm
@@ -6132,11 +6128,19 @@ msgid "Updating baseline for %1 project(s) to %2"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
-msgid "Updating baseline %1 for repository %2, job type %3"
+msgid "Searching for original baseline in %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Rollbacking baseline %1 for repository %2, job type %3"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Could not find previous revision for repository: %1 (%2)"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Updating baseline %1 for repository %2, job type %3"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm

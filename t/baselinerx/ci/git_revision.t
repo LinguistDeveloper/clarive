@@ -189,46 +189,6 @@ subtest 'items: returns items referenced by branch' => sub {
     is $item->path,   '/NEW_FILE';
 };
 
-subtest 'items: throws when redeploying without changesets' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
-
-    my $sha  = TestGit->commit($repo);
-    my $sha2 = TestGit->commit($repo);
-
-    TestGit->tag( $repo, tag => 'TEST' );
-
-    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    like exception { $rev->items( bl => 'TEST', tag => 'TEST' ) }, qr/No changesets for this sha/;
-};
-
-subtest 'items: throws when redeploying when sha is in several changesets' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
-
-    my $sha  = TestGit->commit($repo);
-    my $sha2 = TestGit->commit($repo);
-
-    TestGit->tag( $repo, tag => 'TEST' );
-
-    my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my $topic = TestUtils->create_ci('topic');
-    mdb->master_rel->insert(
-        { from_mid => $topic->mid, to_mid => $rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
-
-    my $topic2 = TestUtils->create_ci('topic');
-    mdb->master_rel->insert(
-        { from_mid => $topic2->mid, to_mid => $rev->mid, rel_type => 'topic_revision', rel_field => 'revisions' } );
-
-    like exception { $rev->items( bl => 'TEST', tag => 'TEST' ) }, qr/This sha is contained in more than one changeset/;
-};
-
 done_testing;
 
 sub _setup {
