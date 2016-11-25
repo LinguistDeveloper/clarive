@@ -133,7 +133,6 @@
         forceSelection: true,
         triggerAction: 'all',
         fieldLabel: _('Description'),
-        emptyText: _('Select one'),
         autoLoad: true
     });
 

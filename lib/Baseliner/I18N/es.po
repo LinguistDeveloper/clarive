@@ -13443,15 +13443,6 @@ msgstr "Marcado"
 
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/list_topics.js
-#: root/fields/templates/config/list_topics_selector.js
-#: root/fields/templates/config/projects.js root/forms/catalog_task.js
-#: root/site/common.js root/site/model.js
-msgid "Select one"
-msgstr "Seleccione uno"
-
-#: root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 msgid "Selection method"
 msgstr "Método seleccionado"
 
@@ -15923,6 +15914,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Select one"
+#~ msgstr "Seleccione uno"
 
 #~ msgid "Topic %1 does not match category %2. Skipped"
 #~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"

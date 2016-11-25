@@ -13266,15 +13266,6 @@ msgstr ""
 
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
-#: root/fields/templates/config/list_topics.js
-#: root/fields/templates/config/list_topics_selector.js
-#: root/fields/templates/config/projects.js root/forms/catalog_task.js
-#: root/site/common.js root/site/model.js
-msgid "Select one"
-msgstr ""
-
-#: root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 msgid "Selection method"
 msgstr ""
 

@@ -17,7 +17,6 @@
         name: 'datatable',
         editable: false,
         fieldLabel: _('Table format?'),
-        emptyText: _('Select one'),
         data:[
             [ 'always', _('Always') ],
             [ 'paging', _('Only if paging') ],
