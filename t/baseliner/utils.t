@@ -75,6 +75,10 @@ subtest '_pointer now supports ARRAY as pointer' => sub {
     is _pointer( [ qw(foo [1] bar [0]) ], { foo => [ {}, { bar => ['baz'] } ] } ), 'baz';
 };
 
+subtest '_pointer: navigates objects' => sub {
+    is _pointer( 'foo.bar', { foo => bless { bar => 'baz' }, 'something' } ), 'baz';
+};
+
 ######## query_grep
 #
 #my @rows = (

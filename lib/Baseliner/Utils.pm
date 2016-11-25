@@ -151,7 +151,7 @@ use HTML::Restrict;
 use List::MoreUtils qw(:all);
 use List::Util qw(sum);
 use Path::Class;
-use Scalar::Util qw(looks_like_number);
+use Scalar::Util qw(looks_like_number reftype);
 use Term::ANSIColor;
 use Try::Tiny;
 use YAML::XS;
@@ -2325,7 +2325,7 @@ sub _pointer {
         my $part = $parts_resolved[$i];
 
         if ($part =~ m/^\[(\d+)\]$/) {
-            unless (ref $p eq 'ARRAY') {
+            unless (reftype $p eq 'ARRAY') {
                 return unless $options{throw};
 
                 my $path = $i == 0 ? '.' : join('.', @parts_resolved[0 .. $i - 1]);
@@ -2335,7 +2335,7 @@ sub _pointer {
             $p = $p->[$1];
         }
         else {
-            unless (ref $p eq 'HASH') {
+            unless (reftype $p eq 'HASH') {
                 return unless $options{throw};
 
                 my $path = $i == 0 ? '.' : join('.', @parts_resolved[0 .. $i - 1]);
