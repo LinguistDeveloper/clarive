@@ -2,7 +2,8 @@ package Baseliner::VarsParser;
 use strict;
 use warnings;
 
-use Baseliner::Utils qw(_array _throw _loc _damn _name_to_id);
+use Try::Tiny;
+use Baseliner::Utils qw(_array _throw _loc _damn _name_to_id _pointer);
 
 my $RE_START    = qr/\$\{/;
 my $RE_END      = qr/\}/;
@@ -128,6 +129,7 @@ sub _parse_vars {
 
     # Cleanup or throw unresolved vars
     if ( $self->{throw} ) {
+        warn 'HERE' . $str;
         my @unresolved;
         while ( $str =~ s/$RE_NR_START($RE_INSIDE)$RE_NR_END//gs ) {
             push @unresolved, $1;
@@ -186,19 +188,6 @@ sub _parse_var {
         return $str;
     }
 
-    # Dot?
-    if ($k =~ /[\.\w]+/) {
-        my @keys = split( /\./, $k ) ;
-        if ( @keys > 1 ) {
-            my $k2 = join( '}->{', @keys );
-            if ( eval( 'exists $vars->{' . $k2 . '}' ) ) {
-                my $new_k = eval( '$vars->{' . $k2 . '}' );
-                $str = $recursive ? $self->_parse_vars( $new_k, $vars ) : $new_k;
-                return $str;
-            }
-        }
-    }
-
     if ( $k =~ /^(uc|lc)\(([^\)]+)\)/ ) {
         my $v = $self->_parse_vars( '${' . $2 . '}', $vars );
         $str = $1 eq 'uc' ? uc($v) : lc($v);
@@ -240,10 +229,22 @@ sub _parse_var {
     }
 
     if ( $k =~ /^ci\(([^\)]+)\)/ ) {
-
         # Better than ci->find, this way it fails when mid not found
         $str = ci->new( $vars->{$1} );
         return $str;
+    }
+
+    my $error;
+    my $result;
+    try {
+        $result = _pointer $k, $vars, throw => 1;
+        $result //= '';
+    } catch {
+        $error = $_;
+    };
+
+    if (!defined $error) {
+        $str = $recursive ? $self->_parse_vars( $result, $vars ) : $result;
     }
 
     return $str;
