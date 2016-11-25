@@ -14,6 +14,12 @@
             value: data.value
         },
         new Baseliner.CBox({
+            fieldLabel: _('Flatten before insertion?'),
+            name: 'flatten',
+            checked: data.flatten,
+            default_value: true
+        }),
+        new Baseliner.CBox({
             fieldLabel: _('Keep values unique?'),
             name: 'uniq',
             checked: data.uniq,

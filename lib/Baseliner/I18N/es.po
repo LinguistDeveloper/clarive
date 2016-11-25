@@ -14148,6 +14148,10 @@ msgid "Reason"
 msgstr "Motivo"
 
 #: root/forms/push_var.js
+msgid "Flatten before insertion?"
+msgstr "¿Aplanar antes de insertar?"
+
+#: root/forms/push_var.js
 msgid "Keep values unique?"
 msgstr "¿Mantenere los valores únicos?"
 

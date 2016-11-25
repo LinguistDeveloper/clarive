@@ -13970,6 +13970,10 @@ msgid "Reason"
 msgstr ""
 
 #: root/forms/push_var.js
+msgid "Flatten before insertion?"
+msgstr ""
+
+#: root/forms/push_var.js
 msgid "Keep values unique?"
 msgstr ""
 
