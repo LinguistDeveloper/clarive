@@ -4643,7 +4643,6 @@ Baseliner.generic_fields = function(params){
         name: 'section',
         editable: false,
         fieldLabel: _('Section to view'),
-        emptyText: _('Select one'),
         data: final_sections,
         value: data.section || available_sections[0],
     });
@@ -4652,7 +4651,6 @@ Baseliner.generic_fields = function(params){
         name: 'colspan',
         editable: false,
         fieldLabel: _('Row width'),
-        emptyText: _('Select one'),
         data:[ 
             [ '1', '1' ],
             [ '2', '2' ],
@@ -4751,7 +4749,6 @@ Baseliner.generic_list_fields = function(params,opts){
         forceSelection: true,
         triggerAction: 'all',
         fieldLabel: _('Type'),
-        emptyText: _('Select one'),
         autoLoad: true,
         listeners: {
             afterrender: function() {

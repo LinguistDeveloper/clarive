@@ -23,7 +23,6 @@
         mode: 'local',
         store: store_category,
         editable: false,
-        emptyText: _('Select one'),
         triggerAction: 'all'
    });
 
