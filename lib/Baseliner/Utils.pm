@@ -2304,14 +2304,31 @@ sub _pointer {
     my $p = $data;
     my @parts = ref $pointer eq 'ARRAY' ? @$pointer : split /\./, $pointer;
 
-    for (my $i = 0; $i < @parts; $i++) {
+    my @parts_resolved;
+    for ( my $i = 0 ; $i < @parts ; $i++ ) {
         my $part = $parts[$i];
+        if ( $part =~ s/((?:\[\d+\])+)$// ) {
+            my $indexes = $1;
+            my @indexes;
+            while ( $indexes =~ s{^(\[\d+\])}{} ) {
+                push @indexes, $1;
+            }
+
+            push @parts_resolved, length $part ? ($part) : (), @indexes;
+        }
+        else {
+            push @parts_resolved, $part;
+        }
+    }
+
+    for (my $i = 0; $i < @parts_resolved; $i++) {
+        my $part = $parts_resolved[$i];
 
         if ($part =~ m/^\[(\d+)\]$/) {
             unless (ref $p eq 'ARRAY') {
                 return unless $options{throw};
 
-                my $path = $i == 0 ? '.' : join('.', @parts[0 .. $i - 1]);
+                my $path = $i == 0 ? '.' : join('.', @parts_resolved[0 .. $i - 1]);
                 die qq{array ref expected at '$path'};
             }
 
@@ -2321,8 +2338,15 @@ sub _pointer {
             unless (ref $p eq 'HASH') {
                 return unless $options{throw};
 
-                my $path = $i == 0 ? '.' : join('.', @parts[0 .. $i - 1]);
+                my $path = $i == 0 ? '.' : join('.', @parts_resolved[0 .. $i - 1]);
                 die qq{hash ref expected at '$path'};
+            }
+
+            if ( !exists $p->{$part}) {
+                return unless $options{throw};
+
+                my $path = $i == 0 ? '.' : join('.', @parts_resolved[0 .. $i - 1]);
+                die qq{hash element does not exist at '$path'};
             }
 
             $p = $p->{$part};

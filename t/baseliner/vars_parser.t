@@ -88,6 +88,14 @@ subtest 'parse_vars: throws when unknown variables' => sub {
     };
 };
 
+subtest 'parse_vars: parses with array access' => sub {
+    my $parser = _build_parser();
+
+    is $parser->parse_vars( '${foo[0].bar}', { } ), '${foo[0].bar}';
+    is $parser->parse_vars( '${foo[0].bar}', { foo => [ { bar => 'baz' } ] } ), 'baz';
+    is $parser->parse_vars( '${foo[0].bar}', { foo => [ { bar => '${deep}' } ], deep => 'hello' } ), 'hello';
+};
+
 subtest 'parse_vars: parses with field access' => sub {
     my $parser = _build_parser();
 
