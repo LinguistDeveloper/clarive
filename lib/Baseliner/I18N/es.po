@@ -5524,8 +5524,8 @@ msgid "Create a branch in a Git repository"
 msgstr "Crear una rama en un repositorio Git"
 
 #: lib/BaselinerX/GitServices.pm
-msgid "Missing repo mid"
-msgstr "Falta mid de repo"
+msgid "Missing repo"
+msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
 msgid "Missing tag name"
@@ -15914,6 +15914,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Missing repo mid"
+#~ msgstr "Falta mid de repo"
 
 #~ msgid "Select one"
 #~ msgstr "Seleccione uno"
