@@ -984,17 +984,30 @@ register 'statement.var.push' => {
     form => '/forms/push_var.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
+
+        local $Data::Dumper::Terse = 1;
+
         sprintf(q{
             do {
                 my $variable = '%s';
-                $stash->{$variable} = [ _array $stash->{$variable} ];
-                push @{ $stash->{$variable} }, parse_vars( '%s', $stash );
+                my $value    = %s;
+                my $flatten  = '%s';
+                my $uniq     = '%s';
 
-                if ( '%s' ) {
+                $stash->{$variable} = [ _array $stash->{$variable} ];
+
+                if ($flatten) {
+                    push @{ $stash->{$variable} }, _array parse_vars( $value, $stash );
+                }
+                else {
+                    push @{ $stash->{$variable} }, parse_vars( $value, $stash );
+                }
+
+                if ( $uniq ) {
                     $stash->{$variable} = [ _unique _array $stash->{$variable} ];
                 }
             };
-        }, $n->{variable}, $n->{value}, $n->{uniq} // 1 );
+        }, $n->{variable}, Data::Dumper::Dumper($n->{value}), $n->{flatten} // 1, $n->{uniq} // 1 );
     },
 };
 
