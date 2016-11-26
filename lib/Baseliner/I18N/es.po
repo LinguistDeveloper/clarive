@@ -1001,8 +1001,8 @@ msgstr "Ver Todos los Pases"
 #: lib/Baseliner/Controller/Job.pm lib/BaselinerX/Fieldlets.pm
 #: lib/BaselinerX/Job.pm lib/BaselinerX/Reports/estadisticas_jobs_bl.pm
 #: root/comp/catalog_grid.js root/comp/dashboard_job.html
-#: root/dashlets/job_stats_by_env.html root/forms/script_local.js
-#: root/forms/script_remote.js root/site/about.html
+#: root/dashlets/job_stats_by_env.html root/forms/if_any_bl.js
+#: root/forms/script_local.js root/forms/script_remote.js root/site/about.html
 msgid "Environment"
 msgstr "Entorno"
 
@@ -3237,6 +3237,10 @@ msgstr "Naturaleza Detectada *%%1*"
 #: lib/Baseliner/Model/Rules.pm
 msgid "IF ANY nature THEN"
 msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm root/forms/if_any_bl.js
+msgid "IF ANY bl THEN"
+msgstr "IF ANY entorno THEN"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "IF last trap status THEN"

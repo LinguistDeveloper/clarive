@@ -1271,6 +1271,33 @@ register 'statement.if.any_nature' => {
     },
 };
 
+register 'statement.if.any_bl' => {
+    text => _locl('IF ANY bl THEN'),
+    form => '/forms/if_any_bl.js',
+    type => 'if',
+    data => { bls => '', },
+    dsl  => sub {
+        my ( $self, $n, %p ) = @_;
+
+        my @bl_mids = _array_or_commas $n->{bls};
+        my @bls;
+        foreach my $bl_mid (@bl_mids) {
+            my $bl = ci->bl->find_one( { mid => $bl_mid } );
+
+            push @bls, $bl ? $bl->{bl} : $bl_mid;
+        }
+
+        sprintf(
+            q{
+            if( _any { $stash->{bl} && $stash->{bl} eq $_ } _array %s ) {
+                %s
+            }
+        }, Data::Dumper::Dumper( \@bls ), $self->dsl_build( $n->{children}, %p )
+        );
+    },
+};
+
+
 register 'statement.if.last_trap_action' => {
     text => _locl('IF last trap status THEN'),
     form => '/forms/if_last_trap_action.js',
