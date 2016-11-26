@@ -153,7 +153,7 @@ sub group_items_for_revisions {
             my $tag_sha = $self->git->exec( qw/rev-parse/, $tag );
 
             if ( $rev_sha eq $tag_sha ) {
-                my ( $job, $found_tag_sha ) = $self->_find_sha_from_previous_jobs( $project, $rev_sha, $bl, $tag );
+                my ( $job, $found_tag_sha ) = $self->_find_sha_from_previous_jobs( $project, $top_rev, $bl, $tag );
 
                 if ($found_tag_sha) {
                     $tag = $found_tag_sha;
@@ -204,7 +204,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
               $self->name
         };
 
-        $shas{$sha}++;
+        $shas{$sha} = $revision;
     }
 
     # get the tag sha
@@ -216,7 +216,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
             $self->name)
     };
 
-    my @shas = ( keys(%shas) );
+    my @shas = keys %shas;
 
     _debug "Looking for top revision among shas: " . join ',', map { substr $_, 0, 8 } @shas;
 
@@ -227,19 +227,12 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         my $first_sha = $sorted[0];
         _warn _loc("Tag %1 (sha %2) is already on top", $tag, $tag_sha)
           if $first_sha eq $tag_sha;
-        $top_rev = BaselinerX::CI::GitRevision->new(
-            sha  => $first_sha,
-            name => $tag,
-            repo => $self
-        );
+        $top_rev = $shas{$first_sha};
     }
     elsif ($type eq 'static') {
         my $first_sha = $sorted[0];
-        $top_rev = BaselinerX::CI::GitRevision->new(
-            sha  => $first_sha,
-            name => $tag,
-            repo => $self
-        );
+
+        $top_rev = $shas{$first_sha};
     }
     elsif ($type eq 'demote') {
         my $last_sha = $sorted[-1];
@@ -257,6 +250,7 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
 
         _warn _loc("Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha)
           if $before_last eq $tag_sha;
+
         $top_rev = BaselinerX::CI::GitRevision->new(
             sha  => $before_last,
             name => $tag,
@@ -722,26 +716,18 @@ sub _find_release_version_by_revisions {
 
 sub _find_sha_from_previous_jobs {
     my $self = shift;
-    my ($project, $rev_sha, $bl, $tag) = @_;
+    my ($project, $top_rev, $bl, $tag) = @_;
+
+    _debug sprintf 'Searching for previous job of sha %s for tag %s', $top_rev->sha, $tag;
 
     my $git = $self->git;
 
-    my @refs;
-    foreach my $ref ($git->exec(qw/show-ref/)) {
-        my ($name) = $ref =~ m#^$rev_sha refs/(?:heads|tags)/(.*)$#;
-
-        push @refs, $name if $name;
-    }
-
-    my $sha = ci->GitRevision->search_ci( sha => mdb->in($rev_sha, @refs) );
-    return unless $sha;
-
-    my @topics = map { $_->{mid} } $sha->parents( where => { collection => 'topic'}, mids_only => 1);
+    my @topics = map { $_->{mid} } $top_rev->parents( where => { collection => 'topic'}, mids_only => 1);
 
     if ( scalar(@topics) eq 0 ) {
-        _fail _loc("No changesets for this sha");
+        _fail _loc("No changesets for this sha %1", substr($top_rev->sha, 0, 8));
     } elsif ( scalar(@topics) gt 1 ) {
-        _fail _loc("This sha is contained in more than one changeset");
+        _fail _loc("This sha %1 is contained in more than one changeset: %2", substr($top_rev->sha, 0, 8), join(',', @topics));
     }
     my $cs = $topics[0];
 
@@ -773,7 +759,7 @@ sub _find_sha_from_previous_jobs {
 
             my $tag_sha = $repo_original->{previous};
 
-            if ($tag_sha && $tag_sha->sha ne $rev_sha) {
+            if ($tag_sha && $tag_sha->sha_long ne $top_rev->sha_long) {
                 return ($job, $tag_sha->sha);
             }
         }
