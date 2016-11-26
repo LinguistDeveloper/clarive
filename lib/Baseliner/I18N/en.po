@@ -4442,11 +4442,11 @@ msgid "Not all given commits were found: %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "No changesets for this sha"
+msgid "No changesets for this sha %1"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "This sha is contained in more than one changeset"
+msgid "This sha %1 is contained in more than one changeset: %2"
 msgstr ""
 
 #: lib/BaselinerX/CI/GitRevision.pm

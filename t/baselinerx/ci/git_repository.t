@@ -380,10 +380,17 @@ subtest 'top_revision: returns top revision from random commits' => sub {
     my $sha5 = TestGit->commit($repo);
 
     my $rev = $repo->top_revision(
-        revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => $sha5 } ],
-        tag       => 'TEST'
+        revisions => [
+            BaselinerX::CI::GitRevision->new( sha => $sha4 ),
+            BaselinerX::CI::GitRevision->new( sha => $sha1 ),
+            BaselinerX::CI::GitRevision->new( sha => $sha3 ),
+            BaselinerX::CI::GitRevision->new( sha => $sha2 ),
+            ( my $top = BaselinerX::CI::GitRevision->new( sha => $sha5 ) )
+        ],
+        tag => 'TEST'
     );
 
+    is "$rev", "$top";
     is $rev->sha, $sha5;
 };
 
@@ -402,10 +409,17 @@ subtest 'top_revision: returns top revision ignoring dates' => sub {
     my $sha5 = TestGit->commit( $repo, datetime => '2015-01-01 00:00:00' );
 
     my $rev = $repo->top_revision(
-        revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => $sha5 } ],
-        tag       => 'TEST'
+        revisions => [
+            BaselinerX::CI::GitRevision->new( sha => $sha4 ),
+            BaselinerX::CI::GitRevision->new( sha => $sha1 ),
+            BaselinerX::CI::GitRevision->new( sha => $sha3 ),
+            BaselinerX::CI::GitRevision->new( sha => $sha2 ),
+            ( my $top = BaselinerX::CI::GitRevision->new( sha => $sha5 ) )
+        ],
+        tag => 'TEST'
     );
 
+    is "$rev", "$top";
     is $rev->sha, $sha5;
 };
 
@@ -420,10 +434,14 @@ subtest 'top_revision: returns same top revision when already on top' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = $repo->top_revision(
-        revisions => [ { sha => $sha1 }, { sha => $sha2 } ],
-        tag       => 'TEST'
+        revisions => [
+            BaselinerX::CI::GitRevision->new( sha => $sha1 ),
+            ( my $top = BaselinerX::CI::GitRevision->new( sha => $sha2 ) )
+        ],
+        tag => 'TEST'
     );
 
+    is "$rev", "$top";
     is $rev->sha, $sha2;
 };
 
@@ -449,10 +467,11 @@ subtest 'top_revision: throws when tag has not same history' => sub {
 
     like exception {
         $repo->top_revision(
-            revisions => [ { sha => $sha5 } ],
+            revisions => [ BaselinerX::CI::GitRevision->new( sha => $sha5 ) ],
             tag       => 'TEST'
           )
-    }, qr/Cannot promote .* common history/;
+    },
+      qr/Cannot promote .* common history/;
 };
 
 subtest 'top_revision: returns bottom revision when in demote' => sub {
@@ -466,9 +485,10 @@ subtest 'top_revision: returns bottom revision when in demote' => sub {
     TestGit->tag( $repo, tag => 'TEST' );
 
     my $rev = $repo->top_revision(
-        revisions => [ { sha => $sha1 }, { sha => $sha2 } ],
-        type      => 'demote',
-        tag       => 'TEST'
+        revisions =>
+          [ BaselinerX::CI::GitRevision->new( sha => $sha1 ), BaselinerX::CI::GitRevision->new( sha => $sha2 ) ],
+        type => 'demote',
+        tag  => 'TEST'
     );
 
     is $rev->sha, $sha;
@@ -486,11 +506,16 @@ subtest 'top_revision: throws when demoting everything' => sub {
 
     like exception {
         $repo->top_revision(
-            revisions => [ { sha => $sha }, { sha => $sha1 }, { sha => $sha2 } ],
-            type      => 'demote',
-            tag       => 'TEST'
+            revisions => [
+                BaselinerX::CI::GitRevision->new( sha => $sha ),
+                BaselinerX::CI::GitRevision->new( sha => $sha1 ),
+                BaselinerX::CI::GitRevision->new( sha => $sha2 )
+            ],
+            type => 'demote',
+            tag  => 'TEST'
           )
-    }, qr/Trying to demote all revisions/;
+    },
+      qr/Trying to demote all revisions/;
 };
 
 subtest 'top_revision: throws when one of the commits has not same history' => sub {
@@ -513,10 +538,12 @@ subtest 'top_revision: throws when one of the commits has not same history' => s
 
     like exception {
         $repo->top_revision(
-            revisions => [ { sha => $sha2 }, { sha => $sha6 } ],
-            tag       => 'TEST'
+            revisions =>
+              [ BaselinerX::CI::GitRevision->new( sha => $sha2 ), BaselinerX::CI::GitRevision->new( sha => $sha6 ) ],
+            tag => 'TEST'
           )
-    }, qr/Not all commits are in .*? history/;
+    },
+      qr/Not all commits are in .*? history/;
 };
 
 subtest 'top_revision: throws when no revisions passed' => sub {
@@ -532,7 +559,9 @@ subtest 'top_revision: throws when unknown sha' => sub {
 
     my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff', name => 'repo' );
 
-    like exception { $repo->top_revision( revisions => [ { sha => 'unknown' } ], tag => 'TEST' ) },
+    like exception {
+        $repo->top_revision( revisions => [ BaselinerX::CI::GitRevision->new( sha => 'unknown' ) ], tag => 'TEST' )
+    },
       qr/Error: revision `unknown` not found in repository repo/;
 };
 
@@ -543,31 +572,10 @@ subtest 'top_revision: throws when unknown tag' => sub {
 
     my $sha = TestGit->commit($repo);
 
-    like exception { $repo->top_revision( revisions => [ { sha => $sha } ], tag => 'UNKNOWN' ) },
+    like exception {
+        $repo->top_revision( revisions => [ BaselinerX::CI::GitRevision->new( sha => $sha ) ], tag => 'UNKNOWN' )
+    },
       qr/Error: tag `UNKNOWN` not found in repository repo/;
-};
-
-subtest 'top_revision: returns resolved sha when passing a ref' => sub {
-    _setup();
-
-    my $repo = TestUtils->create_ci_GitRepository( revision_mode => 'diff' );
-
-    my $sha  = TestGit->commit($repo);
-    my $sha1 = TestGit->commit($repo);
-    my $sha2 = TestGit->commit($repo);
-    TestGit->tag( $repo, tag => 'TEST' );
-
-    my $sha3 = TestGit->commit($repo);
-    my $sha4 = TestGit->commit($repo);
-    my $sha5 = TestGit->commit($repo);
-    TestGit->tag( $repo, tag => 'top' );
-
-    my $rev = $repo->top_revision(
-        revisions => [ { sha => $sha4 }, { sha => $sha1 }, { sha => $sha3 }, { sha => $sha2 }, { sha => 'top' } ],
-        tag       => 'TEST'
-    );
-
-    is $rev->sha, $sha5;
 };
 
 subtest 'group_items_for_revisions: returns top revision items' => sub {

@@ -4509,12 +4509,12 @@ msgid "Not all given commits were found: %1"
 msgstr "No todos los commits dados han sido encontrados: %1"
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "No changesets for this sha"
-msgstr "No hay changesets para este sha"
+msgid "No changesets for this sha %1"
+msgstr "No hay changesets para este sha %1"
 
 #: lib/BaselinerX/CI/GitRepository.pm
-msgid "This sha is contained in more than one changeset"
-msgstr "Este sha está incluido en más de un changeset"
+msgid "This sha %1 is contained in more than one changeset: %2"
+msgstr "Este sha %1 está incluido en más de un changeset: %2"
 
 #: lib/BaselinerX/CI/GitRevision.pm
 msgid "Missing parameter tag"
@@ -15918,6 +15918,12 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "No changesets for this sha"
+#~ msgstr "No hay changesets para este sha"
+
+#~ msgid "This sha is contained in more than one changeset"
+#~ msgstr "Este sha está incluido en más de un changeset"
 
 #~ msgid "Missing repo mid"
 #~ msgstr "Falta mid de repo"
