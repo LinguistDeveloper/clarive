@@ -906,26 +906,27 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.menu_deploy = [];
 
         for(i=0; i < obj_deploy_items_menu.menu.length;i++){
+            var menu = obj_deploy_items_menu.menu[i];
             var topic = {
-                text: _(obj_deploy_items_menu.menu[i].text),
+                text: _(menu.text),
                 topic_mid: self.topic_mid,
-                id: obj_deploy_items_menu.menu[i].eval.id,
-                id_project: obj_deploy_items_menu.menu[i].eval.id_project,
-                state_id: obj_deploy_items_menu.menu[i].id_status_from,
+                id: menu.eval.id,
+                id_project: menu.eval.id_project,
+                id_status_from: menu.id_status_from,
                 promotable: obj_deploy_items_menu.promotable,
                 demotable: obj_deploy_items_menu.demotable,
                 deployable: obj_deploy_items_menu.deployable,
-                job_type: obj_deploy_items_menu.menu[i].eval.job_type,
-                state_to: obj_deploy_items_menu.menu[i].eval.state_to
+                job_type: menu.eval.job_type,
+                state_to: menu.eval.state_to
             };
             self.menu_deploy.push({
-                text: _(obj_deploy_items_menu.menu[i].text),
-                icon: obj_deploy_items_menu.menu[i].icon,
+                text: menu.text,
+                icon: menu.icon,
                 topic: topic,
                 handler: function(obj){
                     Baseliner.ajaxEval( '/topic/json', { topic_mid: obj.topic.topic_mid}, function(rec) {
                         var db_status = rec.topic_data.id_category_status;
-                        var form_status = obj.topic.state_id;
+                        var form_status = obj.topic.id_status_from;
 
                         // In case of Releases the status can be different, so we ignore this check for them
                         if (!rec.topic_data.category.is_release && db_status != form_status){

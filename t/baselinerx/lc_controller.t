@@ -1018,7 +1018,7 @@ subtest 'promotes_and_demotes: builds correct variants for changeset' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'I', bls => [ $bl_common->mid ] );
+    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'D', bls => [ $bl_common->mid, $bl_qa->mid, $bl_prod->mid ] );
     my $status_in_progress =
       TestUtils->create_ci( 'status', name => 'In Progress', type => 'D', bls => [ $bl_qa->mid ] );
     my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'D', bls => [ $bl_prod->mid ] );
@@ -1041,111 +1041,6 @@ subtest 'promotes_and_demotes: builds correct variants for changeset' => sub {
             id_status_from => $status_in_progress->id_status,
             id_status_to   => $status_finished->id_status,
             job_type       => 'promote'
-        }
-    ];
-
-    my $id_category = TestSetup->create_category(
-        statuses => [ $status_new->id_status, $status_in_progress->id_status, $status_finished->id_status ],
-        workflow => $workflow
-    );
-
-    my $topic_mid =
-      TestSetup->create_topic( id_category => $id_category, status => $status_in_progress, username => $user->username );
-
-    my $topic_doc = mdb->topic->find_one( { mid => $topic_mid } );
-
-    my $controller = _build_controller();
-
-    my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $controller->promotes_and_demotes(
-        username   => $user->username,
-        topic      => $topic_doc,
-        id_project => $project->mid
-    );
-
-    cmp_deeply $statics,    {"sQA" . $status_in_progress->id_status => \1};
-    cmp_deeply $promotable, { "pPROD" . $status_finished->id_status => \1 };
-    cmp_deeply $demotable,  {};
-    cmp_deeply $menu_s, [
-        {
-            text => 'Deploy to In Progress (QA)',
-            icon => ignore(),
-            eval => {
-                id_project     => $project->mid,
-                job_type       => 'static',
-                bl_to          => 'QA',
-                status_to_name => 'In Progress',
-                status_to      => $status_in_progress->id_status,
-                id             => 'sQA' . $status_in_progress->id_status,
-                title          => 'Deploy',
-                is_release     => undef,
-                url            => ignore()
-            },
-            id_status_from => $status_in_progress->id_status
-        }
-    ];
-    cmp_deeply $menu_p,
-      [
-        {
-            text => 'Promote to Finished (PROD)',
-            icon => ignore(),
-            eval => {
-                id_project     => $project->mid,
-                job_type       => 'promote',
-                bl_to          => 'PROD',
-                status_to_name => 'Finished',
-                status_to      => $status_finished->id_status,
-                id             => 'pPROD' . $status_finished->id_status,
-                title          => 'To Promote',
-                is_release     => undef,
-                url            => ignore()
-            },
-            id_status_from => $status_in_progress->id_status
-        }
-      ];
-    cmp_deeply $menu_d, [
-        {
-            text => 'Demote to New (from QA)',
-            icon => ignore(),
-            eval => {
-                id_project     => $project->mid,
-                job_type       => 'demote',
-                bl_to          => 'QA',
-                status_to_name => 'New',
-                status_to      => $status_new->id_status,
-                id             => 'dQA' . $status_new->id_status,
-                title          => 'To Demote',
-                is_release     => undef,
-                url            => ignore()
-            },
-            id_status_from => $status_in_progress->id_status
-        }
-    ];
-};
-
-subtest 'promotes_and_demotes: builds correct variants for changeset with demote_to_bl config' => sub {
-    _setup();
-
-    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.job.demote_to_bl', value => 1 );
-
-    my $bl_common = TestUtils->create_ci( 'bl', bl => '*' );
-    my $bl_qa     = TestUtils->create_ci( 'bl', bl => 'QA' );
-    my $bl_prod   = TestUtils->create_ci( 'bl', bl => 'PROD' );
-
-    my $project = TestUtils->create_ci('project');
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
-
-    my $status_new = TestUtils->create_ci( 'status', name => 'New', type => 'D', bls => [ $bl_common->mid, $bl_qa->mid, $bl_prod->mid ] );
-    my $status_in_progress =
-      TestUtils->create_ci( 'status', name => 'In Progress', type => 'D', bls => [ $bl_qa->mid ] );
-    my $status_finished = TestUtils->create_ci( 'status', name => 'Finished', type => 'D', bls => [ $bl_prod->mid ] );
-
-    my $workflow = [
-        {
-            id_role        => $id_role,
-            id_status_from => $status_new->id_status,
-            id_status_to   => $status_in_progress->id_status,
-            job_type       => undef
         },
         {
             id_role        => $id_role,
@@ -1173,57 +1068,51 @@ subtest 'promotes_and_demotes: builds correct variants for changeset with demote
         id_project => $project->mid
     );
 
-    cmp_deeply $demotable, { 'dQA' . $status_new->id_status => \1 };
-    cmp_deeply $menu_d, [
+    cmp_deeply $statics,    { "sQA" . $status_in_progress->id_status => \1 };
+    cmp_deeply $promotable, { "pPROD" . $status_finished->id_status  => \1 };
+    cmp_deeply $demotable,  { 'dQA' . $status_new->id_status         => \1 };
+    cmp_deeply $menu_s,
+      [
         {
-            text => 'Demote to New (*) from QA',
+            text => 'Deploy to In Progress (QA)',
             icon => ignore(),
             eval => {
-                id_project     => $project->mid,
-                job_type       => 'demote',
-                bl_to          => 'QA',
-                status_to_name => 'New',
-                status_to      => $status_new->id_status,
-                id             => 'dQA' . $status_new->id_status,
-                title          => 'To Demote',
-                is_release     => undef,
-                url            => ignore()
-            },
-            id_status_from => $status_in_progress->id_status
-        },
-        {
-            text => 'Demote to New (QA) from QA',
-            icon => ignore(),
-            eval => {
-                id_project     => $project->mid,
-                job_type       => 'demote',
-                bl_to          => 'QA',
-                status_to_name => 'New',
-                status_to      => $status_new->id_status,
-                id             => 'dQA' . $status_new->id_status,
-                title          => 'To Demote',
-                is_release     => undef,
-                url            => ignore()
-            },
-            id_status_from => $status_in_progress->id_status
-        },
-        {
-            text => 'Demote to New (PROD) from QA',
-            icon => ignore(),
-            eval => {
-                id_project     => $project->mid,
-                job_type       => 'demote',
-                bl_to          => 'QA',
-                status_to_name => 'New',
-                status_to      => $status_new->id_status,
-                id             => 'dQA' . $status_new->id_status,
-                title          => 'To Demote',
-                is_release     => undef,
-                url            => ignore()
+                id_project => $project->mid,
+                job_type   => 'static',
+                id         => 'sQA' . $status_in_progress->id_status,
+                url        => ignore(),
             },
             id_status_from => $status_in_progress->id_status
         }
-    ];
+      ];
+    cmp_deeply $menu_p,
+      [
+        {
+            text => 'Promote to Finished (PROD)',
+            icon => ignore(),
+            eval => {
+                id_project => $project->mid,
+                job_type   => 'promote',
+                id         => 'pPROD' . $status_finished->id_status,
+                url        => ignore(),
+            },
+            id_status_from => $status_in_progress->id_status
+        }
+      ];
+    cmp_deeply $menu_d,
+      [
+        {
+            text => 'Demote to New (from QA)',
+            icon => ignore(),
+            eval => {
+                id_project => $project->mid,
+                job_type   => 'demote',
+                id         => 'dQA' . $status_new->id_status,
+                url        => ignore(),
+            },
+            id_status_from => $status_in_progress->id_status
+        }
+      ];
 };
 
 subtest 'promotes_and_demotes: builds correct variants for changeset in job_mode' => sub {
@@ -1299,7 +1188,8 @@ subtest 'promotes_and_demotes: builds correct variants for changeset in job_mode
             'text'           => 'Deploy to In Progress (QA)',
             'id_project'     => $project->mid,
             'status_to'      => $status_in_progress->id_status,
-            'status_to_name' => 'In Progress'
+            'status_to_name' => 'In Progress',
+            'id_status_from' => $status_in_progress->id_status
         },
         {
             'is_release'     => undef,
@@ -1310,7 +1200,8 @@ subtest 'promotes_and_demotes: builds correct variants for changeset in job_mode
             'id_project'     => $project->mid,
             'status_to_name' => 'Finished',
             'text'           => 'Promote to Finished (PROD)',
-            'id'             => 'pPROD' . $status_finished->id_status
+            'id'             => 'pPROD' . $status_finished->id_status,
+            'id_status_from' => $status_in_progress->id_status
         },
         {
             'job_bl'         => 'QA',
@@ -1321,7 +1212,8 @@ subtest 'promotes_and_demotes: builds correct variants for changeset in job_mode
             'status_to'      => $status_new->id_status,
             'status_to_name' => 'New',
             'job_type'       => 'demote',
-            'bl_to'          => '*'
+            'bl_to'          => '*',
+            'id_status_from' => $status_in_progress->id_status
         }
       ];
 };
