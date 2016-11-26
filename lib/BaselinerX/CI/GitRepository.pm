@@ -759,7 +759,7 @@ sub _find_sha_from_previous_jobs {
 
             my $tag_sha = $repo_original->{previous};
 
-            if ($tag_sha && $tag_sha->sha_long ne $top_rev->sha_long) {
+            if ($tag_sha && $tag_sha->sha ne $top_rev->sha) {
                 return ($job, $tag_sha->sha);
             }
         }

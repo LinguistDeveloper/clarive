@@ -739,7 +739,7 @@ subtest 'group_items_for_revisions: allows redeploy when last job found and rele
                     $repo->mid => {
                         $project->mid => {
                             current  => $sha2->mid,
-                            previous => $sha,
+                            previous => BaselinerX::CI::GitRevision->new(sha => $sha->sha),
                             tag => '1.0-TEST'
                         }
                     }
