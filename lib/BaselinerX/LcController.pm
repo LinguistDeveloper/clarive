@@ -937,8 +937,7 @@ sub _promotes_and_demotes {
     }
     #end Personalized _workflow!
 
-    my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
-    my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;
+    my %bls = map { $$_{mid} => { bl => ($$_{moniker} || $$_{bl}), seq => $_->{seq} } } ci->bl->find->all;
     my @bl_from = _array $statuses{ $id_status_from }{bls};
 
     # Static
@@ -951,7 +950,7 @@ sub _promotes_and_demotes {
     my @job_transitions;
 
     for my $status ( @statics ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
+        for my $bl (map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } map { $bls{$_} } _array $status->{bls} ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
                 $statics->{'s'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {
@@ -992,8 +991,7 @@ sub _promotes_and_demotes {
     my $job_promotable={};
 
     for my $status ( @status_to ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
-
+        for my $bl (map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } map { $bls{$_} } _array $status->{bls} ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
                 $promotable->{'p'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {
@@ -1035,11 +1033,12 @@ sub _promotes_and_demotes {
 
     for my $status ( @status_from ) {
         my @bl_to = _array $statuses{ $status->{id_status} }{bls};
-        for my $bl ( map { $bls{$_} } @bl_from ) {
+
+        for my $bl (map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } map { $bls{$_} } @bl_from ) {
             if ( !@project_bls || $bl ~~ @project_bls ){
                 $demotable->{ 'd'.$bl.$status->{id_status} } = \1;
                 if ( $config->{demote_to_bl} ) {
-                    for my $bl_to ( map { $bls{$_} } @bl_to ) {
+                    for my $bl_to ( map { $bls{$_}{bl} } @bl_to ) {
                         push @job_transitions, {
                             id             => 'd'.$bl.$status->{id_status},
                             bl_to          => $bl_to,
