@@ -126,20 +126,6 @@ subtest 'create_branch: fails if no branch provided' => sub {
     like exception { $gs->create_branch( $stash, $config ) }, qr/Missing branch name/;
 };
 
-subtest 'create_branch: fails if no repo provided' => sub {
-    _setup();
-
-    my $repo   = TestUtils->create_ci_GitRepository();
-    my $commit = TestGit->commit($repo);
-
-    my $stash  = {};
-    my $config = {};
-
-    my $gs = _build_service();
-
-    like exception { $gs->create_branch( $stash, $config ) }, qr/Missing repo mid/;
-};
-
 subtest 'create_branch: move branch if force specified' => sub {
     _setup();
 
@@ -237,20 +223,6 @@ subtest 'create_tag: fails if no tag provided' => sub {
     my $gs = _build_service();
 
     like exception { $gs->create_tag( $stash, $config ) }, qr/Missing tag name/;
-};
-
-subtest 'create_tag: fails if no repo provided' => sub {
-    _setup();
-
-    my $repo   = TestUtils->create_ci_GitRepository();
-    my $commit = TestGit->commit($repo);
-
-    my $stash  = {};
-    my $config = {};
-
-    my $gs = _build_service();
-
-    like exception { $gs->create_tag( $stash, $config ) }, qr/Missing repo mid/;
 };
 
 subtest 'create_tag: fails when tag already exists' => sub {

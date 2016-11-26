@@ -5448,7 +5448,7 @@ msgid "Create a branch in a Git repository"
 msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
-msgid "Missing repo mid"
+msgid "Missing repo"
 msgstr ""
 
 #: lib/BaselinerX/GitServices.pm
