@@ -167,8 +167,28 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     aceditor.setValue( res.code );
                 }
                 if( res.output ) set_output( res.output );
-                if( res.lang ) change_lang({ lang: res.lang, checked: true });
-                if( res.out ) change_out({ out: res.out, checked: true });
+                if (res.lang) {
+                    var id = getIdByProperty(menuLang, {
+                        property: "lang",
+                        value: res.lang
+                    });
+                    changeLang({
+                        id:id,
+                        lang: res.lang,
+                        checked: true
+                    });
+                }
+                if (res.out) {
+                    var id = getIdByProperty(menuOut, {
+                        property: "out",
+                        value: res.out
+                    });
+                    changeOut({
+                        id: id,
+                        out: res.out,
+                        checked: true
+                    });
+                }
                 if( res.div ) {
                     var tab = cons.add({ xtype:'panel', closable: true,
                         style: { padding: '10px 10px 10px 10px' },
@@ -463,19 +483,19 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     };
 
-    var change_theme = function(x) {
+    var changeTheme = function(x) {
         if( x.checked && aceditor.editor ) {
             if (!x.onlyShow){
                 Baseliner.ajaxEval('/user/update_repl_config', {theme: x.theme}, function(res){});
             }
             var txt = aceditor.getValue();
-            menu_theme.get(x.theme).checked = true;
+            menuTheme.get(x.id).setChecked(true);
             aceditor.setTheme( x.theme );
             aceditor.setValue( txt );
         }
     };
 
-    var change_lang = function(x) {
+    var changeLang = function(x) {
         if (x.checked && aceditor.editor) {
             if (!x.onlyShow){
                 Baseliner.ajaxEval('/user/update_repl_config', {lang: x.lang, syntax: x.syntax}, function(res){});
@@ -484,7 +504,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             aceditor.setMode(x.syntax);
             aceditor.setValue(txt);
             var language = languagesMap[x.lang];
-            menu_lang.get(x.lang).checked = true;
+            menuLang.get(x.id).setChecked(true);
             btn_lang.setText(_('Lang: %1', '<b>' + language.text + '</b>'));
             btn_lang.setIcon('/static/images/icons/' + language.lang + '.svg');
             btn_lang.lang = x.lang;
@@ -492,12 +512,12 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     };
 
-    var change_out = function(x) {
+    var changeOut = function(x) {
         if( x.checked && aceditor.editor ) {
             if (!x.onlyShow){
                 Baseliner.ajaxEval('/user/update_repl_config', {out: x.out}, function(res){});
             }
-            menu_out.get(x.out).checked = true;
+            menuOut.get(x.id).setChecked(true);
             var out = outsMap[x.out];
             btn_out.setText( _('Output: %1', '<b>'+out.text+'</b>') );
             btn_out.setIcon( '/static/images/icons/' + out.out + '.svg' );
@@ -506,15 +526,15 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     };
 
-    var menu_theme = new Ext.menu.Menu({
+    var idMenuTheme = Ext.id();
+    var menuTheme = new Ext.menu.Menu({
      items: themes.map(function(themes) {
             return {
                 text: themes.text,
                 theme: themes.theme,
-                id: themes.theme,
                 checked: false,
-                group: 'theme',
-                checkHandler: change_theme
+                group: 'theme' + idMenuTheme,
+                checkHandler: changeTheme
             }
         })
     });
@@ -524,21 +544,21 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             {
                 text: _('Theme'),
                 icon:'/static/images/icons/wrench.svg',
-                menu: menu_theme
+                menu: menuTheme
             }
         ]
     });
 
-    var menu_lang = new Ext.menu.Menu({
+    var idMenuLang = Ext.id();
+    var menuLang = new Ext.menu.Menu({
         items: languages.map(function(lang) {
             return {
                 text: lang.text,
                 lang: lang.lang,
-                id: lang.lang,
                 syntax: lang.syntax,
                 checked: false,
-                group: 'repl-lang',
-                checkHandler: change_lang
+                group: 'repl-lang' + idMenuLang,
+                checkHandler: changeLang
             }
         })
     });
@@ -547,8 +567,18 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 text: _('Lang'),
                 icon:'/static/images/icons/register_view.svg',
                 cls: 'x-btn-text-icon',
-                menu: menu_lang 
+                menu: menuLang 
             });
+
+    function getIdByProperty(menu, data) {
+        var id;
+        menu.items.items.map(function(item) {
+            if (item[data.property] === data.value) {
+                id = item.id;
+            }
+        });
+        return id;
+    }
 
     aceditor.on('aftereditor', function(){
         Baseliner.ajaxEval('/user/repl_config', {}, function(res){
@@ -558,32 +588,62 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 lang = res.data.lang;
             }
             var info = languagesMap[lang];
-            change_lang({ text: info.text, lang: lang, syntax: info.syntax, checked: true, onlyShow: true });
-
+            var id = getIdByProperty(menuLang, {
+                property: "lang",
+                value: lang
+            });
+            changeLang({
+                id: id,
+                text: info.text,
+                lang: lang,
+                syntax: info.syntax,
+                checked: true,
+                onlyShow: true
+            });
             var out = 'yaml';
             if(res.data.out){
                 out = res.data.out;
             }
             var out_info = outsMap[out];
-            change_out({ text: out_info.text, out: out, checked: true, onlyShow: true });
+            id = getIdByProperty(menuOut, {
+                property: "out",
+                value: out
+            });
+            changeOut({
+                id: id,
+                text: out_info.text,
+                out: out,
+                checked: true,
+                onlyShow: true
+            });
 
             var theme = 'eclipse';
             if(res.data.theme){
                 theme = res.data.theme;
             }
-            change_theme({ text: themesMap[theme].text, theme: theme, checked: true, onlyShow: true });
+            id = getIdByProperty(menuTheme, {
+                property: "theme",
+                value: theme
+            });
+            changeTheme({
+                id: id,
+                text: themesMap[theme].text,
+                theme: theme,
+                checked: true,
+                onlyShow: true
+            });
         });
     });
 
-    var menu_out = new Ext.menu.Menu({
+    var idMenuOut = Ext.id();
+    var menuOut = new Ext.menu.Menu({
         items: outs.map(function(out) {
             return {
                 text: out.text,
                 out:  out.out,
-                id:   out.out,
                 checked: false,
-                group: 'repl-out',
-                checkHandler: change_out
+                group: 'repl-out' + idMenuOut,
+                checkHandler: changeOut
             }
         })
     });
@@ -592,7 +652,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 text: _('Output'),
                 icon:'/static/images/icons/register_view.svg',
                 cls: 'x-btn-text-icon',
-                menu: menu_out
+                menu: menuOut
             });
 
     var tbar = [
