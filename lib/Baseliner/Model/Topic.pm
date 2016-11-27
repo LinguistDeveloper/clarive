@@ -132,10 +132,8 @@ register 'event.topic.delete' => {
     text => _locl('%1 deleted a topic of %2'),
     description => _locl('User deleted a topic'),
     use_semaphore => 0,
-    vars => ['username', 'category', 'ts', 'scope'],
-    notify => {
-        scope => ['project', 'category', 'category_status'],
-    },
+    vars          => [ 'username', 'category', 'ts', 'scope' ],
+    notify => { scope => [ 'project', 'category' ] },
 };
 
 register 'event.topic.modify' => {
