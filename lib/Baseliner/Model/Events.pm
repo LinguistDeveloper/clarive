@@ -2,6 +2,7 @@ package Baseliner::Model::Events;
 use Moose;
 
 use Try::Tiny;
+use POSIX ':sys_wait_h';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Sugar;
 use Baseliner::Core::Event;
@@ -38,6 +39,12 @@ register 'service.event.daemon' => {
 
         $config->{frequency} ||= 15 ;
         $config->{boost} ||= 1 ;
+
+        $SIG{CHLD} = sub {
+            while ( ( my $child = waitpid( -1, WNOHANG ) ) > 0 ) {
+                _debug sprintf 'Reaped %s (%s)', $child, $?;
+            }
+        };
 
         _log _loc( "Event daemon starting with frequency %1, timeout %2, boost %3", $config->{frequency}, $config->{timeout}, $config->{boost} );
 
