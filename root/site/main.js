@@ -59,9 +59,9 @@ Ext.onReady(function(){
         var tab = tabpanel.getActiveTab();
         var tab_id = tab.getId();
         var info = Cla.tabInfo[tab_id];
-        var currentState = tab.get_current_state ? tab.get_current_state() : {};
-        var title = currentState.title != undefined ?
-            currentState.title : tab.get_title ?
+        var current_state = tab.get_current_state ? tab.get_current_state() : {};
+        var title = current_state.title != undefined ?
+            current_state.title : tab.get_title ?
             tab.get_title() : tab.title;
         var title_field = new Ext.form.TextField({ fieldLabel: _('Favorite Name'), value: title });
         if( !info.favorite_this ) {
@@ -78,7 +78,7 @@ Ext.onReady(function(){
                     icon: icon,
                     title: title_field.getValue(),
                     tabfav: tabfav,
-                    current_state: currentState,
+                    current_state: current_state,
                     type:'eval'
                 }
             };
