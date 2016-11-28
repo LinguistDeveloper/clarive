@@ -913,6 +913,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 id: menu.eval.id,
                 id_project: menu.eval.id_project,
                 id_status_from: menu.id_status_from,
+                state_id: menu.id_status_from,
                 promotable: obj_deploy_items_menu.promotable,
                 demotable: obj_deploy_items_menu.demotable,
                 deployable: obj_deploy_items_menu.deployable,
