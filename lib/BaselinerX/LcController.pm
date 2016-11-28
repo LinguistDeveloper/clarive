@@ -881,7 +881,7 @@ sub promotes_and_demotes {
 
         foreach my $changeset ( values %changesets_by_status ) {
             my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) =
-              $self->_promotes_and_demotes( %p, topic => $changeset );
+              $self->_promotes_and_demotes( %p, topic => $changeset, mode => 'release' );
 
             $all_statics    = { %$all_statics,    %$statics };
             $all_promotable = { %$all_promotable, %$promotable };
@@ -895,19 +895,30 @@ sub promotes_and_demotes {
         return ( $all_statics, $all_promotable, $all_demotable, $all_menu_s, $all_menu_p, $all_menu_d );
     }
     else {
-        return $self->_promotes_and_demotes(%p);
+        return $self->_promotes_and_demotes(%p, mode => 'changeset');
     }
 }
 
 sub _promotes_and_demotes {
     my ($self, %p ) = @_;
-    my ( $username, $topic, $id_status_from, $id_project ) = @p{ qw/username topic id_status_from id_project/ };
+    my ( $username, $topic, $id_status_from, $id_project, $mode ) = @p{ qw/username topic id_status_from id_project mode/ };
     my ( @menu_s, @menu_p, @menu_d );
 
     my $job_mode = $p{job_mode} // 0;
 
     $id_status_from //= $topic->{category_status}{id} // $topic->{id_category_status};
     my %statuses = ci->status->statuses;
+
+    if ( $mode eq 'changeset' ) {
+        if ( $statuses{$id_status_from}->{bind_releases} ) {
+            if ($job_mode) {
+                return ();
+            }
+            else {
+                return ( {}, {}, {}, [], [], [] );
+            }
+        }
+    }
 
     _fail _loc('Missing topic parameter') unless $topic;
 
