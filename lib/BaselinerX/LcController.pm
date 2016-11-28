@@ -902,7 +902,6 @@ sub promotes_and_demotes {
 sub _promotes_and_demotes {
     my ($self, %p ) = @_;
     my ( $username, $topic, $id_status_from, $id_project, $mode ) = @p{ qw/username topic id_status_from id_project mode/ };
-    my ( @menu_s, @menu_p, @menu_d );
 
     my $job_mode = $p{job_mode} // 0;
 
@@ -923,189 +922,150 @@ sub _promotes_and_demotes {
     _fail _loc('Missing topic parameter') unless $topic;
 
     #Personalized _workflow!
-    if($topic->{_workflow} && $topic->{_workflow}->{$id_status_from}){
+    if ( $topic->{_workflow} && $topic->{_workflow}->{$id_status_from} ) {
         my @_workflow;
-        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow( $username );
+        my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow($username);
         use Array::Utils qw(:all);
 
-        @_workflow = map { _array(values $_) } $topic->{_workflow} ;
+        @_workflow = map { _array( values $_ ) } $topic->{_workflow};
 
-        my %final = map { $_ => 1 } intersect(@_workflow,@user_workflow);
+        my %final = map { $_ => 1 } intersect( @_workflow, @user_workflow );
 
         my @final_key = keys %final;
-        map { my $st= $_; delete $statuses{$st} if !( $st ~~ @final_key); } keys %statuses;
+        map { my $st = $_; delete $statuses{$st} if !( $st ~~ @final_key ); } keys %statuses;
     }
+
     #end Personalized _workflow!
 
-    my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
-    my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;
-    my @bl_from = _array $statuses{ $id_status_from }{bls};
+    my %bls = map { $$_{mid} => { bl => ( $$_{moniker} || $$_{bl} ), seq => $_->{seq} } } ci->bl->find->all;
 
-    # Static
-    my @statics = $self->status_list( dir => 'static', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
-
-    my ($cs_project) = ci->new($topic->{mid})->projects;
+    my ($cs_project) = ci->new( $topic->{mid} )->projects;
     my @project_bls = map { $_->{bl} } _array $cs_project->bls if $cs_project;
 
-    my $statics={};
-    my @job_transitions;
+    my @maps;
+    my @transitions;
 
-    for my $status ( @statics ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
-            if ( !@project_bls || $bl ~~ @project_bls ){
-                $statics->{'s'.$bl.$status->{id_status}} = \1;
-                push @job_transitions, {
-                    id             => 's'.$bl.$status->{id_status},
-                    bl_to          => $bl,
-                    job_type       => 'static',
-                    job_bl         => $bl,
-                    id_project     => $id_project,
-                    is_release     => $topic->{category}->{is_release},
-                    status_to      => $status->{id_status},
-                    status_to_name => _loc($status->{name}),
-                    text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl ),
-                };
-                push @menu_s, {
-                    text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl ),
-                    eval => {
-                        id   => 's'.$bl.$status->{id_status},
-                        url            => '/comp/lifecycle/deploy.js',
-                        title          => 'Deploy',
-                        job_type       => 'static',
-                        bl_to          => $bl,
-                        id_project     => $id_project,
-                        is_release     => $topic->{category}->{is_release},
-                        status_to      => $status->{id_status},
-                        status_to_name => _loc($status->{name}),
-                    },
-                    id_status_from => $id_status_from_lc,
-                    icon => '/static/images/icons/arrow_right.svg'
-                };
-            }
-        }
+    for my $job_type (qw/static promote demote/) {
+        my ( $map, $transitions ) = $self->_build_transition(
+            type           => $job_type,
+            topic          => $topic,
+            username       => $username,
+            id_status_from => $id_status_from,
+            bls            => \%bls,
+            statuses       => \%statuses,
+            project_bls    => \@project_bls,
+        );
+
+        push @maps, $map;
+
+        push @transitions, [
+            map {
+                { %$_, id_project => $id_project }
+            } @$transitions
+        ];
     }
 
-    # Promote
-    my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
-
-    my $promotable={};
-    my $job_promotable={};
-
-    for my $status ( @status_to ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
-
-            if ( !@project_bls || $bl ~~ @project_bls ){
-                $promotable->{'p'.$bl.$status->{id_status}} = \1;
-                push @job_transitions, {
-                    id             => 'p'.$bl.$status->{id_status},
-                    bl_to          => $bl,
-                    job_type       => 'promote',
-                    job_bl         => $bl,
-                    id_project     => $id_project,
-                    is_release     => $topic->{category}->{is_release},
-                    status_to      => $status->{id_status},
-                    status_to_name => _loc($status->{name}),
-                    text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl ),
-                };
-                push @menu_p, {
-                    text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl ),
-                    eval => {
-                        id   => 'p'.$bl.$status->{id_status},
-                        url            => '/comp/lifecycle/deploy.js',
-                        title          => _loc('To Promote'),
-                        job_type       => 'promote',
-                        id_project     => $id_project,
-                        is_release     => $topic->{category}->{is_release},
-                        bl_to          => $bl,
-                        status_to      => $status->{id_status},
-                        status_to_name => _loc($status->{name}),
-                    },
-                    id_status_from => $id_status_from_lc,
-                    icon => '/static/images/icons/arrow_down_short.svg'
-                };
-            }
-        }
+    if ($job_mode) {
+        return map { @$_ } @transitions;
     }
+    else {
+        my $icons = {
+            static  => '/static/images/icons/arrow_right.svg',
+            promote => '/static/images/icons/arrow_down_short.svg',
+            demote  => '/static/images/icons/arrow_up_short.svg',
+        };
 
-    # Demote
-    my @status_from = $self->status_list( dir => 'demote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
-
-    my $demotable={};
-    my $config = config_get( 'config.job' );
-
-    for my $status ( @status_from ) {
-        my @bl_to = _array $statuses{ $status->{id_status} }{bls};
-        for my $bl ( map { $bls{$_} } @bl_from ) {
-            if ( !@project_bls || $bl ~~ @project_bls ){
-                $demotable->{ 'd'.$bl.$status->{id_status} } = \1;
-                if ( $config->{demote_to_bl} ) {
-                    for my $bl_to ( map { $bls{$_} } @bl_to ) {
-                        push @job_transitions, {
-                            id             => 'd'.$bl.$status->{id_status},
-                            bl_to          => $bl_to,
-                            job_type       => 'demote',
-                            job_bl         => $bl,
-                            id_project     => $id_project,
-                            is_release     => $topic->{category}->{is_release},
-                            status_to      => $status->{id_status},
-                            status_to_name => _loc($status->{name}),
-                            text => _loc( 'Demote to %1 (%3) from %2', _loc($status->{name}), $bl, $bl_to ),
-                        };
-                        push @menu_d, {
-                            text => _loc( 'Demote to %1 (%3) from %2', _loc($status->{name}), $bl, $bl_to ),
-                            eval => {
-                                id   => 'd'.$bl.$status->{id_status},
-                                url            => '/comp/lifecycle/deploy.js',
-                                title          => 'Demote',
-                                job_type       => 'demote',
-                                id_project     => $id_project,
-                                is_release     => $topic->{category}->{is_release},
-                                bl_to          => $bl,
-                                status_to      => $status->{id_status},
-                                status_to_name => _loc( $status->{name} ),
-                            },
-                            id_status_from => $id_status_from_lc,
-                            icon => '/static/images/icons/arrow_up_short.svg'
-                        };
-                    }
-                } else {
-                    push @job_transitions, {
-                        id             => 'd'.$bl.$status->{id_status},
-                        bl_to          => $bl_to[0],
-                        job_type       => 'demote',
-                        job_bl         => $bl,
-                        id_project     => $id_project,
-                        is_release     => $topic->{category}->{is_release},
-                        status_to      => $status->{id_status},
-                        status_to_name => _loc($status->{name}),
-                        text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
-                    };
-                    push @menu_d, {
-                        text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
+        my @menus;
+        foreach my $transition (@transitions) {
+            push @menus, [
+                map {
+                    {
+                        text => $_->{text},
                         eval => {
-                            id   => 'd'.$bl.$status->{id_status},
-                            url            => '/comp/lifecycle/deploy.js',
-                            title          => 'Demote',
-                            job_type       => 'demote',
-                            id_project     => $id_project,
-                            is_release     => $topic->{category}->{is_release},
-                            bl_to          => $bl,
-                            status_to      => $status->{id_status},
-                            status_to_name => _loc( $status->{name} ),
-                        },
-                        id_status_from => $id_status_from_lc,
-                        icon => '/static/images/icons/arrow_up_short.svg'
-                    };
+                            id         => $_->{id},
+                            job_type   => $_->{job_type},
+                            id_project => $id_project,
+                            url        => '/comp/lifecycle/deploy.js',
 
-                }
+                        },
+                        id_status_from => $_->{id_status_from},
+                        icon           => $icons->{ $_->{job_type} }
+                    }
+                } @$transition
+            ];
+        }
+
+        return ( @maps, @menus );
+    }
+}
+
+sub _build_transition {
+    my $self = shift;
+    my (%params) = @_;
+
+    my $type           = $params{type};
+    my $topic          = $params{topic};
+    my $username       = $params{username};
+    my $id_status_from = $params{id_status_from};
+    my $statuses       = $params{statuses};
+    my $bls            = $params{bls};
+    my $project_bls    = $params{project_bls};
+    my $id_project     = $params{id_project};
+
+    my @statuses = $self->status_list(
+        dir      => $type,
+        topic    => $topic,
+        username => $username,
+        status   => $id_status_from,
+        statuses => $statuses
+    );
+
+    my $map         = {};
+    my $transitions = [];
+
+    for my $status (@statuses) {
+        my @bls;
+
+        my $bl_to;
+        if ($type eq 'demote') {
+            @bls = _array $statuses->{$id_status_from}{bls};
+            ($bl_to) = _array $statuses->{ $status->{id_status} }{bls};
+            $bl_to = $bls->{$bl_to}->{bl};
+        }
+        else {
+            @bls = _array $status->{bls};
+        }
+
+        for my $bl ( map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } map { $bls->{$_} } @bls ) {
+            if ( !@$project_bls || $bl ~~ @$project_bls ) {
+                my $id = substr($type, 0, 1) . $bl . $status->{id_status};
+
+                $map->{$id} = \1;
+
+                my $text = {
+                    static  => _loc( 'Deploy to %1 (%2)',      _loc( $status->{name} ), $bl ),
+                    promote => _loc( 'Promote to %1 (%2)',     _loc( $status->{name} ), $bl ),
+                    demote  => _loc( 'Demote to %1 (from %2)', _loc( $status->{name} ), $bl ),
+                };
+
+                push @$transitions,
+                  {
+                    id             => $id,
+                    bl_to          => $bl_to // $bl,
+                    job_type       => $type,
+                    job_bl         => $bl,
+                    id_project     => $id_project,
+                    is_release     => $topic->{category}->{is_release},
+                    status_to      => $status->{id_status},
+                    status_to_name => _loc( $status->{name} ),
+                    id_status_from => $id_status_from,
+                    text           => $text->{$type}
+                  };
             }
         }
     }
-    if ( $job_mode ) {
-        return @job_transitions;
-    } else {
-        return ( $statics, $promotable, $demotable, \@menu_s, \@menu_p, \@menu_d );
-    }
+
+    return ($map, $transitions);
 }
 
 sub job_transitions : Local {
