@@ -260,7 +260,7 @@ sub action_tree : Local {
                 text      => _loc($folder),
                 leaf      => \0,
                 draggable => \0,
-                icon      => '/static/images/icons/action_folder.svg',
+                icon      => '/static/images/icons/action-folder.svg',
                 parents   => \@kp
             };
 
@@ -302,7 +302,7 @@ sub action_tree : Local {
                 $folders{$parent} //= {
                     key       => $parent,
                     text      => _loc($parent_name),
-                    icon      => '/static/images/icons/action_folder.svg',
+                    icon      => '/static/images/icons/action-folder.svg',
                     draggable => \0,
                     leaf      => \0,
                     parents   => $parents

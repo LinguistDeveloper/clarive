@@ -252,10 +252,10 @@ sub jobList : Path('/job/log/jobList') {
     my $log;
 
     _debug $p;
-    my $pkgIcon   = '/static/images/icons/package_green.svg';
-    my $siteIcon  = '/static/images/icons/siteicon.svg';
-    my $jobIcon   = '/static/images/icons/book.svg';
-    my $spoolIcon = '/static/images/icons/book-open.svg';
+    my $pkgIcon   = '/static/images/icons/package-green.svg';
+    my $siteIcon  = '/static/images/icons/site-orange.svg';
+    my $jobIcon   = '/static/images/icons/book-red.svg';
+    my $spoolIcon = '/static/images/icons/book-open-green.svg';
     my $infoIcon  = '/static/images/icons/active.svg';
 
     if ( $p->{logId} ) {

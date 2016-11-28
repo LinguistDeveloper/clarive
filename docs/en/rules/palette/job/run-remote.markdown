@@ -1,7 +1,7 @@
 ---
 title: Run a Remote Script
 index: 5000
-icon: cog_java
+icon: cog-java-orange
 ---
 
 Execute a remote script and rollback if needed.

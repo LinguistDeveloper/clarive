@@ -7,7 +7,7 @@
 	.st1{fill:#404040;}
 	.st2{fill:none;stroke:#404040;stroke-miterlimit:10;}
 </style>
-<title>page_edit</title>
+<title>page-edit</title>
 <rect class="st0" width="16" height="16"/>
 <rect x="8.3" y="9.2" transform="matrix(0.6863 -0.7274 0.7274 0.6863 -4.1871 10.6781)" class="st1" width="4" height="2"/>
 <polygon class="st1" points="7.5,13.2 7.9,11.3 9.4,12.6 "/>

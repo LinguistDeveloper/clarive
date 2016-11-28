@@ -3,7 +3,7 @@ use Baseliner::Moose;
 
 with 'Baseliner::Role::CI::Group';
 
-sub icon { '/static/images/icons/ci.svg' }
+sub icon { '/static/images/icons/ci-green.svg' }
 
 sub ci_form { '/ci/itemset.js' }
 

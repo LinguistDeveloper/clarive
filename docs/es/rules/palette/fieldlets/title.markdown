@@ -1,7 +1,7 @@
 ---
 title: Título
 index: 5000
-icon: lock_small
+icon: lock
 ---
 
 Añade el título a un tópico.

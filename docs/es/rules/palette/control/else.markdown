@@ -1,7 +1,7 @@
 ---
 title: ELSE
 index: 5000
-icon: else
+icon: else-orange
 ---
 
 Ejecuta las operaciones anidadas como un único bloque.

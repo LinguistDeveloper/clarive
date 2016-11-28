@@ -489,8 +489,8 @@
         if( type =='value' )
             its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='sort_field' ) {
-            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.svg' });
-            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.svg' });
+            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up-green.svg' });
+            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down-green.svg' });
         }
         if( !/^(categories|select|sort|where)$/.test(type) )
             its.push({  text: _('Delete'),
@@ -578,7 +578,7 @@
                 if( type!='value' ) nn.type = (ttype=='categories') || ttype=='where' ? ttype+'_field': ttype;
                 if( ttype == 'sort') nn.type = ttype+'_field';
                 var icon = type=='value' ? '/static/images/icons/search-small.svg'
-                    : type=='sort' ? '/static/images/icons/arrow-down.svg'
+                    : type=='sort' ? '/static/images/icons/arrow-down-green.svg'
                     : '/static/images/icons/field.svg';
                 nn.leaf = ttype == 'where' ? false : true;
                 var copy = new Ext.tree.TreeNode(nn);
@@ -751,17 +751,17 @@
 
     var initialize_folders = function(){
         tree_selected.root.appendChild([
-            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder_database.svg' },
-            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder_explore.svg' },
-            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder_find.svg' },
-            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.svg' }
+            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder-database.svg' },
+            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder-explore.svg' },
+            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder-find.svg' },
+            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder-go.svg' }
         ]);
     };
     var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.svg', handler: function(){
         tree_all.getLoader().load( tree_all.root );
         tree_all.root.expand();
     }});
-    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', handler: function(){
+    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe-cache.svg', handler: function(){
         var n;
         while (n = tree_selected.root.childNodes[0])
             tree_selected.root.removeChild(n);

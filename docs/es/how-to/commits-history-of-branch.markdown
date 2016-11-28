@@ -1,7 +1,7 @@
 ---
 title: Historial de commits por rama
 index: 5000
-icon: branch_obj
+icon: branch-blue
 ---
 
 El grid con el historial de commits por rama muestra el listado de commits que se han realizado en cada rama.

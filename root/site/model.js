@@ -2171,7 +2171,7 @@ Baseliner.DataEditor = function(c) {
         self.getLayout().setActiveItem( 1 );
     };
     var btn_json = new Ext.Button({
-        tooltip: _('JSON'), icon:'/static/images/icons/script_edit.svg', handler: view_json,
+        tooltip: _('JSON'), icon:'/static/images/icons/script-edit.svg', handler: view_json,
         allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
 
     var close_comp = function( saved ){

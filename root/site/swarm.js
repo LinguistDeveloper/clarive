@@ -43,28 +43,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.fecha_fin = new Date();
         //self.origen=0;
 
-        self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim();} });
+        self.btn_start = new Ext.Button({ icon: IC('start-green'), disabled: false, handler: function(){ self.start_anim();} });
         self.btn_pause = new Ext.Button({ icon: IC('pause'), disabled: true, handler: function(){ self.pause_anim() } });
-        self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
-
-        // self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false,
-        //     menu : {
-        //         items: [{
-        //             text: 'Today', handler: function(){ self.get_days(0) }
-        //         }, {
-        //             text: '2D', handler: function(){ self.get_days(2) }
-        //         }, {
-        //             text: '7D', handler: function(){ self.get_days(7) }
-        //         }, {
-        //             text: '1M', handler: function(){ self.get_days(30) }
-        //         }, {
-        //             text: '3M', handler: function(){ self.get_days(90) }
-        //         }, {
-        //             text: '6M', handler: function(){ self.get_days(180) }
-        //         }]
-        //     },
-        //     //handler: function(){ self.start_anim() }
-        // });
+        self.btn_stop = new Ext.Button({ icon: IC('stop-red'), disabled: true, handler: function(){ self.stop_anim() } });
 
         self.slider = new Ext.Slider({
             width: 100,

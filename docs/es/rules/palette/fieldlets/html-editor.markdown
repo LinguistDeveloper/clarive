@@ -1,7 +1,7 @@
 ---
 title: Editor HTML
 index: 5000
-icon: html
+icon: html-blue
 ---
 
 Permite añadir código HTML en un tópico.

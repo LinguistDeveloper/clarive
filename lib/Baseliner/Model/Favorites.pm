@@ -25,7 +25,7 @@ sub add_favorite_item {
 
     if ( delete $favorite->{is_folder} ) {
         $favorite->{id_folder} = $id;
-        $favorite->{icon}      = '/static/images/icons/folder-collapsed.svg';
+        $favorite->{icon}      = '/static/images/icons/folder-collapsed-orange.svg';
         $favorite->{url}       = '/lifecycle/tree_favorites?id_folder=' . $id;
     }
 

@@ -63,7 +63,7 @@ sub gen_tree : Private {
         my %categories  = map { $_->{id}=>1 } Baseliner::Model::Topic->get_categories_permissions( username => $p->{username}, type => 'view' );
         my $remove_item = {
             text => _loc('Remove from folder'),
-            icon => '/static/images/icons/folder_delete.svg',
+            icon => '/static/images/icons/folder-delete.svg',
             eval => {
                 handler => 'Baseliner.remove_folder_item'
             }
@@ -261,20 +261,20 @@ sub get_menu_folder {
                             };
     # push @menu_folder, '-';
     push @menu_folder, { text => _loc('New Folder'),
-                            icon => '/static/images/icons/folder_new.svg',
+                            icon => '/static/images/icons/folder-new.svg',
                             eval => {
                                 handler => 'Baseliner.new_folder'
                             }
                         };
     push @menu_folder, { text => _loc('Rename Folder'),
-                            icon => '/static/images/icons/folder_edit.svg',
+                            icon => '/static/images/icons/folder-edit.svg',
                             eval => {
                                 handler => 'Baseliner.rename_folder'
                             }
                         };
 
     push @menu_folder, {  text => _loc('Delete Folder'),
-                                icon => '/static/images/icons/folder_delete.svg',
+                                icon => '/static/images/icons/folder-delete.svg',
                                 eval => {
                                     handler => 'Baseliner.delete_folder'
                                 }

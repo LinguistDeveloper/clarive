@@ -14,7 +14,7 @@ La arquitectura de Clarive consiste en los siguientes elementos generales:
 - Servidores Staging-Build.
 - Agentes de comunicación.
 
-<img src="/static/images/docs/arch1.png" class="img_help" />
+<img src="/static/images/schema/arch1.png" class="img_help" />
 
 ## Servidor automatizado
 
@@ -46,7 +46,7 @@ Clarive cliente Web utiliza la última tecnología de la Web 2.0 para ofrecer un
 
 Realizar el proceso de construir y desplegar aplicaciones, Clarive necesita comunicarse con los servidores de la red: con agentes de propiedad o a través de SSH.
 
-<img class="img_help" src="/static/images/docs/arch2.png" />
+<img class="img_help" src="/static/images/schema/arch2.png" />
 
 Los agentes de Clarive son compatibles con cualquier tecnología UNIX, Linux o Windows.
 

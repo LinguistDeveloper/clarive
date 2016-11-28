@@ -1,7 +1,7 @@
 ---
 title: Renombrar elementos del Baseline y ficheros
 index: 5000
-icon: rename_items
+icon: rename-items
 ---
 
 De acuerdo a la ventana de configuración, los ficheros o elementos del directorio de trabajo se renombrarán de manera recursiva para el entorno actual.

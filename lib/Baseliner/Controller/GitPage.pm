@@ -45,7 +45,7 @@ sub commit_tree : Local  {
             my $file = $_;
             +{
                 text       => $file,
-                icon       => '/static/images/icons/status-m.svg',
+                icon       => '/static/images/icons/status-m-blue.svg',
                 leaf => \1,
              }
         }

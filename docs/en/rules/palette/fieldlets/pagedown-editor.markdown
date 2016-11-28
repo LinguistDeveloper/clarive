@@ -1,7 +1,7 @@
 ---
 title: Pagedown editor
 index: 5000
-icon: html
+icon: html-blue
 ---
 
 Allows to add elements in Markdown language.

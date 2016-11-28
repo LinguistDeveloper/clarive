@@ -264,7 +264,7 @@
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv.svg',
+        icon: '/static/images/icons/csv-green.svg',
         text: _('CSV'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
@@ -472,7 +472,7 @@
     var menu_list = [];
     menu_list.push({
       text: _('All'),
-      icon: '/static/images/icons/baseline.svg',
+      icon: '/static/images/icons/baseline-blue.svg',
       handler: function (item) {
         item.parentMenu.ownerCt.setText('');
         delete store.baseParams.filter_bl;
@@ -482,7 +482,7 @@
     menu_list.push( <%$envs_json%>.map(function (x) {
           return {
             text: String.format('{0}: {1}', x.bl, x.name ),
-            icon: '/static/images/icons/baseline.svg',
+            icon: '/static/images/icons/baseline-blue.svg',
             handler: function (item) {
               item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
               store.baseParams.filter_bl = x.bl;
@@ -493,7 +493,7 @@
     );
     var menu_bl = new Ext.Button({
       tooltip: _("Baseline"),
-      icon: '/static/images/icons/baseline.svg',
+      icon: '/static/images/icons/baseline-blue.svg',
       menu: menu_list
     });
 
@@ -513,7 +513,7 @@
           '-',
           {
             text: _('promote'),
-            icon: '/static/images/icons/arrow_right.svg',
+            icon: '/static/images/icons/arrow-right-green.svg',
             handler: function (item) {
                item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('promote')) + '</b>' );
                store.baseParams.filter_type = 'promote';
@@ -521,7 +521,7 @@
             }
           },{
             text: _('demote'),
-            icon: '/static/images/icons/arrow_left.svg',
+            icon: '/static/images/icons/arrow-left-green.svg',
             handler: function (item) {
                item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('demote')) + '</b>' );
                store.baseParams.filter_type = 'demote';
@@ -686,7 +686,7 @@
                         handler:function(){trap_do(mid,'retry')} },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
                 { flex:1, layout:'hbox', padding: 20,
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.svg',
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip-green.svg',
                         handler:function(){trap_do(mid,'skip')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
                 { flex:1, layout:'hbox', padding: 20,
@@ -702,7 +702,7 @@
         trap_win.show();
     }
 
-    var htmlButton = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.svg',
+    var htmlButton = new Ext.Toolbar.Button({ icon: '/static/images/icons/html-blue.svg',
         tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -765,7 +765,7 @@
 % }
             {
                 text: _('Job Export'),
-                icon:'/static/images/icons/downloads_favicon.svg',
+                icon:'/static/images/icons/downloads-favicon.svg',
                 handler: function() {
                     var sm = grid.getSelectionModel();
                     if (sm.hasSelection())
@@ -824,7 +824,7 @@
                                       <div class="container_24">
                                         <div class="grid_24">
                                         <h4>
-                                            <img src="/static/images/icons/error.svg" style="vertical-align:middle">
+                                            <img src="/static/images/icons/error-triangle-orange.svg" style="vertical-align:middle">
                                             [%= msg %]
                                         </h4>
                                         </div>
@@ -960,7 +960,7 @@
     var rerunButton = new Ext.Toolbar.Button({
         text: _('Rerun'),
         disabled: true,
-        icon:'/static/images/icons/restart.svg',
+        icon:'/static/images/icons/restart-orange.svg',
         cls: 'ui-btn-restart x-btn-text-icon',
         handler: function() {
             var sm = grid.getSelectionModel();
@@ -1467,7 +1467,7 @@
         }
         if( icon!=undefined ) {
             var err_warn = '';
-            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w_1.svg" />' : '';
+            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log-orange.svg" />' : '';
             return div1
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;

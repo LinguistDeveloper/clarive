@@ -1,7 +1,7 @@
 ---
 title: User combo
 index: 5000
-icon: combo_box
+icon: combo-box
 ---
 
 Allows to introduce a combo with the existing users.

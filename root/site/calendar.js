@@ -28,7 +28,7 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
         var tbarr = [{
                 xtype: 'button',
                 iconCls: 'x-btn-icon',
-                icon: '/static/images/icons/arrow_left.svg',
+                icon: '/static/images/icons/arrow-left-green.svg',
                 handler: function() {
                     cal.fullCalendar("prev");
                     load_cal_events();
@@ -36,7 +36,7 @@ Baseliner.Calendar = Ext.extend( Ext.Panel, {
             }, {
                 xtype: 'button',
                 iconCls: 'x-btn-icon',
-                icon: '/static/images/icons/arrow_right.svg',
+                icon: '/static/images/icons/arrow-right-green.svg',
                 handler: function() {
                     cal.fullCalendar("next");
                     load_cal_events();

@@ -34,7 +34,7 @@ register 'config.git' => {
 
 register 'service.git.newjob' => {
     name    =>_locl('Create a Git Revision Job'),
-    icon    => '/static/images/icons/commite_new.svg',
+    icon    => '/static/images/icons/commite-new.svg',
     handler =>  \&newjob,
 };
 

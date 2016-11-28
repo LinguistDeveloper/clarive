@@ -1,7 +1,7 @@
 ---
 title: Moniker
 index: 5000
-icon: lock_small
+icon: lock
 ---
 
 Allows to add a moniker (alias) in the form

@@ -1,7 +1,7 @@
 ---
 title: Petición web
 index: 5000
-icon: webservice
+icon: webservice-blue
 ---
 
 Genera una petición a servicios web, URLs o cualquier sistema basado en el protocolo web HTTP/HTTPs.
@@ -36,7 +36,7 @@ Algunos de los parámetros comunes que se pueden establecer aquí son:
 
 Aquí hay una lista de los campos de cabecera que se pueden añadir:
 
-[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 
 #### Body
 

@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:none;}
 	.st1{fill:#404040;}
-	.st2{fill:#4FBC78;}
+	.st2{fill:#414141;}
 </style>
-<title>page_edit</title>
 <rect class="st0" width="16" height="16"/>
 <path class="st1" d="M14.6,5.7h-3.1v-4h0.9L14.6,5.7z"/>
 <g>
 	<path class="st1" d="M11.6,3.2l1.6,2.5l-0.1,7.7h-10V3.1L11.6,3.2 M12.4,1.7H1.6v13.2h13l0.1-9.7L12.4,1.7L12.4,1.7z"/>
 </g>
-<polygon class="st2" points="10.6,7.7 8,5.1 5.4,7.7 6.6,7.7 6.6,10.9 9.4,10.9 9.4,7.7 "/>
+<path class="st2" d="M12.2,10.5c0,0-2.1-1.6-2.8-2.3C9.3,8.1,9.3,8.1,9.3,8c0.2-0.7,0.2-1.4-0.1-2.1c-0.6-1.4-2.4-2-3.8-1.3
+	C4,5.3,3.5,7,4.2,8.4c0.8,1.5,2.7,2,4.1,1.1c0.1,0,0.1,0,0.1,0c0.5,0.5,2.7,2.3,2.7,2.3L12.2,10.5z M7.1,9C6.1,9.3,5,8.7,4.8,7.7
+	C4.5,6.6,5.1,5.5,6.1,5.3c1-0.3,2.1,0.3,2.4,1.3S8.2,8.7,7.1,9z"/>
 </svg>

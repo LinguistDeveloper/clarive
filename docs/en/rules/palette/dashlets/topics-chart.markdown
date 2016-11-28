@@ -1,7 +1,7 @@
 ---
 title: Topic charts
 index: 5000
-icon: chart_pie
+icon: chart-pie
 ---
 
 Shows a pie with the status of the topics.

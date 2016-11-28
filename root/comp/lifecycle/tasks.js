@@ -63,7 +63,7 @@
                     handler: function(){ alert('add') }                }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/icons/del_all.svg',
+                    icon:'/static/images/icons/del-all-red.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

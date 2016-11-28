@@ -1,7 +1,7 @@
 ---
 title: Internet frame
 index: 5000
-icon: webservice
+icon: webservice-blue
 ---
 
 Shows a webpage inside the dashlet.

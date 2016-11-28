@@ -147,7 +147,7 @@
 
         var btn_asignar_roles_projects = new Ext.Toolbar.Button({
                 text: _('Assign roles/projects'),
-                icon:'/static/images/icons/key_add.svg',
+                icon:'/static/images/icons/key-add.svg',
                 cls: 'x-btn-text-icon ui-comp-users-edit-window-assign-roles',
                 disabled: true,
                 handler: function() {
@@ -212,7 +212,7 @@
 
         var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
             text: _('Unassign roles/projects'),
-            icon:'/static/images/icons/key_delete.svg',
+            icon:'/static/images/icons/key-delete.svg',
             cls: 'x-btn-text-icon ui-comp-users-unassign-roles',
             disabled: true,
             handler: function() {
@@ -493,7 +493,7 @@
 
         var btn_delete_row = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon:'/static/images/icons/delete_red.svg',
+            icon:'/static/images/icons/delete-red.svg',
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -525,7 +525,7 @@
 
         var btn_delete_all = new Ext.Toolbar.Button({
             text: _('Delete All'),
-            icon:'/static/images/icons/del_all.svg',
+            icon:'/static/images/icons/del-all-red.svg',
             cls: 'x-btn-text-icon',
             handler: function() {
                 Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){

@@ -27,7 +27,7 @@ has moniker  => qw(is rw isa Maybe[Str] lazy 1),
 sub rel_type { { repo => [ from_mid => 'repo_revision' ] } }
 
 sub collection { 'GitRevision' }
-sub icon { '/static/images/icons/commite_new.svg' }
+sub icon { '/static/images/icons/commite-new.svg' }
 
 # sub url {
 #     my $self = shift;

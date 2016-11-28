@@ -70,7 +70,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 },
 "children": [{
     "attributes": {
-        "icon": "/static/images/icons/user_delete.svg",
+        "icon": "/static/images/icons/user-delete.svg",
         "palette": false,
         "disabled": false,
         "active": 1,
@@ -84,7 +84,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
     "children": []
 }, {
     "attributes": {
-        "icon": "/static/images/icons/user_delete.svg",
+        "icon": "/static/images/icons/user-delete.svg",
         "palette": false,
         "disabled": false,
         "active": 1,
@@ -120,7 +120,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 },
 "children": [{
     "attributes": {
-        "icon": "/static/images/icons/user_add.svg",
+        "icon": "/static/images/icons/user-add.svg",
         "palette": false,
         "disabled": false,
         "active": 1,

@@ -1,7 +1,7 @@
 ---
 title: EVAL JavaScript
 index: 5000
-icon: cog_java
+icon: cog-java-orange
 ---
 
 Run JavaScript code and assigns to new stash variables the newly created JavaScript variables, if any.

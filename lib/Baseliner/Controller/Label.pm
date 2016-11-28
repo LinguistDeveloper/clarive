@@ -19,8 +19,8 @@ register 'menu.admin.labels' => {
     title    => _locl('Labels'),
     action   => 'action.admin.labels',
     url_comp => '/label/grid',
-    icon     => '/static/images/icons/flag_white.svg',
-    tab_icon => '/static/images/icons/flag_white.svg'
+    icon     => '/static/images/icons/flag-white.svg',
+    tab_icon => '/static/images/icons/flag-white.svg'
 };
 
 with 'Baseliner::Role::ControllerValidator';

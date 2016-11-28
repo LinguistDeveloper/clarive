@@ -1,7 +1,7 @@
 ---
 title: CODE
 index: 5000
-icon: cog_perl
+icon: cog-perl-blue
 ---
 
 Ejecuta un bloque de código PERL.

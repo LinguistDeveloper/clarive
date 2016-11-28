@@ -1,7 +1,7 @@
 ---
 title: Last jobs by app
 index: 5000
-icon: report_default
+icon: report-default
 ---
 
 Shows the last jobs ordered by application

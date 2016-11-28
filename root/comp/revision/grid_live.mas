@@ -187,7 +187,7 @@
             })
 
     var itemTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = rec.icon || 'package.svg';
+        var icon = rec.icon || 'package-orange.svg';
         return "<img alt='"+ rec.id +"' border=0 src='/static/images/icons/"+icon+"' /><b>" + value + "</b>" ;
     };
 

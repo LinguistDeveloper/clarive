@@ -1,7 +1,7 @@
 ---
 title: Gráfico de estado de tópicos
 index: 5000
-icon: chart_pie
+icon: chart-pie
 ---
 
 Muestra en modo vista en un gráfico circular el estado de los tópicos indicados en la configuración del fieldlet.

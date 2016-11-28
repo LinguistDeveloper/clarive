@@ -4,18 +4,16 @@
 	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:none;}
-	.st1{fill:#414141;}
-	.st2{fill:#F26E70;}
-	.st3{fill:#808080;}
+	.st1{fill:#404040;}
+	.st2{fill:#3FA9F5;}
 </style>
+<title>page-edit</title>
 <rect y="0" class="st0" width="16" height="16"/>
-<rect x="7" y="11" class="st1" width="2" height="3.5"/>
-<g>
-	<polygon class="st2" points="8,1.1 2,6 14,6 	"/>
+<path class="st1" d="M12,2l2.1,2.4L14,14.2H1.8L2,2H12 M13,1C5.9,1,1.6,1,1,1v14h13.8l0.1-10.7L13,1L13,1z"/>
+<path class="st1" d="M14.8,4.4h-3.2l0.2-3.2H13L14.8,4.4z"/>
+<path class="st2" d="M12,13.7l-9.5-0.1l4.7-8L12,13.7z M5,13.1l5.7,0.1L7.5,7.7L5,13.1z"/>
+<g id="Layer_2">
 </g>
-<g>
-	<path class="st1" d="M13,7v6.8H3V7H13 M14,6H2v8.8h12V6L14,6z"/>
+<g id="Layer_3">
 </g>
-<rect x="5" y="8" class="st3" width="2" height="2"/>
-<rect x="9" y="8" class="st3" width="2.1" height="2"/>
 </svg>

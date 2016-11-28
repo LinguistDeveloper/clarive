@@ -76,7 +76,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
 },
 "children": [{
     "attributes": {
-        "icon": "/static/images/icons/user_delete.svg",
+        "icon": "/static/images/icons/user-delete.svg",
         "palette": false,
         "disabled": false,
         "active": 1,
@@ -90,7 +90,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
     "children": []
 }, {
     "attributes": {
-        "icon": "/static/images/icons/user_delete.svg",
+        "icon": "/static/images/icons/user-delete.svg",
         "palette": false,
         "disabled": false,
         "active": 1,
@@ -126,7 +126,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
 },
 "children": [{
     "attributes": {
-        "icon": "/static/images/icons/user_add.svg",
+        "icon": "/static/images/icons/user-add.svg",
         "palette": false,
         "disabled": false,
         "active": 1,

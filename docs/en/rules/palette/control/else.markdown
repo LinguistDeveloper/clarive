@@ -1,7 +1,7 @@
 ---
 title: ELSE
 index: 5000
-icon: else
+icon: else-orange
 ---
 
 Execute nested ops to this op as a block

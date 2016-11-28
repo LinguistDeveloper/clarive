@@ -727,7 +727,7 @@
         } else {
             //add_node(n,bl_hash);
             if( jc_store.find('mid', data.topic_mid ) > -1 ) {
-                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error_red.svg' });
+                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-triangle-red.svg' });
             } else {
                 var project = data.id_project;
                 if ( data.is_release  == 1 ) {
@@ -997,7 +997,7 @@
             '->',
             {
                 xtype:'button', text: _('Reset'),
-                icon:'/static/images/icons/wipe_cache.svg',
+                icon:'/static/images/icons/wipe-cache.svg',
                 cls: 'x-btn-text-icon',
                 handler: form_reset_all
             },

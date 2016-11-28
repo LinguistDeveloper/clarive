@@ -748,7 +748,7 @@ sub nature_items {
 
 register 'service.approval.request' => {
     name    => _locl('Request Approval'),
-    icon => '/static/images/icons/user_green.svg',
+    icon => '/static/images/icons/user-green.svg',
     form => '/forms/approval_request.js',
     job_service  => 1,
     handler => \&request_approval,

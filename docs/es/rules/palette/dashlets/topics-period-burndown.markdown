@@ -1,7 +1,7 @@
 ---
 title: Línea de tendencia de tópicos
 index: 5000
-icon: chart_line
+icon: chart-line
 ---
 
 Muestra una línea de tendencia con los tópicos reales y las previsiones.

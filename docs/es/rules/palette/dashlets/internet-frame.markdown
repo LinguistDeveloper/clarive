@@ -1,7 +1,7 @@
 ---
 title: Marco de Internet
 index: 5000
-icon: webservice
+icon: webservice-blue
 ---
 
 Muestra una página web dentro del dashboard.

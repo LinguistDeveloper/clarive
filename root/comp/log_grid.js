@@ -311,10 +311,10 @@
 
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
-        if( value=='debug' ) icon='debug_view.svg';
+        if( value=='debug' ) icon='debug-view.svg';
         else if( value=='info' ) icon='active.svg';
-        else if( value=='warning' || value=='warn' ) icon='log_w_1.svg';
-        else if( value=='error' ) icon='error_red.svg';
+        else if( value=='warning' || value=='warn' ) icon='log-orange.svg';
+        else if( value=='error' ) icon='error-triangle-red.svg';
         else if( value=='comment' ) icon='sms.svg';
         if( icon!=undefined ) {
             return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
@@ -370,7 +370,7 @@
                    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/moredata.svg'/></a> " + datalen ;
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
-                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/icons/page_new.svg'></a> "
+                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/icons/page-new.svg'></a> "
                    ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/icons/save.svg'/></a> " + datalen ;
                }
            }
@@ -403,8 +403,8 @@
         menu_exec_list.push({ text: exec, value: exec, checked: (exec==job_exec?true:false), group: 'exec', checkHandler: menu_exec_change });
     }
     var menu_exec = new Ext.Toolbar.Button({ text : _('Execution %1/%2', job_exec, job_exec_max), menu: { items: menu_exec_list } });
-    var menu_exec_left  = new Ext.Toolbar.Button({tooltip: _('Demote'),icon: '/static/images/icons/arrow_left.svg', cls: 'x-btn-text-icon', handler: exec_left  });
-    var menu_exec_right = new Ext.Toolbar.Button({tooltip: _('Promote'), icon: '/static/images/icons/arrow_right.svg', cls: 'x-btn-text-icon', handler: exec_right  });
+    var menu_exec_left  = new Ext.Toolbar.Button({tooltip: _('Demote'),icon: '/static/images/icons/arrow-left-green.svg', cls: 'x-btn-text-icon', handler: exec_left  });
+    var menu_exec_right = new Ext.Toolbar.Button({tooltip: _('Promote'), icon: '/static/images/icons/arrow-right-green.svg', cls: 'x-btn-text-icon', handler: exec_right  });
     var menu_exec_review = function() {
         if( job_exec <= 1 ) menu_exec_left.disable();
            else menu_exec_left.enable();
@@ -416,7 +416,7 @@
             menu_exec.setText( _('Execution', job_exec ) );
     }
 
-    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.svg',
+    var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html-blue.svg',
         tooltip: _('HTML'),
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -463,7 +463,7 @@
                  }
     };
 
-    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/start.svg', cls: 'x-btn-text-icon', hidden: false,
+    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/start-green.svg', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
             Baseliner.ci_call( current_job().mid, 'resume', { confirm: _('Do you wish to resume job %1',current_job().job) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );
@@ -545,7 +545,7 @@
                 menu_exec_right,
                 {
                     text: _('Annotate'),
-                    icon: '/static/images/icons/comment_new.svg',
+                    icon: '/static/images/icons/comment-new.svg',
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
@@ -563,7 +563,7 @@
 <%doc>
                 new Ext.Toolbar.Button({
                     text: _('View Log'),
-                    icon:'/static/images/icons/drop-yes.svg',
+                    icon:'/static/images/icons/drop-yes-green.svg',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         Baseliner.addNewTab('/job/log/list', _('Job Log') );

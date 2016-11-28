@@ -32,7 +32,7 @@ sub branch : Local {
                 project => $node->{project}
             },
             text       => _loc('tree'),
-            icon       => '/static/images/icons/tree.svg',
+            icon       => '/static/images/icons/tree-blue.svg',
             leaf       => \0,
             expandable => \1
         },
@@ -44,14 +44,14 @@ sub branch : Local {
                 project => $node->{project}
             },
             text       => _loc('changes'),
-            icon       => '/static/images/icons/changes.svg',
+            icon       => '/static/images/icons/changes-blue.svg',
             leaf       => \0,
             expandable => \1
         },
         {
             url  => '/gittree/branch_commits',
             text => _loc('revisions'),
-            icon       => '/static/images/icons/commite_new.svg',
+            icon       => '/static/images/icons/commite-new.svg',
             data => {
                 branch   => $node->{name},
                 repo_mid => $node->{repo_mid}->mid,
@@ -244,7 +244,7 @@ sub branch_changes : Local {
             my $file = $_;
             +{
                 text => $file,
-                icon => '/static/images/icons/status-m.svg',
+                icon => '/static/images/icons/status-m-blue.svg',
                 leaf => \1,
               }
           }

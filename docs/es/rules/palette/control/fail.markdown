@@ -1,7 +1,7 @@
 ---
 title: FAIL
 index: 5000
-icon: log_e
+icon: error-triangle-red
 ---
 
 El flujo se detiene y se muestra un mensaje.

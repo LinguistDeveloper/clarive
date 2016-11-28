@@ -1,7 +1,7 @@
 ---
 title: YAML
 index: 5000
-icon: yaml
+icon: yaml-purple
 ---
 
 YAML is a human-readable markup format used for data serialization.
@@ -82,8 +82,8 @@ specially CIs, in a file system.
 
 Read more about the format here:
 
-- [https://en.wikipedia.org/wiki/YAML <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/YAML)
-- [http://yaml.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/YAML)
+- [https://en.wikipedia.org/wiki/YAML <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/YAML)
+- [http://yaml.org/ <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/YAML)
 
 Also, you can play with YAML in Clarive's [REPL](devel/repl) or at this
 online tool:

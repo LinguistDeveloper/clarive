@@ -1,7 +1,7 @@
 ---
 title: Nemónico
 index: 5000
-icon: lock_small
+icon: lock
 ---
 
 Permite añadir un alias en el tópico para poder ser localizado más fácilmente.

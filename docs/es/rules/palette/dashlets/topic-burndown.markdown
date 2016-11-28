@@ -1,7 +1,7 @@
 ---
 title: Timeline de tópicos
 index: 5000
-icon: chart_line
+icon: chart-line
 ---
 
 Muestra un cronograma con el número de tópicos creados dividido por hora.

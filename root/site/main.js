@@ -19,7 +19,7 @@
     });
 
     Cla.help_button = new Ext.Button({
-       icon: '/static/images/icons/lightbulb_off.svg',
+       icon: '/static/images/icons/lightbulb-off.svg',
        cls: 'x-btn-icon',
        hidden: false,
        tooltip: _('Clarive Help'),
@@ -28,7 +28,7 @@
 
    Cla.help_button.on('click', function(ev,hp){
         // when the user sees the menu, switch the bulb off
-        Cla.help_button.setIcon(IC('lightbulb_off'));
+        Cla.help_button.setIcon(IC('lightbulb-off'));
     });
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
@@ -71,7 +71,7 @@
         }
         var tabfav = info.favorite_this();
         var opp = function(){
-            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite_new');
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite-new');
             var fav_data = {
                 title: title_field.getValue(),
                 click: {
@@ -182,7 +182,7 @@
     tbar_items.push( Cla.help_button );
 
     Cla.share_button = new Ext.Button({
-        icon: '/static/images/icons/favorite_grey.svg',
+        icon: '/static/images/icons/favorite-grey.svg',
         cls: 'x-btn-icon',
         tooltip: _('Add to Favorites...'),
         handler: function() {
@@ -205,7 +205,7 @@
         tbar_items.push( south_panel );
     }
     Cla.share_button = new Ext.Button({
-       icon: '/static/images/icons/share_this.svg',
+       icon: '/static/images/icons/share-this.svg',
        cls: 'x-btn-icon',
        tooltip: _('Share'),
        handler: function(){
@@ -510,7 +510,7 @@
                             window.location.href = window.location.href;
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     },function(){
-                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/icons/error.svg' } );
+                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/icons/error-triangle-orange.svg' } );
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     });
                 } else {

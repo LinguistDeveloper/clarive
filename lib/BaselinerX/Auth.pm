@@ -17,7 +17,7 @@ register 'event.auth.attempt' => { name => _locl('User Login Attempt'), descript
 
 register 'service.auth.ok' => {
     name => _locl('Authorize User Login'),
-    icon => '/static/images/icons/user_green.svg',
+    icon => '/static/images/icons/user-green.svg',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $c->stash->{login_data}{login_ok} = 1;
@@ -26,7 +26,7 @@ register 'service.auth.ok' => {
 
 register 'service.auth.deny' => {
     name => _locl('Deny User Login'),
-    icon => '/static/images/icons/user_red.svg',
+    icon => '/static/images/icons/user-red.svg',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $c->stash->{login_data}{login_ok} = 0;
@@ -35,7 +35,7 @@ register 'service.auth.deny' => {
 
 register 'service.auth.message' => {
     name => _locl('Login Error Message'),
-    icon => '/static/images/icons/user_red.svg',
+    icon => '/static/images/icons/user-red.svg',
     data => { msg=>'User authentication denied by rule', args=>[] },
     handler=>sub{
         my ($self, $c, $data ) = @_;

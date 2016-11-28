@@ -22,7 +22,7 @@ my %RULE_ICONS = (
     report     => Util->icon_path('report.svg'),
     pipeline   => Util->icon_path('job.svg'),
     workflow   => Util->icon_path('workflow.svg'),
-    webservice => Util->icon_path('webservice.svg'),
+    webservice => Util->icon_path('webservice-blue.svg'),
 );
 
 register 'action.admin.rules' => {

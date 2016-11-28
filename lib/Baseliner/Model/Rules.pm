@@ -590,7 +590,7 @@ register 'statement.if.condition' => {
 
 register 'statement.if.else' => {
     text => _locl('ELSE'),
-    icon => '/static/images/icons/else.svg',
+    icon => '/static/images/icons/else-orange.svg',
     type => 'if',
     nested => 1,   # avoids a "current_task" before
     data => {},
@@ -607,7 +607,7 @@ register 'statement.if.else' => {
 
 register 'statement.if.elsif' => {
     text => _locl('ELSIF condition THEN'),
-    icon => '/static/images/icons/if_else.svg',
+    icon => '/static/images/icons/if-else-green.svg',
     type => 'if',
     nested => 1,
     data => { condition =>'1' },
@@ -879,7 +879,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB");
     },
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/cog-perl-blue.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -891,8 +891,8 @@ register 'statement.sub' => {
 register 'statement.fail' => {
     text => _locl('FAIL'),
     data => { msg => 'abort here' },
-    icon => '/static/images/icons/error_red.svg',
     form => '/forms/fail.js',
+    icon => '/static/images/icons/error-triangle-red.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1102,7 +1102,7 @@ register 'statement.project.block' => {
 register 'statement.perl.eval' => {
     text => _locl('EVAL'), data => { code=>'' },
     form => '/forms/stmt_eval.js',
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/cog-perl-blue.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1118,7 +1118,7 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => _locl('DO'), data => { code=>'' },
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/cog-perl-blue.svg',
     form => '/forms/stmt_eval.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1134,7 +1134,7 @@ register 'statement.perl.do' => {
 
 register 'statement.perl.group' => {
     text => _locl('GROUP'),data => { },
-    icon => '/static/images/icons/cog_gears.svg',
+    icon => '/static/images/icons/cog-gears-blue.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1152,7 +1152,7 @@ register 'statement.perl.group' => {
 register 'statement.perl.for' => {
     text => _locl('FOR eval'), data => { varname=>'x', code=>'()' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/cog-perl-blue.svg',
     form => '/forms/stmt_for.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1169,7 +1169,7 @@ register 'statement.code.server' => {
     text           => _locl('Server CODE'),
     data           => {code => ''},
     type           => 'loop',
-    icon           => '/static/images/icons/cog_perl.svg',
+    icon           => '/static/images/icons/cog-perl-blue.svg',
     holds_children => 0,
     form           => '/forms/server_code.js',
     dsl            => sub {
@@ -1193,7 +1193,7 @@ register 'statement.code.server' => {
 register 'statement.perl.code' => {
     text => _locl('CODE (Perl)'), data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/cog-perl-blue.svg',
     holds_children => 0,
     form => '/forms/stmt_eval.js',
     dsl => sub {
@@ -1340,7 +1340,7 @@ register 'statement.if.rollback' => {
 
 register 'statement.include' => {
     text            => _locl('INCLUDE rule'),
-    icon            => '/static/images/icons/cog_perl.svg',
+    icon            => '/static/images/icons/cog-perl-blue.svg',
     form            => '/forms/rule_list.js',
     holds_children  => 0,
     show_in_palette => 0,

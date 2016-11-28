@@ -1,7 +1,7 @@
 ---
 title: Estado
 index: 5000
-icon: lock_small
+icon: lock
 ---
 
 Define el estado del tópico.

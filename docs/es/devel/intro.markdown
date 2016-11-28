@@ -55,8 +55,8 @@ La API es robusta y permite a los desarrolladores utilizar librerías de las sig
 
 ### Versión de JavaScript implementada en Clarive
 
-El intérprete JavaScript actualmente implementado en Clarive se basa en [Duktape <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://duktape.org), un motor intérprete embebido [Ecmascript v5/v5.1 compliant <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://www.ecma-international.org/ecma-262/5.1/), aunque algunas de las características Ecmascript v6 también están disponibles.
+El intérprete JavaScript actualmente implementado en Clarive se basa en [Duktape <img class='ext-link' src='static/images/icons/window-new.svg' />](http://duktape.org), un motor intérprete embebido [Ecmascript v5/v5.1 compliant <img class='ext-link' src='static/images/icons/window-new.svg' />](http://www.ecma-international.org/ecma-262/5.1/), aunque algunas de las características Ecmascript v6 también están disponibles.
 
-La lista de características de Ecmascript v6 soportadas por Duktape está disponible [aquí <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://duktape.org/guide.html#es6features)
+La lista de características de Ecmascript v6 soportadas por Duktape está disponible [aquí <img class='ext-link' src='static/images/icons/window-new.svg' />](http://duktape.org/guide.html#es6features)
 
 

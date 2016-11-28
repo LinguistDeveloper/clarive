@@ -53,7 +53,7 @@ print( req.headers('accept-language') );
 
 Algunas de las cabeceras comunes se pueden obtener de una llamada al navegador:
 
-[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 
 Cómo enviar cabeceras (mi cabecera y otras) con una llamada al comando `curl`:
 

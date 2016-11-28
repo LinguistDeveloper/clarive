@@ -1,7 +1,7 @@
 ---
 title: Topic selector
 index: 5000
-icon: combo_box
+icon: combo-box
 ---
 
 Allows to add topics to the form.

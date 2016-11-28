@@ -33,7 +33,7 @@ en concreto en `DECLARATIVE_BASE/plugins/[plugin-id]/t`.
 
 La salida de los test es compatible con *TAP (Test Anything Protocol*, el cual es compatible con diferentes frameworks de testing.
 
-Para más información: [https://testanything.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://testanything.org/)
+Para más información: [https://testanything.org/ <img class='ext-link' src='static/images/icons/window-new.svg' />](https://testanything.org/)
 
 #### --verbose-tests
 

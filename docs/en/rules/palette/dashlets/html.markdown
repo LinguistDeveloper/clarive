@@ -1,7 +1,7 @@
 ---
 title: HTML
 index: 5000
-icon: html
+icon: html-blue
 ---
 
 Shows an HTML code you can configure in dashlet settings.

@@ -1,7 +1,7 @@
 ---
 title: Topics period burndown
 index: 5000
-icon: chart_line
+icon: chart-line
 ---
 
 Shows a chart line with the real and the expected trends of the topics in a timeline.

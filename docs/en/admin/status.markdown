@@ -1,7 +1,7 @@
 ---
 title: Managing Status
 index: 5000
-icon: status
+icon: state
 ---
 
 A given topic has different statuses, and one single status can be used by any number of topics.

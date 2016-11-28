@@ -1,7 +1,7 @@
 ---
 title: Checkbox
 index: 5000
-icon: admin_request
+icon: admin-request
 ---
 
 Allows to introduce a checkbox in the form.

@@ -1,7 +1,7 @@
 ---
 title: Clave API
 index: 5000
-icon: lock_small
+icon: lock
 ---
 
 Una clave API es un código único que puede ser usado desde aplicaciones externas para identificar a un usuario existente en la herramienta y acceder a toda la funcionalidad de Clarive.

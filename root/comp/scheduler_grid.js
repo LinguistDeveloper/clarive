@@ -220,7 +220,7 @@
     var button_run_schedule = new Ext.Toolbar.Button({
         text: _('Run now'),
         hidden: true,
-        icon: '/static/images/icons/start.svg',
+        icon: '/static/images/icons/start-green.svg',
         cls: 'x-btn-text-icon',
         handler: run_schedule_handler
     });
@@ -340,7 +340,7 @@
             button_run_schedule.show();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
-            button_toggle_activation.setIcon('/static/images/icons/stop.svg');
+            button_toggle_activation.setIcon('/static/images/icons/stop-red.svg');
             button_toggle_activation.show();
         } else if (r.data.status == 'KILLED') {
             button_delete_schedule.show();
@@ -352,7 +352,7 @@
             button_run_schedule.hide();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Activate'));
-            button_toggle_activation.setIcon('/static/images/icons/start.svg');
+            button_toggle_activation.setIcon('/static/images/icons/start-green.svg');
             button_toggle_activation.show();
         } else if (r.data.status == 'RUNNING') {
             button_delete_schedule.hide();
@@ -364,7 +364,7 @@
             button_run_schedule.hide();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
-            button_toggle_activation.setIcon('/static/images/icons/stop.svg');
+            button_toggle_activation.setIcon('/static/images/icons/stop-red.svg');
             button_toggle_activation.show();
         }
         button_edit_schedule.show();

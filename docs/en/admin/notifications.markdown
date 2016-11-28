@@ -5,7 +5,7 @@ icon: email
 ---
 
 In the menu bar, "Administration" menu we select the
-<img class = "bali-topic-editor-image" src = "/static/images/icons/email.png" /> Notifications options.
+<img class = "bali-topic-editor-image" src = "/static/images/icons/email.svg" /> Notifications options.
 
 This shows in the main panel of the grid Clarive notification and the top bar with the available actions (buttons).
 
@@ -44,13 +44,13 @@ Action indicates the type of notification, Send or Exclude.
 
 All notifications can be enabled or not created.
 
-This column shows the state through a <img  src = "/static/images/icons/start.svg" /> or <img src ="/static/images/icons/stop.svg "/>.
+This column shows the state through a <img  src = "/static/images/icons/start-green.svg" /> or <img src ="/static/images/icons/stop-red.svg "/>.
 
 All column headers have the same functionality as in the rest of the panels Clarive.
 
 By clicking the button we can arrange additional information and select the columns you want to see on the panel.
 
-### <img src = "/static/images/icons/add.gif" /> Create
+### <img src = "/static/images/icons/add.svg" /> Create
 
 To create a new notification click on create button.
 
@@ -143,16 +143,15 @@ The issue of notification option is activated when you select one from the list 
 
 Access the same window with the same fields as the Create menu.
 
-
-### <img src = "/static/images/icons/delete_.png" /> Delete
+### <img src = "/static/images/icons/delete.svg" /> Delete
 
 Erasing notifications.
 
-### <img src = "/static/images/icons/start.png" /> Activate / <img src = "/static/images/icons/stop.png" /> Deactivate
+### <img src = "/static/images/icons/start-green.svg" /> Activate / <img src = "/static/images/icons/stop-red.svg" /> Deactivate
 
 To enable or disable one or more notifications, select the checkbox to the left of each row.
 
-### <img src = "/static/images/icons/import.png" /> Import / <img src = "/static/images/icons/export.png" /> Export
+### <img src = "/static/images/icons/import.svg" /> Import / <img src = "/static/images/icons/export.svg" /> Export
 
 In the button bar, press <img src = "/static/images/icons/wrench.svg" />.
 

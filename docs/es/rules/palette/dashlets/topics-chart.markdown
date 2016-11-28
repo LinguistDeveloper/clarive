@@ -1,7 +1,7 @@
 ---
 title: Gráfico circular de tópicos
 index: 5000
-icon: chart_pie
+icon: chart-pie
 ---
 
 Muestra un gráfico circular que permite visualizar los tópicos agrupados por categoría.

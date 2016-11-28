@@ -42,10 +42,10 @@ Para añadir uno o varios roles a un usuario, se marcan los roles deseados en la
 
 Para desasignar un rol o un proyecto a un usuario, se puede realizar de varias maneras, por ejemplo:
 
-- Para desasignar un rol de todos los proyectos de Clarive a un usuario, hay que marcar la fila y pulsar <img src="/static/images/icons/delete_red.svg" />.
-- Para desasignar un rol de un proyecto en concreto, hay que marcar el rol en la lista de Roles y marcar el proyecto en la lista de proyectos. A continuación pulsar <img src="/static/images/icons/key_delete.svg" />.
-- Para desasignar todos los roles de un proyecto en concreto, hay que marcar el proyecto en la lista de proyectos y pulsar <img src="/static/images/icons/key_delete.svg" />.
-- Para desasignar todos los roles de un usuario, hay que pulsar <img src="/static/images/icons/del_all.svg" />.
+- Para desasignar un rol de todos los proyectos de Clarive a un usuario, hay que marcar la fila y pulsar <img src="/static/images/icons/delete-red.svg" />.
+- Para desasignar un rol de un proyecto en concreto, hay que marcar el rol en la lista de Roles y marcar el proyecto en la lista de proyectos. A continuación pulsar <img src="/static/images/icons/key-delete.svg" />.
+- Para desasignar todos los roles de un proyecto en concreto, hay que marcar el proyecto en la lista de proyectos y pulsar <img src="/static/images/icons/key-delete.svg" />.
+- Para desasignar todos los roles de un usuario, hay que pulsar <img src="/static/images/icons/del-all-red.svg" />.
 
 #### <img src="/static/images/icons/edit.svg" /> Editar un usuario
 

@@ -5,7 +5,7 @@ with 'Baseliner::Role::CI';
 
 with 'Baseliner::Role::CI';
 
-sub icon { '/static/images/icons/webservice.svg' }
+sub icon { '/static/images/icons/webservice-blue.svg' }
 
 
 #has_cis server => qw(is rw isa Baseliner::Role::CI::Server required 1);

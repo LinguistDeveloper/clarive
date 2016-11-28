@@ -1,7 +1,7 @@
 ---
 title: CATCH declaración
 index: 5000
-icon: cog_perl
+icon: cog-perl-blue
 ---
 
 Sirve para la captura de excepciones cuando la regla falla.

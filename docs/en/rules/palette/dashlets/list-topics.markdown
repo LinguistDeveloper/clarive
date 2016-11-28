@@ -1,7 +1,7 @@
 ---
 title: List topics
 index: 5000
-icon: report_default
+icon: report-default
 ---
 
 Lists the selected topics and their status in a ordered list.

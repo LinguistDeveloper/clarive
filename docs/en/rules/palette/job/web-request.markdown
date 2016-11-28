@@ -1,7 +1,7 @@
 ---
 title: Web Request
 index: 5000
-icon: webservice
+icon: webservice-blue
 ---
 
 Generates a request to webservices, URLs
@@ -43,7 +43,7 @@ depending of what's being set to the endpoint server.
 
 And many more. Here's a good list of available request headers:
 
-[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 
 #### Body
 

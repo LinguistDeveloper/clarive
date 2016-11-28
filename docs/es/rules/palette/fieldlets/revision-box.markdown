@@ -1,7 +1,7 @@
 ---
 title: Cuadro de revisiones
 index: 5000
-icon: combo_box
+icon: combo-box
 ---
 
 Permite añadir una caja donde arrastrar ramas del repositorio.

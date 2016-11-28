@@ -397,7 +397,7 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder_new.svg' }
+                    { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder-new.svg' }
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -405,8 +405,8 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/item_rename.svg' },
-                    { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder_delete.svg' }
+                    { text: _('Rename'), handler: function(){ rename_rule_folder( node ) }, icon:'/static/images/icons/item-rename.svg' },
+                    { text: _('Delete'), handler: function(item){ delete_rule_folder(node);  }, icon:'/static/images/icons/folder-delete.svg' }
                 ]
             });
             stmts_menu.showAt(event.xy);
@@ -464,7 +464,7 @@
             rule_category == 'event' ? IC('event') :
             rule_category == 'report' ? IC('report') :
             rule_category == 'pipeline' ? IC('job') :
-            rule_category == 'webservice' ? IC('webservice') :
+            rule_category == 'webservice' ? IC('webservice-blue') :
             rule_category == 'workflow' ? IC('workflow') :
             IC('rule');
         return icon;
@@ -1147,7 +1147,7 @@
 
                     if( res.success ) {
                         var msgcfg = {};
-                        if( res.detected_errors ) msgcfg.image = '/static/images/icons/warn.svg';
+                        if( res.detected_errors ) msgcfg.image = '/static/images/icons/warning-triangle-orange.svg';
                         Baseliner.message( _('Rule'), res.msg, msgcfg );
                         if( !Ext.getCmp(rt_id) ) return;  // in case the save is too long and the tree is gone
                         rule_tree.is_dirty = false;
@@ -1317,13 +1317,13 @@
                     handler: function() {
                         rollback_version(btn_refresh_tree, node)
                     },
-                    icon: IC('arrow_undo')
+                    icon: IC('arrow-undo-green')
                 }, {
                     text: has_version_tag ? _('Change tag') : _('Add tag'),
                     handler: function() {
                         tag_version(btn_refresh_tree, node)
                     },
-                    icon: IC('arrow_undo')
+                    icon: IC('arrow-undo-green')
                 }];
                 if (has_version_tag) {
                     items.push({
@@ -1331,7 +1331,7 @@
                         handler: function() {
                             untag_version(btn_refresh_tree, node)
                         },
-                        icon: IC('arrow_undo')
+                        icon: IC('arrow-undo-green')
                     });
                 }
                 var stmts_menu = new Ext.menu.Menu({
@@ -1472,7 +1472,7 @@
         // node search system
         var btn_search = new Ext.Button({ icon: IC('wrench'), menu:[
             { text: _('Search'), icon:'/static/images/icons/search-small.svg',  hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
-            { text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
+            { text: _('Clear'), icon:'/static/images/icons/wipe-cache.svg', hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
             { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } },
             '-',
@@ -1551,7 +1551,7 @@
                             rule_tree.flowchart()
                         }
                     }, {
-                        icon: '/static/images/icons/html.svg',
+                        icon: '/static/images/icons/html-blue.svg',
                         text: _('HTML'),
                         handler: function() {
                             rule_tree.view_docs()
@@ -1845,7 +1845,7 @@
             Cla.use(['/static/gojs/go-debug.js', '/comp/rule_flowchart.js'], function() {
                 var btn_back = new Ext.Button({
                     text: _('Back'),
-                    icon: IC('arrow_left_black.svg'),
+                    icon: IC('arrow-left-black'),
                     handler: function() {
                         rule_card.getLayout().setActiveItem(0);
                         rule_card.remove(dg, true);
@@ -2001,14 +2001,14 @@
             { xtype:'button', tooltip:_('Create'), icon: '/static/images/icons/add.svg', cls: 'x-btn-icon ui-comp-rule-create', handler: rule_add },
             { xtype:'button', tooltip:_('Edit'), icon: '/static/images/icons/edit.svg', id: 'x-btn-edit', cls: 'x-btn-icon', handler: function(){ rule_edit(); }, disabled: true },
             { xtype:'button', tooltip:_('Delete'), icon: '/static/images/icons/delete.svg', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
-            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart_new.svg', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
+            { xtype:'button', tooltip:_('Activate'), icon: '/static/images/icons/restart-new.svg', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             toggle_button,
             { xtype:'button', icon: '/static/images/icons/wrench.svg', tooltip:_('Import/Export'), cls: 'x-btn-icon', menu:[
                 { text: _('Import YAML'), icon: '/static/images/icons/import.svg', handler: rule_import },
                 { text: _('Import from File'), icon: '/static/images/icons/import.svg', handler: rule_import_file },
                 '-',
-                { text: _('Export YAML'), icon: '/static/images/icons/downloads_favicon.svg', handler: rule_export },
-                { text: _('Export to File'), icon: '/static/images/icons/downloads_favicon.svg', handler: rule_export_file }
+                { text: _('Export YAML'), icon: '/static/images/icons/downloads-favicon.svg', handler: rule_export },
+                { text: _('Export to File'), icon: '/static/images/icons/downloads-favicon.svg', handler: rule_export_file }
             ]}
         ]
     });

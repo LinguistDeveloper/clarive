@@ -198,7 +198,7 @@ exit 1;
 ### Heredocs
 
 Los strings en plantilla pueden ser extremadamente poderosos, y aquí es donde *heredocs*
-(o [here-documents <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/Here_document)),
+(o [here-documents <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/Here_document)),
  lo simplifica, además, implementa el formato de string multilínea.
 
 
@@ -360,7 +360,7 @@ var foo = hs.compile(tt);
 print( foo({ mom: "Johanna"}) );
 ```
 
-Para más información, lea las [Handlebars.js <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://handlebarsjs.com/)
+Para más información, lea las [Handlebars.js <img class='ext-link' src='static/images/icons/window-new.svg' />](http://handlebarsjs.com/)
 
 ### Underscore
 
@@ -371,7 +371,7 @@ var _ = require('underscore');
 _.each([1,2], function(x){ print(x) });
 ```
 
-Para más información, lea las [referencias a la librería Underscore <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://underscorejs.org/)
+Para más información, lea las [referencias a la librería Underscore <img class='ext-link' src='static/images/icons/window-new.svg' />](http://underscorejs.org/)
 
 ## No implementado en Clarive
 
@@ -396,7 +396,7 @@ Nuestro objetivo es simplemente dar al lector unos conceptos básicos para comen
 
 Para una aprender más profundamente acerca del lenguaje JavaSript, también de **Ecmascript**, recomendamos las siguientes lecturas:
 
-- Guia: The Mozilla JavaScript - [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)
-- Libro: JavaScript "The Good Parts" - [http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf)
+- Guia: The Mozilla JavaScript - [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide <img class='ext-link' src='static/images/icons/window-new.svg' />](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)
+- Libro: JavaScript "The Good Parts" - [http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf <img class='ext-link' src='static/images/icons/window-new.svg' />](http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf)
 
 

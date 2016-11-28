@@ -1,7 +1,7 @@
 ---
 title: Timeline de tópicos
 index: 5000
-icon: chart_curve
+icon: chart-curve
 ---
 
 

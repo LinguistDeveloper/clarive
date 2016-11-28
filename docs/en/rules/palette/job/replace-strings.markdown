@@ -1,7 +1,7 @@
 ---
 title: Replace Strings
 index: 5000
-icon: rename_items
+icon: rename-items
 ---
 
 Parse specified files from a given path. Parsed files can be processed in different ways according to the user criteria from the configuration window.

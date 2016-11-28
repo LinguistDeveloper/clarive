@@ -2937,7 +2937,7 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
                 job_type => 'promote',
                 url => '/comp/lifecycle/deploy.js',
             },
-            icon => "/static/images/icons/arrow_down_short.svg",
+            icon => "/static/images/icons/arrow-down-short-green.svg",
             id_status_from => $status->mid,
             text => ignore(),
         }],

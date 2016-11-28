@@ -112,7 +112,7 @@
         //width: 800,
         height: '100%',
         autoScroll:true,
-        tbar: [ Baseliner.button(_('Save'), '/static/images/icons/keyboard_add.svg', function(){
+        tbar: [ Baseliner.button(_('Save'), '/static/images/icons/keyboard-add.svg', function(){
             form.getForm().submit({
                 url: '/itemdeploy/submit',
                 waitMsg: _('Saving...'),

@@ -1,10 +1,10 @@
 ---
 title: DO
 index: 5000
-icon: cog_perl
+icon: cog-perl-blue
 ---
 
-Ejecuta un bloque de código PERL y asigna el valor de retorno a la 
+Ejecuta un bloque de código PERL y asigna el valor de retorno a la
 variable del stash *data_key*.
 
 El valor de retorno es el último comando de la secuencia de comandos que se escriben en el formulario de la operación.

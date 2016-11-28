@@ -1,7 +1,7 @@
 ---
 title: HTML Editor
 index: 5000
-icon: html
+icon: html-blue
 ---
 
 Allows to introduce a HTML code in the form.

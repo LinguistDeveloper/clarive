@@ -1,7 +1,7 @@
 ---
 title: Selector de tópicos
 index: 5000
-icon: combo_box
+icon: combo-box
 ---
 
 Permite añadir un tópico existente al nuevo tópico.

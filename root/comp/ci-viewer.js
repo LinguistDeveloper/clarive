@@ -100,7 +100,7 @@
             { xtype:'button', text: _('Create'), cls: , icon: '/static/images/icons/edit.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Delete'), icon: '/static/images/icons/delete.svg', cls: 'x-btn-text-icon' },
             { xtype:'button', text: _('Tag This'), icon: '/static/images/icons/tag.svg', cls: 'x-btn-text-icon' },
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon' }
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads-favicon.svg', cls: 'x-btn-text-icon' }
         ],
         viewConfig: {
             //headersDisabled: true,

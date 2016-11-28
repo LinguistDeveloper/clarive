@@ -1,7 +1,7 @@
 ---
 title: Environment
 index: 5000
-icon: baseline
+icon: add
 ---
 
 In DevOps, an environment typically is defined as a place

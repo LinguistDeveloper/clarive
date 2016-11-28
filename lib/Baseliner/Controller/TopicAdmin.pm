@@ -403,7 +403,7 @@ sub list_tree_fields : Local {
                   id_field  => $_->{id_field},
                   text      => $params->{name_field},
                   params    => $params,
-                  icon    => '/static/images/icons/icon_wand.svg',
+                  icon    => '/static/images/icons/icon-wand.svg',
                   leaf      => \1
                 };
             $unique_fields{$_->{id_field}} = '1';
@@ -620,7 +620,7 @@ sub get_conf_fields : Local {
                             id_field    => $_->{id_field},
                             name        => _loc($_->{params}->{name_field} // $_->{id_field}),
                             params        => $_->{params},
-                            img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/action.svg' : '/static/images/icons/icon_wand.svg',
+                            img         => $_->{params}->{origin} eq 'system' ? '/static/images/icons/action.svg' : '/static/images/icons/icon-wand.svg',
                             meta => {
                                 bd_field    => { read_only => \0 },
                                 field_order => { read_only => \0 },

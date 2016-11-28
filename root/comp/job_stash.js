@@ -24,7 +24,7 @@
         tbar: [{
             xtype: 'button',
             text: _('HTML'),
-            icon: '/static/images/icons/html.svg',
+            icon: '/static/images/icons/html-blue.svg',
             handler: function() {
                 Baseliner.open_pre_page(panel.title, stash.getValue())
             }

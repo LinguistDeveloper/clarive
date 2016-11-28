@@ -1,7 +1,7 @@
 ---
 title: Solicitar aprobación
 index: 5000
-icon: user_green
+icon: user-green
 ---
 
 El trabajo que ha sido [pausado](rules/palette/job/pause-job) necesitan aprobación de los usuarios con permisos para ello o de roles.

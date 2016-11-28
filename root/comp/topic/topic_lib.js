@@ -674,7 +674,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_i
     });
     var btn_submit = new Ext.Button({
         xtype: 'button',
-        icon:'/static/images/icons/comment_new.svg',
+        icon:'/static/images/icons/comment-new.svg',
         text: _('Add Comment'),
         handler: function(){
             var text, content_type;
@@ -868,7 +868,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         self.btn_comment = new Ext.Toolbar.Button({
             text: _('Add Comment'),
-            icon:'/static/images/icons/comment_new.svg',
+            icon:'/static/images/icons/comment-new.svg',
             cls: 'x-btn-icon-text ui-btn-comment-add',
             hidden: !self.permComment,
             handler: function() {

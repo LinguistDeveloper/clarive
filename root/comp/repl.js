@@ -115,7 +115,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             }
 
             tree.root.collapseChildNodes();
-            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:IC('folder_explore') });
+            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:IC('folder-explore') });
             results.expand();
             tree.root.eachChild( function(n) {
                 var url = n.attributes.url;
@@ -275,7 +275,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 ww.document.close();
             }),
             '->',
-            Baseliner.button('Collapse', IC('arrow_down'), function(b) { outputTabPanel.collapse(true); } )
+            Baseliner.button('Collapse', IC('arrow-down-green'), function(b) { outputTabPanel.collapse(true); } )
         ],
         region: 'south'
     });
@@ -553,7 +553,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     var langButton = new Ext.Button({
         text: _('Lang'),
-        icon: IC('register_view'),
+        icon: IC('register-view'),
         cls: 'x-btn-text-icon',
         menu: langMenu
     });
@@ -582,7 +582,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     var outButton = new Ext.Button({
         text: _('Output'),
-        icon: IC('register_view'),
+        icon: IC('register-view'),
         cls: 'x-btn-text-icon',
         menu: outMenu
     });
@@ -612,7 +612,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:IC('debug_view'),
+                icon:IC('debug-view'),
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },
@@ -636,7 +636,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Export all to file'),
-                icon:IC('drive_go'),
+                icon:IC('drive-go'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Baseliner.ajaxEval('/repl/save_to_file',{},function(res){

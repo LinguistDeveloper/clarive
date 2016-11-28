@@ -28,7 +28,7 @@ print( util.loadYAML(yaml) );
 
 ### util.dumpJSON(dato)
 
-Vuelca el argumento `dato` como [JSON <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/JSON).
+Vuelca el argumento `dato` como [JSON <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/JSON).
 
 ```javascript
 var util = require("cla/util");
@@ -38,7 +38,7 @@ print( util.dumpJSON(data) );
 
 ### util.loadJSON()
 
-Carga `dato` desde un [JSON <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/JSON) *string*.
+Carga `dato` desde un [JSON <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/JSON) *string*.
 
 ```javascript
 var util = require("cla/util");

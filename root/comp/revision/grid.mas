@@ -381,9 +381,9 @@
         });
         win_ren.show();
     };
-    var button_create = { text: _("Create"), handler: revision_create, icon: '/static/images/icons/revision_create.svg', cls: 'x-btn-text-icon' };
-    var button_del = new Ext.Button({ text: _("Delete"), disabled: true, handler: revision_del, icon: '/static/images/icons/revision_del.svg', cls: 'x-btn-text-icon' });
-    var button_rename = new Ext.Button({ text: _("Rename"), disabled: true, handler: revision_rename_form, icon: '/static/images/icons/revision_rename.svg', cls: 'x-btn-text-icon' });
+    var button_create = { text: _("Create"), handler: revision_create, icon: '/static/images/icons/revision-create.svg', cls: 'x-btn-text-icon' };
+    var button_del = new Ext.Button({ text: _("Delete"), disabled: true, handler: revision_del, icon: '/static/images/icons/revision-del.svg', cls: 'x-btn-text-icon' });
+    var button_rename = new Ext.Button({ text: _("Rename"), disabled: true, handler: revision_rename_form, icon: '/static/images/icons/revision-rename.svg', cls: 'x-btn-text-icon' });
 
     var resultTpl = new Ext.XTemplate(
         '<tpl for="."><div class="search-item {recordCls}">',
@@ -404,11 +404,11 @@
            a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\",\""+Baseliner.quote(urla[1])+"\")' >"+ value+"</a>";
            //a= "<a href='javascript:"+type+"(\""+ Baseliner.quote(urla[2])+"\")' >"+ value+"</a>";
         }
-        var icon = rec.data.icon || 'package.svg';
+        var icon = rec.data.icon || 'package-orange.svg';
         return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + a + "</b>" ;
     };
     var itemTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = rec.data.icon || 'package.svg';
+        var icon = rec.data.icon || 'package-orange.svg';
         return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + value + "</b>" ;
     };
 

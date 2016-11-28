@@ -16,7 +16,7 @@ register 'service.web.request' => {
     name => _locl('Web Request'),
     handler => \&web_request,
     job_service  => 1,
-    icon => '/static/images/icons/webservice.svg',
+    icon => '/static/images/icons/webservice-blue.svg',
     form => '/forms/web_request.js',
 };
 

@@ -1525,7 +1525,7 @@
             }
         }, {
             text: _('Export'),
-            icon: '/static/images/icons/downloads_favicon.svg',
+            icon: '/static/images/icons/downloads-favicon.svg',
             handler: function() {
                 var sm = grid.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -1607,7 +1607,7 @@
 
     var show_active = function(value, metadata, rec, rowIndex, colIndex, store) {
         var img =
-            value == '1' ? 'start.svg' : 'stop.svg';
+            value == '1' ? 'start-green.svg' : 'stop-red.svg';
         return "<img alt='" + value + "' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/" + img + "' />";
     };
 

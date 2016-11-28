@@ -1,9 +1,9 @@
 ---
 title: Labels Administration
 index: 5000
-icon: flag_white
+icon: flag-white
 ---
-Labels administration is located within **Admin - <img src="/static/images/icons/flag_white.svg" /> Labels**.
+Labels administration is located within **Admin - <img src="/static/images/icons/flag-white.svg" /> Labels**.
 You can define the following parameters:
 
 - `Color` - Choose the color that identifies the label.

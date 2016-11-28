@@ -39,11 +39,11 @@ sub root_reports {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ),
-            icon    => '/static/images/icons/report_default.svg',
+            icon    => '/static/images/icons/report-default.svg',
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/report_default.svg',
+                    icon    => '/static/images/icons/report-default.svg',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,
@@ -292,7 +292,7 @@ sub my_searches {
             {
                 mid     => $folder->mid,
                 text    => $name,
-                icon    => '/static/images/icons/report_default.svg',
+                icon    => '/static/images/icons/report-default.svg',
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
@@ -307,7 +307,7 @@ sub my_searches {
                 ],
                 data    => {
                     click   => {
-                        icon    => '/static/images/icons/report_default.svg',
+                        icon    => '/static/images/icons/report-default.svg',
                         url     => '/comp/lifecycle/report_run.js',
                         type    => 'eval',
                         title   => $name,
@@ -348,11 +348,11 @@ sub public_searches {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ),
-            icon    => '/static/images/icons/report_default.svg',
+            icon    => '/static/images/icons/report-default.svg',
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/report_default.svg',
+                    icon    => '/static/images/icons/report-default.svg',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,

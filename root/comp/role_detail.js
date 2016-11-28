@@ -665,7 +665,7 @@
                                 boundsSearch, '->',
                                 new Ext.Toolbar.Button({
                                     text: _('Remove Selection'),
-                                    icon: '/static/images/icons/delete_red.svg',
+                                    icon: '/static/images/icons/delete-red.svg',
                                     cls: 'x-btn-text-icon',
                                     handler: function() {
                                         var gridPanel = this.findParentByType(Ext.grid.GridPanel);
@@ -681,7 +681,7 @@
                                 }),
                                 new Ext.Toolbar.Button({
                                     text: _('Remove All'),
-                                    icon: '/static/images/icons/del_all.svg',
+                                    icon: '/static/images/icons/del-all-red.svg',
                                     cls: 'x-btn-text-icon',
                                     handler: function() {
                                         boundsStore.removeAll();
@@ -721,7 +721,7 @@
             search_grid, '->',
             new Ext.Toolbar.Button({
                 text: _('Remove Selection'),
-                icon: '/static/images/icons/delete_red.svg',
+                icon: '/static/images/icons/delete-red.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = roleGridPanel.getSelectionModel();
@@ -734,7 +734,7 @@
             }),
             new Ext.Toolbar.Button({
                 text: _('Remove All'),
-                icon: '/static/images/icons/del_all.svg',
+                icon: '/static/images/icons/del-all-red.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     roleGridPanel.getStore().removeAll();

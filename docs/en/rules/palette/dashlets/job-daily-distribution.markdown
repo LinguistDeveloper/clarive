@@ -1,7 +1,7 @@
 ---
 title: Job daily distribution
 index: 5000
-icon: chart_line
+icon: chart-line
 ---
 
 Shows the jobs distribution in a chart line

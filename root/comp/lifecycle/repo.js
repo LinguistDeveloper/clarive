@@ -133,7 +133,7 @@
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { properties.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow-down-green.svg', function(b) { properties.collapse(true) } )
         ],
         region: 'south'
     });
@@ -279,7 +279,7 @@
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { properties.collapse(true) } )
+            Baseliner.button('Collapse', '/static/images/icons/arrow-down-green.svg', function(b) { properties.collapse(true) } )
         ],
         region: 'south'
     });

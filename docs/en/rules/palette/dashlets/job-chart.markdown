@@ -1,7 +1,7 @@
 ---
 title: Job chart
 index: 5000
-icon: chart_pie
+icon: chart-pie
 ---
 
 Shows the status of a job in a configurable chart

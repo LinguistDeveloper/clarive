@@ -1,7 +1,7 @@
 ---
 title: Revision box
 index: 5000
-icon: combo_box
+icon: combo-box
 ---
 
 Allows to introduce a revision box into the topic form.

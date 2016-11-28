@@ -1,7 +1,7 @@
 ---
 title: Rename Baseline Items and Files
 index: 5000
-icon: rename_items
+icon: rename-items
 ---
 
 According to the configuration window, files and/or items from job

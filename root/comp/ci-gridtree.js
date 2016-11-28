@@ -472,21 +472,21 @@
             searchField,
             btn_create,
             btn_delete,
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon',
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads-favicon.svg', cls: 'x-btn-text-icon', 
                 menu:[
-                    { text:_('YAML'), icon: '/static/images/icons/yaml.svg', handler:function(){ ci_export('yaml') } },
-                    { text:_('JSON'), icon: '/static/images/icons/json.svg', handler:function(){ ci_export('json') } },
-                    { text:_('HTML'), icon: '/static/images/icons/html.svg', handler:function(){ ci_export('html', 'shallow') } },
-                    { text:_('HTML (Long)'), icon: '/static/images/icons/html.svg', handler:function(){ ci_export('html', 'deep') } },
-                    { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_export('csv', params.item) } },
-                    { text: _('CSV File'), icon: '/static/images/icons/csv.svg', handler: function() {
+                    { text:_('YAML'), icon: '/static/images/icons/yaml-purple.svg', handler:function(){ ci_export('yaml') } },
+                    { text:_('JSON'), icon: '/static/images/icons/json-purple.svg', handler:function(){ ci_export('json') } },
+                    { text:_('HTML'), icon: '/static/images/icons/html-blue.svg', handler:function(){ ci_export('html', 'shallow') } },
+                    { text:_('HTML (Long)'), icon: '/static/images/icons/html-blue.svg', handler:function(){ ci_export('html', 'deep') } },
+                    { text:_('CSV'), icon: '/static/images/icons/csv-green.svg', handler:function(){ ci_export('csv', params.item) } },
+                    { text: _('CSV File'), icon: '/static/images/icons/csv-green.svg', handler: function() {
                         ci_export_file('/ci/export_file', 'csv', params.item, 'FrameDownload')} }
                 ]
             },
             { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.svg', hidden: !can_save, cls: 'x-btn-text-icon',
                 menu:[
-                    { text:_('YAML'), icon: '/static/images/icons/yaml.svg', handler:function(){ ci_import('yaml') } },
-                    { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_import('csv', params.item) } }
+                    { text:_('YAML'), icon: '/static/images/icons/yaml-purple.svg', handler:function(){ ci_import('yaml') } },
+                    { text:_('CSV'), icon: '/static/images/icons/csv-green.svg', handler:function(){ ci_import('csv', params.item) } }
                 ]
             },
            '->',

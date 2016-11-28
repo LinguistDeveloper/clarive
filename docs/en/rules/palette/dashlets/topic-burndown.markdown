@@ -1,7 +1,7 @@
 ---
 title: Topic burndown
 index: 5000
-icon: chart_line
+icon: chart-line
 ---
 
 Shows a chronogram with a list of topics from a specific date.

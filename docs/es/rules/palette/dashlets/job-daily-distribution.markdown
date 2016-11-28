@@ -1,7 +1,7 @@
 ---
 title: Linea temporal de jobs
 index: 5000
-icon: chart_line
+icon: chart-line
 ---
 
 Muestra los trabajos en una línea temporal de distribución.

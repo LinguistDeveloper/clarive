@@ -1,7 +1,7 @@
 ---
 title: Reemplazar cadenas de texto
 index: 5000
-icon: rename_items
+icon: rename-items
 ---
 
 Convierte los ficheros específicos desde una ruta dada. Los ficheros parseados pueden ser procesados de diferentes maneras de acuerdo con los criterios de usuario desde la ventana de configuración.

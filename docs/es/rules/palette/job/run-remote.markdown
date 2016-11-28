@@ -1,7 +1,7 @@
 ---
 title: Ejecutar un script remoto
 index: 5000
-icon: cog_java
+icon: cog-java-orange
 ---
 Ejecuta un script remoto y realiza el [rollback](concepts/rollback) si es necesario.
 

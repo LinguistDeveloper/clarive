@@ -20,7 +20,7 @@ var rule = require("cla/rule");
 var ruleId = rule.create({ name: "myrule", type: "independent" }, [
     {
         attributes: {
-            icon: "/static/images/icons/cog_perl.svg",
+            icon: "/static/images/icons/cog-perl-blue.svg",
             key: "statement.code.server",
             name: "Server CODE",
             text: "Server CODE",
