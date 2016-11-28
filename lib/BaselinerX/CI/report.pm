@@ -492,7 +492,7 @@ sub all_fields {
                 leaf      => \0,
                 draggable => \0,
                 expanded  => \1,
-                icon      => '/static/images/icons/topic_one.png',
+                icon      => '/static/images/icons/folder-database.svg',
                 children  => \@children
             }
           );
