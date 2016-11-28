@@ -2932,14 +2932,9 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
         deployable => ignore(),
         menu => [{
             eval => {
-                bl_to => $bl->bl,
                 id => ignore(),
                 id_project => ignore(),
-                is_release => ignore(),
                 job_type => 'promote',
-                status_to => $status1->mid,
-                status_to_name => $status1->name,
-                title => 'To Promote',
                 url => '/comp/lifecycle/deploy.js',
             },
             icon => "/static/images/icons/arrow_down_short.svg",
