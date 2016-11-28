@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::0120_remove_extra_activity_entries;
+package Baseliner::Schema::Migrations::0123_remove_extra_activity_entries;
 use Moose;
 
 sub upgrade {
