@@ -74,20 +74,13 @@ sub items {
 
         $diff_shas = [ $tag_sha, $rev_sha . "~1" ];
     }
-    elsif ( $type eq 'promote' ) {
+    else {
         @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
 
         $diff_shas = [ $tag_sha, $rev_sha ];
     }
-    else {
-        @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
-        @items = map { my $item = 'M   ' . $_; } @items;
-
-        $diff_shas = [$tag_sha];
-    }
 
     my %repo_items = $self->repo_items( $diff_shas );
-
 
     @items = map {
         my ( $status, $path ) = /^(.*?)\s+(.*)$/;

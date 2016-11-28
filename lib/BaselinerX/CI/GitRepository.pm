@@ -168,13 +168,7 @@ sub group_items_for_revisions {
 
         @items = $top_rev->items( tag=>$tag, type=>$type );
     }
-    # prepend path prefix for repo
-    #  my $rel_path = $self->rel_path;
-    #  @items = map {
-    #      my $it = $_;
-    #      $it->path( $rel_path, $it->path ) if length $rel_path && $rel_path ne '/';
-    #      $it;
-    #  } @items;
+
     return @items;
 }
 

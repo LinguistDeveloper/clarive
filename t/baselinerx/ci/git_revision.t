@@ -30,9 +30,7 @@ subtest 'items: returns added items' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -54,9 +52,7 @@ subtest 'items: returns modified items' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -79,9 +75,7 @@ subtest 'items: returns deleted items' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -103,9 +97,7 @@ subtest 'items: returns added items when demoting' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( type => 'demote', bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( type => 'demote', tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -127,9 +119,7 @@ subtest 'items: returns modified items when demoting' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( type => 'demote', bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( type => 'demote', tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -151,9 +141,7 @@ subtest 'items: returns deleted items when demoting' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => $sha2 );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( type => 'demote', bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( type => 'demote', tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
@@ -176,9 +164,7 @@ subtest 'items: returns items referenced by branch' => sub {
 
     my $rev = TestUtils->create_ci( 'GitRevision', repo => $repo, sha => 'HEAD' );
 
-    TestUtils->create_ci( 'bl', bl => 'TEST' );
-
-    my @items = $rev->items( bl => 'TEST', tag => 'TEST' );
+    my @items = $rev->items( tag => 'TEST' );
     is scalar @items, 1;
 
     my $item = $items[0];
