@@ -28,7 +28,7 @@
             commit: params.commit
         },
         url: '/' + controller + '/get_commits_history',
-        fields: ['ago', 'author', 'revision', 'comment', 'date', 'tags'],
+        fields: ['ago', 'author', 'revision', 'comment', 'date', 'tags', 'merge'],
     });
 
     var render_diff_btn = function(value, metadata, rec, rowIndex, colIndex, store) {
@@ -130,10 +130,30 @@
             dataIndex: 'revision',
             sortable: true
         }, {
+            header: _("Merge"),
+            width: 5,
+            dataIndex: 'merge',
+            renderer: function(value, metadata, rec, rowIndex, colIndex, store) {
+                if (value) {
+                    return 'M';
+                }
+                else {
+                    return '';
+                }
+            }
+        }, {
             header: _("Comment"),
             width: 400,
             dataIndex: 'comment',
-            sortable: true
+            sortable: true,
+            renderer: function(value, metadata, rec, rowIndex, colIndex, store) {
+                if (rec.data.merge) {
+                    return '<b>' + value + '</b>';
+                }
+                else {
+                    return value;
+                }
+            }
         }, {
             header: _("Bls"),
             width: 80,
