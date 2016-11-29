@@ -62,7 +62,7 @@ register 'event.post.delete' => {
 };
 
 register 'event.post.mention' => {
-    text => _locl('%1 mentioned you in a comment #%2: %3'),
+    text => _locl('%1 mentioned %4 in a comment #%2: %3'),
     description => _locl('User mentioned another user in a comment'),
     vars => ['username', 'mid', 'post', 'mentioned','ts'],
     filter => $post_filter,

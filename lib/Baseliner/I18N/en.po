@@ -3343,7 +3343,7 @@ msgid "User deleted a comment"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "%1 mentioned you in a comment #%2: %3"
+msgid "%1 mentioned %4 in a comment #%2: %3"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm
