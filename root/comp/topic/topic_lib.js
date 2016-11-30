@@ -1093,6 +1093,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.items = [ self.loading_panel, self.detail ];
 
         Baseliner.TopicMain.superclass.initComponent.call(this);
+
+        self.on('beforerender', function() {
+            self.getTopToolbar().hide();
+        });
+
         self.on('afterrender', function(){
             new Ext.KeyMap( self.el, {
                 key: 's', ctrl: true, scope: self.el,
@@ -1105,6 +1110,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             });
         });
+
         self.on('beforeclose', function(){
             self.close_answer='';
             return self.closing()
@@ -1230,6 +1236,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_detail.hide();
             self.btn_delete_form.hide();
         }
+        self.getTopToolbar().show();
     },
     show_form : function(dontshow){
         var self = this;
@@ -1473,6 +1480,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             topic_mid: self.topic_mid, id_div: field.attr('id'),
                             data: Ext.util.JSON.decode( field.attr('dashlet_data') ) }, function(){});
                     });
+                    self.getTopToolbar().show();
                 }
             });
         self.detail.body.setStyle('overflow', 'auto');
