@@ -7843,6 +7843,12 @@ msgstr "Directorio"
 msgid "Path"
 msgstr "Ruta"
 
+#: root/ci/itemset.js root/comp/ci-grid.js root/comp/ci-gridtree.js
+#: root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
+#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
+msgid "Item"
+msgstr "Elemento"
+
 #: root/ci/job.js root/comp/dashboard_job.html root/comp/monitor_grid.js
 #: root/forms/create_job.js
 msgid "Changesets"
@@ -8436,12 +8442,6 @@ msgstr ""
 #: root/comp/ci-editor.js
 msgid "Error opening CI %1: %2"
 msgstr ""
-
-#: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
-#: root/comp/ci-viewer.js root/comp/revision/grid.mas
-#: root/comp/revision/grid_live.mas
-msgid "Item"
-msgstr "Elemento"
 
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
 #: root/comp/ci-viewer.js root/comp/job_new.js
