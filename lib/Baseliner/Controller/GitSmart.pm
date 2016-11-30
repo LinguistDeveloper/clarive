@@ -159,7 +159,14 @@ sub _run_post_event {
 
         my $title  = $commit->message;
 
-        my $rev_mid = $self->_create_or_find_rev( $new_sha, $repo_id, $commit, $ref_short );
+        my $rev_mid = BaselinerX::CI::GitRevision->create_or_update(
+            {
+                sha      => $new_sha,
+                repo_dir => $repo->repo_dir,
+                repo_mid => $repo->mid
+            }
+        );
+
 
         event_new 'event.repository.update' => {
             username   => $c->username,
@@ -412,33 +419,6 @@ sub _create_or_find_repo {
     }
 
     return $repo_id;
-}
-
-sub _create_or_find_rev {
-    my $self = shift;
-    my ( $sha, $repo_id, $commit, $ref_short ) = @_;
-
-    my $mid;
-
-    my $rev = ci->GitRevision->find_one({sha => "$sha"});
-    if ($rev) {
-        $mid = $rev->{mid};
-    }
-    else {
-        my $title     = $commit->message;
-        my $sha_short = substr( $sha, 0, 8 );
-
-        my $ci = BaselinerX::CI::GitRevision->new(
-            name    => "[$sha_short] $title",
-            moniker => $sha,
-            sha     => $sha,
-            repo    => $repo_id,
-        );
-
-        $mid = $ci->save;
-    }
-
-    return $mid;
 }
 
 sub _diff {

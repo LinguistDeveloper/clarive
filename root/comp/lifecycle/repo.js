@@ -4,14 +4,7 @@
     var repo_mid  = '<% $c->stash->{repo_mid} %>';
     var repo_type = '<% $c->stash->{collection} %>';
     var bl = '<% $c->stash->{bl} %>';
-    var controller;
-    if( repo_type == 'GitRepository'){
-        controller = 'gittree';
-    } else if(repo_type == 'PlasticRepository'){
-        controller = 'plastictree';
-    } else if(repo_type == 'SvnRepository'){
-        controller = 'svntree';
-    }
+
     var store = {
         reload: function() {
            tree.root.reload(); 
@@ -153,7 +146,7 @@
             // var tpl = new Ext.XTemplate('<div>Commit: {data}</div>');
                 // tplWriteMode: 'insertAfter',
                 // tpl: tpl,
-            
+
             var output = new Ext.Panel({
                 name: 'output',
                 title: _('%1', name),
@@ -168,13 +161,19 @@
             properties.changeTabIcon( '/static/images/icons/moredata.svg' );
             properties.expand();
         }else{*/
-            Baseliner.ajaxEval('/comp/view_file.js', { repo_dir: repo_path, repo_mid: repo_mid, file: path, rev_num: version, controller: controller, bl: bl }, function(comp){
-                //var style_cons = 'background-color: #000; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
+            Baseliner.ajaxEval('/comp/view_file.js', {
+                repo_dir: repo_path,
+                repo_mid: repo_mid,
+                file: path,
+                rev_num: version,
+                controller: repo_type,
+                bl: bl
+            }, function(comp) {
                 comp.setTitle(name);
                 comp.closable = true;
                 properties.add(comp);
                 properties.setActiveTab(comp);
-                properties.changeTabIcon( '/static/images/icons/moredata.svg' ); 
+                properties.changeTabIcon('/static/images/icons/moredata.svg');
                 properties.expand();
             });
         //}

@@ -185,7 +185,8 @@ sub _setup {
         'BaselinerX::Type::Service',
         'BaselinerX::CI',
         'Baseliner::Model::Jobs',
-        'Baseliner::Model::Rules'
+        'Baseliner::Model::Rules',
+        'Baseliner::Controller::GitSmart'
     );
 
     TestUtils->cleanup_cis;
