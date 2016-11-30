@@ -1308,7 +1308,7 @@ Cla.topic_grid = function(params){
         label : { header: _('Labels'), sortable: true, dataIndex: 'labels', hidden: true, width: 80, renderer: labelsRenderer },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
-        progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, hidden: true, renderer: render_progress },
+        progress : { header: _('Progress') + ' (%)', dataIndex: 'progress', width: 25, sortable: false, hidden: true, renderer: render_progress },
         numcomment : { header: _('Info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },
         ago : { header: _('When'), report_header: _('When'), sortable: true, dataIndex: 'modified_on', width: 40, renderer: Baseliner.render_ago },
         projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },

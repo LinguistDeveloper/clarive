@@ -5445,6 +5445,7 @@ msgid "Topic Category"
 msgstr "Categoría de Tópico"
 
 #: lib/BaselinerX/Fieldlets.pm root/comp/monitor_grid.js
+#: root/comp/topic/topic_lib_grid.js
 msgid "Progress"
 msgstr "Avance"
 
@@ -12108,10 +12109,6 @@ msgstr "completado"
 msgid "planned end"
 msgstr "Final previsto"
 
-#: root/comp/topic/topic_lib_grid.js
-msgid "%"
-msgstr "%"
-
 #: root/comp/topic/topic_lib_grid.js root/forms/log.js root/site/about.html
 msgid "Info"
 msgstr "Info"
@@ -15910,6 +15907,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "%"
+#~ msgstr "%"
 
 #~ msgid "To Promote"
 #~ msgstr "Promover"

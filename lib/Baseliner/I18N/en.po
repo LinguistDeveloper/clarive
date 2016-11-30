@@ -5372,6 +5372,7 @@ msgid "Topic Category"
 msgstr ""
 
 #: lib/BaselinerX/Fieldlets.pm root/comp/monitor_grid.js
+#: root/comp/topic/topic_lib_grid.js
 msgid "Progress"
 msgstr ""
 
@@ -11939,10 +11940,6 @@ msgstr ""
 
 #: root/comp/topic/topic_lib_grid.js
 msgid "planned end"
-msgstr ""
-
-#: root/comp/topic/topic_lib_grid.js
-msgid "%"
 msgstr ""
 
 #: root/comp/topic/topic_lib_grid.js root/forms/log.js root/site/about.html
