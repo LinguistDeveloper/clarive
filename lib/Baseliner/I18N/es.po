@@ -314,10 +314,6 @@ msgid "Requests"
 msgstr "Peticiones"
 
 #: lib/Baseliner/Controller/CI.pm
-msgid "Missing class for %1"
-msgstr "Falta la clase para %1"
-
-#: lib/Baseliner/Controller/CI.pm
 msgid "The changeset must be assigned to at least one project"
 msgstr "El cambio tiene que estar asignado a algún proyecto"
 
@@ -338,7 +334,11 @@ msgid ""
 "first"
 msgstr ""
 "Los cambios deben ser creados y asignados a al menos un proyecto. Guárdalo "
-"priemro"
+"primero"
+
+#: lib/Baseliner/Controller/CI.pm
+msgid "Missing class for %1"
+msgstr "Falta la clase para %1"
 
 #: lib/Baseliner/Controller/CI.pm
 msgid "CI %1 saved ok"
@@ -8316,8 +8316,7 @@ msgstr "Mapeo"
 #: root/comp/ci-viewer-tree.js root/comp/ci-viewer.js root/comp/events.js
 #: root/comp/job_new.js root/comp/monitor_grid.js root/comp/rules.js
 #: root/comp/sms.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js root/fields/system/js/list_revisions.js
-#: root/site/common.js root/site/model.js
+#: root/comp/topic/topic_lib_grid.js root/site/common.js root/site/model.js
 msgid "ID"
 msgstr "ID"
 
