@@ -1912,8 +1912,3 @@ div.x-panel-body .job-calendar {
     font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-image: none !important;
 }
-
-.x-topic-placeholder {
-    min-height: 80px !important;
-    min-width:  125px !important;
-}
