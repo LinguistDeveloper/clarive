@@ -4,14 +4,7 @@
     var repo_mid  = '<% $c->stash->{repo_mid} %>';
     var repo_type = '<% $c->stash->{collection} %>';
     var bl = '<% $c->stash->{bl} %>';
-    var controller;
-    if( repo_type == 'GitRepository'){
-        controller = 'gittree';
-    } else if(repo_type == 'PlasticRepository'){
-        controller = 'plastictree';
-    } else if(repo_type == 'SvnRepository'){
-        controller = 'svntree';
-    }
+
     var store = {
         reload: function() {
            tree.root.reload(); 

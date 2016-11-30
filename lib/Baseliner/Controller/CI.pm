@@ -926,54 +926,6 @@ sub children : Local {
     $c->forward('View::JSON');
 }
 
-## adds/updates foreign CIs
-
-sub _ci_create_or_update {
-    my $self = shift;
-    my %p = @_;
-    return $p{mid} if length $p{mid};
-
-    my $ns = $p{ns} || delete $p{data}{ns};
-    my $class = $p{class};
-
-    _fail _loc( 'Missing class for %1', $p{name} ) if !$class;
-
-    # check if it's an update, in case of foreign ci
-
-    if ( length $p{mid} ) {
-        my $ci = ci->new( $p{mid} );
-        $ci->update( %{ $p{data} || {} } );
-        $ci->save;
-        return $p{mid};
-    } else {
-        my $name = $p{name};
-        my $mid;
-        $class = "BaselinerX::CI::$p{class}";
-        my @same_name_cis = mdb->master_doc->find({ sha=>''.$p{data}->{sha}, name=>$name, collection=>($p{collection} // $class->collection) })->fields({ yaml=>0 })->all;
-        if ( scalar @same_name_cis > 1 ) {
-            for ( @same_name_cis ) {
-                if ( ref ci->new( $_->{mid} ) eq $class ) {
-                    $mid = $_->{mid};
-                    last;
-                }
-            }
-        } elsif ( scalar @same_name_cis == 1 ) {
-            $mid = $same_name_cis[ 0 ]->{mid};
-        }
-
-        if ( !$mid ) {
-            my $d = { name => $name, %{ $p{data} || {} }, created_by=>$p{username} };
-            my $ci = $class->new($d);
-            return $ci->save;
-        } else {
-            my $obj = ci->new( $mid );
-            $obj->update( %{ $p{data} || {} });
-            $obj->save;
-            return $mid;
-        }
-    }
-};
-
 =head2 attach_revisions
 
 Used when external CIs come with no mid, but with ns.
@@ -982,6 +934,7 @@ Used when external CIs come with no mid, but with ns.
 sub attach_revisions : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
+
     my $collection = delete $p->{collection};
     my $class = delete $p->{class};
     my $name = delete $p->{name};
@@ -1033,14 +986,14 @@ sub attach_revisions : Local {
             # check for prereq relationships
             my @ci_pre_mid;
             my %ci_data;
-            while( my ($k,$v) = each %$data ) {
-                if( $k eq 'ci_pre' ) {
+            while ( my ( $k, $v ) = each %$data ) {
+                if ( $k eq 'ci_pre' ) {
                     for my $ci ( _array $v ) {
-                        push @ci_pre_mid, $self->_ci_create_or_update( %$ci, username=>$c->username ) ;
+                        push @ci_pre_mid, $ci->{mid};
                     }
                 }
                 else {
-                    $ci_data{ $k } = $v;
+                    $ci_data{$k} = $v;
                 }
             }
 
@@ -1053,18 +1006,23 @@ sub attach_revisions : Local {
                 }
             }
 
-            $mid = $self->_ci_create_or_update(
-                rel_field  => $collection,
-                name       => $name,
-                class      => $class,
-                username   => $c->username,
-                ns         => $ns,
-                collection => $collection,
-                repo_dir   => $repo_dir,
-                mid        => $mid,
-                data       => \%ci_data
+            _fail _loc( 'Missing class for %1', $name ) if !$class;
+
+            my $ci_class = "BaselinerX::CI::$class";
+
+            $mid = $ci_class->create_or_update(
+                {
+                    sha        => $ci_data{sha},
+                    name       => $name,
+                    collection => $ci_class->collection,
+                    branch     => $ci_data{branch},
+                    repo_dir   => $repo_dir,
+                    repo_mid   => $repo_mid,
+                }
             );
-            $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
+
+
+            $c->stash->{json} = { success => \1, msg => _loc( 'CI %1 saved ok', $name ) };
             $c->stash->{json}{mid} = $mid;
         } catch {
             my $err = shift;

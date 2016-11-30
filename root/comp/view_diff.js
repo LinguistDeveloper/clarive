@@ -184,14 +184,12 @@
                                    <tr>
                                        <th id='[%= code_section[changes[i].path] %]' data-file="[%= changes[i].path %]" style="font-family: Courier New, Courier, monospace;" colspan=3>
                                            [%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
-                                           [% 
-                                              if(branch == undefined || controller == 'gittree'){
-                                               branch = '';
-                                              }
-                                              var repo = repo_dir;
-                                              if(controller != 'svntree'){
-                                                repo = repo +'/'+branch;
-                                              }
+                                           [%
+                                                var repo = repo_dir;
+                                                if ( branch == undefined || controller == 'gittree' ) {
+                                                    branch = '';
+                                                    repo   = repo + '/' + branch;
+                                                }
                                            %]
                                            <a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
                                                                                '/comp/view_file.js', 
@@ -202,6 +200,7 @@
                                                                                    branch:'[%= branch %]', 
                                                                                    rev_num:'[%= rev_num %]',
                                                                                    revid: '[%= changes[i].revid %]',
+                                                                                   first_level: '[%= first_level %]',
                                                                                    controller:'[%= controller %]'
                                                                                }
                                                                            )">[%= _('Raw') %]
@@ -219,7 +218,22 @@
                        [% } %]
                        </div>
                    </div>
-        */}.tmpl({ bodyDiff: bodyDiff, controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes, tag: params_view_diff.tag });
+        */}.tmpl({
+            first_level: params.first_level,
+            bodyDiff: bodyDiff,
+            controller: controller,
+            temp_id: temp_id,
+            code_section: code_section,
+            repo_mid: repo_mid,
+            repo_dir: repo_dir,
+            branch: branch,
+            rev_num: res.commit_info.revision,
+            author: res.commit_info.author,
+            date: res.commit_info.date,
+            comment: res.commit_info.comment,
+            changes: res.changes,
+            tag: params_view_diff.tag
+        });
 
         if (panel.rendered) {
             panel.update(html);
