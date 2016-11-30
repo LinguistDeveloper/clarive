@@ -1933,7 +1933,13 @@ Baseliner.Wizard = function(config) {
     self.first = config.first==undefined ? 0 : config.first;
     self.last = config.last==undefined ? config.items.length-1 : config.last;
     self.button_setup = function(){
-        if( self.current == self.first ) bback.disable();
+        if( self.current == self.first) {
+            bback.disable();
+            if (self.current < self.last){
+                bnext.show();
+                bdone.hide();
+            }
+        }
         if( self.current > self.first ) bback.enable();
         if( self.current == self.last ) {
             bdone.show();
