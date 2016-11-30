@@ -424,14 +424,14 @@
             items.push(combo);
         }
 
-            items.push({
-                xtype: 'checkbox',
-                name: '_deny',
-                fieldLabel: _('Negative')
-            });
+        items.push({
+            xtype: 'checkbox',
+            name: '_deny',
+            fieldLabel: _('Negative')
+        });
 
-            items.push(
-                new Ext.Button({
+        items.push(
+            new Ext.Button({
                 icon: IC('add'),
                 text: _('Add'),
                 handler: function() {
@@ -448,8 +448,7 @@
 
                             if (field.isXType('checkbox')) {
                                 values[field.getName()] = field.getValue();
-                            }
-                            else if (field.isXType('combo')) {
+                            } else if (field.isXType('combo')) {
                                 values[field.getName()] = field.getValue();
                                 values['_' + field.getName() + '_title'] = field.lastSelectionText;
                             }
@@ -580,6 +579,17 @@
                     }
                 });
 
+                var boundsSelectionFormPanel = new Ext.form.FormPanel({
+                    height: 185,
+                    frame: true,
+                    width: '100%',
+                    defaults: {
+                        msgTarget: 'under'
+                    },
+                    bodyCssClass: 'x-bounds-form',
+                    items: buildAddBoundFormItems(action, bounds, boundsStore)
+                });
+
                 var win = new Ext.Window({
                     title: _('Role Bounds') +' : '+ action,
                     width: 730,
@@ -612,12 +622,17 @@
                         iconCls: 'x-btn-text-icon',
                         text: _('Close'),
                         handler: function() {
-                            Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to close the window?'),
-                                function(btn) {
-                                    if (btn == 'yes') {
-                                        win.close();
-                                    }
-                                })
+                            if (boundsSelectionFormPanel.getForm().isDirty()) {
+                                Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to close the window?'),
+                                    function(btn) {
+                                        if (btn == 'yes') {
+                                            win.close();
+                                        }
+                                    });
+                            }
+                            else {
+                                win.close();
+                            }
                         }
                     }],
                     items: [{
@@ -626,16 +641,7 @@
                         split: true,
                         height: 200,
                         title: _('Bounds Selection'),
-                        items: new Ext.form.FormPanel({
-                            height: 185,
-                            frame: true,
-                            width: '100%',
-                            defaults: {
-                                msgTarget: 'under'
-                            },
-                            bodyCssClass: 'x-bounds-form',
-                            items: buildAddBoundFormItems(action, bounds, boundsStore)
-                        })
+                        items: boundsSelectionFormPanel
                     }, {
                         region: 'center',
                         layout: 'fit',
