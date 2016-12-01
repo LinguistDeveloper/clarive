@@ -36,9 +36,11 @@
     var render_active_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
         var instances = '';
         if ( value.length > 0 ) {
-            Ext.each(value, function(row){
-                var startMode = row.start_mode.substr(0, 1).toUpperCase();
-                instances += '<li>(' + startMode + ':' + row.pid + ') ' + row.disp_id +  '</li>';
+            Ext.each(value, function(row) {
+                if (row.start_mode) {
+                    var startMode = row.start_mode.substr(0, 1).toUpperCase();
+                    instances += '<li>(' + startMode + ':' + row.pid + ') ' + row.disp_id + '</li>';
+                }
             });
         } else {
             instances = _('None');
@@ -375,10 +377,6 @@
         callback: function(){
             Baseliner.hideLoadingMaskFade(grid.getEl());
         }
-    });
-
-    grid.on('destroy', function(){
-        autorefresh.stop(task);
     });
 
     return grid;
