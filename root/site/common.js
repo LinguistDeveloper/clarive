@@ -2758,13 +2758,27 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
     },
     getValues : function(a,b,c){
         var form2 = this.getForm();
+
         if( !form2 || !form2.el || !form2.el.dom ) {
             return null;
         }
         var form_data = form2.getValues() || {};
-        this.cascade(function(obj){
-            if( obj.name && obj.get_save_data ) {
-                form_data[ obj.name ] = obj.get_save_data();
+        this.cascade(function(obj) {
+            if (obj.name && obj.get_save_data) {
+                var record = obj.get_save_data();
+
+                if (Ext.isArray(record)) {
+                    form_data[obj.name] = record;
+                }
+                else {
+                    if (record._custom_columns) {
+                        form_data._custom_columns = form_data._custom_columns || {};
+                        form_data['_custom_columns'] = $.extend(record._custom_columns, form_data._custom_columns);
+                        delete record._custom_columns;
+                    }
+
+                    form_data[obj.name] = Ext.isObject(record) ? record.mids : record;
+                }
             }
         });
         for( var k in form_data ) {
@@ -3502,6 +3516,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     stripeRows: true,
     enableDragDrop: true,
     use_row_editor: true,
+    allowCSV: true,
     initComponent: function(){
         var self = this;
         self.viewConfig = Ext.apply({
@@ -3509,9 +3524,8 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         }, self.viewConfig );
 
         self.sm = new Baseliner.RowSelectionModel({ singleSelect: true });
-        //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
 
-        var cols, fields;
+        var cols, fields, deleteButton, addButton, loadButton;
 
         if( self.columns != undefined ) {
             cols=[]; fields=[];
@@ -3534,7 +3548,6 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                         Ext.each(data,function(value) {
                             values.data.push([value,value]);
                         })
-                        // values.data = data;
                         values.default_value = col_s[3];
                     };
                     ct = ct(values);  // templates are functions
@@ -3608,14 +3621,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         self.store.on('add', function(){ self.fireEvent( 'change', self ) });
         self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
 
-        var button_add = new Baseliner.Grid.Buttons.Add({
-            text:'',
-            tooltip: _('Create'),
-            disabled: self.readOnly ? self.readOnly : false,
-            handler: function() { self.add_row() }
-        });
-
-        var button_delete = new Baseliner.Grid.Buttons.Delete({
+        deleteButton = new Baseliner.Grid.Buttons.Delete({
             text: '',
             tooltip: _('Delete'),
             cls: 'x-btn-icon',
@@ -3623,12 +3629,15 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             handler: function() { self.del_row() }
         });
 
-        var button_load = new Ext.Button({
-            text: '',
-            tooltip: _('Load'),
-            icon: '/static/images/icons/csv.svg',
+        addButton = new Baseliner.Grid.Buttons.Add({
+            text:'',
+            tooltip: _('Create'),
             disabled: self.readOnly ? self.readOnly : false,
-            handler: function() { self.show_load_csv() }
+            handler: function() {
+                this.disable();
+                deleteButton.disable();
+                self.add_row();
+            }
         });
 
         // use RowEditor for editing
@@ -3638,10 +3647,25 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                 autoCancel: false,
                 enableDragDrop: true,
                 listeners: {
+                    beforeedit: function(roweditor, changes){
+                        addButton.disable();
+                        deleteButton.disable();
+                    },
                     afteredit: function(roweditor, changes, record, rowIndex){
                         // after editing a row, serialize data to hidden field
                         self.store.commitChanges();
+                        addButton.enable();
+                        deleteButton.enable();
                         delete record.data.id;
+                        delete record.data._new;
+                    },
+                    canceledit: function(roweditor, bool){
+                        addButton.enable();
+                        deleteButton.enable();
+
+                        if (roweditor.record.data._new) {
+                            self.del_row();
+                        }
                     }
                 }
             });
@@ -3652,12 +3676,23 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         self.fields = fields;
         self.ddGroup = 'grid_editor_' + Ext.id();
         self.tbar = [
-            button_add,
+            addButton,
             '-',
-            button_delete,
-            '-',
-            button_load
+            deleteButton
         ];
+
+        if (self.allowCSV){
+            loadButton = new Ext.Button({
+                text: '',
+                tooltip: _('Load'),
+                icon: '/static/images/icons/csv.svg',
+                disabled: self.readOnly ? self.readOnly : false,
+                handler: function() { self.show_load_csv() }
+            });
+
+            self.tbar.push(['-', loadButton]);
+        }
+
 
         Baseliner.GridEditor.superclass.initComponent.call(this);
 
@@ -3695,6 +3730,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var u = new self.store.recordType( rec || Ext.decode(Ext.encode(self.default_record)) );
         var index = self.store.getCount();
         if( self.editor && !no_edit ) self.editor.stopEditing();
+        u.data._new = true;
         self.store.insert(index, u);
         self.getSelectionModel().selectRow(index);
         if( self.editor && !no_edit ) self.editor.startEditing(index);
@@ -3739,7 +3775,9 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var arr = [];
         self.store.each( function(r) {
             var res = r.data[self.fields[0].name];
-            if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') arr.push( r.data );
+            if ((typeof(res) == 'number' && res == 0 || res == 1) || res != '') {
+                arr.push(r.data);
+            }
         });
         return arr;
     },
@@ -4818,6 +4856,15 @@ Ext.override(Ext.form.Field, {
 });
 
 Ext.apply(Ext.form.VTypes, {
+    'idField': function(v) {
+        if (/^[a-zA-Z0-9_]*$/.test(v) && v != '') {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    'idFieldText': _('Invalid id'),
+
     'json': function(v) {
         var json;
         try {

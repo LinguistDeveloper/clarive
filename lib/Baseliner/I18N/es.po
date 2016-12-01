@@ -8007,8 +8007,9 @@ msgstr "API Key"
 msgid "Phone"
 msgstr "Teléfono"
 
-#: root/ci/value.js root/forms/file_foreach.js root/forms/push_var.js
-#: root/forms/set_expr.js root/forms/set_var.js root/forms/variable_value.js
+#: root/ci/value.js root/fields/templates/config/list_topics_selector.js
+#: root/forms/file_foreach.js root/forms/push_var.js root/forms/set_expr.js
+#: root/forms/set_var.js root/forms/variable_value.js
 #: root/forms/variable_values.js root/site/model.js
 msgid "Variable"
 msgstr "Variable"
@@ -9805,7 +9806,8 @@ msgstr "SQL"
 #: root/comp/lifecycle/report_edit.js root/comp/log_grid.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/html/field_title.html root/site/tabfu.js
+#: root/fields/system/html/field_title.html
+#: root/fields/templates/config/list_topics_selector.js root/site/tabfu.js
 msgid "Information"
 msgstr "Información"
 
@@ -9897,7 +9899,8 @@ msgstr "Refresco"
 msgid "Job is not active"
 msgstr "Pase no está activo"
 
-#: root/comp/log_grid.js root/comp/sms.js root/forms/log.js
+#: root/comp/log_grid.js root/comp/sms.js
+#: root/fields/templates/config/list_topics_selector.js root/forms/log.js
 #: root/forms/system_messages.js root/site/common.js
 msgid "Text"
 msgstr "Texto"
@@ -13601,6 +13604,26 @@ msgstr "Campo padre"
 msgid "Table format?"
 msgstr ""
 
+#: root/fields/templates/config/list_topics_selector.js
+msgid "Id Column"
+msgstr "Id"
+
+#: root/fields/templates/config/list_topics_selector.js
+msgid "Display Column"
+msgstr "Nombre"
+
+#: root/fields/templates/config/list_topics_selector.js
+msgid "Column Type"
+msgstr "Tipo"
+
+#: root/fields/templates/config/list_topics_selector.js
+msgid "Custom Columns"
+msgstr "Columnas Customizables"
+
+#: root/fields/templates/config/list_topics_selector.js
+msgid "Id column already exists"
+msgstr "El id ya existe"
+
 #: root/fields/templates/config/listbox.js
 msgid "Apply role filter"
 msgstr ""
@@ -15211,6 +15234,10 @@ msgstr "Campo mostrado"
 #: root/site/common.js
 msgid "Capture JSON"
 msgstr ""
+
+#: root/site/common.js
+msgid "Invalid id"
+msgstr "Id no válido"
 
 #: root/site/common.js
 msgid "Invalid JSON"

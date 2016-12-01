@@ -1128,35 +1128,29 @@ Baseliner.ci_box = function(c) {
     return ci_box;
 };
 
-Baseliner.variable_box = function(c) {
-    var bl = c.bl || '*';
-    var mid_project = c.mid_project || '';
-    var name_variable = c.name_variable;
-    var data_wizard = c.data_wizard || '';
-
+Baseliner.variable_box = function(options) {
     var store = new Baseliner.JsonStore({
-        root: 'data' ,
-        remoteSort: true,
         autoLoad: true,
-        baseParams: { 'bl': bl, 'mid_project' : mid_project, 'name_variable' : name_variable, 'data_wizard': data_wizard},
-        totalProperty:"totalCount",
-        id: 'ns',
-        url: '/variable/json',
-        fields: ['value']
+        root: 'data',
+        baseParams: {
+            'id': options.variable
+        },
+        url: '/variable/options',
+        fields: ['value'],
+        totalProperty: "totalCount"
     });
 
-    var variable_box = new Baseliner.SuperBox({
+    var variableBox = new Ext.form.ComboBox({
         anchor: '100%',
-        id: Ext.id(),
         name: 'variable',
         allowBlank: true,
         displayField: 'value',
-        hiddenName: 'variable',
         valueField: 'value',
-        store: store
+        store: store,
+        triggerAction: 'all',
     });
 
-    return variable_box;
+    return variableBox;
 };
 
 

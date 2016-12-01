@@ -1814,9 +1814,8 @@ Baseliner.TopicCombo = Ext.extend(Ext.form.ComboBox, {
     }
 });
 
-Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
+Baseliner.TopicGrid = Ext.extend( Ext.grid.EditorGridPanel, {
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
-
         var sm = c.sm || new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
@@ -1871,6 +1870,30 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                     cols.push( ct );
                     store_fields.push( ck );
                 }
+            });
+        }
+
+        c.customColumnsPrefix = '_custom_columns_';
+        if (c.customColumns && Ext.isArray(c.customColumns)) {
+            Ext.each(c.customColumns, function(customColumn) {
+                var columnEditor;
+                var columnTemplate;
+                if (customColumn.column_type == 'text') {
+                    columnEditor = {
+                        xtype: 'textfield'
+                    };
+                } else {
+                    columnEditor = Baseliner.variable_box({
+                        variable: customColumn.variable
+                    });
+                }
+                columnTemplate = {
+                    header: customColumn.display_column || customColumn.id_column,
+                    dataIndex: c.customColumnsPrefix + customColumn.id_column,
+                    editable: true,
+                    editor: columnEditor
+                };
+                cols.push(columnTemplate);
             });
         }
         delete c['columns'];
@@ -2080,7 +2103,20 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
         self.refresh(true);
-
+        self.on("celldblclick", function(grid, rowIndex, columnindex) {
+            var row;
+            var title;
+            var columnId = grid.getColumnModel().getColumnId(columnindex);
+            var column = grid.getColumnModel().getColumnById(columnId);
+            if (column.dataindex == 'name') {
+                row = grid.getStore().getAt(rowIndex);
+                title = Baseliner.topic_title(row.get('mid'), _(row.get('name')), row.get('color'));
+                Baseliner.show_topic(row.get('mid'), title, {
+                    topic_mid: row.get('mid'),
+                    title: title
+                });
+            }
+        });
         self.on('afterrender', function(){
             var ddrow = new Baseliner.DropTarget(self.container, {
                 comp: self,
@@ -2149,13 +2185,34 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             self.combo.setValue("");
         }
     },
-    get_save_data : function(){
+    get_save_data: function() {
         var self = this;
-        var mids = [];
-        self.store.each(function(row){
-            mids.push( row.data.mid );
+
+        var data = {
+            mids: [],
+            _custom_columns: {}
+        };
+
+        self.store.each(function(row) {
+            var mid = row.data.mid;
+
+            if (self.customColumns) {
+                Ext.each(self.customColumns, function(column) {
+                    if (!data._custom_columns[self.name]) {
+                        data._custom_columns[self.name] = {};
+                    }
+                    if (!data._custom_columns[self.name][mid]) {
+                        data._custom_columns[self.name][mid] = {};
+                    }
+
+                    data._custom_columns[self.name][mid][column.id_column] = row.data[self.customColumnsPrefix + column.id_column];
+                });
+            }
+
+            data.mids.push(mid);
         });
-        return mids;
+
+        return data;
     },
     add_to_grid : function(rec){
         var self = this;
@@ -2166,6 +2223,13 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         }
         var rec_with_data = Ext.apply(rec,rec.data);
         var r = new self.store.recordType( rec_with_data );
+
+        Ext.each(this.customColumns, function(column) {
+            if (self.customData && self.customData[self.name] && self.customData[self.name][r.data.mid]) {
+                r.data[self.customColumnsPrefix + column.id_column] = self.customData[self.name][r.data.mid][column.id_column];
+            }
+        });
+
         self.store.add( r );
         self.store.commitChanges();
     },

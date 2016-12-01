@@ -44,6 +44,12 @@ sub list_topics {
         @head = map { +{ key => $_, name => ( $names->{$_} // $_ ) } }
             qw/name title name_status created_by created_on modified_by modified_on/;
     }
+    my @custom_columns = _array $meta->{custom_columns};
+    foreach my $custom_column (@custom_columns) {
+        my $name =
+          $custom_column->{display_column} ne '' ? $custom_column->{display_column} : $custom_column->{id_column};
+        push @head, { key => $custom_column->{id_column}, name => $name };
+    }
     @hide_list_statuses = map { [ split /,/ ] } $meta->{hide_list_statuses}
         if $meta->{hide_list_statuses};
 

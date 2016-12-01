@@ -121,6 +121,73 @@ subtest 'list_topics: returns correct headers' => sub {
     );
 };
 
+subtest 'list_topics: returns correct headers of custom columns' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                'attributes' => {
+                    'data' => {
+                        id_field   => 'project',
+                        name_field => 'project',
+                        meta_type  => 'project',
+                        collection => 'project',
+                    },
+                    key => 'fieldlet.system.projects',
+                }
+            },
+            {
+                'attributes' => {
+                    'data' => {
+                        id_field   => 'list_topics',
+                        name_field => 'list_topics',
+                    },
+                    key => 'fieldlet.system.list_topics',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category = TestSetup->create_category(
+        name      => 'My Changeset',
+        id_rule   => $id_changeset_rule,
+        id_status => $status->mid
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+    my $topic = ci->new($changeset_mid);
+    my $meta  = $topic->get_meta;
+
+    my ($meta_field) = grep { $_->{id_field} eq 'list_topics' } @$meta;
+    $meta_field->{custom_columns}->[0] = { id_column => 'my_column', display_column => 'My Custom Column' };
+
+    my $c = _build_c( username => $user->username );
+
+    my $helper = _build_helper( c => $c );
+    my $grid = $helper->list_topics( $meta_field, { id_field => 'list_topics' } );
+    my @custom_column = grep { $_->{key} eq 'my_column' } @{ $grid->{head} };
+
+    is_deeply( $custom_column[0]->{key},  'my_column' );
+    is_deeply( $custom_column[0]->{name}, 'My Custom Column' );
+};
+
 done_testing;
 
 sub _setup {
