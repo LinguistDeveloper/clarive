@@ -383,6 +383,7 @@ sub monitor_json : Path('/job/monitor_json') : Does('ACL') : ACL('action.job.vie
             filter_project   => $p->{filter_project},
             username         => $c->username,
             language         => $c->languages->[0],
+            filter           => $p->{filter}
         }
     );
 
