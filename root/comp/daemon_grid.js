@@ -12,7 +12,6 @@
             {  name: 'pid' },
             {  name: 'instances' },
             {  name: 'active_instances' },
-            {  name: 'exists' },
             {  name: 'active' },
             {  name: 'config' },
             {  name: 'params' },
@@ -54,14 +53,6 @@
 
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/daemon.svg' />" ;
-    };
-
-    var render_running = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var img =
-            value == '1' ? 'icons/green.svg'
-            : ( value == -1 ? 'loading/indicator.gif'
-            : 'icons/gray.svg' );
-            return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
     };
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -339,8 +330,6 @@
             { header: _('Service'), width: 300, dataIndex: 'service', sortable: true, renderer: render_name },
             { header: _('Config'), width: 200, dataIndex: 'config', sortable: true, hidden: true },
             { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },
-            // { header: _('Running'), width: 100, dataIndex: 'exists', sortable: true, renderer: render_running },
-            // { header: _('Last Process ID'), width: 100, dataIndex: 'pid', sortable: true },
             { header: _('Instances'), width: 200, dataIndex: 'instances', sortable: true, renderer: render_instances },
             { header: _('Active instances'), width: 200, dataIndex: 'active_instances', sortable: true, renderer: render_active_instances }
         ],
