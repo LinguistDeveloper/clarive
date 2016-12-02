@@ -422,7 +422,12 @@ sub tree_objects {
             // ( $icons{$row_class} = $row_class
                 ? try { $row_class->icon } catch { $generic_icon }
                 : $generic_icon );
-
+        for my $class ( $self->list_classes ) {
+            if ( $class->{name} eq $row_class ) {
+                $icon = $class->{icon};
+                last;
+            }
+        }
         my $bls;
         if ( $row->{bls} ) {
             $bls = join ',',
