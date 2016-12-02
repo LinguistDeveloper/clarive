@@ -317,6 +317,49 @@ subtest 'create: creates topic with category and status by name' => sub {
     is $topic_ci->{id_category},        $id_release_category;
 };
 
+subtest 'change_status: avoid change status if old_status and new status is the same' => sub {
+    _setup();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New',     type => 'I' );
+
+    my $project = TestUtils->create_ci( 'project', name => 'Project' );
+
+    my $id_rule  = TestSetup->create_rule_form();
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.admin.root' } ] );
+
+    my $id_category = TestSetup->create_category(
+        name     => 'Category',
+        id_rule  => $id_rule,
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_category,
+        status      => $status,
+        title       => "Topic"
+    );
+
+    my $config = {
+        topics     => [$topic_mid],
+        old_status => $status->mid,
+        new_status => $status->mid,
+        username   => $user->username
+    };
+
+    my $topic_services = BaselinerX::Service::TopicServices->new();
+
+    my $c = mock_catalyst_c();
+    $topic_services->change_status( $c, $config );
+
+    my $is_status_changed = mdb->event->find({event_key=>'event.topic.change_status'})->count;
+    my $topic_ci = ci->new($topic_mid);
+
+    is $topic_ci->{id_category_status}, $status->mid;
+    ok !$is_status_changed;
+};
+
 subtest 'change_status: user has permissions to change statuses assigned in the workflow' => sub {
     _setup();
 
@@ -732,4 +775,5 @@ sub _setup {
 
     mdb->topic->drop;
     mdb->category->drop;
+    mdb->event->drop;
 }
