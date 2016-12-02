@@ -96,7 +96,7 @@ params:
     // Load data
     if (!params) params = {};
     if (!params.topic_data) params.topic_data = {};
-    data = params.topic.data[meta.id_field] || [];
+    data = params.topic_data[meta.id_field] || [];
 
     Ext.each(data, function(row) {
         var r = new revision_store.recordType(row, row.mid);
