@@ -5,7 +5,7 @@
 
 <%perl>
     use Baseliner::Utils;
-    my $id = _nowstamp;
+    my $id = _nowstamp . $meta->{id_field};
 </%perl>
 % if( _array( $data->{$meta->{id_field}} ) && !($meta->{hidden}+0)) {
     <tr>
