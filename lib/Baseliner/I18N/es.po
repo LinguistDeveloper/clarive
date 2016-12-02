@@ -11341,6 +11341,10 @@ msgid "Start: %1"
 msgstr "Inicio: %1"
 
 #: root/comp/rules.js
+msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
+msgstr "La regla `%1` ha cambiado, pero no se ha guardado. ¿Salir sin guardar?"
+
+#: root/comp/rules.js
 msgid "(%1/%2)"
 msgstr ""
 
@@ -11371,10 +11375,6 @@ msgstr "NO EJECUTAR"
 #: root/comp/rules.js root/site/help.js root/site/model.js
 msgid "Back"
 msgstr "Atrás"
-
-#: root/comp/rules.js
-msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
-msgstr "La regla `%1` ha cambiado, pero no se ha guardado. ¿Salir sin guardar?"
 
 #: root/comp/rules.js root/site/main.js
 msgid "Close Tab"

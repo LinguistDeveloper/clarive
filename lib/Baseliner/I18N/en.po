@@ -11182,6 +11182,10 @@ msgid "Start: %1"
 msgstr ""
 
 #: root/comp/rules.js
+msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
+msgstr ""
+
+#: root/comp/rules.js
 msgid "(%1/%2)"
 msgstr ""
 
@@ -11211,10 +11215,6 @@ msgstr ""
 
 #: root/comp/rules.js root/site/help.js root/site/model.js
 msgid "Back"
-msgstr ""
-
-#: root/comp/rules.js
-msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
 msgstr ""
 
 #: root/comp/rules.js root/site/main.js

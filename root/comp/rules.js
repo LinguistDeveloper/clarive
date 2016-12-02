@@ -1411,6 +1411,7 @@
         var rule_tree = new Ext.tree.TreePanel({
             region: 'center',
             id_rule: id_rule,
+            title: name,
             rule_type: rule_type,
             closable: true,
             autoScroll: true,
@@ -1493,6 +1494,9 @@
                 }
             });
         });
+        rule_tree.close_me = function() {
+            return confirm(_("Rule '%1' has changed, but has not been saved. Leave without saving?", rule_tree.title));
+        };
         rule_tree.search_clear = function(){
             var clear_node = function(n){
                 try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
