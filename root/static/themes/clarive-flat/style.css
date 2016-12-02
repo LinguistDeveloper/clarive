@@ -1896,14 +1896,15 @@ div.x-panel-body .job-calendar {
 }
 
 .x-form-invalid-msg {
-    font:normal 14px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font:normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 }
 
 .x-form-invalid-msg {
     padding: 2px;
+    padding-left: 0px;
     background: transparent no-repeat 0 2px;
     line-height: 16px;
-    width: 200px;
+    width: 200px !important;
 }
 
 .x-form-invalid-msg {

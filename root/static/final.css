@@ -194,6 +194,13 @@ body {
 
 
 /* -------------------------- Fieldlet HTML -----------------------------*/
+
+
+.x-topic-placeholder.x-form-label-top.x-column {
+    min-height: 80px !important;
+    min-width:  125px !important;
+}
+
 #boot .fieldlet-html li {
     list-style-type: square;
     margin-left: 15px;

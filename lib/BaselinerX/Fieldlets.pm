@@ -48,7 +48,8 @@ register 'fieldlet.calculated_number' => {
     icon        => '/static/images/icons/number.svg',
     meta_type   => 'number',
     section_default => 'body',
-    section_allowed => ['body']
+    section_allowed => ['body'],
+    limit_height   => 1
 };
 
 register 'fieldlet.datetime' => {
@@ -60,7 +61,8 @@ register 'fieldlet.datetime' => {
     meta_type   => 'date',
     type        => 'datefield',
     section_default => 'body',
-    section_allowed => ['body']
+    section_allowed => ['body'],
+    limit_height   => 1
 };
 
 register 'fieldlet.time' => {
@@ -81,7 +83,8 @@ register 'fieldlet.ci_list' => {
     form        => '/fields/templates/config/ci_list.js',
     icon        => '/static/images/icons/grid.svg',
     section_default => 'head',
-    section_allowed => ['head','more']
+    section_allowed => ['head','more'],
+    limit_height =>  1
 };
 
 register 'fieldlet.ci_grid' => {
@@ -101,7 +104,8 @@ register 'fieldlet.combo' => {
     form        => '/fields/templates/config/combo.js',
     icon        => '/static/images/icons/combo_box.svg',
     section_default => 'body',
-    section_allowed => ['body','head']
+    section_allowed => ['body','head'],
+    limit_height   => 1
 };
 
 register 'fieldlet.dbi_query' => {
@@ -300,7 +304,8 @@ register 'fieldlet.text' => {
     icon        => '/static/images/icons/field.svg',
     type        => 'textfield',
     section_default => 'head',
-    section_allowed => ['head','more','body']
+    section_allowed => ['head','more','body'],
+    limit_height   => 1
 };
 
 register 'fieldlet.text_plain' => {
@@ -322,7 +327,8 @@ register 'fieldlet.number' => {
     icon        => '/static/images/icons/number.svg',
     meta_type   => 'number',
     section_default => 'body',
-    section_allowed => ['body']
+    section_allowed => ['body'],
+    limit_height   => 1
 };
 
 ########################
@@ -345,7 +351,8 @@ register 'fieldlet.system.status_new' => {
     relation    => 'status',
     meta_type   => 'status',
     section     => 'body',
-    section_allowed => ['body']
+    section_allowed => ['body'],
+    limit_height => 1
 
 };
 
@@ -361,6 +368,7 @@ register 'fieldlet.system.moniker' => {
     bd_field    => 'moniker',
     id_field    => 'moniker',
     section_default => 'details',
+    limit_height   => 1
 };
 
 register 'fieldlet.system.title' => {
@@ -374,7 +382,8 @@ register 'fieldlet.system.title' => {
     type        => 'textfield',
     origin      => 'system',
     section     => 'title',
-    section_allowed => ['title']
+    section_allowed => ['title'],
+    limit_height   => 1
 };
 
 register 'fieldlet.system.labels' => {
@@ -432,7 +441,8 @@ register 'fieldlet.system.release' => {
     type        => 'listbox',
     rel_type    => 'topic_topic',
     section_default => 'body',
-    section_allowed => ['body','head','more']
+    section_allowed => ['body','head','more'],
+    limit_height => 1
 };
 
 register 'fieldlet.system.release_version' => {
@@ -443,7 +453,8 @@ register 'fieldlet.system.release_version' => {
     icon        => '/static/images/icons/field.svg',
     type        => 'textfield',
     section_default => 'head',
-    section_allowed => ['head','more','body']
+    section_allowed => ['head','more','body'],
+    limit_height   => 1
 };
 
 register 'fieldlet.system.projects' => {
@@ -459,7 +470,8 @@ register 'fieldlet.system.projects' => {
     include_root    => 'true',
     type        => 'listbox',
     section_default => 'details',
-    section_allowed => ['details']
+    section_allowed => ['details'],
+    limit_height => 1
 };
 
 
@@ -475,7 +487,8 @@ register 'fieldlet.system.users' => {
     relation    => 'system',
     type        => 'listbox',
     section_default => 'details',
-    section_allowed => ['details']
+    section_allowed => ['details'],
+    limit_height => 1
 };
 
 
@@ -510,7 +523,8 @@ register 'fieldlet.system.list_topics' => {
     type        => 'listbox',
     rel_type    => 'topic_topic',
     section_default => 'head',
-    section_allowed => ['head','more','details']
+    section_allowed => ['head','more','details'],
+    limit_height   => 1
 };
 
 
@@ -527,7 +541,8 @@ register 'fieldlet.system.cis' => {
     type        => 'listbox',
     rel_type    => 'topic_ci',
     section_default => 'body',
-    section_allowed => ['body','details']
+    section_allowed => ['body','details'],
+    limit_height   => 1
 };
 
 
