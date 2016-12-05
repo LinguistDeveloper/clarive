@@ -584,7 +584,7 @@ var menu_role = new Ext.Button({
                 go_api(go.Shape, "RoundedRectangle", // surrounds the Placeholder
                     {
                         parameter1: 14,
-                        fill: "rgba(128,128,128,0.33)"
+                        fill: "rgba(241,241,241, 0.8)"
                     }),
                 go_api(go.Placeholder, // represents the area of all member parts,
                     {
