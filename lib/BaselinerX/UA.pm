@@ -77,7 +77,7 @@ sub request {
 
     {
         do {
-            $response = $self->SUPER::request( $method, $url, $options );
+            $response = $self->SUPER::request( $method, "$url", $options );
 
             if ( $response->{status} eq '599' && $response->{reason} eq 'Internal Exception' ) {
                 my $content = $response->{content} // '';
