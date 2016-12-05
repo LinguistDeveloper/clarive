@@ -271,38 +271,39 @@ sub _calculate_progress {
     my $self = shift;
     my ($job) = @_;
 
-    return '100%' if $job->{status} eq 'FINISHED';
+    return 100 if $job->{status} eq 'FINISHED';
 
-    my $progress = 'n/a';
+    my $progress = undef;
 
-    my $rule = mdb->rule->find_one({id => "$job->{id_rule}"});
+    my $where = { id => $job->{id_rule} };
+
+    if ( $job->{rule_version_id} ) {
+        $where->{_id} = mdb->oid( $job->{rule_version_id} );
+    }
+
+    my $rule = mdb->rule->find_one( $where, { rule_tree => 1 } );
     if ($rule) {
         my $rule_tree_json = $rule->{rule_tree};
-        my $rule_tree = Util->_decode_json( $rule_tree_json );
+        my $rule_tree      = Util->_decode_json($rule_tree_json);
 
         my $total = 0;
         foreach my $step (@$rule_tree) {
             $total += @{ $step->{children} };
         }
-
         my $now = mdb->job_log->find(
             {
                 mid        => $job->{mid},
-                lev        => 'debug',
+                exec       => 0 + ( $job->{exec} || 1 ),
                 stmt_level => 1,
             }
         )->count;
-
         if ($total) {
             if ( $now > $total ) {
-                $now = $now % $total;
+                $now = $total;
             }
-
-            my $percentage = int( ( $now / $total ) * 100 );
-            $progress = " $percentage% ($now/$total)";
+            $progress = int( ( $now / $total ) * 100 );
         }
     }
-
     return $progress;
 }
 
