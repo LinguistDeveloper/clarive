@@ -212,21 +212,31 @@ sub get_items {
         my $start = $p->{start} // 0;
         for my $f (_array $filter){
             my @temp = split('_', $f->{field});
-            #$f->{field} = join('_',@temp[0..$#temp-1]);
             $f->{category} = $temp[$#temp];
         }
         my $dir = $p->{dir} && uc($p->{dir}) eq 'DESC' ? -1 : 1;
-        my ( $cnt, @rows ) = ci->new( $p->{id_report} )->run(
-            id_category_report => $p->{id_category_report},
-            start              => $start,
-            username           => $p->{username},
-            limit              => $p->{limit},
-            query              => $p->{topic_list},
-            filter             => $filter,
-            query_search       => $p->{query},
-            sort               => $p->{sort},
-            sortdir            => $dir
+
+        my %report_params = (
+            start        => $start,
+            username     => $p->{username},
+            limit        => $p->{limit},
+            query        => $p->{topic_list},
+            filter       => $filter,
+            query_search => $p->{query},
+            sort         => $p->{sort},
+            sortdir      => $dir
         );
+
+        if ( ref $p->{id_category_report} eq 'ARRAY' ) {
+            $report_params{id_category_report} = $p->{id_category_report}
+                if scalar @{ $p->{id_category_report} };
+        }
+        else {
+            $report_params{id_category_report} = $p->{id_category_report}
+                if $p->{id_category_report} ne '';
+        }
+
+        my ( $cnt, @rows ) = ci->new( $p->{id_report} )->run(%report_params);
 
         $data = {
             data=>\@rows,
