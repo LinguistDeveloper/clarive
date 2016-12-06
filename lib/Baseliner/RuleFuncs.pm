@@ -554,7 +554,7 @@ sub _condition_check {
             $operand_b = lc($operand_b);
         }
 
-        my $ret = $operand_a eq $operand_b;
+        my $ret = $options->{numeric} ? $operand_a == $operand_b : $operand_a eq $operand_b;
 
         return $operator eq 'eq' ? $ret : !$ret;
     }
@@ -564,7 +564,7 @@ sub _condition_check {
             $operand_b = lc($operand_b);
         }
 
-        return $operand_a ge $operand_b;
+        return $options->{numeric} ? $operand_a >= $operand_b : $operand_a ge $operand_b;
     }
     elsif ( $operator eq 'gt' ) {
         if ( $options->{ignore_case} ) {
@@ -572,7 +572,7 @@ sub _condition_check {
             $operand_b = lc($operand_b);
         }
 
-        return $operand_a gt $operand_b;
+        return $options->{numeric} ? $operand_a > $operand_b : $operand_a gt $operand_b;
     }
     elsif ( $operator eq 'le' ) {
         if ( $options->{ignore_case} ) {
@@ -580,7 +580,7 @@ sub _condition_check {
             $operand_b = lc($operand_b);
         }
 
-        return $operand_a le $operand_b;
+        return $options->{numeric} ? $operand_a <= $operand_b : $operand_a le $operand_b;
     }
     elsif ( $operator eq 'lt' ) {
         if ( $options->{ignore_case} ) {
@@ -588,7 +588,7 @@ sub _condition_check {
             $operand_b = lc($operand_b);
         }
 
-        return $operand_a lt $operand_b;
+        return $options->{numeric} ? $operand_a < $operand_b : $operand_a lt $operand_b;
     }
     elsif ( $operator eq 'like' ) {
         return $operand_a =~ ( $options->{ignore_case} ? qr{$operand_b}i : qr{$operand_b} );

@@ -44,19 +44,35 @@
     }, {
         name: 'gt',
         label: _('GREATER THAN') + ' >',
-        operator_b: true
+        operator_b: true,
+        options: {
+            ignore_case: true,
+            numeric: true
+        }
     }, {
         name: 'ge',
         label: _('GREATER THAN OR EQUALS TO') + ' >=',
-        operator_b: true
+        operator_b: true,
+        options: {
+            ignore_case: true,
+            numeric: true
+        }
     }, {
         name: 'lt',
         label: _('LESS THAN') + ' <',
-        operator_b: true
+        operator_b: true,
+        options: {
+            ignore_case: true,
+            numeric: true
+        }
     }, {
         name: 'le',
         label: _('LESS THAN OR EQUALS TO') + ' <=',
-        operator_b: true
+        operator_b: true,
+        options: {
+            ignore_case: true,
+            numeric: true
+        }
     }, {
         name: 'like',
         label: _('LIKE (regular expression)'),
@@ -251,7 +267,8 @@
             conditions[i].operand_a = data[key];
             conditions[i].operator = data['operator[' + i + ']'];
             conditions[i].options = {
-                ignore_case: !!data['options[' + i + '].ignore_case']
+                ignore_case: !!data['options[' + i + '].ignore_case'],
+                ignore_case: !!data['options[' + i + '].numeric']
             };
             conditions[i].operand_b = data['operand_b[' + i + ']'];
         }
