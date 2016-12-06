@@ -544,22 +544,7 @@ register 'statement.if.var_condition' => {
     dsl  => sub {
         my ( $self, $n, %p ) = @_;
 
-        my $conditions = [];
-        foreach my $key ( keys %$n ) {
-            if ( $key =~ m/^operand_a\[(\d+)\]$/ ) {
-                my $i = $1;
-
-                push @$conditions,
-                  {
-                    operand_a => $n->{"operand_a[$i]"},
-                    operator  => $n->{"operator[$i]"},
-                    options   => {
-                        ignore_case => !!$n->{"options[$i].ignore_case"},
-                    },
-                    operand_b => $n->{"operand_b[$i]"},
-                  };
-            }
-        }
+        my $conditions = $self->_prepare_conditions($n);
 
         sprintf(
             q{
@@ -829,6 +814,47 @@ register 'statement.foreach.split' => {
             }
 
         }, $n->{split} // ',', $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.while' => {
+    text => _locl('WHILE condition'),
+    type => 'loop',
+    form => '/forms/if_var_condition.js',
+    data => { },
+    dsl  => sub {
+        my ( $self, $n, %p ) = @_;
+
+        my $conditions = $self->_prepare_conditions($n);
+
+        sprintf(
+            q{
+            while ( condition_check( $stash, '%s', %s ) ) {
+                %s;
+            }
+        }, $n->{when}, Data::Dumper::Dumper($conditions),
+            $self->dsl_build( $n->{children}, %p )
+        );
+    },
+};
+
+register 'statement.do_while' => {
+    text => _locl('DO WHILE condition'),
+    type => 'loop',
+    form => '/forms/if_var_condition.js',
+    data => { },
+    dsl  => sub {
+        my ( $self, $n, %p ) = @_;
+
+        my $conditions = $self->_prepare_conditions($n);
+
+        sprintf(
+            q{
+            do {
+                %s;
+            } while ( condition_check( $stash, '%s', %s ) );
+        }, $self->dsl_build( $n->{children}, %p ), $n->{when}, Data::Dumper::Dumper($conditions),
+        );
     },
 };
 
@@ -1368,6 +1394,31 @@ register 'statement.call' => {
         );
     },
 };
+
+sub _prepare_conditions {
+    my $self = shift;
+    my ($n) = @_;
+
+    my $conditions = [];
+    foreach my $key ( keys %$n ) {
+        if ( $key =~ m/^operand_a\[(\d+)\]$/ ) {
+            my $i = $1;
+
+            push @$conditions,
+              {
+                operand_a => $n->{"operand_a[$i]"},
+                operator  => $n->{"operator[$i]"},
+                options   => {
+                    ignore_case => !!$n->{"options[$i].ignore_case"},
+                    numeric     => !!$n->{"options[$i].numeric"},
+                },
+                operand_b => $n->{"operand_b[$i]"},
+              };
+        }
+    }
+
+    return $conditions;
+}
 
 sub include_rule {
     my ($self, $id_rule, %p) = @_;

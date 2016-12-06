@@ -1409,6 +1409,100 @@ subtest 'dsl_build: builds if var condition dsl' => sub {
     ok $code->( { foo => 'bar' } );
 };
 
+subtest 'dsl_build: builds while condition dsl' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => "statement.while",
+                "text" => "WHILE",
+                "data" => {
+                    'when' => 'any',
+
+                    "operand_a[0]"       => "foo",
+                    "operand_b[0]"       => "10",
+                    "operator[0]"        => "lt",
+                    "options[0].numeric" => "on",
+                }
+            },
+            "children" => [
+                {
+                    "attributes" => {
+                        "key"  => "statement.perl.code",
+                        "text" => "CODE",
+                        "data" => {
+                            code => '$stash->{foo}++;'
+                        }
+                    },
+                }
+            ]
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils 'parse_vars'; sub { my $stash = shift; %s }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    my $stash = { foo => 0 };
+    $code->($stash);
+
+    is $stash->{foo}, 10;
+};
+
+subtest 'dsl_build: builds doe while condition dsl' => sub {
+    _setup();
+
+    my $rules = _build_model();
+
+    my $dsl = $rules->dsl_build(
+        {
+            "attributes" => {
+                "key"  => "statement.do_while",
+                "text" => "WHILE",
+                "data" => {
+                    'when' => 'any',
+
+                    "operand_a[0]"       => "foo",
+                    "operand_b[0]"       => "10",
+                    "operator[0]"        => "lt",
+                    "options[0].numeric" => "on",
+                }
+            },
+            "children" => [
+                {
+                    "attributes" => {
+                        "key"  => "statement.perl.code",
+                        "text" => "CODE",
+                        "data" => {
+                            code => '$stash->{foo}++;'
+                        }
+                    },
+                }
+            ]
+        }
+    );
+
+    my $package = 'test_statement_call_' . int( rand(1000) );
+
+    my $code =
+      sprintf q/package %s; use Baseliner::RuleFuncs; use Baseliner::Utils 'parse_vars'; sub { my $stash = shift; %s }/,
+      $package, $dsl;
+
+    $code = eval $code;
+
+    my $stash = { foo => 10 };
+    $code->($stash);
+
+    is $stash->{foo}, 11;
+};
+
 subtest 'statement.var.push: pushes vars' => sub {
     _setup();
 
