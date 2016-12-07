@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+	 viewBox="0 0 32 32" style="enable-background:new 0 0 32 32;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#404040;}
-	.st1{fill:none;stroke:#404040;stroke-miterlimit:1.4142;}
+	.st0{fill:none;}
+	.st1{fill:#404040;}
+	.st2{fill:#FFFFFF;}
 </style>
-<path id="Layer_1_2_" class="st0" d="M12,12H9v-1h2V4H4v3H3V3h9V12z"/>
-<path id="Layer_1_3_" class="st0" d="M13.9,1l0.1,9h-3V9h2V2H6v2H5V1H13.9z"/>
-<path class="st0" d="M10,15.1L1,15V6h9V15.1z M2,7v7h7V7H2z"/>
-<path class="st1" d="M3.1,10.6H8"/>
+<g>
+	<rect class="st0" width="32" height="32"/>
+	<path class="st1" d="M23,8.8l0.1,14.3H8.9L8.8,8.9L23,9 M26,6H6v20h20V6z"/>
+</g>
+<g>
+	<rect x="12" y="15.3" class="st2" width="8.1" height="0.5"/>
+	<polygon class="st1" points="21,14.2 11.1,14.2 11.1,17 21,17 	"/>
+</g>
+<rect y="-0.1" class="st0" width="32" height="32"/>
 </svg>
