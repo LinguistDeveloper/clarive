@@ -6,8 +6,6 @@
     my @status_changes = Baseliner->model('Topic')->status_changes( $data );
 </%perl>
 % if( !$meta->{hidden}  ) {
-    <tr>
-        <td colspan=2>
             <ul class="nav nav-list">
                 <li class="nav-header">
                     <% _loc( $meta->{name_field} )  %>
@@ -44,7 +42,5 @@
                     </tbody>
                 </table>
             </ul>
-        </td>
-    </tr>
 % }
 
