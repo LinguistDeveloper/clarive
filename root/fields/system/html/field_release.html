@@ -4,17 +4,23 @@
 </%args>
 % my $topic_id = $data->{topic_mid} . _nowstamp;
 % if( !$meta->{hidden} ) {
+% if($meta->{section} eq 'details'){
+    <ul class="nav nav-list">
+        <li class="nav-header">
+        <% _loc($meta->{name_field}) %>
+        </li>
+    </ul>
+     <ul style="margin-left: 20px">
+      <li class="fieldlet-html" id="<% $topic_id.$meta->{id_field} %>"
+          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" ><% $data->{$meta->{id_field}}->{title} || '&nbsp;' %></li>
+    </ul><br>
+% }
+% else {
     <tr>
       <th><% _loc($meta->{name_field}) %>:</th>
-<!--       <td>
-          <span class="arrow_box" style="padding: 3px;cursor:pointer; color: white;background-color:<% $data->{$meta->{id_field}}->{color} || 'transparent' %>"
-                onclick="javascript:Baseliner.show_topic(<% $data->{$meta->{id_field}}->{mid} %>, '<% $data->{$meta->{id_field}}->{title} %>')">
-                <% $data->{$meta->{id_field}}->{title} || '&nbsp;' %>
-        </span>-->
         <td  id="<% $topic_id.$meta->{id_field} %>" title="<% $data->{$meta->{id_field}}->{title} || '&nbsp;' %>" ></td>
-      <!--</td>-->
     </tr>
-
+% }
     <script>
         var release = '<% $data->{$meta->{id_field}}->{mid} %>';
         var name ;
