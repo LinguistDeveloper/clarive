@@ -173,7 +173,7 @@ sub change_status {
     my $topics                = $config->{topics} // _fail _loc('Missing or invalid parameter topics');
     my $old_status_id_or_name = $config->{old_status};
     my $new_status_id_or_name = $config->{new_status} // _fail _loc('Missing or invalid parameter new_status');
-    my $username              = $config->{username};
+    my $username              = $config->{username} // 'clarive';
 
     my @topic_mids = Util->_array_or_commas($topics);
 
@@ -205,6 +205,13 @@ sub change_status {
 
     for my $topic (@topic_rows) {
         my $old_status = $topic->{category_status};
+        next
+          if $old_status
+          && $new_status
+          && $old_status->{id_status}
+          && $new_status->{id_status}
+          && $old_status->{id_status} eq $new_status->{id_status};
+
         Baseliner::Model::Topic->new->check_permissions_change_status(
             username    => $username,
             topic_mid   => $topic->{mid},
@@ -223,7 +230,7 @@ sub change_status {
             change    => 1,
             id_status => $new_status->{id_status},
             mid       => $topic->{mid},
-            username  => $config->{username} // 'clarive'
+            username  => $username
         );
     }
 }
