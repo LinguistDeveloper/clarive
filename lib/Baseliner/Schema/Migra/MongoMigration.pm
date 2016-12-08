@@ -7,6 +7,7 @@ use Try::Tiny;
 use BaselinerX::Type::Fieldlet;
 use BaselinerX::Fieldlets;
 use Baseliner::Controller::Rule;
+use Baseliner::Model::Topic;
 require Clarive::mdb;
 require Clarive::ci;
 require Clarive::model;
@@ -559,7 +560,8 @@ sub named_permissions_to_id_permissions {
                             $actions_category_fields{$name_action} = $id_action;
                         }
                     }
-                    for my $status (@statuses) {
+                    for my $status_key (@statuses) {
+                        my $status = $statuses{$status_key};
                         $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id,
                           $status->{name_id}, 'write';
                         $name_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_name, $field_form_to_id,
@@ -586,8 +588,9 @@ sub named_permissions_to_id_permissions {
                         $actions_category_fields{$name_action} = $id_action;
                     }
                 }
-                for my $status (@statuses) {
-                    next unless length($cat_to_id) && length($field_to_id) && length( $status->{name_id} );
+                for my $status_key (@statuses) {
+                    my $status = $statuses{$status_key};
+                    next unless length($cat_to_id) && length($field_to_id) && $status && length( $status->{name_id} );
                     $id_action =
                       'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
                     $name_action =
