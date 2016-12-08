@@ -5,7 +5,6 @@ use Baseliner::Utils;
 use DateTime;
 use Carp;
 use Try::Tiny;
-use Proc::Exists qw(pexists);
 use v5.10;
 use experimental 'switch';
 BEGIN { extends 'Catalyst::Controller' }
@@ -41,9 +40,6 @@ sub list : Local {
     $rs->skip($start);
     $cnt = mdb->daemon->count($where);
     while( my $r = $rs->next ) {
-        $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
-        $r->{exists} = -1 if $r->{pid} == -1 ;
-        $r->{exists} = 1 if $r->{pid} > 0 ;
         $r->{id} = $r->{_id}.'';
         delete $r->{_id};
         push @rows, $r
