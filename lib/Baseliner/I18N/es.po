@@ -8803,14 +8803,6 @@ msgstr "Estado"
 msgid "Not Active"
 msgstr "Desactivado"
 
-#: root/comp/daemon_grid.js
-msgid "Running"
-msgstr "Ejecutando"
-
-#: root/comp/daemon_grid.js
-msgid "Last Process ID"
-msgstr "Último ID de proceso"
-
 #: root/comp/dashboard.html
 msgid "<% $dashboard->{name} %>"
 msgstr "<% $dashboard->{name} %>"
@@ -15906,6 +15898,12 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Running"
+#~ msgstr "Ejecutando"
+
+#~ msgid "Last Process ID"
+#~ msgstr "Último ID de proceso"
 
 #~ msgid "%"
 #~ msgstr "%"

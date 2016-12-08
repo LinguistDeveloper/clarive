@@ -8693,14 +8693,6 @@ msgstr ""
 msgid "Not Active"
 msgstr ""
 
-#: root/comp/daemon_grid.js
-msgid "Running"
-msgstr ""
-
-#: root/comp/daemon_grid.js
-msgid "Last Process ID"
-msgstr ""
-
 #: root/comp/dashboard.html
 msgid "<% $dashboard->{name} %>"
 msgstr ""
