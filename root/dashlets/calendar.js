@@ -11,6 +11,7 @@
     var date_type = params.data.date_type || 'today';
     var days_from = params.data.days_from || 0;
     var graph_type = params.data.type || 'area';
+    var defaultView = params.data.default_view || 'month';
 
     var cal = new Baseliner.Calendar({
         tbar_end: ['->', {
@@ -25,7 +26,7 @@
         id_fieldlet: params.data.id_fieldlet,
         start_fieldlet: params.data.start_fieldlet,
         end_fieldlet: params.data.end_fieldlet,
-        default_view: params.data.default_view,
+        default_view: defaultView,
         id_project: project_id,
         topic_mid: topic_mid,
         categories: categories,
