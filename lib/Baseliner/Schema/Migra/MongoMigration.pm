@@ -683,14 +683,11 @@ sub named_permissions_to_id_permissions {
         my @role_actions = _array( $role->{actions} );
         for my $act (@role_actions) {
             my $key    = $act->{action};
-            my $action = Baseliner::Core::Registry->get($key);
-            if ( !( %{$action} ) ) {
-                if ( exists $actions_category_fields{$key} ) {
-                    $act->{action} = $actions_category_fields{$key};
-                }
-                elsif ( exists $actions_admin_cis{$key} ) {
-                    $act->{action} = $actions_admin_cis{$key};
-                }
+            if ( exists $actions_category_fields{$key} ) {
+                $act->{action} = $actions_category_fields{$key};
+            }
+            elsif ( exists $actions_admin_cis{$key} ) {
+                $act->{action} = $actions_admin_cis{$key};
             }
         }
         mdb->role->update( { id => $role_id }, { '$set' => { actions => \@role_actions } } );
