@@ -184,6 +184,23 @@ sub topic_categories_to_rules {
             }
             elsif ($fieldlet->{params}->{html}
                 && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/ucm_files.html'
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/ucm_files.js' )
+            {
+                $attributes->{key} = 'fieldlet.system.ucm_files';
+                $attributes->{active} = '0';
+
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_categories.js' )
+            {
+                $attributes->{key} = 'fieldlet.system.list_categories';
+                $attributes->{active} = '0';
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
                 && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'
                 && $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js' )
             {
