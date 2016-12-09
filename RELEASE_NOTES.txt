@@ -1,3 +1,11 @@
+---------------------------------------------- 6.6 November 2016 ----------------------------------------------
+- Workflow as Rule
+- Permission Bounds
+- Deploy releases
+- Dinamic filters in topics
+- System Users
+- New job events
+
 ---------------------------------------------- 6.4.7.3 September 2016 ----------------------------------------------
 - Labels administration
 - Clax improvements

@@ -1,3 +1,148 @@
+---------------------------------------------- 6.6 ----------------------------------------------
+[ENHANCEMENTS]
+- #35247 Improve bootstrap & prove
+- #35269 Implement Git service: delete reference, merge, rebase
+- #35270 Load related topics single mode
+- #35272 CI load service
+- #35398 Reap children in event daemon to prevent zombies
+- #35402 Make static deployments calculate items the same way as promote
+- #35410 Send state when building deployment menu
+- #35249 Add destdir option to pack command
+- #35271 Load related CIs service
+- #35278 Release job transitions
+- #35274 Make create tags repository service usable in rules
+- #35275 Import all necessary functions in base CI class
+- #35287 Collapse explorer by default and save the state
+- #35298 Repository release tags mode
+- #35304 Update changes icon
+- #35311 Flexible zero coding condition statement
+- #35382 Implement PUSH VAR operation
+- #35396 Hide changesets promotions to statuses that are bound to releases
+- #35389 Use pointer in vars
+- #35197 Make sure fieldlets are shown correctly in view mode
+- #35394 Return original revision when caltulating the top one
+- #35395 Compare references instead of shas when searching for previous job
+- #32561 Generic paging on respository changeset's list
+- #33809 Workflow as rule
+- #34413 Allow Filter by CIs and Topics dynamically in topic edit view
+- #34083 Order topics by label in topic_grid
+- #35101 Change fullscreen icons
+- #34769 Show confirmation window deleting CIs
+- #34576 Create action to force job rollback
+- #34617 Make Edit calendar window friendly with clarive-flat theme
+- #34650 Update images content folder to svg format
+- #34676 Rename "Add Comment" to "Comment"
+- #34687 Update icons in clarive-flat theme
+- #34713 Add new index for mongo collection
+- #34727 Cleanup all dead semaphores
+- #34731 Login screen—adjust size for logo div
+- #34735 Make ACL attributes more portable
+- #34736 Create statement.if.bl for rules
+- #34737 Improve bounds migration so it reports all collisions
+- #34745 Implement encryption in variables
+- #34760 Implement system users
+- #35177 Change some icon paths references
+- #35188 Create default columns in html part for field milestones
+- #35192 Load all values in variable grid projects
+- #34778 Implement CLAX proxy
+- #35203 Allow edit seconds in datefield fieldlet
+- #34802 Support extra values in Box selectors
+- #34824 Add new event_log mongo index
+- #34858 Create job events for paused and trapped
+- #34866 Update icons in help
+- #34895 Support ping in agents
+- #34891 Make tests faster by using forks
+- #34832 Check all registry entries and be sure translations exists
+
+[FIXES]
+- #35280 Make sure date in topic lib works correctly
+- #35286 Fix Cla.use() error reporting
+- #35273 Refactor update changesets service
+- #35397 Order bls by sequences in topic job transitions
+- #35230 Check field sorting and group by field in mongo queries.
+- #35276 Make sure vars in CI combos are filtered by class
+- #35289 Show correct topic mid in service.topic.load
+- #35306 Revert to tee_merged fuction
+- #35314 Make sure version detection test creates all needed directories
+- #35379 Make sure CALL takes first rule from multiple values
+- #35380 Make sure update topic service parses variables names
+- #35384 Revert changeset: make sure fieldlets are shown correctly in view mode
+- #35386 Allow PUSH VAR to flatten arrays
+- #35387 Remove emptyText from the fieldlets
+- #35390 Make sure pointer can navigate objects
+- #35391 Make sure git services accept docs like mids
+- #35221 Make sure Baseliner.UserAndRoleBox is not escaping characters
+- #35225 Make sure upload file fieldlet button has all borders
+- #35227 Remove hover in  upload file fieldlet view mode
+- #34191 Improve favorites features
+- #34233 Implement bounds in permissions
+- #34254 Allow attach  Folder to topics
+- #34740 Fix migration sequence number
+- #34772 Make sure permissions without bounds ignore wrong bounds
+- #34775 Make sure user boxes in topic services support variables
+- #34742 Fix Topics helper parameters
+- #35221 Make sure Baseliner.UserAndRoleBox is not escaping characters
+- #35225 Make sure upload file fieldlet button has all borders
+- #35227 Remove hover in  upload file fieldlet view mode
+- #35220 Change anchor for proxy timeout in Generic Servers
+- #35103 Padding tooltip dashlet
+- #35105 Fix empty fullpath file
+- #34148 Make sure pagination is working in CI Combo options
+- #34548 Make sure capture::tee_merge allow forks
+- #34666 Make sure relaunch a job can keep the original end status
+- #34707 Dashboard data loading should fail silently when server is not available
+- #34710 Make sure Edit window is not opened refresing topic
+- #34712 Fix complex groupings in Job Monitor
+- #34753 Make sure topic projects security is correct check on view
+- #34761 Fix migrations sequence
+- #34762 Make sure column id is shown properly always in topic grid
+- #34771 Make topic change detection consistent
+- #34776 Replace damaged icon: server_error.svg
+- #34899 Make sure rule compiler does not rebuild dsl everytime
+- #34902 Make sure calendar works with empty slots
+- #34913 Make sure service.web.request understands Unicode
+- #34915 Fix javascript warning ace/mode-js.js not found
+- #34917 Remove duplicate methods in tests create_changeset
+- #34920 Control cache message E11000 duplicate key
+- #34938 Fix call to method _dump in Cache file
+- #35006 Make sure category fieldlets tree is loading in reports
+- #34957 Make sure permissions correctly filter all security dimensions
+- #34961 Fix util functions calls in Cache
+- #34962 Make sure hidden grids are not migrated as milestones when id_name is 'hitos'
+- #34963 Make sure ci_box icons are shown allways with the correct size
+- #34975 Load role actions only when they are going to be shown
+- #34986 Create a test for duplicate key mongo 3.2 bug fix
+- #34990 Make sure seq doesn't suffer from index bug
+- #35013 Make sure calendar slots test works on sundays
+- #35099 Fix enconding problems in dls rules cached
+- #35109 Create migrations for label admin permission
+- #35063 Make sure to enable Save button when there is a change in User form
+- #35073 Make sure job_end notification filter by projects
+- #35081 Migration for former default values for variables
+- #35083 Make sure activity is saving only topic-related events
+- #35085 Dashlet dashlet.topic.number_of_topics have to filter by mid
+- #35142 Make get data not call in topic creation
+- #35145 Set correct icon for save button
+- #35147 Disable calendar button from menu bar
+- #35148 No cache dependency for variable default_hash
+- #35169 Make cache index duplication test more permissive
+- #34789 Fix semaphores timeouts
+- #34793 Make sure fieldlets to rules migration is working with datefields
+- #34790 Make sure a job rescheduler checks calendar window
+- #34792 Make sure capture_tee works with system/forks/pipes
+- #35198 Use reduce size for icons in topic grid
+- #35200 Make translations for ship file service
+- #34805 Make sure when migrating CIs permissions role All is taken into account
+- #34886 Make sure Help window height is correct despite of the zoom of the browser
+- #34887 Make sure user workflow is checked in service.topic.change_status and service.topic.status
+- #34893 Make sure list_topics dashbord allows export in CSV with empty values
+- #34862 Make sure that comments only appear once in topic grid
+- #34863 Make sure reports return category name in id column
+- #34861 Use REPL output color green  by default
+- #34838 Fix fields return undefined in notifications window
+- #34843 Make sure exceptions inside of semaphore are correctly captured
+- #34851 Change invalid field color style css to more corporative one
+
 ---------------------------------------------- 6.4.7.3 --------------------------------------------
 [ENHANCEMENTS]
 - #32897 Use project groups as scopes for calendar slots (#32883)
