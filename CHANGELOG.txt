@@ -1,3 +1,30 @@
+---------------------------------------------- 6.6.1 --------------------------------------------
+[ENHANCEMENTS]
+- #34118 Remove SVN Reference in Clarive Core
+- #35415 Sort list of columns into Topic Grid
+- #35476 Remove elapsed Time when Run button is clicked
+- #35479 Avoid change status if initial and final status is the same
+- #35488 Change order of drop down and collapse buttons in lifecycle menu
+- #35528 Change fieldlet ucm_files icon in UCM feature
+- #35543 Send state when building deployment menu
+- #35546 Create changelog and release notes entries
+- #35549 Update changeset log for 6.6 release
+- #35550 Update icons in remedy feature
+
+[FIXES]
+- #35053 Make sure field error messages do not mess up column alignment
+- #35405 Make sure save button in create new favorites is working
+- #35408 Fix migration sequence
+- #35413 Make sure activity entry for event.post.mentioned message is correct
+- #35416 Make sure toolbar is correct creating a new topic
+- #35420 Show month as default in calendar dashlet
+- #35423 Make sure step next is enabled if more than one windows exist for the rule type
+- #35445 Make sure daemon tab can be refreshed
+- #35483 Topics can be created with revision fieldlets
+- #35507 Allow reload tabs after click in development tool JS Reload
+- #35447 Make sure attach files fieldlet is shown in topic view in the specified section
+- #35509 Make Migrations start after Clarive version 6.6
+
 ---------------------------------------------- 6.6 ----------------------------------------------
 [ENHANCEMENTS]
 - #35247 Improve bootstrap & prove
