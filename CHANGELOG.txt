@@ -53,6 +53,24 @@
 - #34895 Support ping in agents
 - #34891 Make tests faster by using forks
 - #34832 Check all registry entries and be sure translations exists
+- #34901 Update semaphore_wait_interval default value
+- #34918 Add allowBlank property to timefield fieldlet
+- #34919 Dispatcher tracks where and how daemon started
+- #34932 Show header in calendar dashlet with month and year
+- #34944 Update drag&drop icons ghost to svg
+- #34953 Update IC function and all its references in javascript
+- #34954 Include default value in fieldlet combo
+- #34959 Allow decimal percentage in topic_chart dashlet group % fieldl
+- #34960 Make Baseliner.ci_box display an extra field
+- #34974 Event boost and forked notifications
+- #34993 Remove job not ready purge message
+- #34994 Add indexes for $or queries
+- #35027 Make seq more robust against double insertions
+- #35056 Slight darker color in hidden tabs
+- #35065 Provide repository information from projects
+- #35080 Change query to check mongo version without clusterMonitor DB Role
+- #35092 Add compiled rule message and whitespace
+- #35096 Simpler change provider tree generation
 
 [FIXES]
 - #35280 Make sure date in topic lib works correctly
