@@ -184,6 +184,23 @@ sub topic_categories_to_rules {
             }
             elsif ($fieldlet->{params}->{html}
                 && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/ucm_files.html'
+                && $fieldlet->{params}->{js} eq '/fields/templates/js/ucm_files.js' )
+            {
+                $attributes->{key} = 'fieldlet.system.ucm_files';
+                $attributes->{active} = '0';
+
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
+                && $fieldlet->{params}->{html} eq '/fields/templates/html/row_body.html'
+                && $fieldlet->{params}->{js} eq '/fields/system/js/list_categories.js' )
+            {
+                $attributes->{key} = 'fieldlet.system.list_categories';
+                $attributes->{active} = '0';
+            }
+            elsif ($fieldlet->{params}->{html}
+                && $fieldlet->{params}->{js}
                 && $fieldlet->{params}->{html} eq '/fields/templates/html/grid_editor.html'
                 && $fieldlet->{params}->{js} eq '/fields/templates/js/milestones.js' )
             {
@@ -666,14 +683,11 @@ sub named_permissions_to_id_permissions {
         my @role_actions = _array( $role->{actions} );
         for my $act (@role_actions) {
             my $key    = $act->{action};
-            my $action = Baseliner::Core::Registry->get($key);
-            if ( !( %{$action} ) ) {
-                if ( exists $actions_category_fields{$key} ) {
-                    $act->{action} = $actions_category_fields{$key};
-                }
-                elsif ( exists $actions_admin_cis{$key} ) {
-                    $act->{action} = $actions_admin_cis{$key};
-                }
+            if ( exists $actions_category_fields{$key} ) {
+                $act->{action} = $actions_category_fields{$key};
+            }
+            elsif ( exists $actions_admin_cis{$key} ) {
+                $act->{action} = $actions_admin_cis{$key};
             }
         }
         mdb->role->update( { id => $role_id }, { '$set' => { actions => \@role_actions } } );
