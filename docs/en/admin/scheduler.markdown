@@ -16,7 +16,7 @@ The Scheduler has the following information:
 
 - **Next time**: The time scheduled for the next run.
 
-- **Last time**: Date and time of the last ejecuciónde the task.
+- **Last time**: Date and time of the last ejecuted task.
 
 - **PID**: PID of the last process.
 

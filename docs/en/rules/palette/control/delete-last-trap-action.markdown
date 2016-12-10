@@ -1,6 +1,6 @@
 ---
-title: DELETE última acción capturada
+title: DELETE last trap action
 icon: if
 ---
 
-Borra la variable asociada a la acción realizada después del último paso capturado.
+To delete variable related to last trap action.
