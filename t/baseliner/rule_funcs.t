@@ -77,7 +77,7 @@ subtest 'current_task: starts task' => sub {
 
     my $job = Test::MonkeyMock->new;
     $job->mock( start_task => sub { } );
-    $job->mock( jobid      => sub {1} );
+    $job->mock( jobid      => sub { 1 } );
 
     my $stash = { job => $job };
 
@@ -97,12 +97,13 @@ subtest 'current_task: cancel job in steps check or init' => sub {
     mdb->rule_status->drop;
 
     my $job = Test::MonkeyMock->new;
-    $job->mock( jobid => sub {1} );
+    $job->mock( jobid => sub { 1 } );
 
     my $stash = { job => $job };
 
     mdb->rule_status->insert(
-        {   id       => 1,
+        {
+            id       => 1,
             type     => 'job',
             status   => "CANCEL_REQUESTED",
             username => 'test'
@@ -119,7 +120,7 @@ subtest 'launch' => sub {
     my $config = {};
     my $stash  = {};
 
-    Baseliner::Core::Registry->add_class( undef, 'service'  => 'TestService' );
+    Baseliner::Core::Registry->add_class( undef, 'service' => 'TestService' );
     Baseliner::Core::Registry->add( 'main', 'service.scripting.local', { foo => 'bar' } );
 
     my $rv = launch( 'service.scripting.local', 'some task', $stash, $config, '' );
@@ -171,7 +172,7 @@ subtest 'changeset_projects from data' => sub {
     mdb->category->insert(
         { id => "$cat_id", name => 'Category', statuses => [$status_id], default_form => "$id_rule" } );
 
-    my $project = TestUtils->create_ci_project( );
+    my $project     = TestUtils->create_ci_project();
     my $project_mid = $project->mid;
 
     my $id_role = TestSetup->create_role();
@@ -210,7 +211,7 @@ subtest 'error_trap: does nothing when ok' => sub {
         trap_rollback       => 'do_rollback',
         mode                => 'ignore',
         code                => sub { 'ok' }
-      );
+    );
 
     ok !$job->mocked_called('rollback');
 };
@@ -228,7 +229,7 @@ subtest 'error_trap: on error returns nothing when no job provided' => sub {
         trap_rollback       => 'do_rollback',
         mode                => 'ignore',
         code                => sub { die 'error' }
-      );
+    );
 
     ok !defined $rv;
 };
@@ -301,7 +302,6 @@ subtest 'error_trap: creates event' => sub {
     is $event->{event_key}, 'event.job.trapped';
 };
 
-
 #subtest 'error_trap: traps action if timeout expired' => sub {
 #    _setup();
 #
@@ -360,7 +360,7 @@ subtest 'error_trap: sets last trap action when status is RETRYING' => sub {
             trap_rollback       => 1,
             mode                => '',
             code                => sub { die 'error' }
-            )
+          )
     }, qr/Max retries reached/;
 
     is $stash->{_last_trap_action}, 'retry';
@@ -403,7 +403,7 @@ subtest 'wait_for_children: waits for forked children' => sub {
 
     wait_for_children($stash);
 
-    is kill(0, $pid), 0;
+    is kill( 0, $pid ), 0;
 };
 
 subtest 'wait_for_children: gathers values from forks' => sub {
@@ -423,7 +423,7 @@ subtest 'wait_for_children: gathers values from forks with errors in silent erro
 
     my $stash = {};
 
-    my @behaviours = (sub { $stash->{fork_result} = 'ok' }, sub { die 'error' });
+    my @behaviours = ( sub { $stash->{fork_result} = 'ok' }, sub { die 'error' } );
 
     foreach my $behavior (@behaviours) {
         parallel_run( 'task', 'fork', $stash, $behavior );
@@ -443,7 +443,7 @@ subtest 'wait_for_children: throws when one of the forks fails in fail errors mo
 
     my $stash = {};
 
-    my @behaviours = (sub { $stash->{fork_result} = 'ok' }, sub { die 'error' });
+    my @behaviours = ( sub { $stash->{fork_result} = 'ok' }, sub { die 'error' } );
 
     foreach my $behavior (@behaviours) {
         parallel_run( 'task', 'fork', $stash, $behavior );
@@ -465,15 +465,11 @@ subtest 'eval_code: evals code' => sub {
 };
 
 subtest 'condition_check: returns result of boolean comparison' => sub {
-    ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'is_true' } ] );
-    ok !condition_check( { foo => 0 },
-        all => [ { operand_a => 'foo', operator => 'is_true' } ] );
+    ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'is_true' } ] );
+    ok !condition_check( { foo => 0 }, all => [ { operand_a => 'foo', operator => 'is_true' } ] );
 
-    ok condition_check( { foo => 0 },
-        all => [ { operand_a => 'foo', operator => 'is_false' } ] );
-    ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'is_false' } ] );
+    ok condition_check( { foo => 0 }, all => [ { operand_a => 'foo', operator => 'is_false' } ] );
+    ok !condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'is_false' } ] );
 };
 
 subtest 'condition_check: returns result of empty comparison' => sub {
@@ -492,95 +488,121 @@ subtest 'condition_check: returns result of empty comparison' => sub {
 };
 
 subtest 'condition_check: returns comparison result' => sub {
+    ok condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'a' } ] );
+    ok !condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'b' } ] );
+
+    ok !condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => 'a' } ] );
+    ok condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => 'b' } ] );
+};
+
+subtest 'condition_check: returns comparison result ignore case' => sub {
+    ok condition_check( { foo => 'A' },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'a', options => { ignore_case => 1 } } ] );
+    ok !condition_check( { foo => 'A' },
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'b', options => { ignore_case => 1 } } ] );
+
+    ok !condition_check( { foo => 'A' },
+        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => 'a', options => { ignore_case => 1 } } ] );
+    ok condition_check( { foo => 'A' },
+        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => 'b', options => { ignore_case => 1 } } ] );
+};
+
+subtest 'condition_check: returns comparison result numeric' => sub {
     ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '1' } ] );
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '01', options => { numeric => 1 } } ] );
     ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '2' } ] );
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => '02', options => { numeric => 1 } } ] );
 
     ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => '1' } ] );
+        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => '01', options => { numeric => 1 } } ] );
     ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => '2' } ] );
+        all => [ { operand_a => 'foo', operator => 'not_eq', operand_b => '02', options => { numeric => 1 } } ] );
 };
 
 subtest 'condition_check: returns greater comparison result' => sub {
-    ok condition_check( { foo => 2 },
-        all => [ { operand_a => 'foo', operator => 'gt', operand_b => '1' } ] );
+    ok condition_check( { foo => 'b' }, all => [ { operand_a => 'foo', operator => 'gt', operand_b => 'a' } ] );
+
+    ok !condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'gt', operand_b => 'b' } ] );
+
+    ok condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'ge', operand_b => 'a' } ] );
+
+    ok !condition_check( { foo => 'a' }, all => [ { operand_a => 'foo', operator => 'ge', operand_b => 'b' } ] );
+};
+
+subtest 'condition_check: returns greater comparison result numeric' => sub {
+    ok condition_check( { foo => 10 },
+        all => [ { operand_a => 'foo', operator => 'gt', operand_b => '2', options => { numeric => 1 } } ] );
 
     ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'gt', operand_b => '2' } ] );
+        all => [ { operand_a => 'foo', operator => 'gt', operand_b => '2', options => { numeric => 1 } } ] );
 
     ok condition_check( { foo => 2 },
-        all => [ { operand_a => 'foo', operator => 'ge', operand_b => '2' } ] );
+        all => [ { operand_a => 'foo', operator => 'ge', operand_b => '2', options => { numeric => 1 } } ] );
 
     ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'ge', operand_b => '2' } ] );
+        all => [ { operand_a => 'foo', operator => 'ge', operand_b => '2', options => { numeric => 1 } } ] );
 };
 
 subtest 'condition_check: returns less comparison result' => sub {
-    ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'lt', operand_b => '2' } ] );
+    ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'lt', operand_b => '2' } ] );
 
-    ok !condition_check( { foo => 2 },
-        all => [ { operand_a => 'foo', operator => 'lt', operand_b => '1' } ] );
+    ok !condition_check( { foo => 2 }, all => [ { operand_a => 'foo', operator => 'lt', operand_b => '1' } ] );
 
-    ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'le', operand_b => '1' } ] );
+    ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'le', operand_b => '1' } ] );
 
-    ok !condition_check( { foo => 2 },
-        all => [ { operand_a => 'foo', operator => 'le', operand_b => '1' } ] );
+    ok !condition_check( { foo => 2 }, all => [ { operand_a => 'foo', operator => 'le', operand_b => '1' } ] );
 };
 
 subtest 'condition_check: returns has comparison result' => sub {
-    ok condition_check( { foo => [1, 2, 3] },
+    ok condition_check( { foo => [ 1, 2, 3 ] },
         all => [ { operand_a => 'foo', operator => 'has', operand_b => '1' } ] );
-    ok !condition_check( { foo => [1, 2, 3] },
+    ok !condition_check( { foo => [ 1, 2, 3 ] },
         all => [ { operand_a => 'foo', operator => 'has', operand_b => '10' } ] );
 
-    ok condition_check( { foo => {1 => 2, 2 => 3}},
+    ok condition_check( { foo => { 1 => 2, 2 => 3 } },
         all => [ { operand_a => 'foo', operator => 'has', operand_b => '1' } ] );
-    ok !condition_check( { foo => {1 => 2, 2 => 3}},
+    ok !condition_check( { foo => { 1 => 2, 2 => 3 } },
         all => [ { operand_a => 'foo', operator => 'has', operand_b => '10' } ] );
 
-    ok !condition_check( { foo => [1, 2, 3] },
+    ok !condition_check( { foo => [ 1, 2, 3 ] },
         all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '1' } ] );
-    ok condition_check( { foo => [1, 2, 3] },
+    ok condition_check( { foo => [ 1, 2, 3 ] },
         all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '10' } ] );
 
-    ok !condition_check( { foo => {1 => 2, 2 => 3}},
+    ok !condition_check( { foo => { 1 => 2, 2 => 3 } },
         all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '1' } ] );
-    ok condition_check( { foo => {1 => 2, 2 => 3}},
+    ok condition_check( { foo => { 1 => 2, 2 => 3 } },
         all => [ { operand_a => 'foo', operator => 'not_has', operand_b => '10' } ] );
 };
 
 subtest 'condition_check: returns in comparison result' => sub {
-    ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'in', operand_b => [1, 2, 3] } ] );
-    ok !condition_check( { foo => 10 },
-        all => [ { operand_a => 'foo', operator => 'in', operand_b => [1, 2, 3] } ] );
+    ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'in', operand_b => [ 1, 2, 3 ] } ] );
+    ok !condition_check( { foo => 10 }, all => [ { operand_a => 'foo', operator => 'in', operand_b => [ 1, 2, 3 ] } ] );
 
     ok condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'in', operand_b => {1 => 1, 2 => 2} } ] );
+        all => [ { operand_a => 'foo', operator => 'in', operand_b => { 1 => 1, 2 => 2 } } ] );
     ok !condition_check( { foo => 10 },
-        all => [ { operand_a => 'foo', operator => 'in', operand_b => {1 => 1, 2 => 2} } ] );
+        all => [ { operand_a => 'foo', operator => 'in', operand_b => { 1 => 1, 2 => 2 } } ] );
 
     ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => [1, 2, 3] } ] );
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => [ 1, 2, 3 ] } ] );
     ok condition_check( { foo => 10 },
-        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => [1, 2, 3] } ] );
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => [ 1, 2, 3 ] } ] );
 
     ok !condition_check( { foo => 1 },
-        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => {1 => 1, 2 => 2} } ] );
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => { 1 => 1, 2 => 2 } } ] );
     ok condition_check( { foo => 10 },
-        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => {1 => 1, 2 => 2} } ] );
+        all => [ { operand_a => 'foo', operator => 'not_in', operand_b => { 1 => 1, 2 => 2 } } ] );
 };
 
 subtest 'condition_check: returns like comparison result' => sub {
     ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'like', operand_b => '\d' } ] );
     ok !condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'like', operand_b => '[a-z]' } ] );
 
-    ok condition_check( { foo => 'BAR' },
-        all => [ { operand_a => 'foo', operator => 'like', operand_b => '[a-z]', options => {'ignore_case' => 1} } ] );
+    ok condition_check(
+        { foo => 'BAR' },
+        all => [ { operand_a => 'foo', operator => 'like', operand_b => '[a-z]', options => { 'ignore_case' => 1 } } ]
+    );
 
     ok !condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'not_like', operand_b => '\d' } ] );
     ok condition_check( { foo => 1 }, all => [ { operand_a => 'foo', operator => 'not_like', operand_b => '[a-z]' } ] );
@@ -588,7 +610,7 @@ subtest 'condition_check: returns like comparison result' => sub {
 
 subtest 'condition_check: ignores case' => sub {
     ok condition_check( { foo => 'foo' },
-        all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'FOO', options => {'ignore_case' => 1} } ] );
+        all => [ { operand_a => 'foo', operator => 'eq', operand_b => 'FOO', options => { 'ignore_case' => 1 } } ] );
 };
 
 subtest 'condition_check: parses vars before comparison' => sub {
@@ -600,51 +622,63 @@ subtest 'condition_check: parses vars before comparison' => sub {
 };
 
 subtest 'condition_check: returns correct result when all' => sub {
-    ok condition_check( { foo => 1, bar => 1, baz => 1 },
+    ok condition_check(
+        { foo => 1, bar => 1, baz => 1 },
         all => [
             { operand_a => 'foo', operator => 'is_true' },
             { operand_a => 'bar', operator => 'is_true' },
             { operand_a => 'baz', operator => 'is_true' },
-        ] );
+        ]
+    );
 
-    ok !condition_check( { foo => 0, bar => 1, baz => 0 },
+    ok !condition_check(
+        { foo => 0, bar => 1, baz => 0 },
         all => [
             { operand_a => 'foo', operator => 'is_true' },
             { operand_a => 'bar', operator => 'is_true' },
             { operand_a => 'baz', operator => 'is_true' },
-        ] );
+        ]
+    );
 };
 
 subtest 'condition_check: returns correct result when any' => sub {
-    ok condition_check( { foo => 0, bar => 1, baz => 0 },
+    ok condition_check(
+        { foo => 0, bar => 1, baz => 0 },
         any => [
             { operand_a => 'foo', operator => 'is_true' },
             { operand_a => 'bar', operator => 'is_true' },
             { operand_a => 'baz', operator => 'is_true' },
-        ] );
+        ]
+    );
 
-    ok !condition_check( { foo => 0, bar => 0, baz => 0 },
+    ok !condition_check(
+        { foo => 0, bar => 0, baz => 0 },
         any => [
             { operand_a => 'foo', operator => 'is_true' },
             { operand_a => 'bar', operator => 'is_true' },
             { operand_a => 'baz', operator => 'is_true' },
-        ] );
+        ]
+    );
 };
 
 subtest 'condition_check: returns correct result when none' => sub {
-    ok condition_check( { foo => 0, bar => 0, baz => 0 },
+    ok condition_check(
+        { foo => 0, bar => 0, baz => 0 },
         none => [
             { operand_a => 'foo', operator => 'is_true' },
             { operand_a => 'bar', operator => 'is_true' },
             { operand_a => 'baz', operator => 'is_true' },
-        ] );
+        ]
+    );
 
-    ok !condition_check( { foo => 1, bar => 0, baz => 0 },
+    ok !condition_check(
+        { foo => 1, bar => 0, baz => 0 },
         none => [
             { operand_a => 'foo', operator => 'is_true' },
             { operand_a => 'bar', operator => 'is_true' },
             { operand_a => 'baz', operator => 'is_true' },
-        ] );
+        ]
+    );
 };
 
 done_testing();
@@ -656,12 +690,12 @@ sub _mock_job {
     my $job_logger = _mock_job_logger();
     my $job        = Test::MonkeyMock->new;
 
-    $job->mock( rollback    => sub {0} );
-    $job->mock( logger      => sub {$job_logger} );
+    $job->mock( rollback    => sub { 0 } );
+    $job->mock( logger      => sub { $job_logger } );
     $job->mock( update      => sub { } );
     $job->mock( load        => sub { { status => $params{status} } } );
     $job->mock( trap_action => sub { } );
-    $job->mock( projects    => sub {$project} );
+    $job->mock( projects    => sub { $project } );
 
     return $job;
 }
@@ -671,25 +705,19 @@ sub _mock_job_logger {
     $job_logger->mock( info  => sub { } );
     $job_logger->mock( debug => sub { } );
     $job_logger->mock( error => sub { } );
-    $job_logger->mock( warn => sub { } );
+    $job_logger->mock( warn  => sub { } );
 
     return $job_logger;
 }
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Action',
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Fieldlet',
-        'BaselinerX::Type::Service',
-        'BaselinerX::Type::Statement',
-        'BaselinerX::Type::Config',
-        'BaselinerX::Type::Menu',
-        'BaselinerX::CI',
-        'BaselinerX::Fieldlets',
-        'BaselinerX::Service::Scripting',
-        'Baseliner::Model::Rules',
-        'Baseliner::Model::Topic',
+        'BaselinerX::Type::Action',    'BaselinerX::Type::Event',
+        'BaselinerX::Type::Fieldlet',  'BaselinerX::Type::Service',
+        'BaselinerX::Type::Statement', 'BaselinerX::Type::Config',
+        'BaselinerX::Type::Menu',      'BaselinerX::CI',
+        'BaselinerX::Fieldlets',       'BaselinerX::Service::Scripting',
+        'Baseliner::Model::Rules',     'Baseliner::Model::Topic',
         'BaselinerX::Job'
     );
 

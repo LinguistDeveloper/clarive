@@ -3070,6 +3070,14 @@ msgid "FOREACH SPLIT /re/"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
+msgid "WHILE condition"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "DO WHILE condition"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
 msgid "JOB STEP"
 msgstr ""
 
