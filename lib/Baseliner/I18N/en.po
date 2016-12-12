@@ -2973,7 +2973,7 @@ msgstr ""
 #: lib/Baseliner/Model/Rules.pm root/ci/DBDest.js root/comp/ci-editor.js
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
 #: root/comp/ci-viewer.js root/comp/log_grid.js root/comp/project_grid.mas
-#: root/forms/web_request.js root/site/common.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/common.js
 msgid "Data"
 msgstr ""
 
@@ -6875,6 +6875,10 @@ msgstr ""
 msgid "Deleted elements that belong to another baseline"
 msgstr ""
 
+#: lib/BaselinerX/Service/RestRequest.pm
+msgid "REST Request"
+msgstr ""
+
 #: lib/BaselinerX/Service/SchedulerService.pm
 msgid "SQA send_ju Daemon Frequency"
 msgstr ""
@@ -7307,19 +7311,20 @@ msgstr ""
 #: root/email/generic_topic.html root/forms/asset_file.js
 #: root/forms/eval_remote.js root/forms/link_revision.js
 #: root/forms/mkpath_remote.js root/forms/remove_file.js
-#: root/forms/retrieve_remote.js root/forms/script_local.js
-#: root/forms/script_remote.js root/forms/ship_remote.js
-#: root/forms/sync_remote.js root/forms/test_server_connect.js
-#: root/forms/topic_status_deprecated.js root/forms/web_request.js
-#: root/reports/listado_jobs.js root/site/common.js root/site/model.js
+#: root/forms/rest_request.js root/forms/retrieve_remote.js
+#: root/forms/script_local.js root/forms/script_remote.js
+#: root/forms/ship_remote.js root/forms/sync_remote.js
+#: root/forms/test_server_connect.js root/forms/topic_status_deprecated.js
+#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
+#: root/site/model.js
 msgid "User"
 msgstr ""
 
 #: root/ci/DBDest.js root/ci/clax_agent.js root/ci/dbi_connection.js
 #: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/user.js
 #: root/comp/lifecycle/workspace_new.js root/comp/user_grid.js
-#: root/forms/ldap_search.js root/forms/web_request.js root/site/login.js
-#: root/site/tabfu.js
+#: root/forms/ldap_search.js root/forms/rest_request.js
+#: root/forms/web_request.js root/site/login.js root/site/tabfu.js
 msgid "Password"
 msgstr ""
 
@@ -7506,7 +7511,7 @@ msgstr ""
 
 #: root/ci/capture.js root/ci/clax_agent.js root/ci/dbi_connection.js
 #: root/ci/grammar.js root/ci/matcher.js root/comp/rules.js
-#: root/forms/web_request.js root/site/tabfu.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/tabfu.js
 msgid "Timeout"
 msgstr ""
 
@@ -7937,7 +7942,8 @@ msgid "To set default values, save the CI first then reload"
 msgstr ""
 
 #: root/ci/web_cluster.js root/dashlets/iframe_config.js
-#: root/forms/web_request.js root/site/common.js root/site/tabfu.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/common.js
+#: root/site/tabfu.js
 msgid "URL"
 msgstr ""
 
@@ -13299,7 +13305,7 @@ msgid "Head"
 msgstr ""
 
 #: root/fields/templates/config/generic_fields.js root/forms/notify_create.js
-#: root/forms/web_request.js root/site/common.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/common.js
 msgid "Body"
 msgstr ""
 
@@ -13996,6 +14002,32 @@ msgstr ""
 msgid "Tags separated by commas"
 msgstr ""
 
+#: root/forms/rest_request.js root/forms/script_local.js
+#: root/forms/script_remote.js root/forms/wait_for_children.js
+#: root/forms/windows_service.js
+msgid "Errors"
+msgstr ""
+
+#: root/forms/rest_request.js root/forms/web_request.js
+msgid "Method"
+msgstr ""
+
+#: root/forms/rest_request.js root/forms/web_request.js
+msgid "Accept any server certificate"
+msgstr ""
+
+#: root/forms/rest_request.js
+msgid "Automatically parse response"
+msgstr ""
+
+#: root/forms/rest_request.js root/forms/web_request.js
+msgid "Form Arguments"
+msgstr ""
+
+#: root/forms/rest_request.js root/forms/web_request.js
+msgid "Headers"
+msgstr ""
+
 #: root/forms/retrieve_remote.js root/forms/ship_remote.js
 #: root/forms/sync_remote.js
 msgid "Local Path"
@@ -14011,11 +14043,6 @@ msgstr ""
 
 #: root/forms/rule_list.js
 msgid "Rule To Be Invoked"
-msgstr ""
-
-#: root/forms/script_local.js root/forms/script_remote.js
-#: root/forms/wait_for_children.js root/forms/windows_service.js
-msgid "Errors"
 msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
@@ -14363,22 +14390,6 @@ msgstr ""
 
 #: root/forms/wait_for_children.js
 msgid "Children Stash Keys to Export"
-msgstr ""
-
-#: root/forms/web_request.js
-msgid "Method"
-msgstr ""
-
-#: root/forms/web_request.js
-msgid "Accept any server certificate"
-msgstr ""
-
-#: root/forms/web_request.js
-msgid "Form Arguments"
-msgstr ""
-
-#: root/forms/web_request.js
-msgid "Headers"
 msgstr ""
 
 #: root/forms/windows_service.js
