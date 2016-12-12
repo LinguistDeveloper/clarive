@@ -580,17 +580,25 @@ var menu_role = new Ext.Button({
         );        
 
         diagram.groupTemplate = go_api(go.Group, "Vertical",
-          go_api(go.Panel, "Auto",
-            go_api(go.Shape, "RoundedRectangle",  // surrounds the Placeholder
-              { parameter1: 14,
-                fill: "rgba(128,128,128,0.33)" }),
-            go_api(go.Placeholder,    // represents the area of all member parts,
-              { padding: 5})  // with some extra padding around them
-          ),
-          go_api(go.TextBlock,         // group title
-            { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
-            new go.Binding("text", "key"))
-        );          
+            go_api(go.Panel, "Auto",
+                go_api(go.Shape, "RoundedRectangle", // surrounds the Placeholder
+                    {
+                        parameter1: 14,
+                        fill: "rgba(241,241,241, 0.8)"
+                    }),
+                go_api(go.Placeholder, // represents the area of all member parts,
+                    {
+                        padding: 5
+                    }) // with some extra padding around them
+            ),
+            go_api(go.TextBlock, // group title
+                {
+                    alignment: go.Spot.Right,
+                    font: "Bold 12pt Sans-Serif",
+                    stroke: "#42225F"
+                },
+                new go.Binding("text", "key"))
+        );
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
