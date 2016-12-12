@@ -12,7 +12,7 @@ use v5.10;
 register 'service.workflow.transition' => {
     name         => _locl('Change Topic Status'),
     form         => '/forms/workflow_transition.js',
-    icon         => '/static/images/icons/transition.svg',
+    icon         => '/static/images/icons/service-workflow-transition.svg',
     palette_area => 'workflow',
     handler      => \&workflow_transition,
 };
@@ -20,7 +20,7 @@ register 'service.workflow.transition' => {
 register 'service.workflow.transition_match' => {
     name         => _locl('Change Topic Status If Matches'),
     form         => '/forms/workflow_transition_match.js',
-    icon         => '/static/images/icons/transition.svg',
+    icon         => '/static/images/icons/service-workflow-match.svg',
     palette_area => 'workflow',
     handler      => \&workflow_transition_match,
 };

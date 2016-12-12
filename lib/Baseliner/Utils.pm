@@ -381,12 +381,12 @@ sub job_icon {
         when( 'READY' ) { 'busy.svg'; }
         when( 'APPROVAL' ) { 'user-delete.svg'; }
         when( 'FINISHED' ) { if (!$rollback) { 'active.svg' } else { 'close.svg' } }
-        when( 'IN-EDIT' ) { 'log-orange.svg'; }
+        when( 'IN-EDIT' ) { 'job-status-in-edit.svg'; }
         when( 'WAITING' ) { 'busy.svg'; }
         when( 'PAUSED' ) { 'control-pause.svg'; }
         when( 'TRAPPED_PAUSED' ) { 'control-pause.svg'; }
         when( 'CANCELLED' ) { 'close.svg'; }
-        default { 'error-triangle-red.svg' }
+        default { 'error.svg' }
     }
 }
 

@@ -231,7 +231,7 @@ Ext.override(Ext.form.HtmlEditor, {
             tbar: [ searchField,
                 new Ext.Toolbar.Button({
                     text: _('View'),
-                    icon:'/static/images/icons/drop-view.svg',
+                    icon: IC('inbox-view-msg'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

@@ -1,7 +1,7 @@
 ---
 title: DELETE last trap action
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 To delete variable related to last trap action.

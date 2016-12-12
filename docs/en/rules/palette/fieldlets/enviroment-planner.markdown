@@ -1,7 +1,7 @@
 ---
 title: Environment planner
 index: 5000
-icon: milestone
+icon: fieldlet-env-planner
 ---
 
 Allows to add a table with the environments, planned start date and planned end date.

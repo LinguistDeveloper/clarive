@@ -28,7 +28,7 @@ my $iid = Util->_md5;
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value +=  ' ('+ _("Rollback Failed")+') ';
-            icon = 'error-triangle-red.svg';
+            icon = 'error.svg';
         }
 
         if( status == 'APPROVAL' ) {

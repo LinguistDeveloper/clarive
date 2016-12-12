@@ -1,7 +1,7 @@
 ---
 title: Text field
 index: 5000
-icon: field
+icon: fieldlet-text
 ---
 
 Allows to add a text field in the form.

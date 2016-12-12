@@ -1,7 +1,7 @@
 ---
 title: IF ROLLBACK
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Comprueba en el stash si existe una reversión y procesa las operaciones anidadas en caso de que sea afirmativo.

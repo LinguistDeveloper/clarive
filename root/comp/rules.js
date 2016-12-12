@@ -464,7 +464,7 @@
             rule_category == 'event' ? IC('event') :
             rule_category == 'report' ? IC('report') :
             rule_category == 'pipeline' ? IC('job') :
-            rule_category == 'webservice' ? IC('webservice-blue') :
+            rule_category == 'webservice' ? IC('rule-webservice') :
             rule_category == 'workflow' ? IC('workflow') :
             IC('rule');
         return icon;
@@ -1147,7 +1147,7 @@
 
                     if( res.success ) {
                         var msgcfg = {};
-                        if( res.detected_errors ) msgcfg.image = '/static/images/icons/warning-triangle-orange.svg';
+                        if( res.detected_errors ) msgcfg.image = IC('baseliner-message-warning');
                         Baseliner.message( _('Rule'), res.msg, msgcfg );
                         if( !Ext.getCmp(rt_id) ) return;  // in case the save is too long and the tree is gone
                         rule_tree.is_dirty = false;
@@ -1317,13 +1317,13 @@
                     handler: function() {
                         rollback_version(btn_refresh_tree, node)
                     },
-                    icon: IC('arrow-undo-green')
+                    icon: IC('arrow-undo-color')
                 }, {
                     text: has_version_tag ? _('Change tag') : _('Add tag'),
                     handler: function() {
                         tag_version(btn_refresh_tree, node)
                     },
-                    icon: IC('arrow-undo-green')
+                    icon: IC('arrow-undo-color')
                 }];
                 if (has_version_tag) {
                     items.push({
@@ -1331,7 +1331,7 @@
                         handler: function() {
                             untag_version(btn_refresh_tree, node)
                         },
-                        icon: IC('arrow-undo-green')
+                        icon: IC('arrow-undo-color')
                     });
                 }
                 var stmts_menu = new Ext.menu.Menu({
@@ -1366,7 +1366,7 @@
                 handler: function() {
                     rename_node(node)
                 },
-                icon:  IC('item_rename')
+                icon:  IC('item-rename')
             }, {
                 text: _('Properties'),
                 handler: function() {
@@ -1390,7 +1390,7 @@
                 handler: function(item) {
                     cut_node(node)
                 },
-                icon:  IC('cut_edit')
+                icon:  IC('cut-edit')
             }, {
                 text: _('Copy Shortcut'),
                 handler: function(item) {
@@ -1426,9 +1426,9 @@
                 handler: function(item) {
                     toggle_node(node)
                 },
-                icon: IC('restart_new')
+                icon: IC('restart-new')
             }];
-            
+
             var parentNode = node.parentNode;
             var nodeKey = node.attributes.key;
             var mandatoryNode = (nodeKey == 'fieldlet.system.title'|| nodeKey == 'fieldlet.system.status_new') ? true : false;
@@ -1551,7 +1551,7 @@
                             rule_tree.flowchart()
                         }
                     }, {
-                        icon: '/static/images/icons/html-blue.svg',
+                        icon: IC('logo-html'),
                         text: _('HTML'),
                         handler: function() {
                             rule_tree.view_docs()
@@ -1845,7 +1845,7 @@
             Cla.use(['/static/gojs/go-debug.js', '/comp/rule_flowchart.js'], function() {
                 var btn_back = new Ext.Button({
                     text: _('Back'),
-                    icon: IC('arrow-left-black'),
+                    icon: IC('arrow-left'),
                     handler: function() {
                         rule_card.getLayout().setActiveItem(0);
                         rule_card.remove(dg, true);

@@ -11,7 +11,7 @@ with 'Baseliner::Role::Service';
 # guardamos aqui el config que recibimos en el run
 register 'service.restart_server' => {
     name => _locl('Restart'),
-    icon => '/static/images/icons/daemon.svg',
+    icon => '/static/images/icons/service-restart-server.svg',
     handler => \&run, };
 
 sub run {

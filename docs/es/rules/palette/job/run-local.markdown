@@ -1,7 +1,7 @@
 ---
 title: Ejecutar un script local
 index: 5000
-icon: cog-java-orange
+icon: service-scripting-local
 ---
 
 Ejecuta un script local y realiza el [rollback](concepts/rollback) si es necesario.

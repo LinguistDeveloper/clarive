@@ -1,7 +1,7 @@
 ---
 title: Gráfico de Jobs
 index: 5000
-icon: chart-pie
+icon: dashlet-job-chart
 ---
 
 Muestra un gráfico los trabajos finalizados según el entorno o los entornos elegidos.

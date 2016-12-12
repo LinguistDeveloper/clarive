@@ -52,10 +52,10 @@
     };
 
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = value == 'ok' ? '/static/images/icons/active.svg' :
-                   value == 'ko' ? '/static/images/icons/error-triangle-red.svg' :
-                   value == 'new' ? '/static/images/icons/busy.svg' :
-                   '/static/images/icons/unknown-blue.svg' ;
+        var icon = value == 'ok' ? IC('event-status-ok') :
+                   value == 'ko' ? IC('event-status-ko') :
+                   value == 'new' ? IC('event-status-new') :
+                   IC('event-status-unknown') ;
 
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );
     };

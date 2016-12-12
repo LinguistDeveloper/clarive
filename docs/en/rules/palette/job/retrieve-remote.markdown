@@ -1,7 +1,7 @@
 ---
 title: Retrieve a remote file
 index: 5000
-icon: file
+icon: service-fileman-retrieve
 ---
 
 Get a remote file from a server according to a user configured parameters.

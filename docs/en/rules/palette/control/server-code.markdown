@@ -1,7 +1,7 @@
 ---
 title: Server CODE
 index: 5000
-icon: cog-perl-blue
+icon: statement-code-server
 ---
 
 Run perl/JavaScript code block and assign the return value to the stash variable data_key (see op context menu from above) if defined.

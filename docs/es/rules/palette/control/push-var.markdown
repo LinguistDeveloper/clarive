@@ -1,6 +1,6 @@
 ---
 title: PUSH VAR
-icon: let
+icon: statement-let
 ---
 
 Incluir un valor en el stash creando un nuevo array si es necesario.

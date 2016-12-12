@@ -1,6 +1,6 @@
 ---
 title: IF var condition THEN
-icon: if
+icon: statement-if
 ---
 
 Allow to use multiples values in a conditional step.

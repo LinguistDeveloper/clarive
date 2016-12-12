@@ -1,7 +1,7 @@
 ---
 title: Checkout Job Items
 index: 5000
-icon: changesets
+icon: service-changeset-checkout
 ---
 
 Copia los elementos involucrados en el directorio `<job_dir>`.

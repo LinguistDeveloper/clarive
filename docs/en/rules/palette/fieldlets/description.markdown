@@ -1,7 +1,7 @@
 ---
 title: Description
 index: 5000
-icon: textfield
+icon: fieldlet-system-description
 ---
 
 Allows to introduce a description in the form.

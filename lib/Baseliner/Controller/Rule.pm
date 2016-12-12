@@ -22,7 +22,7 @@ my %RULE_ICONS = (
     report     => Util->icon_path('report.svg'),
     pipeline   => Util->icon_path('job.svg'),
     workflow   => Util->icon_path('workflow.svg'),
-    webservice => Util->icon_path('webservice-blue.svg'),
+    webservice => Util->icon_path('rule-webservice.svg'),
 );
 
 register 'action.admin.rules' => {
@@ -369,7 +369,7 @@ sub palette : Local {
     my @tree;
     my $cnt = 1;
 
-    my $if_icon = '/static/images/icons/if.svg';
+    my $if_icon = '/static/images/icons/fieldlet-if.svg';
     my %types   = (
         if  => { icon => $if_icon },
         let => { icon => $if_icon },
@@ -413,7 +413,7 @@ sub palette : Local {
                 ? '/static/images/icons/help.svg'
                 : do {
                     my $type = $types{ $reg->{type} };
-                    "/static/images/icons/$reg->{type}.svg";
+                    "/static/images/icons/statement-$reg->{type}.svg";
                   }
             );
         }

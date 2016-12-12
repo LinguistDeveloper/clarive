@@ -1,7 +1,7 @@
 ---
 title: Footprint elements
 index: 5000
-icon: job
+icon: service-job-footprint
 ---
 
 List all updated files with the following data:

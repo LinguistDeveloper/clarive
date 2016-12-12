@@ -43,8 +43,8 @@ La lista contiene las siguientes columnas:
 Todas las acciones disponibles se muestran en el panel izquierdo, las acciones al rol
 se muestran en el panel izquierdo. Un grupo de acciones o una acción específica se pueden añadir seleccionándola y arrastrando desde el panel izquierdo al panel derecho.
 
-- **Descartar selección** <img src="/static/images/icons/delete-red.svg" /> - Elimina las acciones seleccionadas.
-- **Descartar todas** <img src="/static/images/icons/del-all-red.svg" /> - Elimina todas las acciones asociadas al rol.
+- **Descartar selección** <img src="/static/images/icons/delete-grid-row.svg" /> - Elimina las acciones seleccionadas.
+- **Descartar todas** <img src="/static/images/icons/delete-grid-all-rows.svg" /> - Elimina todas las acciones asociadas al rol.
 
 ## Usuarios que tienen un rol
 

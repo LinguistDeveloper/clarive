@@ -35,7 +35,7 @@ register 'config.events' => {
 
 register 'service.event.daemon' => {
     daemon => 1,
-    icon => '/static/images/icons/daemon.svg',
+    icon => '/static/images/icons/service-event-daemon.svg',
     config => 'config.events',
     handler => sub {
         my ($self, $c, $config ) = @_;
@@ -74,6 +74,7 @@ register 'service.event.daemon' => {
 
 register 'service.event.run_once' => {
     handler=> \&run_once,
+    icon => '/static/images/icons/service-event-run-once.svg',
 };
 
 sub run_once {

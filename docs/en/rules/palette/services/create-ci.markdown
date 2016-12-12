@@ -1,7 +1,7 @@
 ---
 title: Create CI
 index: 5000
-icon: class
+icon: service-ci-create
 ---
 
 Service that creates a new CI with provided attributes.

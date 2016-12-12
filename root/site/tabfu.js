@@ -719,7 +719,7 @@ if( Prefs.routing ) {
                     autoLoad: {url: purl, scripts:true },
                     tbar: [
                         search,
-                        { icon: '/static/images/icons/html-blue.svg', style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
+                        { icon: IC('logo-html'), style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
                             handler: function(){
                                 var win = window.open( purl );
                             }
@@ -799,13 +799,13 @@ if( Prefs.routing ) {
             layout: 'fit',
             autoScroll: false,
             tbar: [
-                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow-left-black.svg', handler:function(){
+                { xtype:'button', cls: 'x-btn-icon', icon: IC('arrow-left'), handler:function(){
                       var dom = panel.body.dom;
                       var iframe = dom.childNodes[0];
                       iframe.contentWindow.history.back();
                   }
                 },
-                { xtype:'button', cls: 'x-btn-icon', icon: '/static/images/icons/arrow-right-black.svg', handler:function(){
+                { xtype:'button', cls: 'x-btn-icon', icon: IC('arrow-right'), handler:function(){
                       var dom = panel.body.dom;
                       var iframe = dom.childNodes[0];
                       iframe.contentWindow.history.forward();
@@ -1255,7 +1255,7 @@ if( Prefs.routing ) {
 
                         Baseliner.error_win(url,params,xhr, msg);
                     }
-                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/icons/disconnected-red.svg' });
+                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image: IC('server-connection-error') });
                     return;
                 }
                 try {

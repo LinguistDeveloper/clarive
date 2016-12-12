@@ -1,6 +1,6 @@
 ---
 title: Cambiar Estado del Tópico Si Coincide
-icon: transition
+icon: service-workflow-match
 ---
 
 Crea dentro del flujo de trabajo una transición de estado de tipo lógica o despleglable.

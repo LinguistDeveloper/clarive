@@ -115,6 +115,7 @@ register 'menu.job.list' => {
 register 'service.job.new' => {
     name => _locl('Schedule a new job'),
     config => 'config.job',
+    icon => '/static/images/icons/service-job-new.svg',
     handler => sub {
         my ($self, $c, $config) = @_;
         $c->model('Jobs')->create( $config );

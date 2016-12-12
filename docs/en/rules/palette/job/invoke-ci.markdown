@@ -1,7 +1,7 @@
 ---
 title: Invoke CI methods
 index: 5000
-icon: class
+icon: service-ci-invoke
 ---
 
 Invoke the selected ci method with the given arguments from the form.

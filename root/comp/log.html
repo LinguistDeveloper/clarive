@@ -293,7 +293,7 @@ Exec:
 %     if( $row->{more}->{more} ) {
             <a href="/job/log/download_data?id=<% $row->{id} %>"><% $row->{more}->{file} %></a>
 %     } else {
-            <a target="_blank" href="/job/log/data/<% $row->{id} %>"><img class="force_size_in_icon" src="/static/images/icons/moredata.svg" alt="<% _loc("view") %>" /></a>
+            <a target="_blank" href="/job/log/data/<% $row->{id} %>"><img class="force_size_in_icon" src="/static/images/icons/job-full-log.svg" alt="<% _loc("view") %>" /></a>
 %     }
 % }
         </td>

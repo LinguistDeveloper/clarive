@@ -166,7 +166,7 @@ sub lc_for_project {
                   active  => 1,
                   draggable => \0,
                   leaf    => \1,
-                  icon    => '/static/images/icons/error-triangle-orange.svg',
+                  icon    => '/static/images/icons/warning.svg',
                   data    => { id_repo => $id_repo }
                 };
 
@@ -226,7 +226,7 @@ sub lc_for_project {
           active  => 1,
           draggable => \0,
           leaf    => \1,
-          icon    => '/static/images/icons/error-triangle-orange.svg',
+          icon    => '/static/images/icons/warning.svg',
         };
     }
 

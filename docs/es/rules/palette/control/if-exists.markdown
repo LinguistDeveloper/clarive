@@ -1,7 +1,7 @@
 ---
 title: IF EXISTS naturaleza THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Comprueba si existe la naturaleza indicada y de ser así, continua la regla por los procesos anidados a este componente.

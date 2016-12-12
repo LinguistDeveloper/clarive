@@ -1,7 +1,7 @@
 ---
 title: Estado
 index: 5000
-icon: lock
+icon: fieldlet-system-status
 ---
 
 Define el estado del tópico.

@@ -43,7 +43,7 @@
                 });
         } else {
             Cla.add_tabcomp('/comp/search_results.js', undefined,
-                { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search-green.svg' });
+                { query: q, opts: opts || {}, tab_icon: IC('menu-search') });
         }
     };
     search_box.on('specialkey', function(f, e){
@@ -71,7 +71,7 @@
         }
         var tabfav = info.favorite_this();
         var opp = function(){
-            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite-new');
+            var icon = current_state.icon || info.tab_icon || tab.tab_icon || info.params.tab_icon || IC('favorite');
             var fav_data = {
                 title: title_field.getValue(),
                 click: {
@@ -182,7 +182,7 @@
     tbar_items.push( Cla.help_button );
 
     Cla.share_button = new Ext.Button({
-        icon: '/static/images/icons/favorite-grey.svg',
+        icon: IC('main-bar-favorite'),
         cls: 'x-btn-icon',
         tooltip: _('Add to Favorites...'),
         handler: function() {
@@ -510,7 +510,7 @@
                             window.location.href = window.location.href;
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     },function(){
-                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/icons/error-triangle-orange.svg' } );
+                        Cla.message( _('Please, refresh the page as soon as possible'),null,{ image: IC('warning') } );
                         if(repeat) setTimeout( function(){ Cla.version_check(true) }, Cla.version_refresh * 2 );
                     });
                 } else {

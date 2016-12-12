@@ -1,7 +1,7 @@
 ---
 title: Cambiar estado de tópico
 index: 5000
-icon: topic
+icon: service-topic-status
 ---
 
 Servicio para cambiar el estado de un [tópico](concepts/topic) o varios.

@@ -1,7 +1,7 @@
 ---
 title: Run a Local Script
 index: 5000
-icon: cog-java-orange
+icon: service-scripting-local
 ---
 
 Execute a local script and rollback if needed.

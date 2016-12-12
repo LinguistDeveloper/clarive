@@ -39,7 +39,7 @@
         ,clicksToEdit:1,
         tbar: [{
             text: '<% $row->{newLabel} %>',
-            icon: '/static/images/icons/add-green.svg',
+            icon: IC('add-sign'),
             cls: 'x-btn-text-icon',
             handler : function(){
                 var ___record = Ext.data.Record.create([
@@ -81,7 +81,7 @@
             }},
             {
             text: '<% $row->{delLabel} %>',
-            icon: '/static/images/icons/del-all-red.svg',
+            icon: IC('delete-grid-all-rows'),
             cls: 'x-btn-text-icon',
             handler : function(e){
                 var __grid = Ext.getCmp('<% $uid %>');

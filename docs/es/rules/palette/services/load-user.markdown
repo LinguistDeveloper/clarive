@@ -1,7 +1,7 @@
 ---
 title: Cargar Usuario
 index: 5000
-icon: user
+icon: service-user-load
 ---
 
 Servicio que carga la información de un usuario. Para configurarlo están los siguientes

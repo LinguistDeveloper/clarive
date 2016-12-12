@@ -1,7 +1,7 @@
 ---
 title: EVAL
 index: 5000
-icon: cog-perl-blue
+icon: statement-perl-eval
 ---
 
 Run perl code and trap run-time errors, assigning the return value to the stash variable data_key (see op context menu from above) if defined.

@@ -1,7 +1,7 @@
 ---
 title: Request Approval
 index: 5000
-icon: user-green
+icon: service-approval-request
 ---
 
 Job will be paused requesting an approval from users allowed to do it or users or roles included in configuration window.

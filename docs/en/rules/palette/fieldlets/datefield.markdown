@@ -1,7 +1,7 @@
 ---
 title: Datefield
 index: 5000
-icon: calendar
+icon: fieldlet-datetime
 ---
 
 Allows to introduce a datefield in the form.

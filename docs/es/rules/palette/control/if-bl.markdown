@@ -1,6 +1,6 @@
 ---
 title: IF ANY bl THEN
-icon: if
+icon: statement-if
 ---
 
 Si el entorno coincide con lo configurado en el elemento el proceso entra en la condición.

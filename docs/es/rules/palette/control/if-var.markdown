@@ -1,7 +1,7 @@
 ---
 title: IF variable THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Comprueba si un valor específico está dentro del stash. En caso afirmativo, se ejecuta las operaciones anidadas.

@@ -1,7 +1,7 @@
 ---
 title: Grid editor
 index: 5000
-icon: grid
+icon: fieldlet-grid-editor
 ---
 
 Allows to introduce a grid in the form with a column for a description.

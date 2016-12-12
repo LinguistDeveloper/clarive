@@ -38,6 +38,7 @@ register 'action.notify.error' =>  { name=>_locl('Receive Error Notifications') 
 register 'service.notify.create' => {
     name => _locl('Send a Notification'),
     form => '/forms/notify_create.js',
+    icon => '/static/images/icons/service-send-notification.svg',
     #migrar
     handler=>sub{
         my ($self, $c, $config) = @_;

@@ -57,8 +57,8 @@
 
     var render_active = function(value,metadata,rec,rowIndex,colIndex,store) {
         var img =
-            value == '1' ? 'start-green.svg' : 'stop-red.svg';
-            return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
+            value == '1' ? IC('start') : IC('stop');
+            return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='"+img+"' />" ;
     };
 
 
@@ -71,7 +71,7 @@
 
         var btn_start = new Ext.Toolbar.Button({
         text: _('Activate'),
-        icon:'/static/images/icons/start-green.svg',
+        icon: IC('start'),
         disabled: true,
         cls: 'x-btn-text-icon',
         handler: function() {
@@ -93,7 +93,7 @@
 
         var btn_stop = new Ext.Toolbar.Button({
         text: _('Deactivate'),
-        icon:'/static/images/icons/stop-red.svg',
+        icon:IC('stop'),
         disabled: true,
         cls: 'x-btn-text-icon',
         handler: function() {

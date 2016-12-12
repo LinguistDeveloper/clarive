@@ -1,7 +1,7 @@
 ---
 title: Servicios de Windows
 index: 5000
-icon: wrench
+icon: service-scripting-windows
 ---
 
 Elemento que permite controlar Servicios de Windows de forma remota. Las opciones disponibles son:

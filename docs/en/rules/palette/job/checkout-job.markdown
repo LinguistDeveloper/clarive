@@ -1,7 +1,7 @@
 ---
 title: Checkout Job Baseline (all repos)
 index: 5000
-icon: changesets
+icon: service-changeset-bl-all
 ---
 
 Copies all repositories for the current environment and the involved project to  `<job_dir>/<project>`.

@@ -1,7 +1,7 @@
 ---
 title: IF condition THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Checks the condition and if true process nested ops.

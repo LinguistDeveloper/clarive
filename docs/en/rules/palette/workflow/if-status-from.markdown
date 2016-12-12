@@ -1,6 +1,6 @@
 ---
 title: IF From Status IS
-icon: if
+icon: statement-if
 ---
 
 Create workflow depending on the current status of the topic.

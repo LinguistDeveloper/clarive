@@ -13,6 +13,7 @@ with 'Baseliner::Role::Service';
 register 'service.job.init' => {
     name => _locl('Init Job Home'),
     job_service  => 1,
+    icon => '/static/images/icons/service-job-init.svg',
     handler => \&job_init,
 };
 

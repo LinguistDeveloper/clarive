@@ -1,7 +1,7 @@
 ---
 title: FOREACH fichero/elemento
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Iteraciona para cada elemento las veces que se le indica en la configuración del loop.

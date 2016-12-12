@@ -1,7 +1,7 @@
 ---
 title: Pause a Job
 index: 5000
-icon: job
+icon: service-job-pause
 ---
 
 Pause a job until the user decides to go on. This pause has a maximum timeout,

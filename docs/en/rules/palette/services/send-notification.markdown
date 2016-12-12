@@ -1,7 +1,7 @@
 ---
 title: Send a notification
 index: 5000
-icon: job
+icon: service-send-notification
 ---
 Service to send notifications. Form to configure has the following fields:
 

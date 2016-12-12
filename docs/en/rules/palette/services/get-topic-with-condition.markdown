@@ -1,10 +1,10 @@
 ---
 title: Get topics that matches conditions
 index: 5000
-icon: topic
+icon: service-topic-condition
 ---
 
-Service that returns the topics that meet the conditions established. 
+Service that returns the topics that meet the conditions established.
 
 Form to configure has the following fields:
 

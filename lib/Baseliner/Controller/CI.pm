@@ -570,7 +570,7 @@ sub tree_object_info {
             type      => 'depend_from',
             class     => '-',
             classname => '-',
-            icon      => '/static/images/icons/out-green.svg',
+            icon      => Util->icon_path('ci-depend-on'),
             ts        => '',
             versionid => '',
         },
@@ -583,7 +583,7 @@ sub tree_object_info {
             type      => 'depend_to',
             class     => '-',
             classname => '-',
-            icon      => '/static/images/icons/in-green.svg',
+            icon      => Util->icon_path('ci-depend-on-me'),
             ts        => '',
             versionid => '',
         },
@@ -1498,7 +1498,7 @@ sub json_tree : Local {
             : {
                 id=>_nowstamp,
                 name=>'search',
-                data => { icon=>'/static/images/icons/ci-green.svg', %node_data },
+                data => { icon=>'/static/images/icons/ci-itemset.svg', %node_data },
                 children => \@all
             };
         { success=>\1, data=>$ret, count=>$k };

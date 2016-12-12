@@ -1,7 +1,7 @@
 ---
 title: SET VAR
 index: 5000
-icon: let
+icon: statement-let
 ---
 
 Creates a new stash variable and set its value to a specific value.

@@ -1,7 +1,7 @@
 ---
 title: Descripción
 index: 5000
-icon: textfield
+icon: fieldlet-system-description
 ---
 
 Permite introducir un cuadro de texto en el tópico.

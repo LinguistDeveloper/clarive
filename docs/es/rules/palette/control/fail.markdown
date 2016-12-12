@@ -1,7 +1,7 @@
 ---
 title: FAIL
 index: 5000
-icon: error-triangle-red
+icon: statement-fail
 ---
 
 El flujo se detiene y se muestra un mensaje.

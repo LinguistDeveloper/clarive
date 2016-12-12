@@ -50,7 +50,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 [{
 "attributes": {
     "palette": false,
-    "icon": "/static/images/icons/if.svg",
+    "icon": "/static/images/icons/statement-if.svg",
     "disabled": false,
     "on_drop_js": null,
     "key": "statement.if.var",
@@ -103,7 +103,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 }, {
 "attributes": {
     "palette": false,
-    "icon": "/static/images/icons/if.svg",
+    "icon": "/static/images/icons/statement-if.svg",
     "disabled": false,
     "on_drop_js": null,
     "key": "statement.if.else",

@@ -234,7 +234,7 @@
         return ret;
     };
     var render_status_arrow = function(value,meta,rec,rowIndex,colIndex,store){
-        return '<img src="/static/images/icons/arrow-right-black.svg" />';
+        return '<img src="/static/images/icons/arrow-right.svg" />';
     };
 
     var grid_status = new Ext.grid.GridPanel({

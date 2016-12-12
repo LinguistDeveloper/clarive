@@ -1,7 +1,7 @@
 ---
 title: RETRY
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Acción para repetir de manera iterativa un bucle.

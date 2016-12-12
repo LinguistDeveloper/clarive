@@ -1,6 +1,6 @@
 ---
 title: Dar Fecha
-icon: calendar
+icon: service-get-date
 ---
 
 Servicio que devuelve la fecha en el formato dado. Para configurarlo están los siguientes campos:

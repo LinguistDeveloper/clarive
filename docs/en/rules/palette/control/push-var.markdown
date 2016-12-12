@@ -1,6 +1,6 @@
 ---
 title: PUSH VAR
-icon: let
+icon: statement-let
 ---
 
 Pushes a value to the stash creating a new array if needed.

@@ -1,7 +1,7 @@
 ---
 title: Incluir en
 index: 5000
-icon: detail
+icon: fieldlet-include-into
 ---
 
 Muestra una lista de tópicos que contienen al tópico actual

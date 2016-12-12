@@ -4,7 +4,7 @@ use Baseliner::Moose;
 with 'Baseliner::Role::CI';
 
 sub icon {
-    '/static/images/icons/empty-blue.svg'
+    '/static/images/icons/ci-empty.svg'
 }
 
 1;

@@ -14,7 +14,7 @@ register 'service.topic.change_status' => {
     name => _locl('Change topic status'),
     handler => \&change_status,
     job_service  => 1,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-status.svg',
     form => '/forms/topic_status.js'
 };
 
@@ -22,7 +22,7 @@ register 'service.topic.create' => {
     name => _locl('Create a new topic'),
     handler => \&create,
     job_service  => 1,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-create.svg',
     form => '/forms/topic_create.js'
 };
 
@@ -30,7 +30,7 @@ register 'service.topic.update' => {
     name => _locl('Update topic data'),
     handler => \&update,
     job_service  => 1,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-update.svg',
     form => '/forms/topic_update.js'
 };
 
@@ -38,7 +38,7 @@ register 'service.topic.upload' => {
     name => _locl('Attach file to a topic'),
     handler => \&upload,
     job_service  => 0,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-upload.svg',
     form => '/forms/asset_file.js'
 };
 
@@ -46,7 +46,7 @@ register 'service.topic.remove_file' => {
     name => _locl('Remove files from a topic'),
     handler => \&remove_file,
     job_service  => 0,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-remove.svg',
     form => '/forms/remove_file.js'
 };
 
@@ -54,7 +54,7 @@ register 'service.topic.load' => {
     name => _locl('Load topic data'),
     handler => \&load,
     job_service  => 0,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-load.svg',
     form => '/forms/topic_load.js'
 };
 
@@ -62,13 +62,13 @@ register 'service.topic.related' => {
     name => _locl('Load topic related'),
     handler => \&related,
     job_service  => 0,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-related.svg',
     form => '/forms/topic_related.js'
 };
 
 register 'service.topic.inactivity_daemon' => {
     name    => _locl('Watch for topics without activity in statuses'),
-    icon => '/static/images/icons/daemon.svg',
+    icon => '/static/images/icons/service-topic-inactivity.svg',
     config  => 'config.job.daemon',
     daemon  => 1,
     handler => \&inactivity_daemon,
@@ -78,7 +78,7 @@ register 'service.topic.get_with_condition' => {
     name => _locl('Get topics that match conditions'),
     handler => \&get_with_condition,
     job_service  => 0,
-    icon => '/static/images/icons/topic.svg',
+    icon => '/static/images/icons/service-topic-condition.svg',
     form => '/forms/topic_get_with_condition.js'
 };
 

@@ -1,7 +1,7 @@
 ---
 title: Checkbox
 index: 5000
-icon: admin-request
+icon: fieldlet-checkbox
 ---
 
 Allows to introduce a checkbox in the form.

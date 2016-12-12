@@ -386,7 +386,7 @@ subtest 'meta key with attributes sent to service op' => sub {
                 [
                     {
                         "attributes" => {
-                            'icon'                => '/static/images/icons/cog-java-orange.svg',
+                            'icon'                => '/static/images/icons/service-scripting-local.svg',
                             'palette'             => 0,
                             'disabled'            => 0,
                             'who'                 => 'root',
@@ -583,7 +583,7 @@ subtest 'save_rule: saves the tree' => sub {
         rule_tree => [
             {
                 "attributes"=> {
-                    "icon"=> "/static/images/icons/cog-perl-blue.svg",
+                    "icon"=> "/static/images/icons/statement-code-server.svg",
                     "key"=> "statement.code.server",
                     "text"=> "Server CODE",
                     "id"=> "rule-ext-gen38276-1456842988061",

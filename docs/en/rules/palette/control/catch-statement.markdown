@@ -1,7 +1,7 @@
 ---
 title: CATCH statement
 index: 5000
-icon: cog-perl-blue
+icon: statement-if
 ---
 
 Catch exceptions when the rule fails.

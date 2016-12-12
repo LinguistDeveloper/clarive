@@ -1,7 +1,7 @@
 ---
 title: Progress bar
 index: 5000
-icon: progressbar
+icon: fieldlet-progressbar
 ---
 
 Shows a progress bar in the form.

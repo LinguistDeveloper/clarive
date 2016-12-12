@@ -1,7 +1,7 @@
 ---
 title: SET VAR to CI
 index: 5000
-icon: let
+icon: statement-let
 ---
 
 Creates a new stash variable and set its value to a reference to a ci instance.

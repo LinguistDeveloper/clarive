@@ -1,7 +1,7 @@
 ---
 title: Obtener los tópicos que coincidan con los criterios de búsqueda
 index: 5000
-icon: topic
+icon: service-topic-condition
 ---
 
 Servicio que devuelve los tópicos que cumplen las condiciones establecidas.

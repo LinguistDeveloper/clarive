@@ -1,7 +1,7 @@
 ---
 title: Cálculo númerico
 index: 5000
-icon: number
+icon: fieldlet-calculated-number
 ---
 
 Permite realizar una operación de cálculo recibiendo los valores a operar de fieldets de tipo [numérico](rules/palette/fieldlets/numberfield).

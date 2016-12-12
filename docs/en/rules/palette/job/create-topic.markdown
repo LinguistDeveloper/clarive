@@ -1,7 +1,7 @@
 ---
 title: Create a new topic
 index: 5000
-icon: topic
+icon: service-topic-create
 ---
 
 Create a new topic in Clarive with the parameters given in the form.

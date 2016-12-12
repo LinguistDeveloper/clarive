@@ -1,7 +1,7 @@
 ---
 title: Editor HTML
 index: 5000
-icon: html-blue
+icon: fieldlet-html-editor
 ---
 
 Permite añadir código HTML en un tópico.

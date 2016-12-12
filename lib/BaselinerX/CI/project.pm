@@ -40,7 +40,7 @@ service 'scan' => 'Run Scanner' => sub {
 service 'import_template' => {
     name    => _locl('Import template'),
     form    => '/forms/import_template.js',
-    icon    => '/static/images/icons/template.svg',
+    icon    => '/static/images/icons/service-project-template.svg',
     handler => \&import_template
 };
 

@@ -1,7 +1,7 @@
 ---
 title: Checkout Job Baseline (cualquier repositorio)
 index: 5000
-icon: changesets
+icon: service-changeset-bl-all
 ---
 
 Copia todos los repositorios para el entorno actual y 

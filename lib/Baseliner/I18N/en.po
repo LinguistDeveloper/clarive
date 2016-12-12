@@ -154,9 +154,9 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Auth.pm lib/BaselinerX/Job.pm
 #: root/comp/lifecycle/run/message.mas root/comp/log.html
-#: root/comp/log_grid.js root/comp/message_grid.js
-#: root/comp/revision/grid_live.mas root/comp/run/message.mas root/comp/sms.js
-#: root/forms/git_merge_branch.js root/forms/store_file.js root/site/runner.js
+#: root/comp/log_grid.js root/comp/message_grid.js root/comp/run/message.mas
+#: root/comp/sms.js root/forms/git_merge_branch.js root/forms/store_file.js
+#: root/site/runner.js
 msgid "Message"
 msgstr ""
 
@@ -197,7 +197,7 @@ msgid "Missing User"
 msgstr ""
 
 #: lib/Baseliner/Controller/Auth.pm lib/Baseliner/Controller/FileVersion.pm
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/comp/rules.js
+#: root/comp/monitor_grid.js root/comp/rules.js
 #: root/fields/system/js/list_tasks.js root/site/common.js
 msgid "OK"
 msgstr ""
@@ -2033,9 +2033,9 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Job.pm
 #: root/comp/ci-viewer.js root/comp/git/tag_commit.js root/comp/job_new.js
-#: root/comp/lifecycle/workspace_new.js root/comp/revision/grid.mas
-#: root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/site/common.js root/site/model.js
+#: root/comp/lifecycle/workspace_new.js root/comp/rules.js
+#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
+#: root/site/common.js root/site/model.js
 msgid "Create"
 msgstr ""
 
@@ -3713,8 +3713,8 @@ msgid "%1 deleted all users"
 msgstr ""
 
 #: lib/Baseliner/Model/Topic.pm root/comp/lifecycle/report_edit.js
-#: root/comp/revision/grid.mas root/comp/topic/topic_admin.js
-#: root/fields/templates/config/listbox.js root/site/common.js
+#: root/comp/topic/topic_admin.js root/fields/templates/config/listbox.js
+#: root/site/common.js
 msgid "Release"
 msgstr ""
 
@@ -4693,8 +4693,8 @@ msgstr ""
 msgid "Projects"
 msgstr ""
 
-#: lib/BaselinerX/CI/job.pm root/comp/revision/grid.mas
-#: root/fields/templates/config/listbox.js root/site/model.js
+#: lib/BaselinerX/CI/job.pm root/fields/templates/config/listbox.js
+#: root/site/model.js
 msgid "Revisions"
 msgstr ""
 
@@ -4997,11 +4997,10 @@ msgstr ""
 #: root/comp/job_calendar_slot_edit.js root/comp/label_admin.js
 #: root/comp/lifecycle/report_edit.js root/comp/lifecycle/tasks.js
 #: root/comp/message_grid.js root/comp/monitor_grid.js
-#: root/comp/project_grid.mas root/comp/repl.js root/comp/revision/grid.mas
-#: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/sms.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/user_grid.js root/site/common.js
-#: root/site/model.js
+#: root/comp/project_grid.mas root/comp/repl.js root/comp/role_grid.js
+#: root/comp/rules.js root/comp/scheduler_grid.js root/comp/sms.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
+#: root/comp/user_grid.js root/site/common.js root/site/model.js
 msgid "Delete"
 msgstr ""
 
@@ -5338,11 +5337,10 @@ msgstr ""
 #: root/comp/git/tag_commit.js root/comp/job_calendar_editor.js
 #: root/comp/job_calendar_grid.js root/comp/job_new.js
 #: root/comp/lifecycle/tasks.js root/comp/project_grid.mas
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
-#: root/comp/rule_new.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_actions.mas
-#: root/comp/user_grid.js root/comp/user_info.mas
+#: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
+#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
+#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
+#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
@@ -5627,8 +5625,7 @@ msgstr ""
 msgid "Technologies"
 msgstr ""
 
-#: lib/BaselinerX/Job.pm root/comp/monitor_grid.js root/comp/revision/grid.mas
-#: root/site/explorer.js
+#: lib/BaselinerX/Job.pm root/comp/monitor_grid.js root/site/explorer.js
 msgid "Releases"
 msgstr ""
 
@@ -6249,7 +6246,7 @@ msgstr ""
 msgid "No natures detected in job items"
 msgstr ""
 
-#: lib/BaselinerX/Service/ChangesetServices.pm root/comp/revision/grid.mas
+#: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Request Approval"
 msgstr ""
 
@@ -7383,13 +7380,12 @@ msgstr ""
 #: root/ci/DBDest.js root/ci/item.js root/ci/status.js root/ci/variable.js
 #: root/comp/catalog_grid.js root/comp/configlist/grid.mas
 #: root/comp/dashboard_job.html root/comp/job_calendar_slot_edit.js
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas
-#: root/comp/role_detail.js root/comp/rule_new.js root/comp/rules.js
-#: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
-#: root/comp/user_grid.js root/forms/catalog_task.js
-#: root/forms/git_delete_reference.js root/forms/parse_config.js
-#: root/forms/write_config.js root/site/common.js root/site/explorer.js
-#: root/site/model.js
+#: root/comp/monitor_grid.js root/comp/role_detail.js root/comp/rule_new.js
+#: root/comp/rules.js root/comp/topic/form_editor.js
+#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/forms/catalog_task.js root/forms/git_delete_reference.js
+#: root/forms/parse_config.js root/forms/write_config.js root/site/common.js
+#: root/site/explorer.js root/site/model.js
 msgid "Type"
 msgstr ""
 
@@ -7499,10 +7495,9 @@ msgstr ""
 #: root/comp/configlist/grid.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_new.js root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/topic/topic_admin.js
-#: root/comp/user_info.mas root/comp/user_infoactions.mas
-#: root/dashlets/jobs.html root/dashlets/last_jobs.js
-#: root/fields/templates/config/ci_grid.js
+#: root/comp/topic/topic_admin.js root/comp/user_info.mas
+#: root/comp/user_infoactions.mas root/dashlets/jobs.html
+#: root/dashlets/last_jobs.js root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/model.js
@@ -7754,7 +7749,6 @@ msgstr ""
 
 #: root/ci/itemset.js root/comp/ci-grid.js root/comp/ci-gridtree.js
 #: root/comp/ci-viewer-tree.js root/comp/ci-viewer.js
-#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
 msgid "Item"
 msgstr ""
 
@@ -8217,7 +8211,6 @@ msgstr ""
 #: root/comp/lifecycle/tasks.js root/comp/log.mas root/comp/log_grid.js
 #: root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas
-#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
 #: root/comp/role_grid.js root/comp/scheduler_grid.js root/comp/sem.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
 #: root/comp/view_commits_history.js root/site/tabfu.js
@@ -8233,7 +8226,6 @@ msgstr ""
 #: root/comp/jes_viewer.mas root/comp/job_calendar_grid.js
 #: root/comp/lifecycle/tasks.js root/comp/log.mas root/comp/log_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas
-#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
 #: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sem.js root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
 #: root/comp/view_commits_history.js
@@ -8295,8 +8287,8 @@ msgstr ""
 #: root/comp/lifecycle/deploy.js root/comp/lifecycle/tasks.js
 #: root/comp/log_grid.js root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
-#: root/comp/rules.js root/comp/scheduler_grid.js root/comp/show_email.js
+#: root/comp/role_detail.js root/comp/role_grid.js root/comp/rules.js
+#: root/comp/scheduler_grid.js root/comp/show_email.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/view_diff.js
 #: root/comp/view_file.js root/fields/system/js/list_projects.js
@@ -8404,7 +8396,7 @@ msgstr ""
 #: root/comp/label_admin.js root/comp/lifecycle/tasks.js
 #: root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
+#: root/comp/role_detail.js root/comp/role_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
 #: root/site/common.js root/site/kanban.js root/site/tabfu.js
@@ -8641,8 +8633,7 @@ msgstr ""
 #: root/comp/configlist/grid.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_new.js root/comp/log_grid.js root/comp/project_grid.mas
-#: root/comp/revision/grid_live.mas root/comp/user_actions.mas
-#: root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 msgid "Scope"
 msgstr ""
 
@@ -8672,8 +8663,7 @@ msgid "config.csv"
 msgstr ""
 
 #: root/comp/configlist/grid.mas root/comp/feature.js
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/site/common.js
-#: root/site/tabfu.js
+#: root/comp/monitor_grid.js root/site/common.js root/site/tabfu.js
 msgid "Log"
 msgstr ""
 
@@ -8769,7 +8759,7 @@ msgid "Last Step"
 msgstr ""
 
 #: root/comp/dashboard_job.html
-msgid "Elementos <%$namejob%>"
+msgid "Elements <%$namejob%>"
 msgstr ""
 
 #: root/comp/dashboard_job.html
@@ -8809,7 +8799,7 @@ msgstr ""
 msgid "Rollback Failed"
 msgstr ""
 
-#: root/comp/dashboard_job.html root/comp/revision/grid.mas
+#: root/comp/dashboard_job.html
 msgid "Approvals"
 msgstr ""
 
@@ -8842,7 +8832,7 @@ msgid "Rule ID"
 msgstr ""
 
 #: root/comp/events.js root/comp/log.html root/comp/log_grid.js
-#: root/comp/revision/grid.mas root/comp/role_grid.js
+#: root/comp/role_grid.js
 msgid "Actions"
 msgstr ""
 
@@ -9666,7 +9656,7 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: root/comp/log_grid.js root/comp/revision/grid_live.mas
+#: root/comp/log_grid.js
 msgid "Annotations"
 msgstr ""
 
@@ -9955,9 +9945,8 @@ msgstr ""
 msgid "Yes, I'm sure"
 msgstr ""
 
-#: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/revision/grid.mas root/comp/rules.js root/comp/sem.js
-#: root/comp/sms.js root/comp/topic/topic_drop.js
+#: root/comp/monitor_grid.js root/comp/notifications.js root/comp/rules.js
+#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
 #: root/fields/system/js/list_tasks.js root/forms/shortcut.js
 #: root/site/common.js root/site/dashboard.js root/site/model.js
 msgid "Cancel"
@@ -10099,7 +10088,7 @@ msgstr ""
 msgid "Ready"
 msgstr ""
 
-#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/site/common.js
+#: root/comp/monitor_grid.js root/site/common.js
 msgid "Approval"
 msgstr ""
 
@@ -10295,7 +10284,7 @@ msgstr ""
 msgid "Digest frequency"
 msgstr ""
 
-#: root/comp/project_grid.mas root/comp/revision/grid_live.mas
+#: root/comp/project_grid.mas
 msgid "Parent"
 msgstr ""
 
@@ -10391,170 +10380,6 @@ msgstr ""
 
 #: root/comp/report.js
 msgid "Basic HTML Report (Description)"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "DESA"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "PREP"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "PROD"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Are you sure you want to approve %1?"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Error during action %1"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Cancel Request"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/site/common.js
-msgid "Approve"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/site/common.js
-msgid "Reject"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "%1 is not in a release."
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Are you sure you want to remove %1 from the release %2?"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "%1 removed"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Could not remove the item: %1"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Cannot add item of type %1 to releases."
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "%1 is already in a release."
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Add to Release"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "%1 added"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Could not add the item: %1"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Add Item to Release"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Delete from Release"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/comp/topic/topic_admin.js
-msgid "Providers"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Create..."
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Create Revision"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Are you sure you want to delete revision %1?"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/site/common.js
-msgid "Deleting..."
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Deleted revision %1"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Error deleting revision %1: %2"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Error deleting revision %1"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "New Name"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/comp/rules.js root/site/explorer.js
-msgid "Rename"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Renaming..."
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Renamed revision %1"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Error in Rename"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "View Email"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
-msgid "Tipo"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Application"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Last Job"
-msgstr ""
-
-#: root/comp/revision/grid.mas
-msgid "Icon"
-msgstr ""
-
-#: root/comp/revision/grid_live.mas
-msgid "Pending Approval"
-msgstr ""
-
-#: root/comp/revision/grid_live.mas
-msgid "Packages"
-msgstr ""
-
-#: root/comp/revision/grid_live.mas
-msgid "Views"
-msgstr ""
-
-#: root/comp/revision/grid_live.mas
-msgid "Auto Refresh"
 msgstr ""
 
 #: root/comp/roadmap.js root/dashlets/job_chart_config.js
@@ -10850,6 +10675,10 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Are you sure you want delete the folder?"
+msgstr ""
+
+#: root/comp/rules.js root/site/explorer.js
+msgid "Rename"
 msgstr ""
 
 #: root/comp/rules.js
@@ -11584,6 +11413,10 @@ msgstr ""
 
 #: root/comp/topic/topic_admin.js
 msgid "Clarity"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
+msgid "Providers"
 msgstr ""
 
 #: root/comp/topic/topic_admin.js
@@ -14819,6 +14652,10 @@ msgid "Error uploading file %1"
 msgstr ""
 
 #: root/site/common.js
+msgid "Deleting..."
+msgstr ""
+
+#: root/site/common.js
 msgid "Installing..."
 msgstr ""
 
@@ -14920,7 +14757,15 @@ msgid "User is not authorized to approve this job"
 msgstr ""
 
 #: root/site/common.js
+msgid "Approve"
+msgstr ""
+
+#: root/site/common.js
 msgid "Approved"
+msgstr ""
+
+#: root/site/common.js
+msgid "Reject"
 msgstr ""
 
 #: root/site/common.js

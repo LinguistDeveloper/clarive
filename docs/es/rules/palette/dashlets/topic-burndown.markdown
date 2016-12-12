@@ -1,7 +1,7 @@
 ---
 title: Timeline de tópicos
 index: 5000
-icon: chart-line
+icon: dashlet-topic-burndown
 ---
 
 Muestra un cronograma con el número de tópicos creados dividido por hora.

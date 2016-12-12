@@ -56,7 +56,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
 [{
 "attributes": {
     "palette": false,
-    "icon": "/static/images/icons/if.svg",
+    "icon": "/static/images/icons/statement-if.svg",
     "disabled": false,
     "on_drop_js": null,
     "key": "statement.if.var",
@@ -109,7 +109,7 @@ Use the right-click `Import here` option in the rule editor to import this snipp
 }, {
 "attributes": {
     "palette": false,
-    "icon": "/static/images/icons/if.svg",
+    "icon": "/static/images/icons/statement-if.svg",
     "disabled": false,
     "on_drop_js": null,
     "key": "statement.if.else",

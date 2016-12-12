@@ -1,7 +1,7 @@
 ---
 title: Load files/items into stash
 index: 5000
-icon: file
+icon: service-fileman-foreach
 ---
 
 Assigns to a user configured [stash](concepts/stash) variable all 

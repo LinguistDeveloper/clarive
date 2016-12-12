@@ -62,7 +62,7 @@
             my $r= $_;
             my ($sd,$ed,$psd,$ped) = @{ $r }{qw/start_date end_date plan_start_date plan_end_date/};
             if( defined $ped && $now>$ped && !defined $ed ) {
-                $r->{end_date} = \'<img src="/static/images/icons/error-triangle-orange.svg" />' ;
+                $r->{end_date} = \'<img src="/static/images/icons/warning.svg" />' ;
                 $r->{overdue} = 1;
             }
             $r;

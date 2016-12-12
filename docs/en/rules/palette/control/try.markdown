@@ -1,7 +1,7 @@
 ---
 title: TRY statement
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Try to run nested ops.

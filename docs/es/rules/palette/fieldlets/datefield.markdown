@@ -1,7 +1,7 @@
 ---
 title: Campo de fecha
 index: 5000
-icon: calendar
+icon: fieldlet-datetime
 ---
 
 Permite añadir un campo fecha en el tópico.

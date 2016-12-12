@@ -1,7 +1,7 @@
 ---
 title: FOREACH file/item
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Iterates over the nested ops so many times as indicated in the loop config.

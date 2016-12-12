@@ -493,7 +493,7 @@
 
         var btn_delete_row = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon:'/static/images/icons/delete-red.svg',
+            icon: IC('delete-grid-row'),
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -525,7 +525,7 @@
 
         var btn_delete_all = new Ext.Toolbar.Button({
             text: _('Delete All'),
-            icon:'/static/images/icons/del-all-red.svg',
+            icon: IC('delete-grid-all-rows'),
             cls: 'x-btn-text-icon',
             handler: function() {
                 Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){

@@ -1,7 +1,7 @@
 ---
 title: Eliminar fichero local
 index: 5000
-icon: file
+icon: service-fileman-rmtree
 ---
 
 Elimina el fichero especificado en la configuración del elemento.

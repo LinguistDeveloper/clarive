@@ -1,7 +1,7 @@
 ---
 title: Ship File Remotely
 index: 5000
-icon: file
+icon: service-fileman-ship
 ---
 
 Get files from a remote site according to user options from the configuration window.

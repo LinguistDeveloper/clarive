@@ -1,7 +1,7 @@
 ---
 title: Enviar un fichero remotamente
 index: 5000
-icon: file
+icon: service-fileman-ship
 ---
 
 Los elementos configurables son los siguientes.

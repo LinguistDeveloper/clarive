@@ -1,7 +1,7 @@
 ---
 title: Título
 index: 5000
-icon: lock
+icon: fieldlet-system-title
 ---
 
 Añade el título a un tópico.

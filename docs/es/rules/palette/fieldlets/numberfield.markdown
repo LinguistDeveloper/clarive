@@ -1,7 +1,7 @@
 ---
 title: Campo numérico
 index: 5000
-icon: number
+icon: fieldlet-number
 ---
 
 Permite añadir un campo que se completa con números.

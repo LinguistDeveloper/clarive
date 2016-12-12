@@ -1,7 +1,7 @@
 ---
 title: MERGE value INTO stash
 index: 5000
-icon: let
+icon: statement-let
 ---
 
 Merge hash variable to be accessible through stash variables.

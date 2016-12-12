@@ -8,7 +8,7 @@ use Moose::Role;
 
 requires 'name';
 
-has icon => qw(is rw isa Str default /static/images/icons/branch-blue.svg);
+has icon => qw(is rw isa Str default /static/images/icons/ci-gitrepository-branch.svg);
 
 sub node_url { '/lifecycle/list_repo_contents' }
 

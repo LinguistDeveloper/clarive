@@ -1,7 +1,7 @@
 ---
 title: Init Job Home
 index: 5000
-icon: job
+icon: service-job-init
 ---
 
 This service is required for a correct job startup. Create or

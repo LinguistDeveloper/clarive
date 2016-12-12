@@ -34,5 +34,5 @@ Las acciones disponibles dentro de la ventana de Demonios son las siguientes:
 - <img src="/static/images/icons/add.svg" /> **Crear** - Crear un nuevo demonio asociado al [dispatcher](admin/dispatcher).
 - <img src="/static/images/icons/edit.svg" /> **Editar** - Permite modificar la configuración el demonio seleccionado.
 - <img src="/static/images/icons/delete.svg" /> **Eliminar** - Elimina un demonio seleccionado en la lista.
-- <img src="/static/images/icons/start-green.svg" /> **Activar** - Inicia un demonio que está desactivado.
-- <img src="/static/images/icons/stop-red.svg" /> **Desactivar** - Desactiva un demonio que se está ejecutando.
+- <img src="/static/images/icons/start.svg" /> **Activar** - Inicia un demonio que está desactivado.
+- <img src="/static/images/icons/stop.svg" /> **Desactivar** - Desactiva un demonio que se está ejecutando.

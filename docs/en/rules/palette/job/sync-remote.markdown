@@ -1,7 +1,7 @@
 ---
 title: Sync a Remote Directory
 index: 5000
-icon: file
+icon: service-fileman-sync
 ---
 
 Sync two directories.

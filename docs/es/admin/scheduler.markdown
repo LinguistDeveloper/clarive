@@ -33,6 +33,6 @@ Aparecen las siguientes opciones a completar:
 - **Frecuencia** - Formato (1H - 1 hora, 1D - Un día, etc...)
 - **Sólo días de diario** - Si se quiere que la ejecución se lleve a cabo solo entre semana (de Lunes a Viernes) hay que activar esta opción.
 
-### <img src="/static/images/icons/start-green.svg" /> Ejecutar ahora
+### <img src="/static/images/icons/start.svg" /> Ejecutar ahora
 
 La tarea se ejecutará en ese mismo momento, sin esperar a la próxima fecha estimada. Esta opción está disponible independientemente del estado de la tarea.

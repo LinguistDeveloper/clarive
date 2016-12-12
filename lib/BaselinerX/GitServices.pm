@@ -34,27 +34,27 @@ register 'config.git' => {
 
 register 'service.git.newjob' => {
     name    =>_locl('Create a Git Revision Job'),
-    icon    => '/static/images/icons/commite-new.svg',
+    icon    => '/static/images/icons/service-git-newjob.svg',
     handler =>  \&newjob,
 };
 
 register 'service.git.checkout' => {
     name    =>_locl('Checkout a Git Revision'),
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-checkout.svg',
     job_service => 1,
     handler =>  \&checkout,
 };
 
 register 'service.git.job_elements' => {
     name    =>_locl('Fill job_elements'),
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-job.svg',
     job_service => 1,
     handler =>  \&job_elements,
 };
 
 register 'service.git.link_revision_to_topic' => {
     name    =>_locl('Link a git revision to the changesets in title'),
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-link.svg',
     job_service => 1,
     handler =>  \&link_revision,
     form => '/forms/link_revision.js'
@@ -62,35 +62,35 @@ register 'service.git.link_revision_to_topic' => {
 
 register 'service.git.create_tag' => {
     name    => _locl('Create a tag in a Git repository'),
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-tag.svg',
     form    => '/forms/git_create_tag.js',
     handler => \&create_tag,
 };
 
 register 'service.git.create_branch' => {
     name    => _locl('Create a branch in a Git repository'),
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-branch.svg',
     form    => '/forms/git_create_branch.js',
     handler => \&create_branch,
 };
 
 register 'service.git.delete_reference' => {
     name    => 'Delete a reference in a Git repository',
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-delete.svg',
     form    => '/forms/git_delete_reference.js',
     handler => \&delete_reference,
 };
 
 register 'service.git.merge' => {
     name    => 'Merge a branch in a Git repository',
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-merge.svg',
     form    => '/forms/git_merge_branch.js',
     handler => \&merge_branch,
 };
 
 register 'service.git.rebase' => {
     name    => 'Rebase a branch in a Git repository',
-    icon    => '/static/images/icons/git.svg',
+    icon    => '/static/images/icons/service-git-rebase.svg',
     form    => '/forms/git_rebase_branch.js',
     handler => \&rebase_branch,
 };

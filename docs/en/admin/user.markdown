@@ -53,10 +53,10 @@ To Unassign roles/projects from a User, there are several options.
 
 A few examples:
 
-- To unassign the Role “Developer” for all Clarive Projects from the user, mark the row and click on <img src="/static/images/icons/delete-red.svg" />
+- To unassign the Role “Developer” for all Clarive Projects from the user, mark the row and click on <img src="/static/images/icons/delete-grid-row.svg" />
 - To unassign the Role “Developer” from the Clarive Project “ClientApp”  from  the user, mark the ckeckbox next to “Developer” in the left pane, mark the checkbox next to “ClientApp” in the right pane and click on  <img src="/static/images/icons/key-delete.svg" />
 - To unassign all Roles for the Clarive Project “ClientApp” from  a user, mark the checkbox next to “ClientApp” in the right pane, click on <img src="/static/images/icons/key-delete.svg" />
-- To unassign all Roles from  a user, click on <img src="/static/images/icons/del-all-red.svg" />
+- To unassign all Roles from  a user, click on <img src="/static/images/icons/delete-grid-all-rows.svg" />
 
 ### <img src="/static/images/icons/edit.svg" /> Editing a User
 

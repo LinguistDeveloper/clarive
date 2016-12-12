@@ -1,7 +1,7 @@
 ---
 title: Environment
 index: 5000
-icon: add
+icon: ci-bl
 ---
 
 In DevOps, an environment typically is defined as a place

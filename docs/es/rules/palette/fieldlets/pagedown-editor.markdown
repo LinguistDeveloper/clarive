@@ -1,7 +1,7 @@
 ---
 title: Editor Markdown
 index: 5000
-icon: html-blue
+icon: fieldlet-pagedown
 ---
 
  Permite añadir un área de texto que interpreta lenguaje Markdown.

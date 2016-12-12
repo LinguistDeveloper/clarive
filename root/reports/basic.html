@@ -50,7 +50,7 @@
 % if( exists $title->{$key}->{positive}) {
                <div class ="span7" style="margin-bottom: 1%">
                   <img class = "icon_standar_size"
-                  src="/static/images/icons/add-green.svg" />
+                  src="/static/images/icons/add-sign.svg" />
 % my $topics = join (", " , @{$title->{$key}->{positive}});
                   <% _loc( $topics ) %>
 
@@ -58,7 +58,7 @@
 % }
 % if( exists $title->{$key}->{negative}) {
                <div class ="span7">
-                  <img class = "icon_standar_size" src="/static/images/icons/delete-red.svg" />
+                  <img class = "icon_standar_size" src="/static/images/icons/delete-grid-row.svg" />
 % my $topics = join (", " , @{$title->{$key}->{negative}});
                   <% _loc( $topics ) %>
 

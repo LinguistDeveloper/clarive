@@ -1,7 +1,7 @@
 ---
 title: YAML
 index: 5000
-icon: yaml-purple
+icon: logo-yaml
 ---
 
 YAML es un formato tipado legible por personas usado para la serialización de datos

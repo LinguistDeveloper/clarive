@@ -14,6 +14,7 @@ register 'service.job.create' => {
     name => _locl('Create a Job'),
     job_service  => 1,
     form => '/forms/create_job.js',
+    icon => '/static/images/icons/service-job-create.svg',
     handler => \&run_create, };
 
 sub run_create {

@@ -1,7 +1,7 @@
 ---
 title: Change Topic Status
 index: 5000
-icon: topic
+icon: service-topic-status
 ---
 
 Service for changing topic status from one status to another. Form to configure has the following fields:

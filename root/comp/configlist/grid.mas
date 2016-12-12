@@ -165,7 +165,7 @@
                 }
         },
         { text: _('CSV'),
-    icon:'/static/images/icons/csv-green.svg',
+    icon: IC('logo-csv'),
     cls: 'x-btn-text-icon',
     handler: function() {
         var self = this;

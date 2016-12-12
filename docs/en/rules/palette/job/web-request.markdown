@@ -1,7 +1,7 @@
 ---
 title: Web Request
 index: 5000
-icon: webservice-blue
+icon: service-web-request
 ---
 
 Generates a request to webservices, URLs

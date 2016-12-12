@@ -44,7 +44,7 @@ Actions associated with the buttons on the toolbar:
 
 <img src="/static/images/icons/delete.svg" /> **Delete**: Delete an existing daemon.
 
-<img src="/static/images/icons/start-green.svg" /> **Start**: Run a daemon that has been stopped.
+<img src="/static/images/icons/start.svg" /> **Start**: Run a daemon that has been stopped.
 
-<img src="/static/images/icons/stop-red.svg" /> **Stop**: Stop a running daemon.
+<img src="/static/images/icons/stop.svg" /> **Stop**: Stop a running daemon.
 

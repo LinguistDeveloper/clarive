@@ -44,7 +44,7 @@ Action indicates the type of notification, Send or Exclude.
 
 All notifications can be enabled or not created.
 
-This column shows the state through a <img  src = "/static/images/icons/start-green.svg" /> or <img src ="/static/images/icons/stop-red.svg "/>.
+This column shows the state through a <img  src = "/static/images/icons/start.svg" /> or <img src ="/static/images/icons/stop.svg "/>.
 
 All column headers have the same functionality as in the rest of the panels Clarive.
 
@@ -147,7 +147,7 @@ Access the same window with the same fields as the Create menu.
 
 Erasing notifications.
 
-### <img src = "/static/images/icons/start-green.svg" /> Activate / <img src = "/static/images/icons/stop-red.svg" /> Deactivate
+### <img src = "/static/images/icons/start.svg" /> Activate / <img src = "/static/images/icons/stop.svg" /> Deactivate
 
 To enable or disable one or more notifications, select the checkbox to the left of each row.
 

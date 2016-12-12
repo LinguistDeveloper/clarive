@@ -84,7 +84,7 @@
             },
             new Ext.Toolbar.Button({
                 text: '<% _loc('Details') %>',
-                icon:'/static/images/icons/database-table-orange.svg',
+                icon: IC('feature-database-table'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -105,7 +105,7 @@
             },
             new Ext.Toolbar.Button({
                 text: '<% _loc('Turn Off') %>',
-                icon:'/static/images/icons/del-all-red.svg',
+                icon: IC('delete-grid-all-rows'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();

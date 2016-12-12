@@ -1,7 +1,7 @@
 ---
 title: Editor de grids
 index: 5000
-icon: grid
+icon: fieldlet-grid-editor
 ---
 
 Permite añadir una tabla con las columnas personalizadas.

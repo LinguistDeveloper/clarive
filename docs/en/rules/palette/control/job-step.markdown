@@ -1,7 +1,7 @@
 ---
 title: JOB STEP
 index: 5000
-icon: job
+icon: statement-step
 ---
 
 Defines a job step section.

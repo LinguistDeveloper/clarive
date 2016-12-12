@@ -1,7 +1,7 @@
 ---
 title: Scheduler
 index: 5000
-icon: clock
+icon: fieldlet-scheduler
 ---
 
 Allows to introduce a table as an event planner.

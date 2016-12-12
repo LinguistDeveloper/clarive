@@ -1,7 +1,7 @@
 ---
 title: Revision box
 index: 5000
-icon: combo-box
+icon: fieldlet-system-revisions
 ---
 
 Allows to introduce a revision box into the topic form.

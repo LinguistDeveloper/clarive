@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#3FA9F5;}
+	.st1{fill:#FFFFFF;}
+</style>
+<rect y="3.3" class="st0" width="16" height="9.1"/>
+<g id="Layer_3">
+</g>
+<path class="st1" d="M1.9,10.7H1V5.3h0.9v2.4h1V5.3h0.9v5.5H2.9V8.4h-1C1.9,8.4,1.9,10.7,1.9,10.7z"/>
+<path class="st1" d="M4.8,5.3h2.7V6h-1v4.7H5.7V6H4.8V5.3z"/>
+<path class="st1" d="M10.3,9.2l0.6-3.9H12v5.5h-0.8v-4l-0.6,3.9H9.8L9.2,6.9v3.9H8.4V5.3h1.2L10.3,9.2z"/>
+<path class="st1" d="M13,5.3h0.9V10h1.4v0.8H13V5.3z"/>
+</svg>

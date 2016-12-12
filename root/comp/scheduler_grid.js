@@ -220,7 +220,7 @@
     var button_run_schedule = new Ext.Toolbar.Button({
         text: _('Run now'),
         hidden: true,
-        icon: '/static/images/icons/start-green.svg',
+        icon: IC('start'),
         cls: 'x-btn-text-icon',
         handler: run_schedule_handler
     });
@@ -247,7 +247,7 @@
     });
 
     var name_renderer = function(value, metadata, rec, rowIndex, colIndex, store) {
-        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img class="force_size_in_icon" src="/static/images/icons/moredata.svg" /></a>', rec.data.id_last_log);
+        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img class="force_size_in_icon" src="' + IC('job-full-log') + '" /></a>', rec.data.id_last_log);
         return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + str + "</div>";
     };
 
@@ -340,7 +340,7 @@
             button_run_schedule.show();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
-            button_toggle_activation.setIcon('/static/images/icons/stop-red.svg');
+            button_toggle_activation.setIcon(IC('stop'));
             button_toggle_activation.show();
         } else if (r.data.status == 'KILLED') {
             button_delete_schedule.show();
@@ -352,7 +352,7 @@
             button_run_schedule.hide();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Activate'));
-            button_toggle_activation.setIcon('/static/images/icons/start-green.svg');
+            button_toggle_activation.setIcon(IC('start'));
             button_toggle_activation.show();
         } else if (r.data.status == 'RUNNING') {
             button_delete_schedule.hide();
@@ -364,7 +364,7 @@
             button_run_schedule.hide();
             button_kill_schedule.hide();
             button_toggle_activation.setText(_('Deactivate'));
-            button_toggle_activation.setIcon('/static/images/icons/stop-red.svg');
+            button_toggle_activation.setIcon(IC('stop'));
             button_toggle_activation.show();
         }
         button_edit_schedule.show();

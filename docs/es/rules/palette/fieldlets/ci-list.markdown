@@ -1,7 +1,7 @@
 ---
 title: Lista de CIs
 index: 5000
-icon: grid
+icon: fieldlet-ci-list
 ---
 
 Permite añadir una lista de CIs en el formulario.

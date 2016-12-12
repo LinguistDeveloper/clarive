@@ -1,7 +1,7 @@
 ---
 title: Obtener fichero remoto
 index: 5000
-icon: file
+icon: service-fileman-retrieve
 ---
 
 Obtiene un archivo remoto desde un servidor de acuerdo con los parámetros configurados por el usuario.

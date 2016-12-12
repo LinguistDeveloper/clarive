@@ -63,8 +63,8 @@
     var sort_direction = function(dir, node){
         var attr = node.attributes;
         attr.sort_direction = dir;
-        var icon = dir > 0 ? 'up' : 'down';
-        attr.icon = '/static/images/icons/arrow-'+icon+'.svg';
+        var icon = dir > 0 ? 'asc' : 'desc';
+        attr.icon = IC('ci-report-sort-' + icon);
         node.setIcon( attr.icon );
     }
 
@@ -489,8 +489,8 @@
         if( type =='value' )
             its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='sort_field' ) {
-            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up-green.svg' });
-            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down-green.svg' });
+            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon: IC('ci-report-sort-asc') });
+            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:IC('ci-report-sort-desc') });
         }
         if( !/^(categories|select|sort|where)$/.test(type) )
             its.push({  text: _('Delete'),
@@ -563,7 +563,7 @@
             }
 
             if( ttype=='select' || ttype=='select_field' ) {
-                n.attributes.icon = '/static/images/icons/field.svg',
+                n.attributes.icon = IC('ci-report-selected-field'),
                 n.expanded = true;
                 if( n.attributes.category ) {
                     if (n.attributes.text.search(':') == '-1'){
@@ -578,8 +578,7 @@
                 if( type!='value' ) nn.type = (ttype=='categories') || ttype=='where' ? ttype+'_field': ttype;
                 if( ttype == 'sort') nn.type = ttype+'_field';
                 var icon = type=='value' ? '/static/images/icons/search-small.svg'
-                    : type=='sort' ? '/static/images/icons/arrow-down-green.svg'
-                    : '/static/images/icons/field.svg';
+                    : type=='sort' ? IC('ci-report-sort-desc') : IC('ci-report-selected-field');
                 nn.leaf = ttype == 'where' ? false : true;
                 var copy = new Ext.tree.TreeNode(nn);
 
@@ -591,7 +590,7 @@
                     var nodeCategories = root.firstChild;
                     var query = {};
                     var id_category;
-
+                    nodeCategories.attributes.icon = IC('ci-report-category');
                     if (nodeCategories.attributes.query) {
                         query = nodeCategories.attributes.query;
                     }
@@ -647,7 +646,7 @@
                     copy.appendChild({
                         id: Ext.id()
                         ,text: _(meta_type)
-                        ,icon: '/static/images/icons/where.svg'
+                        ,icon: IC('ci-report-filter-field')
                         ,type: 'value'
                         ,leaf: false
                         ,where: meta_type
@@ -751,10 +750,10 @@
 
     var initialize_folders = function(){
         tree_selected.root.appendChild([
-            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder-database.svg' },
-            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder-explore.svg' },
-            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder-find.svg' },
-            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder-go.svg' }
+            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon: IC('ci-report-category') },
+            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon: IC('ci-report-field') },
+            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon: IC('ci-report-filter') },
+            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:IC('ci-report-sort') }
         ]);
     };
     var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.svg', handler: function(){

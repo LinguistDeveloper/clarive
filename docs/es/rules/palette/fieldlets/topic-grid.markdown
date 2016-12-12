@@ -1,7 +1,7 @@
 ---
 title: Grid de tópicos
 index: 5000
-icon: grid
+icon: fieldlet-topic-grid
 ---
 
 Permite añadir una lista de tópicos en el tópico.

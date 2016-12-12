@@ -1,7 +1,7 @@
 ---
 title: Últimos trabajos por aplicación
 index: 5000
-icon: report
+icon: dashlet-job-last
 ---
 
 Muestra una lista con los jobs ejecutados por aplicación

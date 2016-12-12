@@ -1,7 +1,7 @@
 ---
 title: Hitos
 index: 5000
-icon: milestone
+icon: fieldlet-env-planner
 ---
 
 Permite añadir una tabla con los entornos deseados asi como una fecha de inicio y un final.

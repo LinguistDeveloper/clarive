@@ -17,7 +17,7 @@ register 'service.ci.update' => {
         $ci->update( %{ $args->{update} || _fail _loc('Missing parameter: update') } );
         _log _loc("Update user ok");
     },
-     icon => '/static/images/icons/class.svg',
+     icon => '/static/images/icons/service-ci-update.svg',
 };
 
 sub bounds_role {

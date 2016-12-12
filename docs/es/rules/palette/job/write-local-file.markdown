@@ -1,7 +1,7 @@
 ---
 title: Escribir un fichero en local
 index: 5000
-icon: file
+icon: service-fileman-write
 ---
 
 Escribe un nuevo fichero en la máquina local.

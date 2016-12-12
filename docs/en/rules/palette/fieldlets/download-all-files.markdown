@@ -1,7 +1,7 @@
 ---
 title: Download all files
 index: 5000
-icon: download
+icon: fieldlet-download-all
 ---
 
 Allows to download all the files attached in the form.

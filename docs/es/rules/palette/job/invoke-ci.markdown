@@ -1,7 +1,7 @@
 ---
 title: Invocar métodos de CIs
 index: 5000
-icon: class
+icon: service-ci-invoke
 ---
 
 Invoca el método CI seleccionado con los argumentos dados desde el formulario

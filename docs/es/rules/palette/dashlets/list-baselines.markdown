@@ -1,7 +1,7 @@
 ---
 title: Lista de baselines
 index: 5000
-icon: report
+icon: dashlet-job-bl
 ---
 
 Ofrece un balance entre los jobs que han funcionado de manera correcta y los que han fallado en una barra.

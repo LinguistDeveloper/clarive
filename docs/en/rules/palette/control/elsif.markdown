@@ -1,7 +1,7 @@
 ---
 title: ELSIF condition THEN
 index: 5000
-icon: if-else-green
+icon: statement-if-elsif
 ---
 
 Execute nested task if a condition is met.

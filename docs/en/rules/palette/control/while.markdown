@@ -1,6 +1,6 @@
 ---
 title: WHILE condition
-icon: loop
+icon: statement-loop
 ---
 
 The WHILE control operation iterates a code block while the condition indicated is true.

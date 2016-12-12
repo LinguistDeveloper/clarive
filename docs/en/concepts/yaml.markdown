@@ -1,7 +1,7 @@
 ---
 title: YAML
 index: 5000
-icon: yaml-purple
+icon: logo-yaml
 ---
 
 YAML is a human-readable markup format used for data serialization.

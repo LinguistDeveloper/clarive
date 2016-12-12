@@ -29,7 +29,7 @@ register 'config.dispatcher' => {
 register 'service.dispatcher' => {
     name    => _locl('Dispatcher Service'),
     config  => 'config.dispatcher',
-    icon => '/static/images/icons/daemon.svg',
+    icon => '/static/images/icons/service-dispatcher.svg',
     daemon => 1,
     handler => \&run,
 };

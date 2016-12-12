@@ -29,7 +29,7 @@
    });
 
     var btn_html = {
-        icon: '/static/images/icons/html-blue.svg',
+        icon: IC('logo-html'),
         text: _('Basic HTML Report'),
         handler: function() {
             //form_report_submit({ url: '/topic/report_html' });
@@ -37,7 +37,7 @@
     };
 
     var btn_html_desc = {
-        icon: '/static/images/icons/html-blue.svg',
+        icon: IC('logo-html'),
         text: _('Basic HTML Report (Description)'),
         handler: function() {
             //form_report_submit({ url: '/topic/report_html?show_desc=1' });
@@ -45,7 +45,7 @@
     };
 
     var btn_yaml = {
-        icon: '/static/images/icons/yaml-purple.svg',
+        icon:IC('logo-yaml'),
         text: _('YAML'),
         handler: function() {
             //form_report_submit({ url: '/topic/report_yaml' });
@@ -53,7 +53,7 @@
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv-green.svg',
+        icon: IC('logo-csv'),
         text: _('CSV'),
         handler: function() {
             //form_report_submit({ url: '/topic/report_csv', target: 'FrameDownload' });

@@ -66,7 +66,7 @@ sub tree_topic_get_files : Local {
                     id_topic     => $id_topic,
                     sw_get_files => \1
                 },
-                icon       => '/static/images/icons/delete-red.svg',
+                icon       => '/static/images/icons/delete-grid-row.svg',
                 leaf       => \0,
                 expandable => \1
                 };
@@ -479,7 +479,7 @@ sub list_repo_contents : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error-triangle-red.svg',
+            icon => '/static/images/icons/error.svg',
             leaf=>\1,
             expandable => \0
         };
@@ -562,7 +562,7 @@ sub branches : Local {
               {
                 text       => substr( $msg, 0, 255 ),
                 data       => {},
-                icon       => '/static/images/icons/error-triangle-red.svg',
+                icon       => '/static/images/icons/error.svg',
                 leaf       => \1,
                 expandable => \0
               };
@@ -603,7 +603,7 @@ sub changeset : Local {
                     my $msg = _loc('Error loading changes for provider %1: %2', $provider, $err);
                     _error( $msg );
                     push @tree, {
-                        icon => '/static/images/icons/error-triangle-orange.svg',
+                        icon => '/static/images/icons/warning.svg',
                         text => substr($msg,0,80),
                         leaf => \1,
                     };
@@ -807,7 +807,7 @@ sub changeset : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error-triangle-red.svg',
+            icon => '/static/images/icons/error.svg',
             leaf=>\1,
             expandable => \0
         };
@@ -1024,7 +1024,7 @@ sub tree : Local {
         $c->stash->{json} = [{
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error-triangle-red.svg',
+            icon => '/static/images/icons/error.svg',
             leaf=>\1,
             expandable => \0
         }];

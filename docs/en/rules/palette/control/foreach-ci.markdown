@@ -1,7 +1,7 @@
 ---
 title: FOREACH CI
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Iterates over the nested ops so many times as indicated in a list, creating a ci instance for each element of the list and assigning the instance created to a defined local stash variable.

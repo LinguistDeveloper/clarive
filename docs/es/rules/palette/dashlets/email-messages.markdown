@@ -1,7 +1,7 @@
 ---
 title: Mensajes e-mail
 index: 5000
-icon: envelope
+icon: dashlet-email
 ---
 
 Muestra la bandeja de entrada del usuario en el dashboard.

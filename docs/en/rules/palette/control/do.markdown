@@ -1,7 +1,7 @@
 ---
 title: DO
 index: 5000
-icon: cog-perl-blue
+icon: statement-perl-do
 ---
 
 Run perl code block and assign the return value to the stash variable data_key (see op context menu from above) if defined.

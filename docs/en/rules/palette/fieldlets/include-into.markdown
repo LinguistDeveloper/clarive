@@ -1,7 +1,7 @@
 ---
 title: Include Into
 index: 5000
-icon: detail
+icon: fieldlet-include-into
 ---
 
 This fieldlet shows a list of topics that contain the current topic.

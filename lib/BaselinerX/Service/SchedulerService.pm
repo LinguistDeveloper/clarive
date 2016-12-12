@@ -21,19 +21,19 @@ register 'config.scheduler' => {
 
 register 'service.scheduler' => {
     config  => 'config.scheduler',
-    icon    => '/static/images/icons/daemon.svg',
+    icon    => '/static/images/icons/service-scheduler.svg',
     handler => \&run,
 };
 
 register 'service.scheduler.run_once' => {
     config  => 'config.scheduler',
-    icon    => '/static/images/icons/daemon.svg',
+    icon    => '/static/images/icons/service-scheduler-run.svg',
     handler => \&run_once,
 };
 
 register 'service.scheduler.test' => {
     config  => 'config.scheduler',
-    icon    => '/static/images/icons/daemon.svg',
+    icon    => '/static/images/icons/service-scheduler-test.svg',
     handler => \&scheduler_test
 };
 

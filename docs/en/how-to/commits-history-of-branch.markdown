@@ -1,10 +1,10 @@
 ---
 title: Commits history of branch
 index: 5000
-icon: branch-blue
+icon: ci-gitrepository-branch
 ---
 
-Commits history grid shows all commits. To open the grid, click on branch node <img src="/static/images/icons/branch-blue.svg" /> in lifecycle panel.
+Commits history grid shows all commits. To open the grid, click on branch node <img src="/static/images/icons/ci-gitrepository-branch.svg" /> in lifecycle panel.
 
 Every row refers to a different commit. To open a new tab with all the details of every commit, select one row and click on *DIFF* info in DIFF column.
 

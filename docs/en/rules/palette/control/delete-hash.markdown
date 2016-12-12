@@ -1,7 +1,7 @@
 ---
 title: DELETE hashkey
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 To delete an specified stash variable.

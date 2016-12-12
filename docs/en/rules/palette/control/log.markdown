@@ -1,7 +1,7 @@
 ---
 title: LOG Message
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Show a message in log file.

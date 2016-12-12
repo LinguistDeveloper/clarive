@@ -208,10 +208,10 @@ Baseliner.topic_name = function(args) {
         // set default icons
         if( icon==undefined ) {
             if( args.is_changeset > 0  ) {
-                icon = '/static/images/icons/package-white.svg';
+                icon = IC('topic-changeset');
             }
             else if( args.is_release > 0  ) {
-                icon = '/static/images/icons/release-white.svg';
+                icon = IC('topic-release');
             }
         }
 
@@ -1029,7 +1029,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/ci-grey.svg',
+            icon: IC('graph-ci-related'),
             cls: 'x-btn-icon',
             tooltip: _('Show CI Graph'),
             hidden: self.permGraph==undefined?true:!self.permGraph,

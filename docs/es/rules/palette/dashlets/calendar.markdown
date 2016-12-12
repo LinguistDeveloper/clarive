@@ -1,7 +1,7 @@
 ---
 title: Calendario
 index: 5000
-icon: calendar
+icon: dashlet-topic-calendar
 ---
 
 Muestra un calendario en el dashboard.

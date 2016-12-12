@@ -8,7 +8,7 @@ with 'Baseliner::Role::Service';
 register 'service.user.load' => {
     name => _locl('Load CI User Data'),
     form => '/forms/user_load.js',
-    icon => '/static/images/icons/user.svg',
+    icon => '/static/images/icons/service-user-load.svg',
     handler => \&user_load,
 };
 

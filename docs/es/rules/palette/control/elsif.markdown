@@ -1,7 +1,7 @@
 ---
 title: ELSIF condición THEN
 index: 5000
-icon: if-else-green
+icon: statement-if-elsif
 ---
 
 Ejecuta las operaciones aninadas como un único bloque cuando se cumple una condición específica.

@@ -1,7 +1,7 @@
 ---
 title: Cambios de estado
 index: 5000
-icon: chart-pie
+icon: fieldlet-status-changes
 ---
 
 Muestra un histórico con los cambios que ha tenido el tópico.

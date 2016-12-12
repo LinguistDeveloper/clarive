@@ -1,7 +1,7 @@
 ---
 title: Release combo
 index: 5000
-icon: combo-box
+icon: fieldlet-system-release
 ---
 
 Allows to introduce a combo box with the releases availables in the form.

@@ -3,7 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging);
 with 'Baseliner::Role::CI';
 
-sub icon { '/static/images/icons/webservice-blue.svg' }
+sub icon { '/static/images/icons/ci-web-instance.svg' }
 
 has_ci server  => qw(is rw isa Baseliner::Role::CI::Server required 1),
             handles => [qw(connect hostname remote_temp ping)];

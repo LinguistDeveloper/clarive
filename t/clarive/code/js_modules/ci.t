@@ -264,7 +264,7 @@ subtest 'ci.createClass: creates a new class with default icon' => sub {
     }
     );
 
-    like $ret, qr/ci-green.svg/;
+    like $ret, qr/ci-itemset.svg/;
 };
 
 subtest 'ci.createClass: creates a new class with custom icon' => sub {

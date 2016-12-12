@@ -224,7 +224,7 @@ Baseliner.message = function(title, msg, config){
 };
 
 Baseliner.warning = function(title, msg ){
-    Baseliner.message( title, msg, { image: '/static/images/icons/error-triangle-orange.svg', time: 3000 } );
+    Baseliner.message( title, msg, { image: IC('warning'), time: 3000 } );
 };
 
 Baseliner.message_gray = function(title, format){
@@ -764,7 +764,7 @@ Baseliner.array_field = function( args ) {
             })(),
             tbar: [{
                 text: _('Add'),
-                icon: '/static/images/icons/add-green.svg',
+                icon: IC('add-sign'),
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     var ___record = Ext.data.Record.create([{
@@ -780,7 +780,7 @@ Baseliner.array_field = function( args ) {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/del-all-red.svg',
+                icon: IC('delete-grid-all-rows'),
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = fgrid.getSelectionModel().getSelected();
@@ -1232,7 +1232,7 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Activate'),
-            icon:'/static/images/icons/start-green.svg',
+            icon:IC('start'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1244,7 +1244,7 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Deactivate'),
-            icon:'/static/images/icons/stop-red.svg',
+            icon: IC('stop'),
             disabled: true,
             cls: 'x-btn-text-icon'
         }, config);
@@ -1266,8 +1266,8 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
 //Baseliner.loadFile('/static/pdfjs/build/pdf.js', 'js' );
 Baseliner.PDFJS = function(config){
     var self = this;
-    var prev = new Ext.Button({ icon: '/static/images/icons/arrow-left-black.svg' });
-    var next = new Ext.Button({ icon: '/static/images/icons/arrow-right-black.svg' });
+    var prev = new Ext.Button({ icon: IC('arrow-left') });
+    var next = new Ext.Button({ icon: IC('arrow-right') });
   var page_num = new Ext.form.TextField({ width:'30', readOnly:true  });
   var page_count = new Ext.form.TextField({ width:'30', readOnly:true });
 
@@ -4546,7 +4546,7 @@ Baseliner.request_approval = function(mid,id_grid){
         });
         var btn_reject = new Ext.Button({
             text: _('Reject'),
-            icon: '/static/images/icons/del-all-red.svg',
+            icon: IC('delete-grid-all-rows'),
             handler: function(){
                 var comments = user_comments.getValue();
                 if( comments.length == 0 ) {
@@ -4563,7 +4563,7 @@ Baseliner.request_approval = function(mid,id_grid){
         //var bom = new Baseliner.BOM({ mid: mid, hidden: true });
         var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments ] });
         tab_approve.on('afterrender', function(){
-            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment-blue.svg' );
+            tab_approve.changeTabIcon( user_comments, IC('topic-comment') );
         });
         var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit',
             title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'),
@@ -5281,9 +5281,9 @@ Baseliner.getJobStatusIcon = function(status, rollback) {
         case 'APPROVAL':
             return 'user-delete.svg';
         case 'FINISHED':
-            return (rollback != 1) ? 'active.svg' : 'error-triangle-red.svg';
+            return (rollback != 1) ? 'active.svg' : 'error.svg';
         case 'IN-EDIT':
-            return 'log-orange.svg';
+            return 'job-status-in-edit.svg';
         case 'WAITING':
             return 'busy.svg';
         case 'PAUSED':
@@ -5295,6 +5295,6 @@ Baseliner.getJobStatusIcon = function(status, rollback) {
         case 'CANCELLED':
             return 'close.svg';
         default:
-            return 'error-triangle-red.svg';
+            return 'error.svg';
     }
 };

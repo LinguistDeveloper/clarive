@@ -1,7 +1,7 @@
 ---
 title: Variable
 index: 5000
-icon: element-copy-blue
+icon: ci-variable
 ---
 
 A variable in Clarive is a globally defined CI belonging to the class Variable.

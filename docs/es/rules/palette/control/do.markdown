@@ -1,7 +1,7 @@
 ---
 title: DO
 index: 5000
-icon: cog-perl-blue
+icon: statement-perl-do
 ---
 
 Ejecuta un bloque de código PERL y asigna el valor de retorno a la

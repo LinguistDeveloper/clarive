@@ -1,7 +1,7 @@
 ---
 title: SET VAR
 index: 5000
-icon: let
+icon: statement-let
 ---
 
 Crea una nueva variable en el stash y almacena el valor indicado en la configuración.

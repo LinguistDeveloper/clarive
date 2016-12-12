@@ -1,7 +1,7 @@
 ---
 title: Swarm
 index: 5000
-icon: swarm
+icon: dashlet-swarm
 ---
 
 Shows an animated swarm with the options configured in the dashlet.

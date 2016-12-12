@@ -27,7 +27,7 @@ title: Pending jobs
 
                 if( status == 'FINISHED' && rollback == 1 )  {
                     value += ' (<% _loc("Rollback OK") %>)';
-                    icon = 'error-triangle-red.svg';
+                    icon = 'error.svg';
                 }
                 else if( status == 'ERROR' && rollback == 1 )  {
                     value += ' (<% _loc("Rollback Failed") %>)';
@@ -75,7 +75,7 @@ title: Pending jobs
                                         <b>
                                             <a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$lastjob->{mid}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a>
                                         </b>
-                                        <a href="javascript:Baseliner.add_tabcomp('/job/log/list?mid=<%$lastjob->{mid}%>', _('Log <%$lastjob->{name}%>'), { tab_icon: '/static/images/icons/moredata.svg' } );"><img class="force_size_in_icon" src="/static/images/icons/moredata.svg"/></a>
+                                        <a href="javascript:Baseliner.add_tabcomp('/job/log/list?mid=<%$lastjob->{mid}%>', _('Log <%$lastjob->{name}%>'), { tab_icon: '/static/images/icons/job-full-log.svg' } );"><img class="force_size_in_icon" src="/static/images/icons/moredata.svg"/></a>
                                     </td>
                                     <td style="width:20%" id='row_pending_<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
                                     <td style="width:15%"><% length($lastjob->{apps}) ? $lastjob->{apps}: '' %></td>

@@ -1,7 +1,7 @@
 ---
 title: Number field
 index: 5000
-icon: number
+icon: fieldlet-number
 ---
 
 Add a number field in the form.

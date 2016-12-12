@@ -2937,7 +2937,7 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
                 job_type => 'promote',
                 url => '/comp/lifecycle/deploy.js',
             },
-            icon => "/static/images/icons/arrow-down-short-green.svg",
+            icon => "/static/images/icons/arrow-down-short-color.svg",
             id_status_from => $status->mid,
             text => ignore(),
         }],
@@ -3292,8 +3292,6 @@ subtest 'report_csv: returns the list of the dashlet in serve_body' => sub {
 
 subtest 'report_csv: returns rows' => sub {
     _setup();
-
-    require Baseliner;
 
     my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
     my $topic_data = mdb->topic->find_one( { mid => $topic_mid } );

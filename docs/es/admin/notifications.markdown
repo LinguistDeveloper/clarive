@@ -42,7 +42,7 @@ Indica el tipo de acción de la notificación, Enviar o Excluir.
 
 Todas las notificaciones pueden ser activadas o desactivadas.
 
-Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start-green.svg" /> o <img src ="/static/images/icons/stop-red.svg"/>.
+Esta columna muestra el estado a través de dos iconos <img  src = "/static/images/icons/start.svg" /> o <img src ="/static/images/icons/stop.svg"/>.
 
 Todos los encabezados de columna tienen la misma funcionalidad que en el resto de paneles de Clarive.
 
@@ -143,7 +143,7 @@ La ventana que se abre para la edición es la misma que para la creación.
 Permite eliminar una o varias notificaciones.
 
 
-#### <img src = "/static/images/icons/start-green.svg" /> Activar / <img src = "/static/images/icons/stop-red.svg" /> Desactivar
+#### <img src = "/static/images/icons/start.svg" /> Activar / <img src = "/static/images/icons/stop.svg" /> Desactivar
 Permite activar o desactivar una o varias notificaciones.
 
 

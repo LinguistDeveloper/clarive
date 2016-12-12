@@ -32,7 +32,7 @@ sub branch : Local {
                 project => $node->{project}
             },
             text       => _loc('tree'),
-            icon       => '/static/images/icons/tree-blue.svg',
+            icon       => '/static/images/icons/ci-gitrepository-tree.svg',
             leaf       => \0,
             expandable => \1
         },
@@ -44,7 +44,7 @@ sub branch : Local {
                 project => $node->{project}
             },
             text       => _loc('changes'),
-            icon       => '/static/images/icons/changes-blue.svg',
+            icon       => '/static/images/icons/ci-gitrepository-changes.svg',
             leaf       => \0,
             expandable => \1
         },
@@ -244,7 +244,7 @@ sub branch_changes : Local {
             my $file = $_;
             +{
                 text => $file,
-                icon => '/static/images/icons/status-m-blue.svg',
+                icon => '/static/images/icons/ci-gitrepository-changes-status.svg',
                 leaf => \1,
               }
           }

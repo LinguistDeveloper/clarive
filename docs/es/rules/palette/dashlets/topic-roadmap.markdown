@@ -1,7 +1,7 @@
 ---
 title: Roadmap de tópicos
 index: 5000
-icon: roadmap
+icon: dashlet-topic-roadmap
 ---
 
 Muestra en una tabla los tópicos en función de la fecha de resolución.

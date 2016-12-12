@@ -1,7 +1,7 @@
 ---
 title: WAIT por hijo
 index: 5000
-icon: time
+icon: statement-parallel-wait
 ---
 
 Espera a que todos los procesos que corren en paralelo finalicen siempre que estén declarados.

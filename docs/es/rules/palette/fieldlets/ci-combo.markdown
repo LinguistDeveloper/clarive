@@ -1,7 +1,7 @@
 ---
 title: Desplegable de CIs
 index: 5000
-icon: combo-box
+icon: fieldlet-system-cis
 ---
 
 Añade CIs en un combo en el formulario.

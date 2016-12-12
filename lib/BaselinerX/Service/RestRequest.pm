@@ -12,7 +12,7 @@ register 'service.web.rest' => {
     name        => _locl('REST Request'),
     handler     => \&rest_request,
     job_service => 1,
-    icon        => '/static/images/icons/webservice-blue.svg',
+    icon        => '/static/images/icons/service-web-rest.svg',
     form        => '/forms/rest_request.js',
 };
 

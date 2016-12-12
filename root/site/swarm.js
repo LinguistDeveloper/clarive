@@ -43,9 +43,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.fecha_fin = new Date();
         //self.origen=0;
 
-        self.btn_start = new Ext.Button({ icon: IC('start-green'), disabled: false, handler: function(){ self.start_anim();} });
+        self.btn_start = new Ext.Button({ icon: IC('start'), disabled: false, handler: function(){ self.start_anim();} });
         self.btn_pause = new Ext.Button({ icon: IC('pause'), disabled: true, handler: function(){ self.pause_anim() } });
-        self.btn_stop = new Ext.Button({ icon: IC('stop-red'), disabled: true, handler: function(){ self.stop_anim() } });
+        self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
         self.slider = new Ext.Slider({
             width: 100,

@@ -1,7 +1,7 @@
 ---
 title: Topic gauge
 index: 5000
-icon: gauge
+icon: dashlet-topic-gauge
 ---
 
 Shows a gauge with the status of the topics.

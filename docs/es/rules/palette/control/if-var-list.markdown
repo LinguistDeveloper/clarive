@@ -1,7 +1,7 @@
 ---
 title: IF variable en LIST THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Comprueba que existe el valor pasado en la variable *var* en la lista de valores indicada. si es correcto, se procesa los componentes anidados al IF.

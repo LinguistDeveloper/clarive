@@ -1,7 +1,7 @@
 ---
 title: Cuadro de revisiones
 index: 5000
-icon: combo-box
+icon: fieldlet-system-revisions
 ---
 
 Permite añadir una caja donde arrastrar ramas del repositorio.

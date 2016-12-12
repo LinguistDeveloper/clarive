@@ -1,7 +1,7 @@
 ---
 title: List baselines
 index: 5000
-icon: report-default
+icon: dashlet-job-bl
 ---
 
 Lists the baselines

@@ -1,7 +1,7 @@
 ---
 title: Inicializar directorio home
 index: 5000
-icon: job
+icon: service-job-init
 ---
 
 Este servico es requerido para que arranque de manera correcta un job. 

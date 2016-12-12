@@ -1,7 +1,7 @@
 ---
 title: Evaluación remota
 index: 5000
-icon: cog-java-orange
+icon: service-scripting-eval
 ---
 
 Agente relacionado con el [CI](concepts/ci) servidor que evalúa el código dado, mostrando un mensaje de error en caso de fallo durante la ejecución o devolviendo el código y su resultado en caso de que haya ido de manera correcta.

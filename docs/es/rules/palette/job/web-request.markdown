@@ -1,7 +1,7 @@
 ---
 title: Petición web
 index: 5000
-icon: webservice-blue
+icon: service-web-request
 ---
 
 Genera una petición a servicios web, URLs o cualquier sistema basado en el protocolo web HTTP/HTTPs.

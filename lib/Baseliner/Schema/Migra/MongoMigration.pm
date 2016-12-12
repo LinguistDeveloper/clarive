@@ -390,12 +390,12 @@ sub topic_categories_to_rules {
                     && $fieldlet->{params}->{get_method} eq 'get_topics'
                     && $fieldlet->{params}->{set_method} eq 'set_topics' )
                 {
-                    $attributes->{icon} = '/static/images/icons/listbox.svg';
+                    $attributes->{icon} = '/static/images/icons/fieldlet-system-list-topics.svg';
                     $attributes->{key}  = 'fieldlet.system.list_topics';
                     $data->{hidden}     = 1;
                 }
                 elsif ( $fieldlet->{params}->{type} eq 'textfield' ) {
-                    $attributes->{icon} = '/static/images/icons/field.svg';
+                    $attributes->{icon} = '/static/images/icons/fieldlet-text.svg';
                     $attributes->{key}  = 'fieldlet.text';
                     $data->{hidden}     = 1;
                 }
@@ -404,11 +404,11 @@ sub topic_categories_to_rules {
             if ( $attributes->{key} eq 'fieldlet.ci_grid' or $attributes->{key} eq 'fieldlet.system.cis' ) {
                 if ( $data->{list_type} && $data->{list_type} eq 'grid' ) {
                     $attributes->{key}  = 'fieldlet.ci_grid';
-                    $attributes->{icon} = '/static/images/icons/grid.svg';
+                    $attributes->{icon} = '/static/images/icons/fieldlet-ci-grid.svg';
                 }
                 else {
                     $attributes->{key}  = 'fieldlet.system.cis';
-                    $attributes->{icon} = '/static/images/icons/combo-box.svg';
+                    $attributes->{icon} = '/static/images/icons/fieldlet-system-cis.svg';
                 }
 
                 if ( $data->{ci_class} ) {
@@ -447,7 +447,7 @@ sub topic_categories_to_rules {
             if ( $attributes->{key} eq 'fieldlet.text'
                 && ( !$attributes->{icon} || $attributes->{icon} eq '/static/images/icons/action.svg' ) )
             {
-                $attributes->{icon} = '/static/images/icons/field.svg';
+                $attributes->{icon} = '/static/images/icons/fieldlet-text.svg';
             }
 
             if ( !$data->{fieldletType} || $data->{fieldletType} eq '1' ) {

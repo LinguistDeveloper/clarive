@@ -1,7 +1,7 @@
 ---
 title: Pills
 index: 5000
-icon: pills
+icon: fieldlet-pills
 ---
 
 Shows pills with the options are defined in the configuration of the dashlet

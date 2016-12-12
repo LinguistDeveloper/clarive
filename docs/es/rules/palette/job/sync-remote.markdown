@@ -1,7 +1,7 @@
 ---
 title: Sincronizar un directorio remoto
 index: 5000
-icon: file
+icon: service-fileman-sync
 ---
 
 Sincroniza dos directorios

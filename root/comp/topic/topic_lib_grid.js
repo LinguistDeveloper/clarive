@@ -611,7 +611,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_html = {
-        icon: '/static/images/icons/html-blue.svg',
+        icon: IC('logo-html'),
         text: _('HTML'),
         handler: function() {
             form_report_submit({ url: '/topic/report_html' });
@@ -619,7 +619,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_yaml = {
-        icon: '/static/images/icons/yaml-purple.svg',
+        icon: IC('logo-yaml'),
         text: _('YAML'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_yaml' });
@@ -627,7 +627,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv-green.svg',
+        icon: IC('logo-csv'),
         text: _('CSV'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload'});
@@ -657,7 +657,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_clear_state = new Ext.Button({
-        icon: '/static/images/icons/reset-grey.svg',
+        icon: IC('grid-reset-values'),
         tooltip: _('Reset Grid Columns'),
         iconCls: 'x-btn-icon',
         handler: function(){
@@ -1101,7 +1101,7 @@ Cla.topic_grid = function(params){
         }
         if (rec.data.numcomment) {
             swGo = true;
-            actions_html.push("<span style='float: left; color: #808080'><img src='/static/images/icons/comment-blue.svg' class='x-topic-lib-inline-icon'/> ");
+            actions_html.push("<span style='float: left; color: #808080'><img src='/static/images/icons/topic-comment.svg' class='x-topic-lib-inline-icon'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
             actions_html.push("</span>");
         }

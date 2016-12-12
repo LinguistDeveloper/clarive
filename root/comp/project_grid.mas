@@ -89,7 +89,7 @@
                 },
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/icons/add-green.svg',
+                    icon: IC('add-sign'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -105,7 +105,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/icons/del-all-red.svg',
+                    icon: IC('delete-grid-all-rows'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

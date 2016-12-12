@@ -1,7 +1,7 @@
 ---
 title: Load User
 index: 5000
-icon: user
+icon: service-user-load
 ---
 
 Service that load a user information. Form to configure has the following fields:

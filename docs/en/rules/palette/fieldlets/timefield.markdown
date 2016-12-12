@@ -1,7 +1,7 @@
 ---
 title: Time field
 index: 5000
-icon: time
+icon: fieldlet-time
 ---
 
 Allows to add a time (hour, minutes) field in the form. If user wants to use a date, can use [Date time](rules/palette/fieldlets/datefield) field.

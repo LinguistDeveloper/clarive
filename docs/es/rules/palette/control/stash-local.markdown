@@ -1,7 +1,7 @@
 ---
 title: STASH LOCAL
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Crea un stash local y ejecuta las operaciones anidadas.

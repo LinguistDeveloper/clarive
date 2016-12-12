@@ -13,7 +13,7 @@ with 'Baseliner::Role::Service';
 
 register 'service.changeset.items' => {
     name    => _locl('Load Job Items into Stash'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-items.svg',
     job_service  => 1,
     handler => \&job_items,
 };
@@ -21,14 +21,14 @@ register 'service.changeset.items' => {
 register 'service.changeset.update_baselines' => {
     name    => _locl('Update Baselines'),
     job_service  => 1,
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-baselines.svg',
     handler => \&update_baselines,
 };
 
 register 'service.changeset.sync_baselines' => {
     name        => _locl('Sync Baselines'),
     job_service => 1,
-    icon        => '/static/images/icons/changesets.svg',
+    icon        => '/static/images/icons/service-changeset-sync.svg',
     form        => '/forms/sync_baselines.js',
     handler     => \&sync_baselines,
 };
@@ -36,34 +36,34 @@ register 'service.changeset.sync_baselines' => {
 register 'service.changeset.verify_revisions' => {
     name    => _locl('Verify Revision Integrity Rules'),
     job_service  => 1,
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-verify.svg',
     handler => \&verify_revisions,
 };
 
 register 'service.changeset.checkout' => {
     name    => _locl('Checkout Job Items'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-checkout.svg',
     job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
     name    => _locl('Checkout Job Baseline'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-bl.svg',
     job_service  => 1,
     handler => \&checkout_bl,
 };
 
 register 'service.changeset.checkout.bl_all_repos' => {
     name    => _locl('Checkout Job Baseline ... all repos'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-bl-all.svg',
     job_service  => 1,
     handler => \&checkout_bl_all_repos,
 };
 
 register 'service.changeset.natures' => {
     name    => _locl('Load Nature Items'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-natures.svg',
     form    => '/forms/nature_items.js',
     job_service  => 1,
     handler => \&nature_items,
@@ -71,7 +71,7 @@ register 'service.changeset.natures' => {
 
 register 'service.changeset.update' => {
     name    => _locl('Update Changesets'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-update.svg',
     form    => '/forms/changeset_update.js',
     job_service  => 1,
     handler => \&update_changesets,
@@ -79,7 +79,7 @@ register 'service.changeset.update' => {
 
 register 'service.topic.status' => {
     name    => _locl('(DEPRECATED) Change Topic Status'),
-    icon    => '/static/images/icons/topic.svg',
+    icon    => '/static/images/icons/service-topic-status.svg',
     form    => '/forms/topic_status_deprecated.js',
     job_service  => 1,
     handler => \&topic_status,
@@ -87,7 +87,7 @@ register 'service.topic.status' => {
 
 register 'service.changeset.update_bls' => {
     name    => _locl('Update Changesets BLs'),
-    icon    => '/static/images/icons/changesets.svg',
+    icon    => '/static/images/icons/service-changeset-update-bls.svg',
     job_service  => 1,
     handler => \&update_changesets_bls,
 };
@@ -748,7 +748,7 @@ sub nature_items {
 
 register 'service.approval.request' => {
     name    => _locl('Request Approval'),
-    icon => '/static/images/icons/user-green.svg',
+    icon => '/static/images/icons/service-approval-request.svg',
     form => '/forms/approval_request.js',
     job_service  => 1,
     handler => \&request_approval,

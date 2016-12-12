@@ -1,7 +1,7 @@
 ---
 title: Desplegable de proyectos
 index: 5000
-icon: combo-box
+icon: fieldlet-system-projects
 ---
 
 Añade al tópico una lista desplegable de proyectos.

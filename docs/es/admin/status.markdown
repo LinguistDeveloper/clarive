@@ -6,8 +6,8 @@ icon: state
 
 Clarive soporta un gran número de estados que pueden ser usados por una gran cantidad de tópicos.
 
-Para la administración de estados, hay que acceder a través del menú de la izquierda y la opción 
-<img src="/static/images/icons/class-grey.svg" /> Elementos de configuración.
+Para la administración de estados, hay que acceder a través del menú de la izquierda a la opción
+Elementos de configuración.
 
 Se mostrará la lista de estados creados.
 

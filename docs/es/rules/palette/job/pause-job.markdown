@@ -1,7 +1,7 @@
 ---
 title: Pausar un job
 index: 5000
-icon: job
+icon: service-job-pause
 ---
 Paraliza un pase hasta que le usuario decida que se reanude. Esta pausa tiene un tiempo de espera máximo establecido en 1 día.
 

@@ -61,7 +61,7 @@ pre.code{
     }
 
 .dd-arrow-down {
-  background-image:url(/static/images/icons/arrow-down-black.svg );
+  background-image:url(/static/images/icons/arrow-down.svg );
   display: block;
   visibility: visible;
   z-index: 20000;

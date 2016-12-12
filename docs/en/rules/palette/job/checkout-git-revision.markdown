@@ -1,7 +1,7 @@
 ---
 title: Checkout a git revision
 index: 5000
-icon: file
+icon: service-git-checkout
 ---
 
 Make a checkout to a specific git revision.

@@ -1,7 +1,7 @@
 ---
 title: Nemónico
 index: 5000
-icon: lock
+icon: fieldlet-system-moniker
 ---
 
 Permite añadir un alias en el tópico para poder ser localizado más fácilmente.

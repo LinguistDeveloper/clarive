@@ -84,7 +84,7 @@ var edit_config = function(rec) {
             }
         },{
             text: _('Reset') ,
-            icon: '/static/images/icons/reset-grey.svg',
+            icon: IC('grid-reset-values'),
             handler: function() {
                 if( rec!=undefined ) {
                     form.getForm().loadRecord(rec);

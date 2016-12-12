@@ -1,7 +1,7 @@
 ---
 title: CALL rule
 index: 5000
-icon: cog
+icon: statement-call
 ---
 
 Include specific rule.

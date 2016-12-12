@@ -35,7 +35,7 @@ delete the whole file.
 register 'service.sed' => {
     name => _locl('Replace Strings'),
     form => '/forms/sed.js',
-    icon => '/static/images/icons/rename-items.svg',
+    icon => '/static/images/icons/service-sed.svg',
     job_service  => 1,
     handler => \&run
 };
