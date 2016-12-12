@@ -1,6 +1,6 @@
 ---
 title: DO-WHILE condition
-icon: loop.gif
+icon: loop
 ---
 
 The DO-WHILE control operation interates a code block while the condition indicated is true.

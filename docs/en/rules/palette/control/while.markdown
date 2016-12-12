@@ -1,19 +1,19 @@
 ---
 title: WHILE condition
-icon: loop.gif
+icon: loop
 ---
 
 The WHILE control operation iterates a code block while the condition indicated is true.
 
 A WHILE block checks if the condition is true first, then executes the code. If you need the opposite, first the code,
-then check the condition, take a look at [DO-UNTIL](rules/palette/control/do-until).
+then check the condition, take a look at [DO-WHILE](rules/palette/control/do-while).
 
 To configure the WHILE control operation, the following values must be configured:
 
-* `Stash Variable` - the name of the variable that the condition will be checked against.
-* `Operator` - the condition comparison operator.
-* `Options` - gives the ability to set options for some of the operators.
-* `Value` - the value to be compared against.
+- `Stash Variable` - the name of the variable that the condition will be checked against.
+- `Operator` - the condition comparison operator.
+- `Options` - gives the ability to set options for some of the operators.
+- `Value` - the value to be compared against.
 
 ### Operators
 
