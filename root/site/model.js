@@ -1506,6 +1506,11 @@ Baseliner.StatusBox = function(opt) {
             id: 'id_status',
             url: '/ci/status/combo_list',
             fields: ['id_status','name']
+        },
+        get_labels: function(){
+             var arr=[];
+             this.items.each(function(r){ arr.push(r.display) });
+             return arr;
         }
     }, opt));
 };
