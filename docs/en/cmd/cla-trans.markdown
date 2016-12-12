@@ -1,5 +1,6 @@
 ---
 title: cla trans - Conversion tool
+index: 5000
 icon: console
 ---
 
@@ -22,28 +23,18 @@ Subcommands supported can be displayed with the help option:
 
 `cla trans-password`:
 
-      - *-u <\username>*: User name to be encrypted password is a required parameter, it can be defined as an input parameter:
-
-      - *-p <\password>*: User password.
-
-      - Typed from the keyboard when command asked for it.
+- *-u <\username>*: User name to be encrypted password is a required parameter, it can be defined as an input parameter:
+- *-p <\password>*: User password.
+- Typed from the keyboard when command asked for it.
 
 Encryption is done using parameter decrypt_key or dec_key from config file.
 
 `cla trans-md5`: Encrypt following MD5 algoritm. The input string can be defined:
 
       - *–s <\string>*: String to encrypt.
-
       - Typed from the keyboard when command asks for it.
 
 `cla trans-encrypt`: Encrypt following Blowfish algorithm. Encryption is done using:
 
       - *--key <\key_name>*: Key to encrypt.
-
       - parameter *decrypt_key or *dec_key from config file.
-
-The input string can be defined:
-
-      - *–s <\string>*: String to encrypt.
-
-      - Typed from the keyboard when command asks for it.

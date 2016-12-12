@@ -1,6 +1,6 @@
 ---
 title: Daemon Administration
-index: 2
+index: 5000
 icon: daemon
 ---
 
@@ -13,31 +13,22 @@ started by the [Dispatcher](admin/dispatcher).
 Daemons are critical to the correct operation of Clarive, including:
 
 - Job execution
-
 - Event processing
-
 - [Notifications](admin/notifications)
-
 - [Scheduled](admin/scheduler) Executions
-
 - Semaphore control
 
-Accessing the Daemon administration in the Admin Menu: <img class="bali-topic-editor-image"  src="/static/images/icons/daemon.svg" /> Daemons
+Accessing the Daemon administration in the Admin Menu - <img class="bali-topic-editor-image"  src="/static/images/icons/daemon.svg" /> Daemons
 
 In the daemon screen, we can see what daemons are started at a given point in time.
 
 These are the standard, out-of-the box daemons that should be running in any typical Clarive installation.
 
 - `service.daemon.email` - Daemon responsible for sending notifications.
-
 - `service.event.daemon` - Daemon responsible for the management of events.
-
 - `service.job.daemon` - Daemon responsible for the execution of passes.
-
 - `service.purge.daemon` - Daemon responsible for the purge.
-
 - `service.schedule daemon` - Responsible for planning.
-
 - `service.sem.daemon` - Daemon responsible for controlling traffic lights.
 
 ### Start / Stop

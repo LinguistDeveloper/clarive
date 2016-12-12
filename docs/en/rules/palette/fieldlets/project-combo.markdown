@@ -1,6 +1,6 @@
 ---
 title: Project combo
-index: 400
+index: 5000
 icon: combo_box
 ---
 
@@ -32,17 +32,9 @@ Check if you want the field as mandatory.
 
 Allow to set the type of the field.
 
-**Single**
-
-Allows to select one choice of the options available.
-
-**Multiple**
-
-The user can select multiples choices.
-
-**Grid**
-
-The added topics are shown in a table.
+- **Single** - Allows to select one choice of the options available.
+- **Multiple** - The user can select multiples choices.
+- **Grid** - The added topics are shown in a table.
 
 ### Display field
 
@@ -54,11 +46,12 @@ Allows to use a JSON format to add a condition.
 
         {"labels":[],"categories":["*id*"],"statuses":[],"priorities":[],"start":0,"limit":25}
 
-- Where id is the unique key of the category which can be consulted through the REPL.
+Where *id* is the unique key of the category which can be consulted through the REPL.
 
 ### CI Class
 
-Specify the class of CI to be shown. Tipically the CI Class to use in this fieldlet is *project*.
+Specify the class of CI to be shown. 
+Tipically the CI Class to use in this fieldlet is *project*.
 
 ### Default value
 
@@ -70,9 +63,9 @@ Selection of roles to show in the grid.
 
 ### Description
 
-Selection of type of description to show in the list.
+Selection of type of description to show in the list. 
 
-* Name: Show the name.
-* Environment: Show the Environment separated by commas.
-* Class: Show the type object.
-* Moniker: Show the moniker specified in CI configuration.
+- **Name** - Show only the name.
+- **Environment** - Show the name and the environments separated by commas.
+- **Class** - Show the name and the type object.
+- **Moniker** - Show the name and the moniker specified in CI configuration.

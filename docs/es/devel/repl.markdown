@@ -5,9 +5,9 @@ icon: page
 ---
 
 REPL significa Read Eval Print Loop, es decir,
-una interfaz para probar código mientras que lo desarrollamos.
+una interfaz para probar código mientras lo desarrollamos.
 
-El Clarive REPL es especialmente importante en el proceso de desarrollo,
+Clarive REPL es especialmente importante en el proceso de desarrollo,
 ya que permitirá a los desarrolladores probar el código
 dentro del entorno de servidor Clarive. El servidor
 entorno incluye cosas como la conexión a la base de datos,
@@ -24,7 +24,7 @@ REPL que cuenta con 3 paneles principales:
 
 ## Guardado automático de preferencias de usuario
 
-Por defecto CLARIVE REPL guardara los valores que se toman para los siguientes menus:
+Por defecto CLARIVE REPL guardara los valores que se toman para los siguientes menús:
 
 - Menú de Lenguajes.
 - Menú de Salidas.
@@ -75,7 +75,7 @@ Produce la siguiente salida (YAML):
 ```
 
 Lo que básicamente se traduce como `123` impreso y un` undefined`
-devuelve un valor de retorno representado por YAML, que comienza con `` ---.
+devuelve un valor de retorno representado por YAML, que comienza con `---`.
 
 ### Árbol de Historicos
 
@@ -156,4 +156,3 @@ y más legible.
 Este es el tiempo, en segundos, que el script tardo en compilar (a código de bytes) y ejecutar.
 
 Esto es importante para obtener una perspectiva de la rapidez y la duración de una secuencia de comandos puede ejecutar, por lo que el desarrollador puede ajustar con precisión su ejecución.
-

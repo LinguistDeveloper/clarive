@@ -1,6 +1,6 @@
 ---
 title: Favorites
-index: 1000
+index: 5000
 icon: favorite
 ---
 
@@ -10,7 +10,7 @@ relevant for his interest.
 The favorites system allow to store all type of tabs like searches, reports or
 topics either a grid or specifics topics.
 
-Also favorites can be organized by folders.
+Also favorites can be organized by folders, creating new folders clicking on <img src="/static/images/icons/favorite_new.svg" /> in the lifecycle panel.
 
 ### Use
 

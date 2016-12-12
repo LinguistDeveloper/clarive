@@ -1,6 +1,6 @@
 ---
 title: Datefield
-index: 400
+index: 5000
 icon: calendar
 ---
 
@@ -28,12 +28,11 @@ Indicates if the field will be hidden from the edit mode.
 
 Check if you want the field as mandatory.
 
-### Data time format
-
-Insert a custom format to show the date. If the user leave the field blank, the default date format is *Y-M-D*
-
-- *Ex*: d/m/y
-
 ### Default today
 
-Check this option for insert today as date by default
+Check this option for insert today as date by default.
+
+### Show time?
+
+Check to see hour, minutes and seconds in the field or just the date.
+

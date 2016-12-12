@@ -1,5 +1,6 @@
 ---
 title: Rename Baseline Items and Files
+index: 5000
 icon: rename_items
 ---
 
@@ -12,10 +13,8 @@ be deleted.
 
 Data editor has the following keys:
 
-- **Rename_files**: Set to 1 in case of renaming desired.
-
-- **Rename_items**: Set to 1 if renaming is required.
-
+- **Rename_files** - Set to 1 in case of renaming desired.
+- **Rename_items** - Set to 1 if renaming is required.
 
 By default values are set to 1.
 

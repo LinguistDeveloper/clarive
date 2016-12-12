@@ -1,6 +1,6 @@
 ---
 title: Topic gauge
-index: 400
+index: 5000
 icon: gauge
 ---
 
@@ -26,23 +26,18 @@ Allows to make the dashlet more dinamic adding an automatic refresh (in minutes)
 In this section the user can configure the gauge, the limits to change de color value and the data collection.
 
 
-
 ### Select topics in categories
 
 Select one o more categories to show in the dashlet.
-
-
 
 ### Select topics in statuses
 
 Select one o more status to configure the gauge.
 
 
-
 ### Advanced JSON/MongoDB condition for filter
 
 Allows to use a JSON format o MongoDB query to add a condition.
-
 
 
 ### End value selection criteria

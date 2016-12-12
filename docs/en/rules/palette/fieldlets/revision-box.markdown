@@ -1,6 +1,6 @@
 ---
 title: Revision box
-index: 400
+index: 5000
 icon: combo_box
 ---
 
@@ -36,3 +36,7 @@ Check if you want the field as mandatory.
 ### Branch
 
 Configure the branch to view in the topic.
+
+### Height
+
+Set the height of the table in Edit mode.

@@ -1,5 +1,6 @@
 ---
 title: Dashboards
+index: 5000
 icon: dashboard
 ---
 

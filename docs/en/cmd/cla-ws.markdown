@@ -1,5 +1,6 @@
 ---
 title: cla ws - Invoke webservices
+index: 5000
 icon: console
 ---
 
@@ -15,7 +16,7 @@ The output shows common methods to all CI classes, and the methods available to 
 
 Subcommands supported can be displayed with the help option:
 
-    >cla help ws
+    > cla help ws
 
     usage: cla [-h] [-v] [--config file] command <command-args>
 

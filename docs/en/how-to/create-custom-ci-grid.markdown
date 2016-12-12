@@ -1,6 +1,6 @@
 ---
 title: Custom CIs Grid
-index: 1
+index: 5000
 icon: class
 ---
 

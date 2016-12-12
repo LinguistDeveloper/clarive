@@ -5366,8 +5366,7 @@ msgstr ""
 msgid "Topic Selector"
 msgstr ""
 
-#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/ci_grid.js
-#: root/fields/templates/config/cis.js
+#: lib/BaselinerX/Fieldlets.pm root/fields/templates/config/cis.js
 msgid "CI Combo"
 msgstr ""
 
@@ -13260,6 +13259,10 @@ msgstr ""
 
 #: root/fields/templates/config/checkbox.js
 msgid "Checked"
+msgstr ""
+
+#: root/fields/templates/config/ci_grid.js
+msgid "CI grid"
 msgstr ""
 
 #: root/fields/templates/config/ci_grid.js

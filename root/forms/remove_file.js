@@ -2,7 +2,7 @@
     var data = params.data || {};
     Cla.help_push({
         title: _('Remove Files'),
-        path: 'rules/palette/services/remove_files'
+        path: 'rules/palette/services/remove-files'
     });
 
     var asset_mid = new Ext.form.TextField({

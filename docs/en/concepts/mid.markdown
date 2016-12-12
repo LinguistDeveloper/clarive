@@ -1,5 +1,6 @@
 ---
 title: MID
+index: 5000
 icon: page
 ---
 

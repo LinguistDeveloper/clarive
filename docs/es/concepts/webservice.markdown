@@ -1,5 +1,6 @@
 ---
 title: Servicio Web
+index: 5000
 icon: webservice
 ---
 
@@ -11,5 +12,5 @@ fuera de la herramienta.
 
 En lugar de llamar directamente a las API de manera directa (por ejemplo, "Crear
 un tópico"), se recomienda la creación de una regla de tipo webservice que cree
-el tema. A continuación esa llamada se podrá realizar desde la línea de comandos
+el tópico. A continuación esa llamada se podrá realizar desde la línea de comandos
 o desde otras aplicaciones o servicios.

@@ -1,5 +1,6 @@
 ---
 title: YAML
+index: 5000
 icon: yaml
 ---
 
@@ -81,13 +82,13 @@ specially CIs, in a file system.
 
 Read more about the format here:
 
-- https://en.wikipedia.org/wiki/YAML
-- http://yaml.org/
+- [https://en.wikipedia.org/wiki/YAML <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/YAML)
+- [http://yaml.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/YAML)
 
-Also, you can play with YAML in Clarive's (REPL)[devel/repl] or at this
+Also, you can play with YAML in Clarive's [REPL](devel/repl) or at this
 online tool:
 
-http://yaml-online-parser.appspot.com/
+- http://yaml-online-parser.appspot.com/
 
 ### Indentation
 
@@ -146,7 +147,6 @@ Multi-line strings can be written using the `|` (pipe) YAML operator. Indentatio
 is necessary, so use leading spaces.
 
 ```yaml
----
 mytext: |
   Long, long,
   multiline text that is

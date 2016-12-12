@@ -1,12 +1,12 @@
 ---
 title: Title
-index: 400
+index: 5000
 icon: lock_small
 ---
 
 Allows to add a title field.
 
-This fieldlet is **mandatory**.
+This fieldlet is **mandatory** and **unique**.
 
 There are a list of elements can be configured in the fieldlet:
 

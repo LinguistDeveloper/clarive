@@ -1,30 +1,31 @@
 ---
 title: cla/web - Web tools
+index: 5000
 icon: page
 ---
 
 This namespace contains useful functions
 for web protocol and communications, such 
 as invoking REST and SOAP apis and general 
-webservices. 
+webservices.
 
 <pre>
- KEY                     DEFAULT                     
+ KEY                     DEFAULT
 ---------------------------------------------------------
-agent                    "clarive/js"        
-from                     undef                      
-conn_cache               undef                      
-cookie_jar               undef                      
-default_headers          HTTP::Headers->new         
-local_address            undef                      
-ssl_opts                 { verify_hostname:   1 }   
-max_size                 undef                      
-max_redirect             7                          
-parse_head               1                          
-protocols_allowed        undef                      
-protocols_forbidden      undef                      
-requests_redirectable    ['GET', 'HEAD']            
-timeout                  180                        
+agent                    "clarive/js"
+from                     undef
+conn_cache               undef
+cookie_jar               undef
+default_headers          HTTP::Headers->new
+local_address            undef
+ssl_opts                 { verify_hostname:   1 }
+max_size                 undef
+max_redirect             7
+parse_head               1
+protocols_allowed        undef
+protocols_forbidden      undef
+requests_redirectable    ['GET', 'HEAD']
+timeout                  180
 ---------------------------------------------------------
 </pre>
 
@@ -49,7 +50,7 @@ if( res.isSuccess() ) {
     cla.dump( arr[4] );
     cla.printf( "The title is: %s", arr[4].title );
 } else {
-    cla.printf("Something went wrong (code=%d): %s", res.code(), res.message() )
+    cla.printf("Something went wrong (code=%d): %s", res.code(), res.message() );
     // or: throw Error( cla.sprintf("Something went wrong (code=%d): %s", res.code(), res.message() ) );
 }
 ```

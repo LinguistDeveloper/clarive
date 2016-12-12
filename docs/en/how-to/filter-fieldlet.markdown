@@ -1,16 +1,16 @@
 ---
 title: Filters in fieldlets
-index: 1
+index: 5000
 icon: wrench
 ---
 
 We have this kind of filters in the following fieldlets:
 
-- **Topic Selector**.
-- **Release Combo**.
-- **CI List**.
-- **CI Grid**.
-- **CI Combo**.
+- [Topic Selector](rules/palette/fieldlets/topic-selector)
+- [Release Combo](rules/palette/fieldlets/release-combo)
+- [CI List](rules/palette/fieldlets/ci-list)
+- [CI Grid](rules/palette/fieldlets/ci-grid)
+- [CI Combo](rules/palette/fieldlets/ci-combo)
 
 In this fieldlets, we have to configure three fields:
 

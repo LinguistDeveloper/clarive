@@ -1,6 +1,9 @@
 ---
-title: TRY statement
+title: TRY declaración
+index: 5000
 icon: if
 ---
-* Intenta ejectuar las operaciones anindadas.
-* Esta operación no tiene ninguna opción de configuración.
+
+Intenta ejecutar las operaciones anidadas.
+
+Esta operación no tiene ninguna opción de configuración.

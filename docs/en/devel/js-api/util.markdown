@@ -1,5 +1,6 @@
 ---
 title: cla/util - general utilities namespace
+index: 5000
 icon: page
 ---
 
@@ -27,7 +28,7 @@ print( util.loadYAML(yaml) );
 
 ### util.dumpJSON(data)
 
-Dumps the `data` argument as [JSON](https://en.wikipedia.org/wiki/JSON).
+Dumps the `data` argument as [JSON <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/JSON).
 
 ```javascript
 var util = require("cla/util");
@@ -37,7 +38,7 @@ print( util.dumpJSON(data) );
 
 ### util.loadJSON()
 
-Loads `data` from a [JSON](https://en.wikipedia.org/wiki/JSON) string.
+Loads `data` from a [JSON <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/JSON) string.
 
 ```javascript
 var util = require("cla/util");

@@ -1,5 +1,6 @@
 ---
 title: Estados y transiciones
+index: 5000
 icon: status
 ---
 
@@ -17,11 +18,11 @@ Una transición es un flujo de un único sentido, por lo que si el elemento nece
 
 Hay 5 tipos de estados
 
-- **Nuevo**: Indica que un [tópico](concepts/topic) justo se ha creado y no ha sido "cogido" por el equipo.
-- **Cancelado**: Indica un estado de abortar.
-- **Cerrado**: Indica que el estado es problablemente el último del flujo. Al marcar un estado como Cerrado, los tópicos con ese estado no serán mostrados en muchas vistas por defecto como el los listados o Kanbans. 
-- **Desplegable**: Significa que, como parte de la transición en ese estado (promición), los tópicos "Cambios" necesitan ser desplegables a al menos uno de los entornos asocados. Como parte de la transición hacia atrás (devolver), Los tópicos de tipo Cambio necesitan volver desde alguno de esos entornos.. 
-- **Genérico**: Cualquier otros estados que existen en esa categoría.
+- **Nuevo** - Indica que un [tópico](concepts/topic) justo se ha creado y no ha sido "cogido" por el equipo.
+- **Cancelado** - Indica un estado de abortar.
+- **Cerrado** - Indica que el estado es probablemente el último del flujo. Al marcar un estado como Cerrado, los tópicos con ese estado no serán mostrados en muchas vistas por defecto como el los listados o Kanban.
+- **Desplegable** - Significa que, como parte de la transición en ese estado (promoción), los tópicos "Cambios" necesitan ser desplegables a al menos uno de los entornos asociados. Como parte de la transición hacia atrás (devolver), Los tópicos de tipo Cambio necesitan volver desde alguno de esos entornos.
+- **Genérico** - Cualquier otros estados que existen en esa categoría.
 
 ### Promoción
 
@@ -29,4 +30,4 @@ Las transiciones de tipo promoción en Clarive representan las transiciones a es
 
 ### Devolver
 
-Las transiciones de tipo Devoler, por otro lado, generan las transición devueltas, con un [pases](concepts/job) marcha atrás.
+Las transiciones de tipo Devolver, por otro lado, generan las transición devueltas, con un [pase](concepts/job) marcha atrás.

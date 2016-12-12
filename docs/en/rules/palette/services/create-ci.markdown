@@ -1,5 +1,6 @@
 ---
 title: Create CI
+index: 5000
 icon: class
 ---
 

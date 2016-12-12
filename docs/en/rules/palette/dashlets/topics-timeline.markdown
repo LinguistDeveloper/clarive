@@ -1,6 +1,6 @@
 ---
 title: Topics timeline
-index: 400
+index: 5000
 icon: chart_curve
 ---
 
@@ -21,12 +21,16 @@ Allows to make the dashlet more dinamic adding an automatic refresh (in minutes)
 
 ### Select topics in categories
 
-Select one o more categories to show in the swarm.
+Select one o more categories to show in the chart.
 
 
 ### Select topics in statuses
 
 Select one o more status to configure the table.
+
+### Shift in days from today to start/end timeline
+
+Set number of days from/to today to start/end timeline.
 
 
 ### Advanced JSON/MongoDB condition for filter
@@ -38,26 +42,15 @@ Allows to use a JSON format o MongoDB query to add a condition.
 
 Select the date field to use in X axis the graphic timeline.
 
-
 ### Chart will be shown as...
 
 Indicate what type of chart will be shown.
 
-
-- **Area*
-
-
-- **Area step*
-
-
-- **Line*
-
-
-- **Bar*
-
-
-- **Scatter**
-
+- Area
+- Area step
+- Line
+- Bar
+- Scatter
 
 ### Data grouped by
 

@@ -1,6 +1,6 @@
 ---
 title: Upgrading from previous versions
-index: 300
+index: 700
 icon: page
 ---
 

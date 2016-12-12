@@ -1,5 +1,6 @@
 ---
 title: YAML
+index: 5000
 icon: yaml
 ---
 
@@ -81,17 +82,18 @@ de los datos, especialmente CIs, en un fichero del sistema.
 
 Lee más acerca del formato en:
 
-- https://en.wikipedia.org/wiki/YAML
-- http://yaml.org/
+- [https://en.wikipedia.org/wiki/YAML <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/YAML)
+- [http://yaml.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://yaml.org/)
 
-También, puedes jugar con YAML en el (REPL)[devel/repl] de Clarive o en
+También, puedes jugar con YAML en el [REPL](devel/repl) de Clarive o en
 esta herramienta online:
 
-http://yaml-online-parser.appspot.com/
+- http://yaml-online-parser.appspot.com/
 
-### Indentación
 
-En YAML la indentación es importante, YAML usa un esquema de indentación fijada
+### Indentación (Sangrado)
+
+En YAML la marca es importante, YAML usa un esquema de marcas fijadas
 que representa las diferentes relaciones entre elementos.
 
 ```yaml
@@ -100,28 +102,28 @@ parent:
       grandchild: 10
 ```
 
-En JavaScript, los mapas de debajdo se usan pra el siguiente objeto:
+En JavaScript, los mapas de debajo se usan para el siguiente objeto:
 
 ```json
 { parent: { child: { grandchild: 10 } } }
 ```
 
-En Clarive, la indentación requiere al menos 1 espacio.
+En Clarive, las marcas requiere al menos 1 espacio.
 
-### Dos Puntos
+### Dos puntos
 
-Los Dos Puntos representa pares cd clave-valor, que son usados para definir objetos
+Los Dos Puntos representa pares clave-valor, que son usados para definir objetos
 (Hashes o diccionarios en otros lenguajes).
 
 ```yaml
-key1: value1
-key2: value2
+key1: valor1
+key2: valor2
 ```
 
 Lo que en JavaScript se traduce a:
 
 ```js
-{ key1: 'value1', key2: 'value2' }
+{ key1: 'valor1', key2: 'valor2' }
 ```
 
 ### Dashes
@@ -142,15 +144,13 @@ En JavaScript, el mapa de debajo muestra el objecto:
 
 ### Datos Multi-línea
 
-Las cadenas multi-línea se pueden escribir usando la `|` (barra vertical) YAML
-operator. Indentation is necessary, so use leading spaces.
+Las cadenas multilínea se pueden escribir usando la `|` (barra vertical) YAML. La marcas son necesarios, hay que utilizar los espacios iniciales.
 
 ```yaml
----
 mytext: |
   Long, long,
-  multiline text that is
-  nicely indented everywhere
-  and may start with spaces.
+  texto multilínea que está
+  con sangría y que 
+  puede empezar con espacios.
 age: 20
 ```

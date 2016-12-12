@@ -1,5 +1,6 @@
 ---
 title: CI (Item Configuration)
+index: 5000
 icon: class
 ---
 

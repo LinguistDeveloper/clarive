@@ -1,13 +1,12 @@
 ---
 title: Last jobs by app
-index: 400
+index: 5000
 icon: report_default
 ---
 
 Shows the last jobs ordered by application
 
 There are a list of elements can be configured in the dashlet:
-
 
 ### Dimensions of the dashlet
 

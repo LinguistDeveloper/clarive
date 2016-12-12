@@ -1,6 +1,6 @@
 ---
-title: Servicios
+title: Servicios genéricos
 index: 200
-icon: job
+icon: wrench
 expanded: 0
 ---

@@ -1,5 +1,6 @@
 ---
 title: Dashboards
+index: 5000
 icon: dashboard
 ---
 
@@ -11,6 +12,6 @@ Para ello, los dashboards se crean a través de reglas de tipo Dashboard que per
 
 Estos dashlets pueden representar la información de manera diferente. Se pueden añadir calendarios, tablas que muestren tópicos que estén en un determinado estado, gráficas del estado de un proyecto, etc...
 
-Todos estos componentes forman una regla de tipo dashboard que luego podrá ser utilizada por los roles.
+Todos estos componentes [**forman una regla de tipo dashboard**](rules/rule-concepts) que luego podrá ser utilizada por los roles.
 
 El resultado final es una ventana donde aparecen todos los dashlets incluidos en la regla para mostrar lo que el usuario requiera.

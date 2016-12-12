@@ -1,5 +1,6 @@
 ---
 title: STASH LOCAL
+index: 5000
 icon: loop
 ---
 

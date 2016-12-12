@@ -1,5 +1,6 @@
 ---
 title: Workflow
+index: 5000
 icon: workflow
 ---
 
@@ -14,7 +15,7 @@ There are 2 types of workflows:
 
 ### Topic Workflows
 
-These are simple workflows that apply to a given [topic category](admin/topics).
+These are simple workflows that apply to a given [topic category](admin/categories).
 
 ### Rule Workflows
 
@@ -33,6 +34,6 @@ been filled-out before allowing promotion to happen.
 
 ### Reusability
 
-Also, rule workflows are useful as __reusable workflows__. One workflow rule may
+Also, rule workflows are useful as **reusable workflows**. One workflow rule may
 be reused in many different topic categories.
 

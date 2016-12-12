@@ -1,64 +1,75 @@
 ---
-title: cla web - Administracion de servidores Web
-index: 10
+title: cla web - Administración de servidores Web
+index: 5000
 icon: console
 ---
-* `cla web`: Realiza operaciones relacionadas con el servicio web Clarive.
-* Por sí mismo se inicia servicio web Clarive.
-* Soporta las siguientes opciones:
 
-    `--env <entorno>`: Se utiliza para configurar los parámetros.
+`cla web`: Realiza operaciones relacionadas con el servicio web Clarive.
 
-    `--r`: Servidor reinicia si hay algún cambio en las rutas:
-        *lib*.
-        *conf*.
-        *features/\*/lib*, excepto si los cambios se detectan en ficheros de la ruta features/#* .
+Por sí mismo se inicia servicio web Clarive.
 
-        El valor por defecto es 0.
+Soporta las siguientes opciones:
 
-    `--R <ruta>`: El servidor se reinicia si hay algún cambio en la ruta indicada en `<ruta>`.
-    `--host <hostname>`: Host o dirección IP para iniciar el servidor web. Si no se define, el host se coge de los archivos de configuración.
-    `--port <portnum>`: Puerto Web. Su valor por defecto es 3000.
-    `--daemon`: Servidor Web se inicia como un demonio.
-    `--workers <workersnum>`: Número de trabajadores para iniciar.
-    `--engine [Standalone|Twiggy|Starman|Starlet]`: Servidor web PSGI. Su valor por defecto es Starman.
+`--env <entorno>`: Se utiliza para configurar los parámetros.
 
-        Si el servidor web se inicia en modo demonio, el log anterior será comprimido y se comienza a limpiar los procesos *log*, los logs son borrados dependiendo del parámetro *log_keep* que se puede pasar como argumento para `cla web`.
+`--r`: Servidor reinicia si hay algún cambio en las rutas:
 
+- `CLARIVE_HOME/lib`
+- `CLARIVE_HOME/conf`
+- `features/\*/lib`, excepto si los cambios se detectan en ficheros de la ruta features/#directorio* .
 
-    `--log_keep <lognumber>`: Número de logs que se pueden almacenar en la carpeta de logs.
-    `--log_file <logfile>`: Nombre del fichero de log.
+El valor por defecto es 0.
 
-* Este comando dispone de subcomandos que pueden ser consultados a través de la ayuda:
+`--R <ruta>`: El servidor se reinicia si hay algún cambio en la ruta indicada en `<ruta>`.
 
-        > cla help web
+`--host <hostname>`: Host o dirección IP para iniciar el servidor web. Si no se define, el host se coge de los archivos de configuración.
 
-        Clarive - Copyright(C) 2010-2015 Clarive Software, Inc.
+`--port <portnum>`: Puerto Web. Su valor por defecto es 3000.
 
-        usage: cla [-h] [-v] [--config file] command <command-args>
+`--daemon`: Servidor Web se inicia como un demonio.
 
-        Subcommands available for web (Start/Stop web server):
+`--workers <workersnum>`: Número de trabajadores para iniciar.
 
-        web-tail
-        web-start
-        web-stop
-        web-log
-        web-restart
+`--engine [Standalone|Twiggy|Starman|Starlet]`: Servidor web PSGI. Su valor por defecto es Starman.
 
-        cla help <command> to get all subcommands.
-        cla <command> -h for command options.
+Si el servidor web se inicia en modo demonio, el log anterior será comprimido y se comienza a limpiar los procesos *log*, los logs son borrados dependiendo del parámetro *log_keep* que se puede pasar como argumento para `cla web`.
 
-    `web-start`: Al igual que el `start` descrito anteriormente.
-    `web-stop`:  Detiene el servidor web. Este comando acepta los siguientes parámetros:
-        *no_wait_kill* - El dispatcher se elimina sin esperas. si está opción se está indicada, el dispatcher esperará 30 segundos antes de pararse.
-        *keep_pidfile* - Mantiene en el fichero el PID del proceso.
+`--log_keep <lognumber>`: Número de logs que se pueden almacenar en la carpeta de logs.
 
-    `web-restart`: Reincia el servidor web.
-    `web-log`: Imprime el fichero log en pantalla .
-     `web-tail`: Muestra el final del fichero log, acepta los siguientes argumentos:
+`--log_file <logfile>`: Nombre del fichero de log.
 
-        *tail* - Número de lineas para mostrar. Por defecto muestra las últimas 500 líneas del log.
-        *interval* - El número mínimo de segundos que va a esperar antes de que el fichero sea mostrado. Por defecto es 0,5 segundos.
-        *maxinternal* - El número máximo de segundos que el sistema esperará, por defecto es 1.
+Este comando dispone de subcomandos que pueden ser consultados a través de la ayuda:
+
+    > cla help web
+
+    USO: cla [-h] [-v] [--config file] comando <comando-args>
+
+    Subcomandos disponibles para web:
+
+    web-tail
+    web-start
+    web-stop
+    web-log
+    web-restart
+
+    cla help <comando> para obtener todos los subcomandos.
+    cla <comando> -h para los opciones del comando.
+
+`web-start`: Al igual que el `start` descrito anteriormente.
+
+`web-stop`:  Detiene el servidor web. Este comando acepta los siguientes parámetros:
+
+- *no_wait_kill* - El dispatcher se elimina sin esperas. si está opción se está indicada, el dispatcher esperará 30 segundos antes de pararse.
+- *keep_pidfile* - Mantiene en el fichero el PID del proceso.
+
+`web-restart`: Reinicia el servidor web.
+
+`web-log`: Imprime el fichero log en pantalla .
+
+`web-tail`: Muestra el final del fichero log, acepta los siguientes argumentos:
+
+- `tail` - Número de lineas para mostrar. Por defecto muestra las últimas 500 líneas del log.
+- `interval` - El número mínimo de segundos que va a esperar antes de que el fichero sea mostrado. Por defecto es 0,5 segundos.
+- `maxinternal` - El número máximo de segundos que el sistema esperará, por defecto es 1.
 
 

@@ -1,6 +1,6 @@
 ---
-title: Schedule
-index: 400
+title: Scheduler
+index: 5000
 icon: clock
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: Variable
+index: 5000
 icon: element_copy
 ---
 

@@ -1,7 +1,11 @@
 ---
 title: Dispatcher
+index: 5000
 icon: page
 ---
-* El dispatcher es el programa que ejecuta operaciones batch, de manera separada de las llamadas online efectuadas por el cliente web y web-services. 
-* Por ejemplo, el Dispatcher se encarga de realizar pases a entornos y enviar las notificaciones por correo electrónico a los usuarios. 
-* Se trata de un proceso de servidor independiente, que puede levantar más procesos según la demanda en la cola de trabajos pendiente.
+
+El dispatcher es el proceso responsable de mantener todos los demonios de Clarive [demonios](admin/daemon) inicializados y funcionando.
+
+Si un demonio no se ejecuta o deja de funcionar, el dispatcher se encargará de reiniciar el proceso.
+
+El dispatcher puede iniciarse en uno o más servidores, donde va a controlar la afinidad de procesos del servidor, la tolerancia a fallos el balanceo de carga.

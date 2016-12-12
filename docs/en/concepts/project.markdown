@@ -1,5 +1,6 @@
 ---
 title: Project
+index: 5000
 icon: project
 ---
 

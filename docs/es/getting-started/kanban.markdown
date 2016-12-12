@@ -1,6 +1,6 @@
 ---
-title: Tablero Kanban de topicos
-index: 6000
+title: Tablero Kanban de tópicos
+index: 5000
 icon: kanban
 ---
 
@@ -29,9 +29,9 @@ Cuando se arrastra el tópico se habilitan solo los estados a los que el tópico
 Los estados que están vinculados a entornos distintos, tienen el nombre del entorno debajo
 del nombre del estado.
 
-Si un tópico es arrastrado a uno entorno promocionable, se abrirá una nueva venta de pase.
-En él se planificará el pase nuevo y se ejecutará con el procedimiento estandard. Una vez
-finalizado con éxito, el tópic estará situado debajo del nuevo estado.
+Si un tópico es arrastrado a un entorno promocionable, se abrirá una nueva venta de pase.
+En él se planificará el pase nuevo y se ejecutará según el procedimiento estándar. Una vez
+finalizado con éxito, el tópico estará situado debajo del nuevo estado.
 
 ### Personalizar el tablero
 

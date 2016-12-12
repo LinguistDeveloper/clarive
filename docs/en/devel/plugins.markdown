@@ -1,5 +1,6 @@
 ---
 title: Plugins
+index: 5000
 icon: page
 ---
 
@@ -14,7 +15,6 @@ kept:
 
 - under the `CLARIVE_BASE/plugins` directory, intended for
 user-created, installation-specific or public-available downloable plugins.
-
 - under the `CLARIVE_HOME/plugins` directory, where **only
 product propietary** plugins are kept.
 

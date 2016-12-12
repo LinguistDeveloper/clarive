@@ -1,5 +1,6 @@
 ---
 title: cla/sem - semaphore control
+index: 5000
 icon: page
 ---
 
@@ -15,8 +16,9 @@ passed as an argument.
 ```javascript
 var sem = require("cla/sem");
 var log = require("cla/log");
+var util = require("cla/util");
 var ret = sem.take('abc', function(){
-    cla.sleep(0.05);
+    util.sleep(0.05);
     log.info( 'here we are' );
     return 123;
 });

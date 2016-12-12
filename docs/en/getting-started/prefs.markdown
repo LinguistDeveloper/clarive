@@ -1,6 +1,6 @@
 ---
 title: Setup Your Preferences
-index: 200
+index: 5000
 icon: prefs
 ---
 
@@ -19,20 +19,20 @@ To view or change your preferences information:
 
 ### General
 
-- **Interface Language**: Select your language from the drop-down menu.
-- **Timezone**: Select user timezone.
-- **Country**: User's country.
-- **Browser Timezone**: Timezone of the current browser.
-- **Server Tiemzone**: Server Timezone where clarive is running.
-- **Date Format**: Select your favorite date format.
-- **Time Format**: Select your favorite time format.
-- **Default Dashboard**: Select your default dashboard from the list. Dashboards are assigned usually
+- **Interface Language** - Select your language from the drop-down menu.
+- **Timezone** - Select user timezone.
+- **Country** - User's country.
+- **Browser Timezone** - Timezone of the current browser.
+- **Server Tiemzone** - Server Timezone where clarive is running.
+- **Date Format** - Select your favorite date format.
+- **Time Format** - Select your favorite time format.
+- **Default Dashboard** - Select your default dashboard from the list. Dashboards are assigned usually
 to roles in your organization. Make sure your administrator has enabled access to your roles.
 
 ### Avatar
 
-- **Change Avatar**: Randomly creates another fractal avatar.
-- **Upload File**: Upload your own image.
+- **Change Avatar** - Randomly creates another fractal avatar.
+- **Upload File** - Upload your own image.
 
 ### API
 

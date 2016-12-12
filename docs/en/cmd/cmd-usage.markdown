@@ -1,7 +1,7 @@
 ---
 title: Using the Command-line
+index: 4000
 icon: console
-index: 1
 ---
 
 All Clarive command-line interface (CLI) commands

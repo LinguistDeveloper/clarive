@@ -1,6 +1,7 @@
 ---
 title: Quick Install Guide
 index: 100
+icon: page
 ---
 
 The object of this guide is to enable the administrator to install
@@ -13,22 +14,24 @@ specified in the [Technical Specifications](setup/specs).
 
 # Software Download
 
+<!-- Waiting for a solution to how customers can download Clarive software
+
 The Clarive installable files are available here:
 
-<http://www.clarive.com/install>
+[http://www.clarive.com/install <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://www.clarive.com/install)
 
 In case you don’t find a good version for your operating system,
 please contact our support at `support@clarive.com`.
 
 Follow the steps specified in the install website.
-In this guide this information is extended for the users that need it.
+In this guide this information is extended for the users that need it. -->
 
 ### MongoDB
 
 Clarive runs on top of the MongoDB database.
 It could be downloaded from the website:
 
-<https://www.mongodb.org/downloads>
+[https://www.mongodb.org/downloads <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://www.mongodb.org/downloads )
 
 Choose the stable version 3.0.
 

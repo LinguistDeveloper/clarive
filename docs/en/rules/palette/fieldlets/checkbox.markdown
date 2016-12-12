@@ -1,6 +1,6 @@
 ---
 title: Checkbox
-index: 400
+index: 5000
 icon: admin_request
 ---
 
@@ -30,4 +30,4 @@ Check if you want the field as mandatory.
 
 ### Checked
 
-Indicate if the box will be check by default
+Indicate if the box will be check by default.

@@ -1,5 +1,6 @@
 ---
 title: Lifecycle
+index: 5000
 icon: diagram
 ---
 

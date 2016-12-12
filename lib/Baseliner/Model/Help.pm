@@ -15,7 +15,7 @@ sub docs_dirs {
 
     $user_lang //= 'en';
 
-    return sort { $a=~/plugin|feature/ <=> $b=~/plugin|feature/ }
+    return sort { $a=~/plugin|features/ <=> $b=~/plugin|features/ }
         Clarive->app->paths_to( 'docs/' . $user_lang );
 }
 

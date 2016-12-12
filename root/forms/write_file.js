@@ -1,6 +1,6 @@
 (function(params){
     var data = params.data || {};
-    Cla.help_push({ title:_('Write local file'), path:'rules/palette/services/write-local-file' });
+    Cla.help_push({ title:_('Write local file'), path:'rules/palette/job/write-local-file' });
 
     var body;
     if( Ext.isIE ) {

@@ -1,5 +1,6 @@
 ---
 title: Writing Custom Authentication Rules
+index: 5000
 icon: rule
 ---
 
@@ -21,11 +22,8 @@ The variables made available in the stash for you, are:
 
 - `Username` - The user id, should match the record in the user database in Clarive.
 - `Login` - The full text entered into the login box.
-- `Password` - The password entered by the user *Caution*, be careful where you write this
-information.
-- `Realm` - The login authentication realm the user has entered, could be empty (default)
-or could be something like
-'local' for local users, etc.
+- `Password` - The password entered by the user *Caution*, be careful where you write this information.
+- `Realm` - The login authentication realm the user has entered, could be empty (default) or could be something like 'local' for local users, etc.
 
 ### Allow the user to authenticate
 
@@ -54,91 +52,92 @@ This rule snippet  is an example of the basic structure for validating a user in
 
 Use the right-click `Import here` option in the rule editor to import this snippet.
 
-        [{
-        "attributes": {
-            "palette": false,
-            "icon": "/static/images/icons/if.svg",
-            "disabled": false,
-            "on_drop_js": null,
-            "key": "statement.if.var",
-            "text": "IF username == root",
-            "expanded": true,
-            "run_sub": true,
-            "leaf": false,
-            "name": "IF var THEN",
-            "active": 1,
-            "holds_children": true,
-            "data": {
-                "variable": "username",
-                "value": "root"
-            },
-            "nested": "0",
-            "on_drop": ""
+```yaml
+[{
+"attributes": {
+    "palette": false,
+    "icon": "/static/images/icons/if.svg",
+    "disabled": false,
+    "on_drop_js": null,
+    "key": "statement.if.var",
+    "text": "IF username == root",
+    "expanded": true,
+    "run_sub": true,
+    "leaf": false,
+    "name": "IF var THEN",
+    "active": 1,
+    "holds_children": true,
+    "data": {
+        "variable": "username",
+        "value": "root"
+    },
+    "nested": "0",
+    "on_drop": ""
+},
+"children": [{
+    "attributes": {
+        "icon": "/static/images/icons/user_delete.svg",
+        "palette": false,
+        "disabled": false,
+        "active": 1,
+        "name": "Deny User Login",
+        "data": {},
+        "key": "service.auth.deny",
+        "text": "Deny User Login",
+        "expanded": false,
+        "leaf": true
+    },
+    "children": []
+}, {
+    "attributes": {
+        "icon": "/static/images/icons/user_delete.svg",
+        "palette": false,
+        "disabled": false,
+        "active": 1,
+        "name": "Login Error Message",
+        "data": {
+            "msg": "User no way",
+            "args": []
         },
-        "children": [{
-            "attributes": {
-                "icon": "/static/images/icons/user_delete.svg",
-                "palette": false,
-                "disabled": false,
-                "active": 1,
-                "name": "Deny User Login",
-                "data": {},
-                "key": "service.auth.deny",
-                "text": "Deny User Login",
-                "expanded": false,
-                "leaf": true
-            },
-            "children": []
-        }, {
-            "attributes": {
-                "icon": "/static/images/icons/user_delete.svg",
-                "palette": false,
-                "disabled": false,
-                "active": 1,
-                "name": "Login Error Message",
-                "data": {
-                    "msg": "User no way",
-                    "args": []
-                },
-                "key": "service.auth.message",
-                "text": "Login Error Message",
-                "expanded": false,
-                "leaf": true
-            },
-            "children": []
-        }]
-        }, {
-        "attributes": {
-            "palette": false,
-            "icon": "/static/images/icons/if.svg",
-            "disabled": false,
-            "on_drop_js": null,
-            "key": "statement.if.else",
-            "text": "ELSE",
-            "expanded": true,
-            "run_sub": true,
-            "leaf": false,
-            "name": "ELSE",
-            "active": 1,
-            "holds_children": true,
-            "data": {},
-            "nested": "1",
-            "on_drop": ""
-        },
-        "children": [{
-            "attributes": {
-                "icon": "/static/images/icons/user_add.svg",
-                "palette": false,
-                "disabled": false,
-                "active": 1,
-                "name": "Authorize User Login",
-                "data": {},
-                "key": "service.auth.ok",
-                "text": "Authorize User Login",
-                "expanded": false,
-                "leaf": true
-            },
-            "children": []
-        }]
-        }]
-
+        "key": "service.auth.message",
+        "text": "Login Error Message",
+        "expanded": false,
+        "leaf": true
+    },
+    "children": []
+}]
+}, {
+"attributes": {
+    "palette": false,
+    "icon": "/static/images/icons/if.svg",
+    "disabled": false,
+    "on_drop_js": null,
+    "key": "statement.if.else",
+    "text": "ELSE",
+    "expanded": true,
+    "run_sub": true,
+    "leaf": false,
+    "name": "ELSE",
+    "active": 1,
+    "holds_children": true,
+    "data": {},
+    "nested": "1",
+    "on_drop": ""
+},
+"children": [{
+    "attributes": {
+        "icon": "/static/images/icons/user_add.svg",
+        "palette": false,
+        "disabled": false,
+        "active": 1,
+        "name": "Authorize User Login",
+        "data": {},
+        "key": "service.auth.ok",
+        "text": "Authorize User Login",
+        "expanded": false,
+        "leaf": true
+    },
+    "children": []
+}]
+}]
+```

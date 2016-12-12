@@ -1,6 +1,6 @@
 ---
 title: Pagedown editor
-index: 400
+index: 5000
 icon: html
 ---
 
@@ -27,3 +27,7 @@ Indicates if the field will be hidden from the edit mode.
 ### Mandatory field
 
 Check if you want the field as mandatory.
+
+### Height
+
+Set the height of the fieldlet en Edit mode.

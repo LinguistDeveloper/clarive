@@ -1,5 +1,6 @@
 ---
 title: cla/fs - Local Filesystem Access
+index: 5000
 icon: page
 ---
 
@@ -130,7 +131,7 @@ Not all fields are supported on all filesystem types. Here are the meanings of t
 12 blocks   actual number of system-specific blocks allocated on disk (often, but not always, 512 bytes each)
 </pre>
 
-### fs.isDir(`path`)
+### fs.isDir(path)
 
 Returns true if `path` is a directory.
 

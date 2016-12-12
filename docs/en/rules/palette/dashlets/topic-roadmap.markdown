@@ -1,6 +1,6 @@
 ---
 title: Topic roadmap
-index: 400
+index: 5000
 icon: roadmap
 ---
 
@@ -19,7 +19,7 @@ Can personalize the size of the dashlet modifying the number of columns and rows
 Allows to make the dashlet more dinamic adding an automatic refresh (in minutes).
 
 
-###  First weekday 
+###  First weekday
 
 Set the first day of the week to see the roadmap.
 
@@ -44,11 +44,9 @@ Set the days before and after from today.
 Select one o more categories to show in the swarm.
 
 
-
 ### Advanced JSON/MongoDB condition for filter
 
 Allows to use a JSON format o MongoDB query to add a condition.
-
 
 
 ### Label mask

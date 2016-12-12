@@ -1,5 +1,6 @@
 ---
 title: Web Request
+index: 5000
 icon: webservice
 ---
 
@@ -8,14 +9,14 @@ or any HTTP/HTTPs based web protocol.
 
 ## Fields
 
-- **URL**: the endpoint URL
-- **Method**: the HTTP method to be used, typically `GET`, `POST`, `PUT`, `DELETE`
-- **Encoding**: the encoding to be used, recommended (and default) is `utf-8`, but
+- **URL** - the endpoint URL
+- **Method** - the HTTP method to be used, typically `GET`, `POST`, `PUT`, `DELETE`
+- **Encoding** - the encoding to be used, recommended (and default) is `utf-8`, but
 others also available: `ansi`, `iso-8859-15`, etc.
-- **Timeout**: timeout to wait for server response in seconds
-- **User**: [optional] HTTP authentication user for the request
-- **Password**: [optional] HTTP authentication password for the request
-- **Accept Any Server Certificate**: check this if invalid HTTPS/SSL certificates are allowed
+- **Timeout** - timeout to wait for server response in seconds
+- **User** - [optional] HTTP authentication user for the request
+- **Password** - [optional] HTTP authentication password for the request
+- **Accept Any Server Certificate** - check this if invalid HTTPS/SSL certificates are allowed
 
 ### Data Section
 
@@ -42,7 +43,7 @@ depending of what's being set to the endpoint server.
 
 And many more. Here's a good list of available request headers:
 
-https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
+[https://en.wikipedia.org/wiki/List_of_HTTP_header_fields <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 
 #### Body
 

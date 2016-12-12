@@ -1,5 +1,6 @@
 ---
 title: Init Job Home
+index: 5000
 icon: job
 ---
 
@@ -21,8 +22,6 @@ And
 `<N|B>.<bl>-<job_id>` - Where parameters are:
 
 - `<N|B>` - Depending on the job type, N for promote or static jobs or B for demote jobs.
-
 - `<bl>` -  Environment.
-
 - `<job_id>` - Unique number from mongo.
 

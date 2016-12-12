@@ -1,6 +1,6 @@
 ---
 title: Pills
-index: 400
+index: 5000
 icon: pills
 ---
 
@@ -30,7 +30,12 @@ Check if you want the field as mandatory.
 
 ### Option settings
 
-Personalize the pills with the options settings. All the options must be sepparate by ;
+Personalize the pills with the options settings.
+
+All the options must be sepparated by ;. Its possible to add a background color
+ into the options, just adding hexadecimal code:
+
+     Critical,#f00;High,#f77;Medium,#fa0;Low,#ff0;
 
 ### Default value
 

@@ -1,5 +1,6 @@
 ---
 title: Rule Concepts
+index: 100
 icon: rule
 ---
 
@@ -17,66 +18,60 @@ Clarive concepts are describe here.
 Types of rules
 ==============
 
-There are seven types of rules:
-
-**Event**: Triggers or triggers based on actions performed on the system.
-
+**Event** - Triggers or triggers based on actions performed on the system.
 There are 3 types of event rules:
 
-- **Pre online**: Load rule before the execution of the event
-- **Post online**: The rule loads synchronously with the event
-- **Post offline**: The rule runs after the event.
+1. **Pre online** - Load rule before the execution of the event
+2. **Post online** - The rule loads synchronously with the event
+3. **Post offline** - The rule runs after the event.
 
-**Pipeline Rule**: A pipeline rule is a rule that promotes, demotes or just deploys
-changes from releases and/or changesets into an environment.
+**Pipeline Rule** - A pipeline rule is a rule that promotes, demotes or just deploys
 
 The rule can also become the default for a given transition:
 
-- **Promote**: Promotes a conceptually superior environment,
+- **Promote** - Promotes a conceptually superior environment,
 for example from pre-production to production
-- **Static**: Used to redeploy changesets to the same environment
-they currently occupy.
-- **Demote**: Demotes a conceptually inferior environment,
-for example from production (PROD) to pre-production (PREP).
+- **Static** - Used to redeploy changesets to the same environment they currently occupy.
+- **Demote** - Demotes a conceptually inferior environment, for example from production (PROD) to pre-production (PREP).
+
 
 ### Job Steps
 
 When a rule is created, 5 steps are displayed, these are:
 
-- **CHECK**: Check before creating the job, job object not yet available.
-- **INIT**: Check after creation, but in order to job longer available.
-- **PRE**: Immediate implementation prior to the scheduled time.
-- **RUN**: Run at the scheduled time.
-- **POST**: Runs allways when job finishes right or wrong.
 
+- **CHECK** - Check before creating the job, job object not yet available.
+- **INIT** - Check after creation, but in order to job longer available.
+- **PRE** - Immediate implementation prior to the scheduled time.
+- **RUN** - Run at the scheduled time.
+- **POST** - Runs allways when job finishes right or wrong.
 
 ### Types of Tasks
 
-It is divided in two types of tasks:
+It is divided in six types of tasks:
 
-- **Statements**: Provide control flow rule, they are IFs and Fors, and ad- hoc tasks.
-- **Services**: Operating in the pass,  they can be:
-    - **Job Services**: Tasks associated to a job.
-    - **Generic Services**: General type.
-    - **Rules**: Allow including rules within other rules, these rules to
-be include have to be of independent type.
-
+1. **Statements** -Provide control flow rule, they are IFs and Fors, and ad- hoc tasks.
+2. **Services** - Operating in the pass,  they can be:
+   - *Job Services* - Tasks associated to a job.
+   - *Generic Services* - General type.
+3. **Workflow** - All services related to workflow rules.
+4. **Rules** - Allow including rules within other rules, these rules to be include have to be of independent type.
+5. **Dashlets** - Use to build [dashboards](concepts/dashboards).
+6. **Fieldlets** - Fieldlets that shape the form.
 
 ### Other rules
 
-**Report**: Create a report with Perl code. For more information, there is a how-to
-called [Create a report](how-to/create-reports).
+**Report** - Create a report with Perl code. For more information, there is a how-to called [Create a report](how-to/create-reports).
 
-**Webservice**: Allows to integrate webservices in rules.
+**Webservice** - Allows to integrate webservices in rules.
 
-**Independent**: Little rules to include within more complex rules, simplifying the system.
+**Workflow** - Allows to create a workflow with rules. To make it work, the rule should be included in the category configuration.
 
-**Dashboard**: Rule that allows the user to create a personalized dashboard with dashlets components.
+**Independent** - Little rules to include within more complex rules, simplifying the system.
 
-**Form**: Rule composed by fieldlets that shape the form of a topic.
+**Dashboard** - Rule that allows the user to create a personalized dashboard with dashlets components.
 
-**Workflow**: Rule that allows the user to create complex workflows based on statuses, categories,
-roles and projects.
+**Form** - Rule composed by fieldlets that shape the form of a topic.
 
 
 ### Stash

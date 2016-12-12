@@ -30,25 +30,25 @@ your operating system from the following locations:
 
 #### Windows
 
-[Windows 64-bit](https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.2.4-signed.msi)
+[Windows 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.2.4-signed.msi)
 
 #### Mac OS X
 
-[Mac OS X](https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.2.4.tgz)
+[Mac OS X <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.2.4.tgz)
 
 #### Linux
 
-- [RHEL 5 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.4.tgz)
-- [RHEL 6 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.4.tgz)
-- [RHEL 7 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.4.tgz)
-- [SUSE 11 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.2.4.tgz)
-- [SUSE 12 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.2.4.tgz)
-- [Debian 7 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.2.4.tgz)
-- [Ubuntu 12.04 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.4.tgz)
-- [Ubuntu 14.04 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
-- [Ubuntu 14.04 Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
-- [Ubuntu 14.10 Clang 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1410-clang-3.2.4.tgz)
-- [Legacy Linux 64-bit](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz)
+- [RHEL 5 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.4.tgz)
+- [RHEL 6 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.4.tgz)
+- [RHEL 7 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.4.tgz)
+- [SUSE 11 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.2.4.tgz)
+- [SUSE 12 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.2.4.tgz)
+- [Debian 7 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.2.4.tgz)
+- [Ubuntu 12.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.4.tgz)
+- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
+- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
+- [Ubuntu 14.10 Clang 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1410-clang-3.2.4.tgz)
+- [Legacy Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz)
 
 ## Mongo Server Configuration
 
@@ -62,7 +62,7 @@ or unless requested by your Clarive Support Representative.
 
 Contents of the `mongod.conf` file:
 
-```
+```yaml
 dbpath=/opt/clarive/data/mongo
 logpath=/opt/clarive/logs/mongod.log
 pidfilepath=/opt/clarive/logs/mongod.pid
@@ -310,7 +310,7 @@ read operation. Valid values are:
     nearest
 
 For core documentation on read preference see
-http://docs.mongodb.org/manual/core/read-preference/.
+[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />] (http://docs.mongodb.org/manual/core/read-preference/)
 
 This may be set in a connection string with the readPreference option.
 
@@ -325,7 +325,7 @@ parameter. If the read_pref_mode is 'primary', then read_pref_tag_sets must not
 be supplied.
 
 For core documentation on read preference see
-http://docs.mongodb.org/manual/core/read-preference/.
+[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />] (http://docs.mongodb.org/manual/core/read-preference/)
 
 This may be set in a connection string with the readPreferenceTags option. If
 given, the value must be key/value pairs joined with a ":". Multiple pairs must
@@ -436,10 +436,8 @@ The client write concern.
 - 0 Unacknowledged. MongoClient will NOT wait for an acknowledgment that the
 server has received and processed the request. Older documentation may refer to
 this as "fire-and-forget" mode. This option is not recommended.
-
 - 1 Acknowledged. This is the default. MongoClient will wait until the primary
 MongoDB acknowledges the write.
-
 - 2 Replica acknowledged. MongoClient will wait
 until at least two replicas (primary and one secondary) acknowledge the write.
 You can set a higher number for more replicas.  all All replicas acknowledged.

@@ -1,6 +1,6 @@
 ---
 title: Login
-index: 100
+index: 4000
 icon: user
 ---
 
@@ -8,8 +8,8 @@ Antes de poder acceder a la herramienta, el Administrador de Clarive debe de
 registrar al usuario desde la [Administración de usuarios](admin/user). El
 administrador tiene que suministrar al usuario la siguiente información:
 
-- **Usuario**: El usuario creado dentro de la herramienta y con el que tendrá acceso a Clarive.
-- **Contraseña**: Contraseña generada por el administrador. Sensible a mayúsculas/minúsculas.
+- **Usuario** - El usuario creado dentro de la herramienta y con el que tendrá acceso a Clarive.
+- **Contraseña** - Contraseña generada por el administrador. Sensible a mayúsculas/minúsculas.
 
 El usuario podrá modificar la contraseña desde las preferencias de usuario.
 
@@ -22,20 +22,28 @@ cambiar la contraseña cuando se trata de un inicio único de sesión o la auten
 Si se quiere realizar el login a Clarive directamente desde otra ubicación (portal web
 por ejemplo), se puede utilizar este código HTML como plantilla para crear el formulario:
 
+```html
 <textarea style="height: 250px; width: 90%">
-    &lt;form action="https://clariveserver:port/login" method="POST"&gt;<br />
-    &lt;table border="0" cellspacing="5" cellpadding="5"&gt;<br />
-    &lt;tr&gt;<br />
-    &lt;td&gt;User Name:&lt;/td&gt;<br />
-    &lt;td&gt;&lt;input type="text" name="username"/&gt;&lt;/td&gt;<br />
-    &lt;/tr&gt;<br />
-    &lt;tr&gt;<br />
-    &lt;td&gt;Password:&lt;/td&gt;<br />
-    &lt;td&gt;&lt;input type="password" name="password"/&gt;&lt;/td&gt;<br />
-    &lt;/tr&gt;<br />
-    &lt;tr&gt;<br />
-    &lt;td colspan="2"&gt;&lt;input type="submit"/&gt;&lt;/td&gt;<br />
-    &lt;/tr&gt;<br />
-    &lt;/table&gt;<br />
-    &lt;/form&gt;
+    <form action="https://clariveserver:port/login" method="POST">
+        <table border="0" cellspacing="5" cellpadding="5">
+            <tr>
+                <td>User Name:</td>
+                <td>
+                    <input type="text" name="username" />
+                </td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td>
+                    <input type="password" name="password" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" />
+                </td>
+            </tr>
+        </table>
+    </form>
 </textarea>
+```

@@ -1,6 +1,6 @@
 ---
 title: API Keys
-index: 1
+index: 5000
 icon: lock_small
 ---
 

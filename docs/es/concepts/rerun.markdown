@@ -1,9 +1,10 @@
 ---
-title: Re-ejecucion de un trabajo
+title: Re-ejecución de un pase
+index: 5000
 icon: job
 ---
 
-Una reejecucion es una nueva ejecución de un [trabajo](concepts/job) que ya ha sido procesado.
+Una reejecución es una nueva ejecución de un [trabajo](concepts/job) que ya ha sido procesado.
 
 Normalmente los trabajos se reejecutan cuando éste ha fallado por alguna razón.
 Cuando seleccionamos la opcion Post nos aparece la posibilidad de cambiar el estado anterior del job si así

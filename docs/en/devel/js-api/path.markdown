@@ -1,5 +1,6 @@
 ---
 title: cla/path - Path manipulation
+index: 5000
 icon: page
 ---
 

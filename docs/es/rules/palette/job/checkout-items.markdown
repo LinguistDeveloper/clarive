@@ -1,5 +1,9 @@
 ---
-title: Checkout Job Items 
+title: Checkout Job Items
+index: 5000
 icon: changesets
 ---
-* Copia los elementos involucardos en el directorio `<job_dir>`. Recibe el estado, ruta, revision e información de cada elemento.
+
+Copia los elementos involucrados en el directorio `<job_dir>`.
+
+Recibe el estado, ruta, revisión e información de cada elemento.

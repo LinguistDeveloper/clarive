@@ -1,11 +1,11 @@
 ---
 title: Preferencias de usuario
-index: 200
+index: 5000
 icon: prefs
 ---
 
 Las preferencias de usuario contiene las configuración de la cuenta, el acceso y
-la sesión así como información de uso de Clarive y como otros usuarios interactuan
+la sesión así como información de uso de Clarive y como otros usuarios interactúan
 con usted.
 
 Estas preferencias se pueden modificar en cualquier momento, incluidos los cambios en
@@ -21,22 +21,22 @@ Estas son las propiedades que se pueden ver o modificar:
 
 ### General
 
-- **Idioma de la interfaz**: Establece el idioma de la interfaz de la herramienta.
-- **Zona horaria**: Establece la zona horaria preferida del usuario.
-- **Pais**: Establece el país del usuario.
-- **Zona horaria del navegador**: Informa de la zona horaria desde donde se está accediendo a Clarive.
-- **Zona horaria del servidor**: Informa de la zona horaria donde está alojado el servidor.
-- **Formato de la fecha**: Permite seleccionar el formato de la fecha preferido por el usuario.
-- **Formato de la hora**: Permite seleccionar el formato de la hora preferido por el usuario.
-- **Dashboard por defecto**: Establece el dashboard por defecto. Los dashboard son asignados mediante los roles.
-Asegurese que su administrador ha habilitado a su usuario acceso a dashboards.
+- **Idioma de la interfaz** - Establece el idioma de la interfaz de la herramienta.
+- **Zona horaria** - Establece la zona horaria preferida del usuario.
+- **Pais** - Establece el país del usuario.
+- **Zona horaria del navegador** - Informa de la zona horaria desde donde se está accediendo a Clarive.
+- **Zona horaria del servidor** - Informa de la zona horaria donde está alojado el servidor.
+- **Formato de la fecha** - Permite seleccionar el formato de la fecha preferido por el usuario.
+- **Formato de la hora** - Permite seleccionar el formato de la hora preferido por el usuario.
+- **Dashboard por defecto** - Establece el dashboard por defecto. Los dashboard son asignados mediante los roles.
+Asegúrese que su administrador ha habilitado a su usuario acceso a los dashboards.
 
 ### Avatar
 
-- **Cambiar Avatar**: Se genera de manera aleatoria un nuevo avatar.
-- **Subir fichero**: Permite subir una imagen propia para utilizar de avatar.
+- **Cambiar Avatar** - Se genera de manera aleatoria un nuevo avatar.
+- **Subir fichero** - Permite subir una imagen propia para utilizar de avatar.
 
 ### API
 
-Los usuarios con permiso de acceso a la API pueden obtener aqui su clave.
-Más información sobre las claves API [aqui](concepts/api_key).
+Los usuarios con permiso de acceso a la API pueden obtener aquí su clave.
+Más información sobre las claves API [aquí](concepts/api_key).

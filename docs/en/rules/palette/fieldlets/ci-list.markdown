@@ -1,6 +1,6 @@
 ---
 title: CI List
-index: 400
+index: 5000
 icon: grid
 ---
 
@@ -49,7 +49,9 @@ Set the field to show.
 
 
 ### Advanced filter JSON
+
 Allows to use a JSON format to add a condition.
+
 
 For example, in this filter, only show one project to choose:
 
@@ -58,38 +60,17 @@ For example, in this filter, only show one project to choose:
 
 Selectable fields to filter can be found through the REPL. In this case the command would be: `CI -> project -> find_one ();`
 
-
 ### Selection method
-Choose between selections.
 
-- **Role selection**
-- **Class selection**
+You specify the values that appear in the form. Two types to choose from:
 
-### Roles
-
-Selection of roles to show in the grid.
-
-By default, the value of this field is **CI**.
-
-If Class selection is selected, the value in this field must be **CI**.
+- **Role selection** - Select the role to be displayed on the form, 
+regardless of class. For example, if we choose Agent, in the form we will see all
+ Agents, *ftp_agent*, *clax_agent*, etc...
+- **Class selection** - We can specify class of CI.
 
 
-### CI Class
-
-Select only works if *Class selection* is selected as a method.
-
-Specify the class of CI to be shown.
-
-### Description
-
-Selection of type of description to show in the list.
-
-- **Name** - Show the name.
-- **Environment** - Show the Environment separated by commas.
-- **Class** - Show the type object.
-- **Moniker** - Show the moniker specified in CI configuration.
-
-### Default Value
+### Default value
 
 To show a default value in the list.
 
@@ -117,3 +98,16 @@ By default, filter type is OR.
 
 For more information, there is a how-to called [Filters in fieldlets](how-to/filter-fieldlet).
 
+
+### Description
+
+Selection of type of description to show in the list.
+
+- **Name** - Show the name.
+- **Environment** - Show the Environment separated by commas.
+- **Class** - Show the type object.
+- **Moniker** - Show the moniker specified in CI configuration.
+
+### Height
+
+Set the height of the grid.

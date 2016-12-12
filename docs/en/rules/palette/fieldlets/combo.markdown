@@ -1,6 +1,6 @@
 ---
 title: Combo
-index: 400
+index: 5000
 icon: combo_box
 ---
 

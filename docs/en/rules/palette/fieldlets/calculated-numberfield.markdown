@@ -1,6 +1,6 @@
 ---
 title: Calculated numberfield
-index: 400
+index: 5000
 icon: number
 ---
 
@@ -32,6 +32,14 @@ Check if you want the field as mandatory.
 
 Specify the operation to do.
 
+Ex: $1 * $2, $1 + $2, $1 - $2...
+
 ### Operation fields
 
-Fill it with the fields to operate.
+Fill it with the id fieldlets (number type) to operates.
+
+Those fieldlets should be on the same form.
+
+Ex: < id-number-1 >, < id-number-2 >
+
+In Operation, $1 will be <id-number-1> and $2 <id-number-2>

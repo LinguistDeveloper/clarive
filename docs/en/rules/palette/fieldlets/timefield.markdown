@@ -1,6 +1,6 @@
 ---
 title: Time field
-index: 400
+index: 5000
 icon: time
 ---
 

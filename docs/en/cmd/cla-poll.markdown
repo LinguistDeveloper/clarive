@@ -1,23 +1,21 @@
 ---
 title: cla poll - Monitoring
+index: 5000
 icon: console
 ---
 
-`cla poll`: Monitoring tool. Without any option checks.
+`cla poll`: Monitoring tool. Without any option checks:
 
-Processes from pid and lock files are running.
-
-Connection to Clarive Web Server.
-
-Connection to nginx.
-
-Connection to mongo.
+- Processes from pid and lock files are running.
+- Connection to Clarive Web Server.
+- Connection to nginx.
+- Connection to mongo.
 
 Command options are the following:
 
-- `-h` - Displays command help to the screen.
+`-h` - Displays command help to the screen.
 
-    >cla poll -h
+    > cla poll -h
 
     NAME
      poll - check if processes are started

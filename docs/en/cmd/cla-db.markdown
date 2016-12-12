@@ -1,5 +1,6 @@
 ---
 title: cla db - Database utilities
+index: 5000
 icon: console
 ---
 

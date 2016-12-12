@@ -1,5 +1,6 @@
 ---
 title: cla/reg - Registry Manipulation
+index: 5000
 icon: page
 ---
 
