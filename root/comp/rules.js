@@ -1818,7 +1818,7 @@
             search_palette, {
                 xtype: 'button',
                 tooltip: _('Collapse'),
-                icon: '/static/images/icons/collapseall.png',
+                icon: '/static/images/icons/collapseall.svg',
                 handler: function() {
                     palette.collapseAll();
                 }
