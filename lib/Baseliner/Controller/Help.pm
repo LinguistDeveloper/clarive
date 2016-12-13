@@ -55,9 +55,6 @@ sub _get_user_lang {
     my $self = shift;
     my ($username) = @_;
 
-    ### TODO: HELP IS ONLY IN ENGLISH FOR NOW.
-    return 'en';
-
     my $user_lang;
 
     my $user_ci = ci->user->find_one( { name => $username } );

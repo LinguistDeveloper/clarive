@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 
 use Test::More;
 use Test::Deep;
@@ -21,47 +22,43 @@ use TestUtils ':catalyst';
 
 use_ok 'Baseliner::Controller::Help';
 
-TODO: {
-    local $TODO = "Help no lenguage sensitive";
+subtest 'docs_tree: help tree is built from directory' => sub {
+    _setup();
 
-    subtest 'docs_tree: help tree is built from directory' => sub {
+    my $controller = _build_controller();
+
+    my $c = _build_c();
+
+    $controller->docs_tree($c);
+    is ref $c->stash->{json}, 'ARRAY';
+    is scalar @{ $c->stash->{json} }, 5;
+};
+
+subtest 'docs_tree: gets user language from user preferences' => sub {
+    _setup();
+
+    TestUtils->create_ci( 'user', name => 'developer', language_pref => 'es' );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( username => 'developer' );
+
+    $controller->docs_tree($c);
+
+    is $c->stash->{json}->[0]->{text}, 'Extraña Ayuda Test';
+};
+
+subtest 'get_doc: doc retrieval from file' => sub {
         _setup();
 
         my $controller = _build_controller();
 
-        my $c = _build_c();
+        my $c = _build_c( req => { params => { path => 'test.markdown' } } );
 
-        $controller->docs_tree($c);
-        is ref $c->stash->{json}, 'ARRAY';
-        is scalar @{ $c->stash->{json} }, 2;
-    };
+        $controller->get_doc($c);
 
-    subtest 'docs_tree: gets user language from user preferences' => sub {
-        _setup();
-
-        TestUtils->create_ci( 'user', name => 'developer', language_pref => 'es' );
-
-        my $controller = _build_controller();
-
-        my $c = _build_c( username => 'developer' );
-
-        $controller->docs_tree($c);
-
-        is $c->stash->{json}->[0]->{text}, 'Ayuda Test Feature';
-    };
-
-    subtest 'get_doc: doc retrieval from file' => sub {
-            _setup();
-
-            my $controller = _build_controller();
-
-            my $c = _build_c( req => { params => { path => 'test.markdown' } } );
-
-            $controller->get_doc($c);
-
-            is $c->stash->{json}->{data}->{title}, 'Help Test';
-    };
-}
+        is $c->stash->{json}->{data}->{title}, 'Help Test';
+};
 
 done_testing;
 
