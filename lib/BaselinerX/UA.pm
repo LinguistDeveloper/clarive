@@ -121,7 +121,7 @@ sub request {
         }
     }
 
-    if ( $self->{auto_parse} ) {
+    if ( $self->{auto_parse} && length $response->{content}) {
         my $content_type = $response->{headers}->{'content-type'};
 
         if ($content_type) {

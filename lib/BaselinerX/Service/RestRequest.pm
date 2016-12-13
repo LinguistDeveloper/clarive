@@ -27,16 +27,15 @@ sub rest_request {
     my $username        = $config->{username} // '';
     my $password        = $config->{password} // '';
     my $timeout         = $config->{timeout};
-    my $access_any_cert = $config->{access_any_cert};
+    my $accept_any_cert = $config->{accept_any_cert};
     my $auto_parse      = $config->{auto_parse};
     my $errors          = $config->{errors};
 
     my $ua = $self->_build_ua(
         username   => $username,
         password   => $password,
-        timeout    => $timeout,
-        verify_SSL => !$access_any_cert || $access_any_cert ne 'on',
-        auto_parse => $auto_parse && $auto_parse eq 'on',
+        verify_SSL => !$accept_any_cert,
+        auto_parse => $auto_parse,
         timeout    => $timeout,
         errors     => $errors
     );

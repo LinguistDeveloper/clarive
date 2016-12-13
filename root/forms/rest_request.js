@@ -46,17 +46,19 @@
             name: 'timeout',
             value: (data.timeout != undefined ? data.timeout : '')
         },
-        errorsCombo, {
-            xtype: 'checkbox',
+        errorsCombo,
+        new Baseliner.CBox({
+            fieldLabel: _('Accept any server certificate'),
             name: 'accept_any_cert',
-            checked: data.accept_any_cert == 'on' ? true : false,
-            boxLabel: _('Accept any server certificate')
-        }, {
-            xtype: 'checkbox',
+            checked: data.accept_any_cert,
+            default_value: false
+        }),
+        new Baseliner.CBox({
+            fieldLabel: _('Automatically parse response'),
             name: 'auto_parse',
-            checked: data.auto_parse == 'on' ? true : false,
-            boxLabel: _('Automatically parse response')
-        }, {
+            checked: data.auto_parse,
+            default_value: true
+        }), {
             xtype: 'tabpanel',
             activeTab: 0,
             fieldLabel: _('Data'),
