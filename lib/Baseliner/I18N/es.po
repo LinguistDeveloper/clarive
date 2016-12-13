@@ -3438,14 +3438,6 @@ msgid "User removed labels"
 msgstr "El Usuario borró etiquetas"
 
 #: lib/Baseliner/Model/Topic.pm
-msgid "%1 removed %2"
-msgstr "%1 borró %2"
-
-#: lib/Baseliner/Model/Topic.pm
-msgid "User removed a file"
-msgstr "El usuario borró un fichero"
-
-#: lib/Baseliner/Model/Topic.pm
 msgid "%1 created a topic of %2"
 msgstr "%1 creó un tópico de categoría: %2"
 
@@ -15920,6 +15912,12 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "%1 removed %2"
+#~ msgstr "%1 borró %2"
+
+#~ msgid "User removed a file"
+#~ msgstr "El usuario borró un fichero"
 
 #~ msgid "Running"
 #~ msgstr "Ejecutando"

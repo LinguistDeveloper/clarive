@@ -112,12 +112,6 @@ register 'event.file.labels_remove' => {
     vars => ['username', 'ts'],
 };
 
-register 'event.topic.file_remove' => {
-    text => _locl('%1 removed %2'),
-    description => _locl('User removed a file'),
-    vars => ['username', 'filename', 'ts'],
-};
-
 register 'event.topic.create' => {
     text => _locl('%1 created a topic of %2'),
     description => _locl('User created a topic'),
