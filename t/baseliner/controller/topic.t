@@ -3290,6 +3290,97 @@ subtest 'report_csv: returns the list of the dashlet in serve_body' => sub {
     is_string $c->stash->{serve_body}, "\xEF\xBB\xBF" . qq{"ID"\n} . qq{"FT #2122"\n} . ( "\n" x 1006 );
 };
 
+subtest 'report_csv: returns rows' => sub {
+    _setup();
+
+    require Baseliner;
+
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $topic_data = mdb->topic->find_one( { mid => $topic_mid } );
+    my $username = $topic_data->{username};
+
+    my $report = TestUtils->create_ci('report');
+    $report->report_update(
+        {   action   => 'update',
+            username => $username,
+            data     => {
+                name           => 'Test',
+                permissions    => 'private',
+                recursivelevel => '2',
+                rows           => 50,
+                selected       => [
+                    {   children => [
+                            {   children => [],
+                                data     => {
+                                    id_category => $topic_data->{id_category},
+                                    name_category =>
+                                        $topic_data->{name_category}
+                                },
+                                type => 'categories_field'
+                            }
+                        ],
+                        query => {
+                            'xnode-525' => {
+                                id_category => [ $topic_data->{id_category} ],
+                                name_category =>
+                                    [ $topic_data->{name_category} ],
+                                relation => []
+                            }
+                        },
+                        text => 'Categories',
+                        type => 'categories'
+                    },
+                    {   children => [
+                            {   category => $topic_data->{name_category},
+                                text => "$topic_data->{name_category}: Title",
+                                type => 'select_field',
+                                id_field => 'title'
+                            }
+                        ],
+                        text => 'Fields',
+                        type => 'select'
+                    }
+                ]
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    my $data = {
+        rows    => [],
+        columns => [
+            {   id   => "topic_mid",
+                name => "ID",
+            },
+            {   id   => "title_$topic_data->{name_category}",
+                name => "$topic_data->{name_category}: Title",
+            }
+        ]
+    };
+    $data = _encode_json($data);
+
+    my $params = {
+        limit              => 50,
+        id_report          => $report->{mid},
+        id_category_report => []
+    };
+
+    my $params_encode_json = _encode_json($params);
+
+    my $c = _build_c(
+        username => $username,
+        req      => {
+            params => { data_json => $data, params => $params_encode_json }
+        }
+    );
+
+    $controller->report_csv($c);
+    my $serve_body = $c->stash->{serve_body};
+
+    like $serve_body, qr/$topic_data->{title}/;
+};
+
 subtest 'view: returns topic data' => sub {
     _setup();
 

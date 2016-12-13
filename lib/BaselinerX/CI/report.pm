@@ -911,9 +911,10 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
     return () unless keys %{ $rel_query || {} };
 
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner::Model::Topic->new->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
     # _log ">>>>>>>>>>>>>>>>>>>>>>>FIELDS: " . _dump %fields;
+
 
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
     my %selects_ci_columns_collection_extends = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{collection_extends} } grep { exists $_->{ci_columns}} _array($fields{select});
@@ -1013,7 +1014,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
 
 
     # filter user projects
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     if( $username && ! $is_root){
       my @categories;
         for my $category (@All_Categories) {
@@ -1021,7 +1022,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
             push @categories, $id_category;
         }
 
-        Baseliner->model('Permissions')->inject_security_filter( $username, $where );
+        Baseliner::Model::Permissions->new->inject_security_filter( $username, $where );
 
         $where->{'category.id'} = {'$in' => \@categories};
     }
@@ -1053,7 +1054,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
         @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     }
 
-    Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;
+    Baseliner::Model::Topic->new->build_field_query( $query_search, $where, $username ) if length $query_search;
 
     $where->{id_category} = '' if ( !$where->{id_category} && $id_category_report );
 
