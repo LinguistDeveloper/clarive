@@ -107,7 +107,7 @@ sub _run_pre_event {
         my $sha = $change->{new};
         my $ref = $change->{ref};
 
-        my $ref_short = [ split '/', $ref ]->[-1];
+        my $ref_short = [ split '/', $ref, 3 ]->[-1];
 
         event_new
           'event.repository.update' => {
@@ -147,7 +147,7 @@ sub _run_post_event {
         my $new_sha   = $change->{new};
         my $old_sha   = $change->{old};
         my $ref       = $change->{ref};
-        my $ref_short = [ split '/', $ref ]->[-1];
+        my $ref_short = [ split '/', $ref, 3 ]->[-1];
 
         # Skip removed references
         next if $new_sha eq ('0' x 40);

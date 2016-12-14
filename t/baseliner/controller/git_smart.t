@@ -200,6 +200,44 @@ subtest 'git: creates correct event on push' => sub {
     is $data->{sha},      $sha2;
 };
 
+subtest 'git: creates correct event on push when branch has slashes' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'Repo' );
+    my $sha  = TestGit->commit($repo);
+    my $sha2 = TestGit->commit($repo);
+
+    my $controller = _build_controller();
+
+    my $stash = {
+        git_config => {
+            gitcgi => '../local/libexec/git-core/git-http-backend',
+            home   => $repo->repo_dir . '/../'
+        }
+    };
+
+    my $body = "0094" . "$sha $sha2 refs/heads/1.0#my/strange/branch-7\x00 report-status side-band-64k agent=git/2.6.4" . "0000";
+    open my $fh, '<', \$body;
+
+    my $c = mock_catalyst_c(
+        username => 'foo',
+        req      => { params => {}, body => $fh },
+        stash    => $stash
+    );
+
+    $controller->git( $c, '.git', 'info', 'refs' );
+
+    my @events = mdb->event->find( { event_key => 'event.repository.update' } )->all;
+
+    is @events, 1;
+
+    my $event = $events[0];
+    my $data  = _load $event->{event_data};
+
+    is $data->{branch}, '1.0#my/strange/branch-7';
+    is $data->{ref},    'refs/heads/1.0#my/strange/branch-7';
+};
+
 subtest 'git: creates correct event on push several references' => sub {
     _setup();
 
