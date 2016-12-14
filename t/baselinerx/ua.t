@@ -92,6 +92,21 @@ subtest 'request: creates correct request with basic auth' => sub {
     is $url, 'http://foo:bar@localhost';
 };
 
+subtest 'request: returns empty content when auto parse' => sub {
+    my $ua = _build_user_agent(
+        response => {
+            success => 1,
+            status  => '200',
+            headers => { 'content-type' => 'application/json' },
+            content => ''
+        }
+    );
+
+    my $rv = $ua->request( 'POST', 'http://localhost', { content => 'hello there' } );
+
+    is $rv->{content}, '';
+};
+
 subtest 'request: automatically parses json response' => sub {
     my $ua = _build_user_agent(
         response => {
