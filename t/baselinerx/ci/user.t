@@ -7,6 +7,7 @@ use Test::Deep;
 use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
+use Baseliner::Utils qw(_array);
 
 use_ok 'BaselinerX::CI::user';
 
@@ -174,10 +175,107 @@ subtest 'combo_list: returns query when extra values' => sub {
     is $res->{data}->[0]->{username}, 'custom value';
 };
 
+subtest 'groups: user that already belongs to a group gets security merged when added group to user' => sub {
+    _setup();
+
+    my ( $prj, $user, $role) = _setup_security();
+    my $group = _build_cis({ name => 'Group1'});
+    $group->project_security({ "$role" => { 'project' => [$prj->mid]} });
+
+    #Add user to first group
+    $group->set_users(($user));
+    $group->save;
+
+    $user = ci->new($user->mid);
+
+    my $role2 = TestUtils->create_role('Test role 2',2);
+    my $group2 = _build_cis({ name => 'Group2'});
+
+    $group2->project_security({ "$role2" => { 'project' => [$prj->mid]} });
+    $group2->save;
+
+    #Add group to the user
+    $user->groups((_array($user->groups),$group2));
+    $user->save;
+
+    is_deeply $user->project_security, { "$role" => { 'project' => [$prj->mid]}, "$role2" => { 'project' => [$prj->mid]} };
+};
+
+subtest 'groups: user keeps group1 security when is removed from group2' => sub {
+    _setup();
+
+    my ( $prj, $user, $role) = _setup_security();
+    my $group = _build_cis({ name => 'Group1'});
+    $group->project_security({ "$role" => { 'project' => [$prj->mid]} });
+
+    #Add user to first group
+    $group->set_users(($user));
+    $group->save;
+
+    $user = ci->new($user->mid);
+
+    my $role2 = TestUtils->create_role('Test role 2',2);
+    my $group2 = _build_cis({ name => 'Group2'});
+
+    $group2->project_security({ "$role2" => { 'project' => [$prj->mid]} });
+    $group2->save;
+
+    #Add group to the user
+    $user->groups((_array($user->groups),$group2));
+    $user->save;
+
+    is_deeply $user->project_security, { "$role" => { 'project' => [$prj->mid]}, "$role2" => { 'project' => [$prj->mid]} };
+
+    #Add group to the user
+    $user->groups($group);
+    $user->save;
+
+    is_deeply $user->project_security, { "$role" => { 'project' => [$prj->mid]} };
+};
+
+subtest 'groups: user security sets to group when added to the user groups' => sub {
+    _setup();
+
+    my ( $prj, $user, $role) = _setup_security();
+    my $group = _build_cis();
+    $group->project_security({ "$role" => { 'project' => [$prj->mid]} });
+    $group->save;
+
+    #Add group to the user
+    $user->groups([$group]);
+    $user->save;
+
+    $user = ci->new($user->mid);
+
+    is_deeply $user->project_security, { "$role" => { 'project' => [$prj->mid]} };
+};
+
+
 done_testing;
 
 sub _setup {
     TestUtils->setup_registry( 'BaselinerX::CI', 'BaselinerX::Type::Event' );
-
+    Baseliner::Core::Registry->clear;
+    TestUtils->cleanup_roles;
+    TestUtils->register_ci_events;
     TestUtils->cleanup_cis;
+}
+
+sub _build_cis {
+    my ($p) = @_;
+
+    my $ci_group = TestUtils->create_ci('UserGroup', name => $p->{name} // 'Test group');
+    $ci_group->save();
+    return $ci_group;
+}
+
+sub _setup_security {
+    my $ci_prj = TestUtils->create_ci('project', name => 'Test project');
+    my $ci_user = TestUtils->create_ci('user', name => 'Test user');
+    my $role = TestUtils->create_role('Test role 1');
+
+    $ci_prj->save();
+    $ci_user->save();
+
+    return ($ci_prj, $ci_user, $role);
 }

@@ -20,6 +20,7 @@ The list view contains the following columns:
 - `Language` - The selected user language.
 - `Email` - Email address of the user.
 - `Phone` - Phone number of the user.
+- `Groups`- Groups the user belongs to.
 
 ### <img src="/static/images/icons/add.svg" /> Creating a User
 
@@ -41,6 +42,9 @@ Under these fields, the Roles defined in the database are displayed on the left,
 
 **IMPORTANT NOTE**: Assigning Roles is only available to saved users.
 So save first before adding roles to a user.
+
+**IMPORTANT NOTE 2**: If a user belongs to any group its security can not be managed individually and
+it will be the result of merging the security of all the groups it belongs to.
 
 To add a Role or multiple roles for a user, mark the checkbox(es)
 next to the role in the left panel, in the right pane select either ALL project, or

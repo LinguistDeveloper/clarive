@@ -2280,6 +2280,7 @@ sub change_status : Local {
 
 sub grid_count : Local {
     my ($self,$c)=@_;
+
     my $p = $c->req->params;
 
     if( my $lq = $p->{lq} ) {

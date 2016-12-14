@@ -12,7 +12,7 @@ use DateTime::TimeZone qw(all_names);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
-use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique);
+use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique _warn);
 
 use experimental 'switch', 'autoderef';
 
@@ -384,13 +384,15 @@ sub update : Local {
                         email        => $p->{email},
                         phone        => $p->{phone},
                         account_type => $p->{account_type},
+                        groups       => $p->{groups},
                         active       => '1',
                         password     => ci->user->encrypt_password( $p->{username}, $p->{pass} )
                     };
 
                     my $ci = ci->user->new(%$ci_data);
-                    $ci->gen_project_security( $projects_checked,
-                        $roles_checked );
+
+                    $ci->gen_project_security( $projects_checked, $roles_checked );
+
                     $ci->password(
                         ci->user->encrypt_password(
                             $p->{username}, $p->{pass}
@@ -402,7 +404,6 @@ sub update : Local {
                         success => \1,
                         user_id => $user_mid
                     };
-
                 }
                 else {
                     $c->stash->{json} = {
@@ -457,6 +458,7 @@ sub update : Local {
                                 email            => $p->{email},
                                 phone            => $p->{phone},
                                 account_type     => $p->{account_type},
+                                groups           => $p->{groups},
                                 active           => '1',
                                 password         => ci->user->encrypt_password( $p->{username}, $p->{pass} ),
                                 project_security => $user_ci->{project_security}
@@ -493,6 +495,7 @@ sub update : Local {
                         $user->update( account_type => $p->{account_type} );
                         $user->update( email => $p->{email} );
                         $user->update( phone => $p->{phone} ) if $p->{phone};
+                        $user->update( groups => $p->{groups} );
                         $user->update( active => $p->{active} )
                             if $p->{active};
                         $user->save;
@@ -680,8 +683,7 @@ sub update : Local {
                 }
 
          # regenerate project security for all users TODO work with my ci only
-                my $user_ci = ci->new(
-                    ci->user->find_one( { username => $user_name } )->{mid} );
+                my $user_ci = ci->user->search_ci( username => $user_name );
 
                 $user_ci->update( project_security => $orig_ps );
 
@@ -904,7 +906,18 @@ sub list : Local : Does('Ajax') {
 
     $cnt = ci->user->find($where)->count();
 
-    my @rows = map { +{ id => $_->{mid}, %{$_} }; } $rs->all;
+    my @rows = ();
+
+    for my $row ( $rs->all ) {
+        my $ci = ci->new( $row->{mid} );
+        my @groups = map { $_->{mid} } $ci->parents( where => { collection => 'UserGroup'});
+
+        push @rows, {
+            id     => $ci->mid,
+            groups => \@groups,
+            %{$row}
+        };
+    }
 
     if ( $p->{only_data} ) {
         $c->stash->{json} = \@rows;

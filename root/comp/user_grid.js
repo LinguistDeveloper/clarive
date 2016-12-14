@@ -20,7 +20,8 @@
             {  name: 'phone' },
             {  name: 'ts' },
             {  name: 'active'},
-            {  name: 'account_type'}
+            {  name: 'account_type'},
+            {  name: 'groups'}
         ],
         listeners: {
             'load': function(){
@@ -145,7 +146,7 @@
             }
         });
 
-        var btn_asignar_roles_projects = new Ext.Toolbar.Button({
+        var btn_assign_roles_projects = new Ext.Toolbar.Button({
                 text: _('Assign roles/projects'),
                 icon:'/static/images/icons/key-add.svg',
                 cls: 'x-btn-text-icon ui-comp-users-edit-window-assign-roles',
@@ -210,7 +211,7 @@
                 }
         })
 
-        var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
+        var btn_unassign_roles_projects = new Ext.Toolbar.Button({
             text: _('Unassign roles/projects'),
             icon:'/static/images/icons/key-delete.svg',
             cls: 'x-btn-text-icon ui-comp-users-unassign-roles',
@@ -331,6 +332,24 @@
                                 form.findField("id").setValue(a.result.user_id);
                                 form.findField("username").getEl().dom.setAttribute('readOnly', true);
                                 win.setTitle(_('Edit user'));
+                                if ( group_box.items.items.length ) {
+                                    btn_assign_roles_projects.hide();
+                                    btn_unassign_roles_projects.hide();
+                                    grid_roles.hide();
+                                    tree_projects.hide();
+                                    btn_delete_row.hide();
+                                    btn_delete_all.hide();
+                                    grid_user_roles_projects.height = 300;
+                                } else {
+                                    btn_assign_roles_projects.show();
+                                    btn_unassign_roles_projects.show();
+                                    grid_roles.show();
+                                    tree_projects.show();
+                                    btn_delete_row.show();
+                                    btn_delete_all.show();
+                                    grid_user_roles_projects.height = 150;
+
+                                }
                             },
                             failure: function(f, a) {
 
@@ -448,28 +467,28 @@
             var rows_roles_projects = store_user_roles_projects.getCount();
 
             if(roles_nodes < 1 && projects_nodes < 1){
-                btn_desasignar_roles_projects.disable();
-                btn_asignar_roles_projects.disable();
+                btn_unassign_roles_projects.disable();
+                btn_assign_roles_projects.disable();
             }
             else{
                 if(projects_nodes < 1){
-                    btn_asignar_roles_projects.disable();
-                    rows_roles_projects < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
+                    btn_assign_roles_projects.disable();
+                    rows_roles_projects < 1 ? btn_unassign_roles_projects.disable():btn_unassign_roles_projects.enable();
                 }
                 else{
                     if(roles_nodes < 1){
                         if(rows_roles_projects < 1){
-                            btn_desasignar_roles_projects.disable()
-                            btn_asignar_roles_projects.disable();
+                            btn_unassign_roles_projects.disable()
+                            btn_assign_roles_projects.disable();
                         }
                         else{
-                            btn_desasignar_roles_projects.enable()
-                            btn_asignar_roles_projects.enable();
+                            btn_unassign_roles_projects.enable()
+                            btn_assign_roles_projects.enable();
                         }
                     }
                     else{
-                        rows_roles_projects < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
-                        btn_asignar_roles_projects.enable();
+                        rows_roles_projects < 1 ? btn_unassign_roles_projects.disable():btn_unassign_roles_projects.enable();
+                        btn_assign_roles_projects.enable();
                     }
 
                 }
@@ -598,6 +617,9 @@
                 btn_delete_row.enable();
             }
         });
+
+        var group_box = Baseliner.ci_box({ name:'groups', fieldLabel:_('Groups'), allowBlank: true,
+               class:'UserGroup', singleMode: false, force_set_value: true });
 
         var form_user = new Ext.FormPanel({
             name: form_user,
@@ -760,7 +782,8 @@
                                 emptyText: 'usuario@dominio.com',
                                 vtype: 'email',
                                 xtype: 'textfield'
-                            }
+                            },
+                            group_box
                         ]
                     }, {
                         columnWidth: 0.10,
@@ -795,7 +818,18 @@
             ff.loadRecord( rec );
             username = rec.get('username');
             title = _('Edit user');
+
+            if ( rec.get('groups') && rec.get('groups').length > 0 ) {
+                btn_assign_roles_projects.hide();
+                btn_unassign_roles_projects.hide();
+                grid_roles.hide();
+                tree_projects.hide();
+                btn_delete_row.hide();
+                btn_delete_all.hide();
+                grid_user_roles_projects.height = 300;
+            }
         }
+
         win = new Ext.Window({
             title: title,
             width: 720,
