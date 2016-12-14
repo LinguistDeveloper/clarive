@@ -57,9 +57,13 @@ subtest 'build_where: builds correct where project_security' => sub {
                 '_project_security' => undef
             },
             {
-                '_project_security.project' => {
-                    '$in' => [ undef, $project->mid ]
-                },
+                '$and' => [
+                    {
+                        '_project_security.project' => {
+                            '$in' => [ undef, $project->mid ]
+                        },
+                    }
+                ]
             },
         ]
       };

@@ -1068,71 +1068,32 @@ subtest 'user_action: returns projects ids with action' => sub {
     is_deeply [ sort @{ $action->{projects} } ], [ $project1->mid, $project2->mid ];
 };
 
-subtest 'match_security: returns true when no security needed' => sub {
+subtest 'match_security: returns true when no limitations' => sub {
     _setup();
 
     my $permissions = _build_permissions();
 
-    ok $permissions->match_security( { project => [ 1, 2, 3 ] }, undef );
-    ok $permissions->match_security( { project => [ 1, 2, 3 ] }, {} );
+    ok $permissions->match_security( { project => [1] }, undef );
+    ok $permissions->match_security( { project => [1] }, { area => [ 1, 2, 3 ] } );
+    ok $permissions->match_security( { project => [1] }, { area => [ 1, 2, 3 ], group => [2] } );
 };
 
-subtest 'match_security: returns true when security not limited by project' => sub {
+subtest 'match_security: returns false when limited by project' => sub {
     _setup();
 
     my $permissions = _build_permissions();
 
-    ok $permissions->match_security( { project => [ 1, 2, 3 ] }, { area => [1] } );
+    ok !$permissions->match_security( { project => [1] }, { project => [2] } );
+    ok !$permissions->match_security( { project => [ 1, 2 ] }, { project => [ 3, 4 ] } );
 };
 
-subtest 'match_security: returns false when no dimensions assigned' => sub {
+subtest 'match_security: returns false when limited by dimension' => sub {
     _setup();
 
     my $permissions = _build_permissions();
 
-    ok !$permissions->match_security( {}, { project => [1] } );
-    ok !$permissions->match_security( {}, { area    => [1] } );
-};
-
-subtest 'match_security: returns true when dimension assigned' => sub {
-    _setup();
-
-    my $permissions = _build_permissions();
-
-    ok $permissions->match_security( { project => [1] }, { project => [ 1, 2 ] } );
-    ok $permissions->match_security( { area    => [1] }, { area    => [ 1, 2 ] } );
-};
-
-subtest 'match_security: returns true when multiple of dimensions assigned' => sub {
-    _setup();
-
-    my $permissions = _build_permissions();
-
-    ok $permissions->match_security( { project => [1], area => [1] }, { project => [ 1, 2 ], area => [ 1, 2 ] } );
-};
-
-subtest 'match_security: returns true when one of dimensions assigned' => sub {
-    _setup();
-
-    my $permissions = _build_permissions();
-
-    ok $permissions->match_security( { area => [1] }, { project => [ 1, 2 ], area => [ 1, 2 ] } );
-};
-
-subtest 'match_security: returns false when one of dimensions not assigned' => sub {
-    _setup();
-
-    my $permissions = _build_permissions();
-
-    ok !$permissions->match_security( { area => [1], project => [2] }, { project => [1], area => [1] } );
-};
-
-subtest 'match_security: returns false when none of dimensions assigned' => sub {
-    _setup();
-
-    my $permissions = _build_permissions();
-
-    ok !$permissions->match_security( { area => [1], project => [2] }, { project => [1], area => [2] } );
+    ok !$permissions->match_security( { project => [1], area => [2] }, {} );
+    ok !$permissions->match_security( { project => [1], area => [2] }, { area => [3] } );
 };
 
 subtest 'user_has_security: returns true when root' => sub {
@@ -1176,11 +1137,11 @@ subtest 'user_has_security: returns true when permission' => sub {
 subtest 'user_has_security: returns true when permission not restrictive' => sub {
     _setup();
 
-    my $user = TestSetup->create_user( project_security => { '1' => { project => [1] } } );
+    my $user = TestSetup->create_user( project_security => { '1' => { project => [1], area => [ 3 ] } } );
 
     my $permissions = _build_permissions();
 
-    ok $permissions->user_has_security( $user->username, { project => [ 1, 2, 3 ], area => [ 3 ] } );
+    ok $permissions->user_has_security( $user->username, { project => [ 1, 2, 3 ], area => [ 2, 3 ] } );
 };
 
 subtest 'user_has_security: returns false when restrictive by multiple dimensions' => sub {
@@ -1233,14 +1194,19 @@ subtest 'inject_security_filter: builds security filter for user with project di
     $permissions->inject_security_filter( $user->username, $where );
 
     is_deeply $where,
-      { '$or' => [ { _project_security => undef }, { '_project_security.project' => { '$in' => [ undef, '123' ] } } ] };
+      {
+        '$or' => [
+            { _project_security => undef },
+            { '$and'            => [ { '_project_security.project' => { '$in' => [ undef, '123' ] } } ] }
+        ]
+      };
 };
 
 subtest 'inject_security_filter: builds security filter for user with multiple project dimension' => sub {
     _setup();
 
     my $user =
-      TestSetup->create_user( project_security => { '1' => { project => '123' }, '2' => { project => '321' } } );
+      TestSetup->create_user( project_security => { '1' => { project => '123', area => '2' }, '2' => { project => '321' } } );
 
     my $permissions = _build_permissions();
 
@@ -1249,8 +1215,18 @@ subtest 'inject_security_filter: builds security filter for user with multiple p
     $permissions->inject_security_filter( $user->username, $where );
 
     is_deeply $where,
-      { '$or' =>
-          [ { _project_security => undef }, { '_project_security.project' => { '$in' => [ undef, '123', '321' ] } } ] };
+      {
+        '$or' => [
+            { _project_security => undef },
+            {
+                '$and' => [
+                    { '_project_security.area'    => { '$in' => ['2'] } },
+                    { '_project_security.project' => { '$in' => [ undef, '123' ] } },
+                ]
+            },
+            { '$and' => [ { '_project_security.project' => { '$in' => [ undef, '321' ] } } ] }
+        ]
+      };
 };
 
 subtest 'inject_security_filter: builds security filter for user with other dimension' => sub {
@@ -1260,7 +1236,8 @@ subtest 'inject_security_filter: builds security filter for user with other dime
         project_security => {
             '1' => {
                 project => '123',
-                area    => '321'
+                area    => '321',
+                else    => '456'
             }
         }
     );
@@ -1278,6 +1255,7 @@ subtest 'inject_security_filter: builds security filter for user with other dime
             {
                 '$and' => [
                     { '_project_security.area'    => { '$in' => ['321'] } },
+                    { '_project_security.else'    => { '$in' => ['456'] } },
                     { '_project_security.project' => { '$in' => [ undef, '123' ] } },
                 ]
             }
@@ -1303,7 +1281,8 @@ subtest 'inject_security_filter: does not restrict by project when other dimensi
     $permissions->inject_security_filter( $user->username, $where );
 
     is_deeply $where,
-      { '$or' => [ { _project_security => undef }, { '_project_security.area' => { '$in' => ['321'] } }, ] };
+      { '$or' =>
+          [ { _project_security => undef }, { '$and' => [ { '_project_security.area' => { '$in' => ['321'] } }, ] } ] };
 };
 
 subtest 'user_security_dimensions_map: returns empty map for root' => sub {
