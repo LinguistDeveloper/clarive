@@ -541,21 +541,21 @@ sub user_has_any_action ($self, $username, $action_pattern, %options) {
     return $self->user_has_action( $username, $action_pattern, %options );
 }
 
-sub match_security ($self, $have_security, $need_security) {
-    return 1 unless defined $need_security && %$need_security;
+sub match_security ($self, $restricted_security, $available_security) {
+    $available_security //= {};
 
-    my @dimensions = sort keys %{$have_security};
+    my @dimensions = sort keys %{$restricted_security};
     return 0 unless @dimensions;
 
     foreach my $dimension (@dimensions) {
-        my @need = _array $need_security->{$dimension};
-        my @have = _array $have_security->{$dimension};
+        my @restrictions = _array $restricted_security->{$dimension};
+        my @available = _array $available_security->{$dimension};
 
-        if ( $dimension eq 'project' && @need == 0 ) {
+        if ( $dimension eq 'project' && @available == 0 ) {
             return 1;
         }
 
-        my @intersect = intersect @have, @need;
+        my @intersect = intersect @restrictions, @available;
 
         return 0 unless @intersect;
     }
@@ -592,10 +592,11 @@ sub inject_security_filter ($self, $username, $where) {
     my $user = ci->user->find_one( { username => $username }, { project_security => 1, _id => 0 } );
     my $user_security = $user->{project_security};
 
-    my %dimensions_filter;
+    my @filter;
     foreach my $id_role ( sort keys %$user_security ) {
         my @dimensions = sort keys %{ $user_security->{$id_role} };
 
+        my @subfilter;
         foreach my $dimension (@dimensions) {
             my @extra;
 
@@ -603,18 +604,16 @@ sub inject_security_filter ($self, $username, $where) {
                 push @extra, undef;
             }
 
-            push @{ $dimensions_filter{$dimension} }, @extra, _array $user_security->{$id_role}->{$dimension};
+            push @subfilter,
+              { "_project_security.$dimension" =>
+                  { '$in' => [ _unique @extra, _array $user_security->{$id_role}->{$dimension} ] } };
         }
-    }
 
-    my @filter;
-    foreach my $dimension ( sort keys %dimensions_filter ) {
-        push @filter,
-          { "_project_security.$dimension" => { '$in' => [ _unique @{ $dimensions_filter{$dimension} } ] } };
+        push @filter, { '$and' => \@subfilter };
     }
 
     if (@filter) {
-        $where->{'$or'} = [ { _project_security => undef }, @filter > 1 ? ( { '$and' => \@filter } ) : $filter[0] ];
+        $where->{'$or'} = [ { _project_security => undef }, @filter ];
     }
     else {
         $where->{_project_security} = undef;
