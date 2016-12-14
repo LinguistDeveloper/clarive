@@ -30,13 +30,13 @@ subtest 'DateStr' => sub {
 };
 
 subtest 'GitBranch' => sub {
-    like _validate_type('GitBranch', '../hello'), qr/Validation failed/;
+    like _validate_type('GitBranch', '..$hello'), qr/Validation failed/;
 
     ok !defined _validate_type('GitBranch', '6.2#123-fix');
 };
 
 subtest 'GitTag' => sub {
-    like _validate_type('GitTag', '../hello'), qr/Validation failed/;
+    like _validate_type('GitTag', '..$hello'), qr/Validation failed/;
 
     ok !defined _validate_type('GitTag', 'TEST');
 };
