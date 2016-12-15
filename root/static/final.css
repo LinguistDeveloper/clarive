@@ -39,7 +39,12 @@ body {
     margin-left: 1.5em !important;
 }
 
-.help-doc h1, h2, h3, h4, h5, h6 {
+.help-doc h1,
+.help-doc h2,
+.help-doc h3,
+.help-doc h4,
+.help-doc h5,
+.help-doc h6 {
     margin: 15px 0 5px 0 !important;
 }
 
