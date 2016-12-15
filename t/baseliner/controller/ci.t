@@ -1887,6 +1887,22 @@ subtest 'store: returns cis with vars' => sub {
     is $data->[1]->{mid}, '${variable:' . $variable->mid . '}';
 };
 
+subtest 'tree_objects: returns correct icons' => sub {
+    _setup();
+
+    my $area       = TestUtils->create_ci('area');
+    my $project    = TestUtils->create_ci('project');
+    my $id_role    = TestSetup->create_role();
+    my $user       = TestSetup->create_user( id_role => $id_role, project => $project, username => 'MyUser' );
+    my $controller = _build_controller();
+
+    my ( $count, @tree ) = $controller->tree_objects();
+
+    is $tree[0]->{icon}, $area->icon();
+    is $tree[1]->{icon}, $project->icon();
+    is $tree[2]->{icon}, $user->icon();
+};
+
 done_testing;
 
 sub _create_changeset_form {
