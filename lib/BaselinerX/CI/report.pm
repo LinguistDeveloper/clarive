@@ -891,8 +891,6 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
             db_name => Baseliner->config->{mongo}{reports}{db_name} // mdb->db_name );
     # so we can connect to a secondary:
     local $MongoDB::Cursor::slave_okay = 1 if $has_rep_db;
-    # make mdb point to $db2 for now
-    # local $Clarive::_mdb = $db2 if $has_rep_db;
 
     my $rows = $limit // $self->rows;
 
@@ -911,17 +909,12 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
     return () unless keys %{ $rel_query || {} };
 
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner::Model::Topic->new->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
-    # _log ">>>>>>>>>>>>>>>>>>>>>>>FIELDS: " . _dump %fields;
 
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
     my %selects_ci_columns_collection_extends = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{collection_extends} } grep { exists $_->{ci_columns}} _array($fields{select});
     my %meta_cfg_report = map { $_->{id_field} => $_->{meta_type} } _array($fields{select});
-
-    # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
-    # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
-    # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
 
     #filters
     my %dynamic_filter;
@@ -945,9 +938,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
                 }
             }
 
-            #_log ">>>>>>>>>>>>>>>>>>>>FILTRO CATEGORIA: " . $flt->{category};
-
-            #Excepción
+            #Exception
             if ( exists $dynamic_filter{'category_status_name_' . $flt->{category}} ){
                 $dynamic_filter{'status_new_' . $flt->{category}} = $dynamic_filter{'category_status_name_' . $flt->{category}};
             }
@@ -1013,7 +1004,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
 
 
     # filter user projects
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = Baseliner::Model::Permissions->new->is_root( $username );
     if( $username && ! $is_root){
       my @categories;
         for my $category (@All_Categories) {
@@ -1021,7 +1012,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
             push @categories, $id_category;
         }
 
-        Baseliner->model('Permissions')->inject_security_filter( $username, $where );
+        Baseliner::Model::Permissions->new->inject_security_filter( $username, $where );
 
         $where->{'category.id'} = {'$in' => \@categories};
     }
@@ -1053,7 +1044,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
         @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     }
 
-    Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;
+    Baseliner::Model::Topic->new->build_field_query( $query_search, $where, $username ) if length $query_search;
 
     $where->{id_category} = '' if ( !$where->{id_category} && $id_category_report );
 
@@ -1081,18 +1072,12 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
     map {
         foreach my $field (keys $fields){
             if (!exists $_->{$field}) {
-                # _log ">>>>>>>>>>>>>>>>>Field: " . $field;
                 next if ($field eq '_id' || $field eq '0');
                 $_->{$field} = ' ';
-                for my $category (@selects){
-                    # $_->{$field. "_$category"} = $_->{$field};
-                    # $meta_cfg_report{$field . "_$category"} = $meta_cfg_report{$field} if ($meta_cfg_report{$field});
-                }
             }else{
                 if ($_->{$field} && $_->{$field}  eq ''){
                     $_->{$field} = ' ';
                 }
-
             }
         }
         if (%queries){
@@ -1108,7 +1093,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
                 }
                 my %ids_where = map { $_ => 1 } @ids_where;
                 for my $field (_array $_->{$relation}){
-                    next unless $ids_where{$field}; #Para evitar que cuando haya filtros saque todos los correspondientes a la peticion
+                    next unless $ids_where{$field}; # Only data from request
                     if ( exists $queries{$relation}{$field} ){ #mids
                         my %tmp_row;
                         my $i = 1;
@@ -1196,14 +1181,10 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
 
         for my $k ( keys %row ) {
             my $v = $row{$k};
-            #$v = [] if (!ref $v);
 
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
 
-
-            #my $mt = $meta{$k}{meta_type} // '';
             my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
-            # _warn $mt;
             if( $mt =~ /revision|ci|project|user|file/ ) {
                 $row{ '_' . $k } = $v;
                 $row{$k} = $scope_cis{$v} // do {
@@ -1271,11 +1252,9 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
                 }
             }
 
-            #my $parse_key =  Util->_unac($k);
             my $parse_key =  $k;
 
             if ( exists $selects_ci_columns{$parse_key} ) {
-                #if ( $v ne '' && $v ne ' ' && !ref $v){
                 if ( $v ne '' && $v ne ' '){
                     if (ref $v){
                         my @tmp;
@@ -1379,9 +1358,6 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
                 }
             }
         }
-        #$row{category_status_name} = $row{category_status}{name};
-
-        #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" . _dump %ci_columns;
 
         foreach my $key (keys %ci_columns){
             $row{$key} = $ci_columns{$key};
@@ -1389,7 +1365,6 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
 
         %ci_columns = ();
         \%row;
-    #} @data;
     } @parse_data;
     # order data with text not ci-mid.
     if (@sort) {
@@ -1400,8 +1375,6 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
         }
     }
 
-    # _debug \@topics;
-    # _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @topics;
     return ( 0+$cnt, @topics );
 }
 
