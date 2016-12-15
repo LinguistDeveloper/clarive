@@ -222,9 +222,7 @@
                 }
             }, function(res){
                 Ext.Msg.show({
-                    title: _('Rule'),
-                    width: 800,
-                    height: 600,
+                    title: _('Rule warning window'),
                     msg: res.msg,
                     buttons: Ext.Msg.OK,
                     icon: Ext.Msg.ERROR

@@ -327,16 +327,36 @@ sub grid : Local {
 
 sub save : Local {
     my ( $self, $c ) = @_;
-    my $p    = $c->req->params;
+
+    my $p = $c->req->params;
+
+    my $json;
+
     try {
-        my $res = Baseliner::Model::Rules->new->save_rule( %$p, username => $c->username );
-        $c->stash->{json} = { success => \1, msg => _loc('Rule %1 saved', $res->{rule_name}) };
-    } catch {
+        my $exists = Baseliner::Model::Rules->check_duplicated_rule( $p->{rule_name}, $p->{rule_type}, $p->{rule_id} );
+
+        if ($exists) {
+            $json = {
+                success => \0,
+                msg     => _loc(
+                    'The rule of type `%1` already exists with name `%2`, please introduce another name',
+                    $p->{rule_type}, $p->{rule_name}
+                )
+            };
+        }
+        else {
+            my $res = Baseliner::Model::Rules->new->save_rule( %$p, username => $c->username );
+            $json = { success => \1, msg => _loc( 'Rule %1 saved', $res->{rule_name} ) };
+        }
+    }
+    catch {
         my $err = shift;
-        my $msg = _loc('Error saving rule: %1', $err );
-        _error( $msg );
-        $c->stash->{json} = { success => \0, msg => $msg };
+        my $msg = _loc( 'Error saving rule: %1', $err );
+        _error($msg);
+        $json = { success => \0, msg => $msg };
     };
+
+    $c->stash->{json} = $json;
     $c->forward("View::JSON");
 }
 
