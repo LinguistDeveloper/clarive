@@ -23,7 +23,7 @@ params:
     var data = params.topic_data;
     var form = params.form.getForm();
 
-    var single_mode = !Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
+    var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
 
     var tpl, field;
     if (meta.display_mode == 'bl'){
