@@ -1558,6 +1558,14 @@ msgid "Rule %1 deleted"
 msgstr "Regla %1 borrada"
 
 #: lib/Baseliner/Controller/Rule.pm
+msgid ""
+"The rule of type `%1` already exists with name `%2`, please introduce "
+"another name"
+msgstr ""
+"La regla del tipo `%1` ya existe con el nombre `%2`, por favor introduzca "
+"otro"
+
+#: lib/Baseliner/Controller/Rule.pm
 msgid "Rule %1 saved"
 msgstr "Regla %1 guardada"
 
@@ -10921,6 +10929,10 @@ msgstr "Falta el nombre de la regla"
 #: root/comp/rule_new.js
 msgid "Rule saved successfully"
 msgstr ""
+
+#: root/comp/rule_new.js
+msgid "Rule warning window"
+msgstr "Ventana de advertencias de reglas"
 
 #: root/comp/rules.js
 msgid "Delete rule %1?"

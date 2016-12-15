@@ -49,11 +49,10 @@ subtest 'save: gets error message when rule is created if the rule is duplicated
     my $result = $c->stash->{json};
 
     cmp_deeply $result,
-        {
-        success    => \0,
-        msg        => "The rule of type `report` already exists with name `Rule Name`, please introduce another name",
-        error_type => "duplicate_rule_name"
-        };
+      {
+        success => \0,
+        msg     => "The rule of type `report` already exists with name `Rule Name`, please introduce another name",
+      };
 };
 
 subtest 'save: gets error message when rule is updated if the rule is duplicated' => sub {
@@ -96,11 +95,10 @@ subtest 'save: gets error message when rule is updated if the rule is duplicated
     my $result = $c->stash->{json};
 
     cmp_deeply $result,
-        {
-        success    => \0,
-        msg        => "The rule of type `report` already exists with name `Rule Name`, please introduce another name",
-        error_type => "duplicate_rule_name"
-        };
+      {
+        success => \0,
+        msg     => "The rule of type `report` already exists with name `Rule Name`, please introduce another name",
+      };
 };
 
 subtest 'palette: returns fieldlets with active set to true' => sub {
