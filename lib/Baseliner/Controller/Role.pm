@@ -137,7 +137,7 @@ sub json : Local {
         $dir = -1;
     }
 
-    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(role description mailbox, id)]) : {};
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(role description mailbox id)]) : {};
     my $rs = mdb->role->find($where);
     $cnt = $rs->count;
     $rs->skip($start);

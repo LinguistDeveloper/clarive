@@ -193,7 +193,7 @@ subtest 'favorite_rename: rename item from favorites' => sub {
     my $c = mock_catalyst_c(
         username => 'foo',
         user_ci  => $user_ci,
-        req      => { params => { id => 123, text => 'rename test 1' } },
+        req      => { params => { id_favorite => 123, text => 'rename test 1' } },
         stash    => $stash
     );
 

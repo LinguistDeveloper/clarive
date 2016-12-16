@@ -41,7 +41,7 @@ subtest 'save_data: database data saved encrypted' => sub {
 
     {
 
-        package Clarive::TestPasswordVariable3;
+        package Clarive::TestPasswordVariable4;
         use Moose;
         with 'Baseliner::Role::CI::VariableStash';
         sub icon { }
@@ -53,7 +53,7 @@ subtest 'save_data: database data saved encrypted' => sub {
     Clarive->config->{decrypt_key} = '22222';
 
     my $pass = 'foobar';
-    my $ci   = Clarive::TestPasswordVariable3->new( variables => { '*' => { var_pass => $pass } } );
+    my $ci   = Clarive::TestPasswordVariable4->new( variables => { '*' => { var_pass => $pass } } );
     my $mid  = $ci->save;
 
     is(

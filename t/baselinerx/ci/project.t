@@ -9,7 +9,6 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 use TestUtils;
 
-use Baseliner;
 use Baseliner::CI;
 use Clarive::ci;
 use Baseliner::Core::Registry;
@@ -210,5 +209,5 @@ sub _setup {
 
     TestUtils->cleanup_cis;
 
-    Baseliner->config->{decrypt_key} = '44444';
+    Clarive->config->{decrypt_key} = '44444';
 }

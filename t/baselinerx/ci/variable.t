@@ -10,7 +10,6 @@ use TestSetup qw(_setup_clear);
 
 use File::Temp qw(tempfile);
 
-use Baseliner;
 use Baseliner::CI;
 use Clarive::ci;
 use Clarive::mdb;

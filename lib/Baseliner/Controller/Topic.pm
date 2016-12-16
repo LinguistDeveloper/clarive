@@ -2148,7 +2148,8 @@ sub report_csv : Local {
     my $exporter = Baseliner::Model::TopicExporter->new;
     foreach my $node (@$data) {
         if ( $node->{labels} ) {
-            $node->{labels} = join ';', map { $_ =~ m/\;(.*)\;/; $1 } _array $node->{labels};
+            $node->{labels} = join ';',
+              grep { defined $_ && length $_ } map { $_ =~ m/\;(.*)\;/; $1 } _array $node->{labels};
         }
     }
     my $body     = $exporter->export(
