@@ -5,6 +5,7 @@ use warnings;
 
 use TestUtils;
 
+use Cwd qw(realpath);
 use Time::Piece;
 use Test::TempDir::Tiny;
 use File::Temp qw(tempdir);
@@ -19,6 +20,7 @@ sub create_repo {
     my (%params) = @_;
 
     my $dir = $params{dir} || tempdir();
+    $dir = realpath($dir);
     my $bare = $params{bare} ? ' --bare' : '';
 
     $ENV{GIT_AUTHOR_NAME} = $ENV{GIT_COMMITTER_NAME} = 'clarive';

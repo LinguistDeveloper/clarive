@@ -21,7 +21,14 @@ sub generate {
         },
         pid   => js_sub { $$ },
         title => js_sub { $0 },
-        arch  => js_sub { $Config{archname} },
+        arch  => js_sub {
+            my $arch;
+
+            chomp($arch ||= `uname -m`);
+            $arch = lc $arch;
+
+            return $arch;
+        },
         os    => js_sub { $^O },
     };
 }

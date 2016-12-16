@@ -8,11 +8,13 @@ use Test::Deep;
 use Test::Fatal;
 use Test::MonkeyMock;
 use Test::TempDir::Tiny;
+
 use TestEnv;
-use File::Basename qw(basename);
 BEGIN { TestEnv->setup }
 use TestUtils qw(mock_time);
 
+use File::Basename qw(basename);
+use Scalar::Util ();
 use_ok 'Baseliner::Comm::Email';
 
 subtest 'send: builds correct email' => sub {
@@ -507,7 +509,10 @@ subtest 'send: sends directories using a temporal filehandle' => sub {
 
     my ($msg) = $comm->mocked_call_args('_send');
 
-    like $msg->{Parts}[2]->{FH}, qr/tmp/;
+    my $fh = $msg->{Parts}[2]->{FH};
+    my $reftype = Scalar::Util::reftype($fh);
+
+    ok ($reftype eq 'IO' or $reftype eq 'GLOB' && *{$fh}{IO});
 };
 
 subtest 'send: adds content_type to the attachment when the path is a directory' => sub {

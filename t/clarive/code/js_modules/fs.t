@@ -161,13 +161,13 @@ subtest 'fs.openFile: open/read/close with UTF-8 mode by default' => sub {
 
     my $bytes = Encode::encode( 'UTF-8', 'привет' );
 
-    open my $fh, '>', "$tempdir/файл";
+    open my $fh, '>', "$tempdir/привет";
     print $fh $bytes;
     close $fh;
 
     my $ret = $code->eval_code( <<"EOF", {} );
         var fs = require("cla/fs");
-        var fh = fs.openFile("$tempdir/файл");
+        var fh = fs.openFile("$tempdir/привет");
         var data = fh.readLine();
         fh.close();
 
@@ -274,13 +274,13 @@ subtest 'fs.readChunk: reads a chunk of specific length from a file' => sub {
 
     my $bytes = Encode::encode( 'UTF-8', 'привет' );
 
-    open my $fh, '>', "$tempdir/файл";
+    open my $fh, '>', "$tempdir/привет";
     print $fh $bytes;
     close $fh;
 
     my $ret = $code->eval_code( <<"EOF", {} );
         var fs = require("cla/fs");
-        var fh = fs.openFile("$tempdir/файл");
+        var fh = fs.openFile("$tempdir/привет");
         var data = fh.readChunk(6);
         fh.close();
 
@@ -342,7 +342,7 @@ subtest 'fs.slurp: reads file with UTF-8 name into memory encoding to UTF-8 by d
 
     my $code = _build_code( lang => 'js' );
 
-    my $filename = "$tempdir/файл";
+    my $filename = "$tempdir/привет";
 
     open my $fh, '>', $filename;
     print $fh Encode::encode( 'UTF-8', 'привет' );
@@ -504,7 +504,7 @@ subtest 'fs.iterateDir: walks the directories' => sub {
         fs.createDir("$tempdir/dir1");
         fs.createDir("$tempdir/dir2");
         fs.createFile("$tempdir/file1");
-        fs.createFile("$tempdir/файл2");
+        fs.createFile("$tempdir/привет2");
 
         fs.iterateDir("$tempdir",function(file,path){
             if (file.indexOf(".") == 0) {
@@ -523,7 +523,7 @@ subtest 'fs.iterateDir: walks the directories' => sub {
 EOF
 
     is_deeply [ sort @{ $ret->[0] } ], [qw/dir1 dir2/];
-    is_deeply [ sort @{ $ret->[1] } ], [qw/file1 файл2/];
+    is_deeply [ sort @{ $ret->[1] } ], [qw/file1 привет2/];
 };
 
 subtest 'fs.isDir: returns boolean' => sub {
