@@ -353,7 +353,8 @@ register 'fieldlet.system.status_new' => {
     meta_type   => 'status',
     section     => 'body',
     section_allowed => ['body'],
-    limit_height => 1
+    limit_height => 1,
+    show_in_palette => 0
 
 };
 
@@ -384,7 +385,8 @@ register 'fieldlet.system.title' => {
     origin      => 'system',
     section     => 'title',
     section_allowed => ['title'],
-    limit_height   => 1
+    limit_height   => 1,
+    show_in_palette => 0,
 };
 
 register 'fieldlet.system.labels' => {
