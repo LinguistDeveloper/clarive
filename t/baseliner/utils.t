@@ -654,7 +654,10 @@ subtest '_is_binary: return true when fh is from a binary file' => sub {
     my $tar_file = "$tmp/file.tar.gz";
 
     TestUtils->write_file( "foobar", $filename );
-    system("tar cvzf $tmp/file.tar.gz $tmp/file");
+
+    capture_merged {
+        system("tar cvzf $tmp/file.tar.gz $tmp/file");
+    };
 
     my $file = Util->_file($tar_file);
 
@@ -669,7 +672,10 @@ subtest '_is_binary: return true when path is from a binary file' => sub {
     my $tar_file = "$tmp/file.tar.gz";
 
     TestUtils->write_file( "foobar", $filename );
-    system("tar cvzf $tmp/file.tar.gz $tmp/file");
+
+    capture_merged {
+        system("tar cvzf $tmp/file.tar.gz $tmp/file");
+    };
 
     my $is_binary = Util->_is_binary( path => $tar_file );
 
