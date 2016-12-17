@@ -897,10 +897,8 @@
                     var reg_params = res.params;
                     var data = node.attributes.data;
                     data.config = res.config;
-                    // dashlet in forms need a different set of options
                     var is_dashlet = /^dashlet\./.test(key);
                     var is_fieldlet = /^fieldlet\./.test(key);
-                    var is_dashboard = true;
                     var common_options = undefined;
                     if (is_dashlet && node.getOwnerTree().rule_type == 'form') {
                         common_options = [{
