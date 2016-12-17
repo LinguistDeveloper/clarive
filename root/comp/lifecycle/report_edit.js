@@ -140,12 +140,11 @@
                 };
                 break;
             case 'date':
-                field = {
-                    xtype: 'xdatefield',
-                    name: 'value',
-                    fieldLabel: pn.text,
+                field = new Ext.form.DateField({
+                    format: 'Y-m-d H:i:s',
+                    submitValue: false,
                     value: attr.value == undefined ? '' : attr.value
-                };
+                });
                 break;
             case 'status':
                 field = new Baseliner.StatusBox({
@@ -268,7 +267,7 @@
                     val = parseFloat(val);
                     break;
                 case 'date':
-                    val = val.format('Y-m-d').trim();
+                    val = val.format('Y-m-d H:i:s').trim();
                     break;
                 case 'ci':
                     var arr_options = [];
