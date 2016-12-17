@@ -899,6 +899,7 @@
                     data.config = res.config;
                     // dashlet in forms need a different set of options
                     var is_dashlet = /^dashlet\./.test(key);
+                    var is_fieldlet = /^fieldlet\./.test(key);
                     var is_dashboard = true;
                     var common_options = undefined;
                     if (is_dashlet && node.getOwnerTree().rule_type == 'form') {
@@ -918,7 +919,7 @@
                                 value: data.field_height || reg_params.field_height || '220px'
                             }]
                         }];
-                    } else {
+                    } else if (is_fieldlet) {
                         common_options = [{
                             id_rule: node.id_rule
                         }];
