@@ -30,62 +30,84 @@
     </div>
 % }
 
-    <!--JQuery -->
-    <script type="text/javascript" src="/static/jquery/jquery-1.7.1.min.js"></script>
-    <!--JQuery draggable plugin, etc -->
-    <script type="text/javascript" src="/static/jquery/jquery-ui-1.8.17.custom.min.js"></script>
+<!-- ExtJS -->
+<link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
+<!-- Gritter, used in common.js -->
+<link rel="stylesheet" href="/static/gritter/css/jquery.gritter.css">
+<!-- ux -->
+<link rel="stylesheet" type="text/css" href="/static/ext/examples/ux/css/ux-all.css" />
+<!-- datepickerplus -->
+<link rel="stylesheet" href="/static/datepickerplus/datepickerplus.css" type="text/css" />
+<!-- Datatables (on demand require later) -->
+<link rel="stylesheet" href="/static/datatables/css/jquery.dataTables.min.css" type="text/css" />
+<link rel="stylesheet" href="/static/datatables/css/dataTables.bootstrap.css" type="text/css" />
+<!-- Pagedown -->
+<link rel="stylesheet" href="/static/pagedown/pagedown.css">
+<!-- CLEditor -->
+<link rel="stylesheet" href="/static/cleditor/jquery.cleditor.css">
+<!-- Highlighter.js -->
+<link rel="stylesheet" href="/static/highlightjs/tomorrow.css">
+<!-- Timeline Similes -->
+<link rel="stylesheet" href="/static/timeline/jquery.timeline.css">
+<!-- Codemirror -->
+<link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="/static/codemirror/theme/elegant.css">
+<link rel="stylesheet" href="/static/codemirror/theme/night.css">
+<link rel="stylesheet" href="/static/codemirror/theme/eclipse.css">
+<link rel="stylesheet" href="/static/codemirror/theme/lesser-dark.css">
+<link rel="stylesheet" href="/static/codemirror/lib/util/simple-hint.css">
+<style type="text/css">
+    .CodeMirror { border: 1px solid #eee;} 
+    .CodeMirror-scroll {
+        overflow: visible;
+        height: 100%;
+    }
+    .CodeMirror-fullscreen {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        margin: 0;
+        padding: 0;
+        border: 0px solid #BBBBBB;
+        opacity: 1;
+    }
+</style>
+<!-- Portal CSS -->
+<link rel="stylesheet" type="text/css" href="/site/portal/portal.css" />
+<!-- uploader drag-drop -->
+<link rel="stylesheet" type="text/css" href="/static/valums/fileuploader.css" />
+<!-- superbox -->
+<link rel="stylesheet" type="text/css" href="/static/superbox/superbox.css" />
+<!-- Cal -->
+<link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.css" />
+<link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.print.css" media="print" />
+<!-- Treegrid -->
+<link rel="stylesheet" type="text/css" href="/static/gridtree/css/treegrid.css" />
+<!-- final css override -->
+<link rel="stylesheet" type="text/css" href="/static/final.css" />
+<link rel="stylesheet" type="text/css" href="/static/sprites.css" />
+<!-- Ext Spinner Widget -->
+<link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" />
+
+
+<!--JS libraries -->
+<script type="text/javascript" src="/static/require/require.js" data-main="/static/app"></script>
+
+
     
-    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.js"></script>
 
-    <script>$('#bali-loading .progress .bar').width('20%');</script>
-    
-    <!-- ExtJS -->
-    <!-- <link rel="stylesheet" href="/static/metal/metal.css" type="text/css" /> -->
-    <link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
-
-    <!-- <script type="text/javascript" src="/site/stacktrace.js"></script> -->
-    <script type="text/javascript" src="/static/ext/adapter/ext/ext-base<% $debug %>.js"></script>
-    <!-- script type="text/javascript" src="/static/ext/adapter/jquery/ext-jquery-adapter<% $debug %>.js"></script -->
-
-    <script type="text/javascript" src="/static/ext/ext-all-nochart<% $debug %>.js"></script>
-    <!-- script type="text/javascript" src="/static/ext/jitx<% $debug %>.js"></script -->
-
-    <!-- ux -->
-    <link rel="stylesheet" type="text/css" href="/static/ext/examples/ux/css/ux-all.css" />
-    <script type="text/javascript" src="/static/ext/examples/ux/ux-all<% $debug %>.js"></script>
-
-    <!-- <script type="text/javascript" src="/static/ext/build/locale/ext-lang-es-min.js"></script> -->
-    <script type="text/javascript" src="/static/ext/src/locale/ext-lang-<% $c->language %>.js"></script>
-
-    <!-- D3 and C3, before use strict makes it impossible to load window.d3 and window.c3 -->
-    <script src="/static/d3/d3.min.js"></script>
-    <script src="/static/c3/c3.min.js"></script>
-
-    <!-- C3 Stylesheet -->
-    <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
-
-    <!-- site is the global stylesheet -->
-    <link rel="stylesheet" type="text/css" href="/static/site.css" />
-
-    <!-- base64 for mason safe data sends -->
-    <script type="text/javascript" src="/static/base64/base64.js"></script>
-
-    <!-- Gritter, used in common.js -->
-    <script src="/static/gritter/js/jquery.gritter.min.js"></script>
-    <link rel="stylesheet" href="/static/gritter/css/jquery.gritter.css">
-    
-    <script type="text/javascript" src="/i18n/js"></script>
-    <script type="text/javascript" src="/site/globals.js"></script>
-    <script type="text/javascript" src="/site/common.js"></script>
-    <script type="text/javascript" src="/site/tmpl.js"></script>
-
-    <script>$('#bali-loading .progress .bar').width('30%');</script>
-    <!-- #reset namespace
-        <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
-    -->
+<script>$('#bali-loading .progress .bar').width('30%');</script>
+<!-- #reset namespace
+    <link rel="stylesheet" type="text/css" href="/site/reset.css" /> 
+-->
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
     <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
 % }
 
+    
 
-%# consider including templates <& /site/templates.html &>, and adding it to JS Reload menu option for testing
+    

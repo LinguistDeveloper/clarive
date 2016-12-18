@@ -1,109 +1,66 @@
-
 <!DOCTYPE html>
-<meta http-equiv="X-UA-Compatible" content="chrome=1" />
-<meta http-equiv="X-UA-Compatible" content="IE=7,8,9" />
 <%perl>
     my $lang = $c->language;
+    my $debug = $c->debug ? '-debug' : '';
     my $to_bool = sub{ 
         return $_[0] unless defined $_[0];
         ref $_[0] and return $_[0]; $_[0] eq '1' ? \1 : $_[0] eq '0' ? \0 : $_[0] 
     };
-    
 </%perl>
 <html>
- <head>
-    <& '/site/nocache.html' &>
-    <& '/site/top.html' &>
-    <script type="text/javascript" src="/site/tablegrid.js"></script>
-    <script type="text/javascript" src="/site/tabfu.js"></script>
-    <script type="text/javascript" src="/site/help.js"></script>
-    <script type="text/javascript" src="/site/runner.js"></script>
-    <script type="text/javascript" src="/site/panelresizer.js"></script>
-     <script type="text/javascript" src="/site/dnd_tabpanel.js"></script>
-    <script type="text/javascript" src="/static/momentjs/moment-with-locales.min.js"></script>
-    <script type="text/javascript" src="/static/momentjs/moment-timezones.min.js"></script>
-    <!-- script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script -->
-    <!-- script type="text/javascript" src="/static/pdfjs/pdf.min.js"></script -->
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Cache-Control" Content="no-cache">
+    <meta http-equiv="Pragma" Content="no-cache">
+    <meta http-equiv="Expires" Content="0"> 
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=7,8,9" />
 
-    <script>if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('40%');}</script>
+    <title><% _loc( $c->config->{name} ) %></title>
 
-    <!-- DatePickerPlus - Ext -->
-    <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-min.js"></script> 
-% if( length $lang && $lang =~ /en|es/ ) {
-    <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-lang-<% $lang %>.js"></script> 
+% if( my $favicon = $c->config->{favicon} ) {
+    <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
 % }
-    <link rel="stylesheet" href="/static/datepickerplus/datepickerplus.css" type="text/css" />
 
+    <!-- Twitter Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/site/boot.css" />
+    <!-- ExtJS -->
+    <link rel="stylesheet" type="text/css" href="/static/ext/resources/css/ext-all.css" />
+    <!-- ux -->
+    <link rel="stylesheet" type="text/css" href="/static/ext/examples/ux/css/ux-all.css" />
+    <!-- C3 Stylesheet -->
+    <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
+    <!-- site is the global stylesheet -->
+    <link rel="stylesheet" type="text/css" href="/static/site.css" />
+
+% if( my $theme_dir = $c->stash->{theme_dir} ) {
+    <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
+% }
+
+    <!-- Gritter, used in common.js -->
+    <link rel="stylesheet" href="/static/gritter/css/jquery.gritter.css">
+    <!-- ux -->
+    <link rel="stylesheet" type="text/css" href="/static/ext/examples/ux/css/ux-all.css" />
+    <!-- datepickerplus -->
+    <link rel="stylesheet" href="/static/datepickerplus/datepickerplus.css" type="text/css" />
     <!-- Datatables (on demand require later) -->
     <link rel="stylesheet" href="/static/datatables/css/jquery.dataTables.min.css" type="text/css" />
     <link rel="stylesheet" href="/static/datatables/css/dataTables.bootstrap.css" type="text/css" />
-    <script src="/static/datatables/js/jquery.dataTables.min.js"></script>
-    <script src="/static/datatables/js/dataTables.bootstrap.js"></script>
-
-    <!-- Flot -->
-    <script src="/static/flot/excanvas.min.js"></script>
-    <script src="/static/flot/jquery.flot.js"></script>
-    <script src="/static/flot/jquery.flot.pie.js"></script>
-    <script src="/static/flot/jquery.flot.orderBars.js"></script>
-    <!-- errors with latest jquery script src="/static/flot/jquery.flot.resize.js"></script -->
-    <script src="/static/flot/flot.js"></script>
-
-    <script src="/static/jquery/jquery.injectCSS.js"></script>
-
-    <!-- The JIT -->
-    <script src="/static/jit/jit.js"></script>
-
-    <!-- JSGantt -->
-    <!--
-    <link rel="stylesheet" type="text/css" href="/static/jsgantt.css" />
-    <script language="javascript" src="/static/jsgantt.js"></script>
-    -->
-
     <!-- Pagedown -->
     <link rel="stylesheet" href="/static/pagedown/pagedown.css">
-    <script type="text/javascript" src="/static/pagedown/Markdown.Converter.js"></script>
-    <script type="text/javascript" src="/static/pagedown/Markdown.Sanitizer.js"></script>
-    <script type="text/javascript" src="/static/pagedown/Markdown.Editor.js"></script>
-    
     <!-- CLEditor -->
     <link rel="stylesheet" href="/static/cleditor/jquery.cleditor.css">
-    <script type="text/javascript" src="/static/cleditor/jquery.cleditor.min.js"></script>
-    
     <!-- Highlighter.js -->
     <link rel="stylesheet" href="/static/highlightjs/tomorrow.css">
-    <script type="text/javascript" src="/static/highlightjs/highlight.pack.js"></script>
-    
-    <!-- Ace -->
-    <script type="text/javascript" src="/static/ace/ace.js"></script>
-    <script type="text/javascript" src="/static/ace/ext-language_tools.js"></script>
-
     <!-- Timeline Similes -->
     <link rel="stylesheet" href="/static/timeline/jquery.timeline.css">
-    
-    <!-- link rel="stylesheet" href="/static/timeline/clarive-timeline.css" / -->
-    
-    <!-- objectDiff -->
-    <script src="/static/objectDiff/objectDiff.js"></script>
-
-    <!-- js-yaml -->
-    <script src="/static/js-yaml/js-yaml.js"></script>
-
-    <!-- CodeMirror -->
+    <!-- Codemirror -->
     <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="/static/codemirror/theme/elegant.css">
     <link rel="stylesheet" href="/static/codemirror/theme/night.css">
     <link rel="stylesheet" href="/static/codemirror/theme/eclipse.css">
     <link rel="stylesheet" href="/static/codemirror/theme/lesser-dark.css">
     <link rel="stylesheet" href="/static/codemirror/lib/util/simple-hint.css">
-    <script type="text/javascript" src="/static/codemirror/lib/codemirror.js"></script>
-    <script type="text/javascript" src="/static/codemirror/lib/util/formatting.js"></script>
-    <script type="text/javascript" src="/static/codemirror/lib/util/simple-hint.js"></script>
-    <script type="text/javascript" src="/static/codemirror/mode/perl/perl.js"></script>
-    <script type="text/javascript" src="/static/codemirror/mode/javascript/javascript.js"></script>
-    <script type="text/javascript" src="/static/codemirror/mode/xml/xml.js"></script>
-    <script type="text/javascript" src="/static/codemirror/mode/plsql/plsql.js"></script>
-    <script type="text/javascript" src="/static/codemirror/mode/css/css.js"></script>
-    <script type="text/javascript" src="/static/codemirror/mode/markdown/markdown.js"></script>
     <style type="text/css">
         .CodeMirror { border: 1px solid #eee;} 
         .CodeMirror-scroll {
@@ -124,148 +81,128 @@
             opacity: 1;
         }
     </style>
-
-    <!-- Editors: Ace, CLEditor, etc. -->
-    <script type="text/javascript" src="/site/aceeditor.js"></script>
-    <script type="text/javascript" src="/site/editors.js"></script>
-    
-    <!-- Graph libraries, Jit -->
-    <script type="text/javascript" src="/site/graph.js"></script>
-
-    <script>if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('60%'); }</script>
-    
-    <!--  -->
-    <script type="text/javascript" src="/site/explorer.js"></script>
-
-    <!-- Portal Stuff -->
-    <script type="text/javascript" src="/site/portal/Portal.js"></script>
-    <script type="text/javascript" src="/site/portal/PortalColumn.js"></script>
-    <script type="text/javascript" src="/site/portal/Portlet.js"></script>
-    <script type="text/javascript" src="/site/portal/PortalUtil.js"></script>
+    <!-- Portal CSS -->
     <link rel="stylesheet" type="text/css" href="/site/portal/portal.css" />
-    
-    <link rel="stylesheet" type="text/css" href="/static/livegrid/resources/css/ext-ux-livegrid.css" /> 
-
     <!-- uploader drag-drop -->
-    <script type="text/javascript" src="/static/valums/fileuploader.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/valums/fileuploader.css" />
     <!-- superbox -->
-    <script type="text/javascript" src="/static/superbox/superbox.js"></script>
-    <link rel="stylesheet" type="text/css" href="/static/superbox/superbox.css" /> 
-
-    <!-- model depends on superbox -->
-    <script type="text/javascript" src="/static/latinise.js"></script>
-    <script type="text/javascript" src="/site/model.js"></script>
-    <script type="text/javascript" src="/site/kanban.js"></script>
-    <script type="text/javascript" src="/site/calendar.js"></script>
-    <script type="text/javascript" src="/site/dashboard.js"></script>
-    <script type="text/javascript" src="/comp/topic/topic_lib.js"></script>
-    <script type="text/javascript" src="/comp/topic/topic_lib_grid.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="/static/superbox/superbox.css" />
     <!-- Cal -->
     <link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.css" />
     <link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.print.css" media="print" />
-    <script type="text/javascript" src="/static/fullcalendar/fullcalendar.min.js"></script>
-
-    <!-- Number formatting -->
-    <script type="text/javascript" src="/static/NumberFormat154.js"></script>
-
     <!-- Treegrid -->
     <link rel="stylesheet" type="text/css" href="/static/gridtree/css/treegrid.css" />
-    <script type="text/javascript" src="/static/gridtree/treegrid.js"></script>
-    
     <!-- final css override -->
     <link rel="stylesheet" type="text/css" href="/static/final.css" />
     <link rel="stylesheet" type="text/css" href="/static/sprites.css" />
-    
-    <script>if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('80%');}</script>
-    
-    <!-- Hooks -->
+    <!-- Ext Spinner Widget -->
+    <link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" />
+</head>
+<body>
+    <div id="bali-loading-mask" style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
+    <div id="bali-loading" style="position:absolute; left:45%; top:40%; padding:2px; z-index:20001; height:auto;">
+        <img id="bali-loading-img" style="display: block;height:52px;width:52px;" src="/static/images/loading/loading.gif" />
+        <div id="boot" class="loading-progress" style="display: none; height: 2px">
+            <div class="progress" style="height: 2px" >
+                <div class="bar" style="width: 0%"></div>
+            </div>
+        </div>
+        <div id="bali-loading-text" style="text-align: center; text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">
+          <% _loc('Loading') %>
+        </div>
+    </div>
+
+    <div id="boot">
+        <div id="boot" class="alert-error" style="display: none; position:absolute; left:0; bottom:0; width:100%; padding:5px; text-align:center;"> <img src="static/images/circular/warning.svg" alt="0" />
+            <span style="color:#000;font-size:1.5em;">
+                <% _loc("%1 not supported in <b> mode compatibility </b> (Internet Explorer), Please disable it.", $c->config->{name}) %>
+            </span>
+            <img src="static/images/circular/warning.svg" alt="0" />
+        </div>
+        <div id="main-alert" style="top:0; left: 100px; width:80%; position: absolute; z-index: 999999"></div>
+    </div>
+
+    <div id="bali-browser-warn" style="display: none; position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
+    <div id="bali-browser-warn-mid" style="display: none; position:absolute; left:35%; top:40%; padding:2px; z-index:20001; height:auto;">
+        <center>
+            <div id="boot" role="dialog">
+                <h2><% _loc('Browser Warning') %></h2>
+                <p><% _loc("This browser is not supported by %1", $c->config->{name} ) %></p>
+                <div id="bali-browser-ver"></div>
+            </div>
+        </center>
+    </div>
+
+    <div id='run-panel'></div>
+    <div id='main-div'></div>    
+    <iframe id="FD" name="FrameDownload" height="0px" width="0%" border="0"></iframe>
+
+    <!--Config JS libraries -->
+    <script type="text/javascript" src="/static/require/require.js" data-main="/static/config"></script>
+
+    <script>
+        var options = {
+            debug: '<% $debug %>',
+            language: '<% $lang %>'
+        };
+
+        require(['config'], function(options) {
+            require(['momentTimeZones', 'c3','d3'], function(moment, c3) {
+                window.moment = moment;
+                window.c3 = c3;
+                window.d3 = d3;
+                require(['app'], function() {
+
+                    Prefs = new Baseliner.Prefs({
+                        username: '<% $c->username %>',
+                        language: '<% [ _array( $c->languages ) ]->[0] %>',
+                        date_format: '<% $c->user_ci->date_format_pref %>' || 'format_from_local',
+                        time_format: '<% $c->user_ci->time_format_pref %>' || 'HH:mm',
+                        timezone: '<% $c->user_ci->timezone_pref %>' || 'server_timezone',
+                        server_timezone: '<% _tz() %>',
+                        logo_file: '<% $c->config->{logo_file} %>',
+                        logo_filename: '<% $c->config->{logo_filename} || "logo.jpg" %>',
+                        site: <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %>,
+                        toolbar_height: <% $c->config->{toolbar_height} // 40 %>,
+                        menus: [<% join ',', _array $c->stash->{menus} %>],
+                        stash: <% _to_json({
+                                    map { $_ => $to_bool->( $c->stash->{$_} ) }
+                                    qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir show_js_reload/
+                                })
+                            %>
+                    });
+
+                    require(['/site/main.js'], function() {
+                        if (Ext.get('bali-loading'))
+                            Ext.get('bali-loading').remove();
+
+                        if (Ext.get('bali-loading-mask'))
+                            Ext.get('bali-loading-mask').fadeOut({
+                                remove: true,
+                                callback: function() {
+                                    var ver = navigator.appVersion.match(/MSIE 7.0/g);
+                                    if (ver == "MSIE 7.0") {
+                                        $('.alert-error').fadeIn();
+                                    }
+                                }
+                            });
+
+                        $('#loading-img').show();
+                        $('#bali-loading .loading-progress').hide();
+                    });
+                });
+            });
+
+        });
+    </script>
+
+<!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->
 <% $include->{content} %> 
     <!-- END   <% $include->{name} %> -->
 % }
-    <!-- Hooks End -->
+<!-- Hooks End -->  
 
-    <!-- Ext Spinner Widget -->
-    <link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" /> 
-    <script type="text/javascript" src="/static/ex.ux.form.spinner/Spinner.js"></script> 
-    <script type="text/javascript" src="/static/ex.ux.form.spinner/SpinnerStrategy.js"></script> 
-
-    <script type="text/javascript" src="/site/prefs.js"></script>
-
-    <script type="text/javascript">
-        // create global Prefs object
-        Prefs = new Baseliner.Prefs({
-            username: '<% $c->username %>',
-            language: '<% [ _array( $c->languages ) ]->[0] %>',
-            date_format: '<% $c->user_ci->date_format_pref %>' || 'format_from_local',
-            time_format: '<% $c->user_ci->time_format_pref %>' || 'HH:mm',
-            timezone: '<% $c->user_ci->timezone_pref %>' || 'server_timezone',
-            server_timezone: '<% _tz() %>',
-            logo_file: '<% $c->config->{logo_file} %>',
-            logo_filename: '<% $c->config->{logo_filename} || "logo.jpg" %>',
-            site: <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %>,
-            toolbar_height: <% $c->config->{toolbar_height} // 40 %>,
-            menus: [ <% join ',', _array $c->stash->{menus} %> ],
-            stash: <% _to_json({
-                        map { $_ => $to_bool->( $c->stash->{$_} ) }
-                        qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir show_js_reload/
-                    })
-                %>
-        });
-
-        if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('98%');}
-        Cla.use(['/site/main.js'], function(){
-            // after main loaded
-            if( Ext.get('bali-loading') )
-                Ext.get('bali-loading').remove();
-
-            if( Ext.get('bali-loading-mask') )
-                Ext.get('bali-loading-mask').fadeOut({
-                    remove:true,
-                    callback: function(){
-                         var ver = navigator.appVersion.match(/MSIE 7.0/g);
-                         if(ver == "MSIE 7.0"){
-                                $('.alert-error').fadeIn();
-                              // var bw = $('#bali-browser-warn').show();
-                              // var bw = $('#bali-browser-warn-mid').show();
-                            // $("#bali-browser-version").html('4.5');
-                         }                        
-                    }
-                });
-                
-            $('#loading-img').show();
-            $('#bali-loading .loading-progress').hide();
-        });
-    </script>
-
-</head>
-<body>
-<div id="boot">
-<div id="boot" class="alert-error" style="display: none; position:absolute; left:0; bottom:0; width:100%; padding:5px; text-align:center;"> <img src="static/images/circular/warning.svg" alt="0" />
-    <span style="color:#000;font-size:1.5em;">
-    <% _loc("%1 not supported in <b> mode compatibility </b> (Internet Explorer), Please disable it.", $c->config->{name}) %>
-    </span>
- <img src="static/images/circular/warning.svg" alt="0" />
-</div>
-<div id="main-alert" style="top:0; left: 100px; width:80%; position: absolute; z-index: 999999">
-</div>
-</div>
-<iframe id="FD" NAME="FrameDownload" HEIGHT="0px" WIDTH="0%" BORDER="0"></iframe>
-<div id='run-panel'></div>
-<div id='main-div'></div>
-
-<div id="bali-browser-warn" style="display: none; position:absolute; left:0; top:0; width:100%; height:100%; z-index:20000; background-color:white;"></div>
-<div id="bali-browser-warn-mid" style="display: none; position:absolute; left:35%; top:40%; padding:2px; z-index:20001; height:auto;">
-  <center>
-      <div id="boot" role="dialog">
-          <h2><% _loc('Browser Warning') %></h2>
-          <p><% _loc("This browser is not supported by %1", $c->config->{name} ) %>
-          <div id="bali-browser-ver"></div>
-          </p>
-      </div>
-  </center>
-</div>
-
+</body>
+</html>

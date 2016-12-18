@@ -15,7 +15,6 @@ window.Cla = Baseliner;
 Baseliner.tabInfo = {};
 Baseliner.keyMap = {};
 Baseliner.in_edit = {};
-Ext.Ajax.timeout = 60000;
 Baseliner.DEBUG = <% Baseliner->debug ? 'true' : 'false' %>;
 
 IC = function(icon){
