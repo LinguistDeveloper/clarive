@@ -1193,11 +1193,24 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 
 .list_jobs_item img {
     margin-right: 3px !important;
-
+}
 .x-tab-strip-top.x-tab-right {
     padding-bottom: 3px;
 }
 
 ul.x-tab-strip li {
     margin-bottom: -1px;
+}
+
+.x-menu-check-item .x-menu-item-icon.log-filter-menu-icon {
+    background-position: inherit;
+}
+
+.x-menu-item-icon.log-filter-menu-icon {
+    padding-left: 20px;
+    padding-top: 0.5px;
+}
+
+.x-menu-item.x-menu-check-item.log-filter-menu.x-unselectable .x-menu-item-text {
+    padding-left: 16px;
 }

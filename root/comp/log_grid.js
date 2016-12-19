@@ -103,13 +103,41 @@
     };
 
     var filter_menu = new Ext.menu.Menu({
-        items: [
-            { value: 'info', text: _('Information'),checked: filter_obj['info'] , checkHandler: filter_me },
-            { value: 'comment', text: _('Comments'),checked: filter_obj['comment'] , checkHandler: filter_me },
-            { value: 'warn', text: _('Warning'),checked: filter_obj['warn'] , checkHandler: filter_me },
-            { value: 'error', text: _('Error'), checked: filter_obj['error'], checkHandler: filter_me },
-            { value: 'debug', text: _('Debug'),checked: filter_obj['debug'] , checkHandler: filter_me }
-        ]
+        defaults: {
+            iconCls: 'log-filter-menu-icon',
+            cls: 'log-filter-menu'
+        },
+        items: [{
+            value: 'info',
+            text: _('Information'),
+            checked: filter_obj['info'],
+            checkHandler: filter_me,
+            icon: IC('active')
+        }, {
+            value: 'comment',
+            text: _('Comments'),
+            checked: filter_obj['comment'],
+            checkHandler: filter_me,
+            icon: IC('sms')
+        }, {
+            value: 'warn',
+            text: _('Warning'),
+            checked: filter_obj['warn'],
+            checkHandler: filter_me,
+            icon: IC('log-orange')
+        }, {
+            value: 'error',
+            text: _('Error'),
+            checked: filter_obj['error'],
+            checkHandler: filter_me,
+            icon: IC('error-triangle-red')
+        }, {
+            value: 'debug',
+            text: _('Debug'),
+            checked: filter_obj['debug'],
+            checkHandler: filter_me,
+            icon: IC('debug-view')
+        }]
     });
 
     // AutoRefresh
