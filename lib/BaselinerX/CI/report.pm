@@ -478,6 +478,7 @@ sub all_fields {
                 data => {
                     'id_category'   => $category->{id},
                     'name_category' => $category->{name},
+                    'fields' => [ map {[$_->{id_field} => $_->{text}]} @{ $self->_category_fields($username, $category) } ]
                 },
                 type => 'category',
                 leaf => \0
@@ -532,34 +533,44 @@ sub all_fields {
         my ($category) = grep { $id_category eq $_->{id} } @user_categories;
 
         if ($category) {
-            my $meta = Baseliner::Model::Topic->new->get_meta( undef, $category->{id}, $username );
-            $meta = Baseliner::Model::Topic->new->get_meta_permissions(
-                username    => $username,
-                meta        => $meta,
-                id_category => $category->{id},
-                id_status   => '*',
-            );
-
-            foreach my $fieldlet ( sort { _loc( $a->{name_field} ) cmp _loc( $b->{name_field} ) } @$meta ) {
-                push @tree,
-                  {
-                    text               => _loc( $fieldlet->{name_field} ),
-                    id_field           => $fieldlet->{id_field},
-                    icon               => '/static/images/icons/field-add.svg',
-                    type               => 'select_field',
-                    meta_type          => $fieldlet->{meta_type},
-                    collection         => $fieldlet->{collection},
-                    collection_extends => $fieldlet->{collection_extends},
-                    ci_class           => $fieldlet->{ci_class},
-                    filter             => $fieldlet->{filter},
-                    gridlet            => $fieldlet->{gridlet},
-                    category           => $category->{name},
-                    options            => $fieldlet->{options},
-                    format             => $fieldlet->{format},
-                    leaf               => \1
-                  };
-            }
+            push @tree, @{ $self->_category_fields($username, $category)};
         }
+    }
+
+    return \@tree;
+}
+
+sub _category_fields {
+    my $self=  shift;
+    my ($username, $category) = @_;
+
+    my $meta = Baseliner::Model::Topic->new->get_meta( undef, $category->{id}, $username );
+    $meta = Baseliner::Model::Topic->new->get_meta_permissions(
+        username    => $username,
+        meta        => $meta,
+        id_category => $category->{id},
+        id_status   => '*',
+    );
+
+    my @tree;
+    foreach my $fieldlet ( sort { _loc( $a->{name_field} ) cmp _loc( $b->{name_field} ) } @$meta ) {
+        push @tree,
+          {
+            text               => _loc( $fieldlet->{name_field} ),
+            id_field           => $fieldlet->{id_field},
+            icon               => '/static/images/icons/field-add.svg',
+            type               => 'select_field',
+            meta_type          => $fieldlet->{meta_type},
+            collection         => $fieldlet->{collection},
+            collection_extends => $fieldlet->{collection_extends},
+            ci_class           => $fieldlet->{ci_class},
+            filter             => $fieldlet->{filter},
+            gridlet            => $fieldlet->{gridlet},
+            category           => $category->{name},
+            options            => $fieldlet->{options},
+            format             => $fieldlet->{format},
+            leaf               => \1
+          };
     }
 
     return \@tree;
@@ -883,7 +894,7 @@ sub get_where {
 
 method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef, :$sort=undef, :$sortdir=undef ) {
     # setup a temporary alternative connection if configured
-    my $has_rep_db = exists Baseliner->config->{mongo}{reports};
+    my $has_rep_db = exists Clarive->config->{mongo}{reports};
     my $mdb2 = !$has_rep_db
         ? $Clarive::_mdb
         : Baseliner::Mongo->new(

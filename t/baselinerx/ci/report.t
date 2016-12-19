@@ -555,7 +555,6 @@ subtest 'all_fields: returns categories' => sub {
     my $id_rule = TestSetup->create_common_topic_rule_form;
 
     my $id_category1 = TestSetup->create_category(id_rule => $id_rule);
-    #my $id_category2 = TestSetup->create_category(id_rule => $id_rule);
 
     my $project = TestUtils->create_ci_project;
     my $id_role = TestSetup->create_role(
@@ -584,7 +583,8 @@ subtest 'all_fields: returns categories' => sub {
                     'icon' => ignore(),
                     'data' => {
                         'id_category'   => ignore(),
-                        'name_category' => 'Category'
+                        'name_category' => 'Category',
+                        fields          => [ [ 'title', '' ], [ 'status_new', '' ], [ 'category', 'Category' ] ]
                     },
                     'text' => 'Category'
                 }

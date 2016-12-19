@@ -592,6 +592,7 @@
                     var nodeCategories = root.firstChild;
                     var query = {};
                     var id_category;
+
                     if (nodeCategories.attributes.query) {
                         query = nodeCategories.attributes.query;
                     }
@@ -600,21 +601,26 @@
                         flag = false;
                     } else {
                         if(target.getDepth()+1-2 == 1){
-                            var arr = {};
                             var id;
-                            arr = target.parentNode.childNodes;
-                            if (parseInt(arr[0].id)) { id = arr[0].id } else { id = nodeCategories.attributes.children[0].data.id_category };
+
+                            id = target.attributes.data.id_category
+
                             var datos = {
                                 id_category : [copy.attributes.data.id_category], 
                                 name_category: [copy.attributes.data.name_category],
                                 relation: [copy.attributes.data.relation]
                             };
+
+                            if (!query[id])
+                                query[id] = {relation: []};
+
                             query[id].relation.push(datos);
                         } else if(target.getDepth()+1-2 == 0){
-                            query[copy.id] = {
+                            var id = ev.dropNode.attributes.data.id_category
+                            query[id] = {
                                 id_category : [copy.attributes.data.id_category], 
                                 name_category: [copy.attributes.data.name_category],
-                                relation: [copy.attributes.data.relation]
+                                relation: []
                             };
                         } else {
                             flag = false;
