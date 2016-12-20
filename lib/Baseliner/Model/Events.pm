@@ -9,6 +9,8 @@ use Baseliner::Core::Event;
 use Baseliner::Sem;
 use Baseliner::Utils;
 
+our $STOP_EVENT_LOOP = 0;
+
 with 'Baseliner::Role::Service';
 
 with 'Baseliner::Role::CacheProxy' => {
@@ -24,9 +26,10 @@ with 'Baseliner::Role::CacheProxy' => {
 register 'config.events' => {
     name => _locl('Event daemon configuration'),
     metadata => [
-        { id=>'frequency', label=>_locl('event daemon frequency (secs)'), default=>15 },
-        { id=>'timeout', label=>_locl('event daemon event rule runner timeout (secs)'), default=>30 },
-        { id=>'boost', label=>_locl('how many events to treat at once, default=1'), default=>1 },
+        { id=>'frequency', label=>'event daemon frequency (secs)', default=>10 },
+        { id=>'timeout', label=>'event daemon event rule runner timeout (secs)', default=>30 },
+        { id=>'iterations', label=>'event daemon loop iterations, default=1000', default=>1000 },
+        { id=>'boost', label=>'how many events to treat at once, default=1', default=>1 },
     ]
 };
 
@@ -46,10 +49,18 @@ register 'service.event.daemon' => {
             }
         };
 
-        _log _loc( "Event daemon starting with frequency %1, timeout %2, boost %3", $config->{frequency}, $config->{timeout}, $config->{boost} );
+        _log _loc( "Event daemon starting with frequency %1, timeout %2, iterations %3, boost %4",
+            $config->{frequency}, $config->{timeout}, $config->{iterations}, $config->{boost}
+        );
 
-        for( 1..1000 ) {
+        local $SIG{HUP} = sub {
+            _warn( "Gracefully shutting down event loop pid=$$" );
+            $STOP_EVENT_LOOP = 1;
+        };
+
+        for( 1..$config->{iterations} ) {
             $self->run_once( $c, $config );
+            last if $STOP_EVENT_LOOP;
             sleep( $config->{frequency} );
         }
 
@@ -70,10 +81,9 @@ sub run_once {
 
     my $rule_runner = Baseliner::RuleRunner->new(tidy_up => 0);
     my $boost = $data->{boost} || 1;
+    my $events_processed = 0;
 
-    my $more_events = 1;
-
-    while( $more_events ) {
+    EVENT_LOOP: while( 1 ) {
 
         my $sem = Baseliner::Sem->new( key=>'event_daemon', who=>"event_daemon", internal=>1 );
         $sem->take;
@@ -82,17 +92,24 @@ sub run_once {
 
         if ( $rs->count ) {
             while( my $ev = $rs->next ) {
-                $self->process_event( $ev, $data );
+                $self->process_event( $ev, $data, $rule_runner );
+
+                $events_processed++;
+
+                if( $STOP_EVENT_LOOP ) {
+                    last EVENT_LOOP;
+                }
             }
         }
         else {
-            $more_events = 0;
+            last EVENT_LOOP;
         }
 
         if ( $sem ) {
             $sem->release;
         }
     }
+    _debug( "End of event loop pid=$$, events processed=$events_processed, boost=$boost" );
 }
 
 sub find_by_key {
@@ -146,10 +163,7 @@ sub find_by_mid {
 
 sub process_event {
     my $self = shift;
-    my ( $ev, $data ) = @_;
-
-    require Baseliner::RuleRunner;
-    my $rule_runner = Baseliner::RuleRunner->new(tidy_up => 0);
+    my ( $ev, $data, $rule_runner ) = @_;
 
     my $event_status = '??';
 
@@ -162,35 +176,35 @@ sub process_event {
         my $stash = $ev->{event_data} ? _load( $ev->{event_data} ) : {};
 
         # run rules for this event
-        my $ret = $rule_runner->run_rules( event=>$ev->{event_key}, rule_type=>'event', when=>'post-offline', stash=>$stash, onerror=>1 );
+        my $ret = $rule_runner->run_rules(
+            event      => $ev->{event_key},
+            rule_type  => 'event',
+            when       => 'post-offline',
+            stash      => $stash,
+            no_capture => 1,
+            onerror    => 1
+        );
         alarm 0 if $data->{timeout};
         my $rc=0;
 
         # save log
         for my $rule ( _array( $ret->{rule_log} ) ) {
-            mdb->event_log->insert({
-                id=>mdb->seq('event_log'),
-                id_event=> $ev->{id},
-                id_rule=> $rule->{id},
-                stash_data=> _dump( $rule->{ret} ),
-                return_code=>$rule->{rc},
-                dsl => $rule->{dsl},
-                ts => mdb->ts,
-                log_output => $rule->{output},
-            });
+            mdb->event_log->insert( {
+                    id          => mdb->seq('event_log'),
+                    id_event    => $ev->{id},
+                    id_rule     => $rule->{id},
+                    stash_data  => _dump( $rule->{ret} ),
+                    return_code => $rule->{rc},
+                    dsl         => $rule->{dsl},
+                    ts          => mdb->ts,
+                    log_output  => $rule->{output},
+                }
+            );
             $rc += $rule->{rc} if $rule->{rc};
         }
 
-        # run notifications in a fork
-        my $child_pid = fork;
-        if( ! defined $child_pid ) {
-            _error('Error forking notify process (ulimit reached?)');
-        }
-        elsif( ! $child_pid ) {
-            mdb->disconnect();
-            $self->notify_event( $ev, $stash );
-            exit 0;
-        }
+        # run notifications for event
+        $self->notify_event( $ev, $stash );
 
         $event_status= $rc ? 'ko' : 'ok';
         mdb->event->update( {id => $ev->{id}}, {'$set'=>{event_status=>$event_status}});
