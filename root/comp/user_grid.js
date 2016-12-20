@@ -657,6 +657,7 @@
                                 lazyRender: true,
                                 mode: 'local',
                                 allowBlank: false,
+                                value: 'regular',
                                 store: new Ext.data.ArrayStore({
                                     id: 0,
                                     fields: ['accountType', 'displayText'],
