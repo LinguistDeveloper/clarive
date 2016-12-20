@@ -353,7 +353,7 @@
             var bound = bounds[i];
 
             var combo = new Ext.form.ComboBox({
-                fieldLabel: bound.name,
+                fieldLabel: _(bound.name),
                 typeAhead: true,
                 triggerAction: 'all',
                 lazyRender: true,
@@ -424,13 +424,15 @@
             items.push(combo);
         }
 
+        items.push({
+            xtype: 'checkbox',
+            name: '_deny',
+            fieldLabel: _('Negative')
+        });
+
         items.push(
-            {
-                xtype: 'checkbox',
-                name: '_deny',
-                fieldLabel: 'Negative'
-            },
-            new Ext.Toolbar.Button({
+            new Ext.Button({
+                icon: IC('add'),
                 text: _('Add'),
                 handler: function() {
                     var formPanel = this.findParentByType(Ext.form.FormPanel);
@@ -446,8 +448,7 @@
 
                             if (field.isXType('checkbox')) {
                                 values[field.getName()] = field.getValue();
-                            }
-                            else if (field.isXType('combo')) {
+                            } else if (field.isXType('combo')) {
                                 values[field.getName()] = field.getValue();
                                 values['_' + field.getName() + '_title'] = field.lastSelectionText;
                             }
@@ -493,13 +494,13 @@
 
     function buildBoundsColumnModel(bounds, values) {
         var boundsColumnModelColumns = [{
-            header: 'Type',
+            header: _('Type'),
             dataIndex: '_deny',
             renderer: function(value) {
                 if (!value)
-                    return 'Allow';
+                    return _('Allow');
 
-                return 'Deny';
+                return _('Deny');
             }
         }];
 
@@ -507,12 +508,12 @@
             var bound = bounds[i];
 
             boundsColumnModelColumns.push({
-                header: bound.name,
+                header: _(bound.name),
                 dataIndex: '_' + bound.key + '_title',
                 sortable: true,
                 renderer: function(value) {
                     if (!value)
-                        return 'Any';
+                        return _('Any');
 
                     return value;
                 }
@@ -536,6 +537,7 @@
             url: '/role/action_info',
             params: { action: action, current_bounds: JSON.stringify(values) },
             success: function(response) {
+                Baseliner.hideLoadingMask( rolePanel.getEl() );
                 var text = response.responseText;
                 var data = JSON.parse(text);
 
@@ -577,24 +579,80 @@
                     }
                 });
 
+                var boundsSelectionFormPanel = new Ext.form.FormPanel({
+                    height: 185,
+                    frame: true,
+                    width: '100%',
+                    defaults: {
+                        msgTarget: 'under'
+                    },
+                    bodyCssClass: 'x-bounds-form',
+                    items: buildAddBoundFormItems(action, bounds, boundsStore)
+                });
+
                 var win = new Ext.Window({
-                    title: _('Role bounds'),
+                    title: _('Role Bounds') +' : '+ action,
                     width: 730,
+                    height: 500,
                     closeAction: 'close',
+                    layout: 'border',
+                    bodyBorder: false,
                     modal: true,
-                    items: [new Ext.Panel({
-                            layout: 'table',
-                            border: false,
-                            bodyBorder: false,
-                            hideBorders: true,
-                            html: action
-                        }),
-                        new Ext.grid.GridPanel({
+                    bodyCssClass: 'x-bounds-window-body',
+                    bwrapCssClass: 'x-bounds-window-bwrap',
+                    tbar: ['->', {
+                        icon: IC('save'),
+                        iconCls: 'x-btn-text-icon',
+                        text: _('Save'),
+                        handler: function() {
+                            if (callback) {
+                                var values = [];
+
+                                boundsStore.each(function(record) {
+                                    values.push(record.data);
+                                });
+
+                                callback(values.length ? values : '');
+                            }
+                            win.close();
+                            Baseliner.message(_('Success'), _('Action bounds saved'));
+                        }
+                    }, {
+                        icon: IC('close'),
+                        iconCls: 'x-btn-text-icon',
+                        text: _('Close'),
+                        handler: function() {
+                            if (boundsSelectionFormPanel.getForm().isDirty()) {
+                                Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to close the window?'),
+                                    function(btn) {
+                                        if (btn == 'yes') {
+                                            win.close();
+                                        }
+                                    });
+                            }
+                            else {
+                                win.close();
+                            }
+                        }
+                    }],
+                    items: [{
+                        region: 'north',
+                        layout: 'fit',
+                        split: true,
+                        height: 200,
+                        title: _('Bounds Selection'),
+                        items: boundsSelectionFormPanel
+                    }, {
+                        region: 'center',
+                        layout: 'fit',
+                        split: true,
+                        items: new Ext.grid.GridPanel({
                             title: _('Bounds'),
                             autoScroll: true,
+                            region: 'center',
+                            layout: 'fit',
                             store: boundsStore,
                             split: true,
-                            height: 300,
                             stripeRows: true,
                             viewConfig: {
                                 forceFit: true
@@ -629,40 +687,9 @@
                                         boundsStore.removeAll();
                                     }
                                 })
-                            ],
-                        }),
-                        new Ext.form.FormPanel({
-                            frame: true,
-                            buttons: [{
-                                text: _('OK'),
-                                handler: function() {
-                                    if (callback) {
-                                        var values = [];
-
-                                        boundsStore.each(function(record) {
-                                            values.push(record.data);
-                                        });
-
-                                        callback(values.length ? values : '');
-                                    }
-
-                                    win.close();
-                                }
-                            }, {
-                                text: _('Cancel'),
-                                handler: function() {
-                                    var formPanel = this.findParentByType(Ext.form.FormPanel);
-                                    formPanel.getForm().reset();
-
-                                    win.close();
-                                }
-                            }],
-                            defaults: {
-                                msgTarget: 'under'
-                            },
-                            items: buildAddBoundFormItems(action, bounds, boundsStore)
+                            ]
                         })
-                    ]
+                    }]
                 });
 
                 win.show();
@@ -720,6 +747,7 @@
                 var sel = roleGridPanel.getSelectionModel().getSelected();
 
                 if (sel.data.bounds_available) {
+                    Baseliner.showLoadingMask(rolePanel.getEl());
                     var values = roleGridPanel.getStore().getAt(rowIndex).get('bounds');
                     actionBoundsEditor(params.id_role, sel.data.action, values, function(values) {
                         var row = roleGridPanel.getStore().getAt(rowIndex);
