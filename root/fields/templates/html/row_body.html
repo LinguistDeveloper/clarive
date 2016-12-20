@@ -5,7 +5,7 @@
 <%perl>
     my $val = length( $data->{ $meta->{id_field} } ) && $meta->{id_field} ne 'status_new' 
         ? $data->{ $meta->{id_field} }
-        : length( $data->{ $meta->{display_field} } ) 
+        : defined $meta->{display_field} && defined $data->{ $meta->{display_field} }
             ? $data->{ $meta->{display_field} }
             : "";
     $val = join( ',', @$val ) if ref $val eq 'ARRAY';

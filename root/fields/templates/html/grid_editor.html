@@ -24,7 +24,7 @@
     }
 
     @columns = split ';', $meta->{columns};
-    my @html_view_columns = split ',', $meta->{html_view_columns};
+    my @html_view_columns = split ',', ($meta->{html_view_columns} // '');
     if (@html_view_columns) {
         map { push @res, $_ if $_ ~~ @html_view_columns } @columns;
     }
