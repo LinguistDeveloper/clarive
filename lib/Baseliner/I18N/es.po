@@ -6141,6 +6141,10 @@ msgid "Update Baselines"
 msgstr "Actualiza Líneas Bases"
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Sync Baselines"
+msgstr "Sincronizar Baselines"
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Verify Revision Integrity Rules"
 msgstr "Verificar Reglas de Integridad de Revisión"
 
@@ -6225,6 +6229,14 @@ msgstr "Actualizando el entorno %1 para el repositorio %2, tipo de pase %3"
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Baseline update of %1 item(s) completed"
 msgstr "Actualización de baseline de %1 elemento(s) completado"
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Synchronizing baseline `%1` with `%2`"
+msgstr "Sincronizar baseline `%1` con `%2`"
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Baseline `%1` synchronized with `%2`"
+msgstr "Baseline `%1` sincronizado con `%2`"
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Checking job revisions"
@@ -13723,7 +13735,8 @@ msgstr ""
 msgid "Generator"
 msgstr ""
 
-#: root/forms/catalog_task.js root/reports/listado_jobs.js
+#: root/forms/catalog_task.js root/forms/sync_baselines.js
+#: root/reports/listado_jobs.js
 msgid "BLs"
 msgstr "Entornos"
 

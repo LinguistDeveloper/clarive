@@ -1,10 +1,12 @@
 package BaselinerX::Service::ChangesetServices;
 use Moose;
+
+use List::Util qw(first);
+use Try::Tiny;
+use experimental 'smartmatch';
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Try::Tiny;
-use experimental 'smartmatch';
 
 #with 'Baseliner::Role::Namespace::Create';
 with 'Baseliner::Role::Service';
@@ -21,6 +23,14 @@ register 'service.changeset.update_baselines' => {
     job_service  => 1,
     icon    => '/static/images/icons/changesets.svg',
     handler => \&update_baselines,
+};
+
+register 'service.changeset.sync_baselines' => {
+    name        => _locl('Sync Baselines'),
+    job_service => 1,
+    icon        => '/static/images/icons/changesets.svg',
+    form        => '/forms/sync_baselines.js',
+    handler     => \&sync_baselines,
 };
 
 register 'service.changeset.verify_revisions' => {
@@ -201,31 +211,14 @@ sub update_baselines {
     my $type = $job->job_type;
     my $bl = $job->bl;
 
-    my %rev_repos;
+    my $rev_repos = $self->_group_revisions_by_repo([_array $stash->{project_changes}]);
 
     return if $job->is_failed( status => 'last_finish_status');
 
-    my @project_changes = @{ $stash->{project_changes} || [] };
-    $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
-
-    # first, group revisions by repository
-    for my $pc ( @project_changes ) {
-        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
-        next unless ref $repo_revisions_items eq 'ARRAY';
-        for my $rri ( @$repo_revisions_items ) {
-            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
-
-            # TODO if 2 projects share a repository, need to create different tags with project in str?
-            for my $revision ( _array( $revisions ) ) {
-                $rev_repos{ $revision->repo->mid }{ 'project' } //= $project;
-                $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
-                $rev_repos{ $revision->repo->mid }{ $revision->mid } = $revision;
-            }
-        }
-    }
+    $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(_array $stash->{project_changes}), $bl ) );
 
     # now update
-    for my $revgroup ( values %rev_repos ) {
+    for my $revgroup ( values %$rev_repos ) {
         my $project = delete $revgroup->{project};
         my $repo = delete $revgroup->{repo};
 
@@ -278,6 +271,120 @@ sub update_baselines {
 
         $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $updated_baselines );
     }
+}
+
+sub sync_baselines {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash = $c->stash;
+
+    my $job    = $stash->{job};
+    my $log    = $job->logger;
+    my $type   = $job->job_type;
+    my $job_bl = $job->bl;
+
+    return if $job->is_failed( status => 'last_finish_status' );
+
+    my $bl_matched = 0;
+
+    my @bls;
+    foreach my $bl_mid ( _array $config->{bls} ) {
+        if ( my $bl = ci->new($bl_mid) ) {
+            if ($bl->bl eq $job_bl) {
+                $bl_matched = 1;
+            }
+            else {
+                push @bls, $bl->bl;
+            }
+        }
+    }
+
+    return unless $bl_matched;
+
+    my $rev_repos = $self->_group_revisions_by_repo([_array $stash->{project_changes}]);
+
+    foreach my $bl_to_sync (@bls) {
+        $log->info( _loc( 'Synchronizing baseline `%1` with `%2`', $bl_to_sync, $job_bl ) );
+
+        for my $revgroup ( values %$rev_repos ) {
+            my $project = delete $revgroup->{project};
+            my $repo = delete $revgroup->{repo};
+
+            my $updated_baselines;
+
+            if( $job->rollback ) {
+                my $previous_ref;
+                my $previous_tag;
+                my $bl_original = $stash->{bl_sync};
+
+                $log->info( _loc( 'Searching for original baseline in %1', $repo->name ) );
+
+                if ( my $repo_stash = $bl_original->{ $repo->mid } ) {
+                    if ( my $project_stash = $repo_stash->{ $project->mid } ) {
+                        $previous_ref = $project_stash->{previous};
+                        $previous_tag = $project_stash->{tag};
+                    }
+                }
+
+                if ( $previous_ref && $previous_tag ) {
+                    $log->info( _loc('Rollbacking baseline %1 for repository %2, job type %3', $previous_tag, $repo->name, $type ) );
+
+                    $updated_baselines = $repo->update_baselines(
+                        job       => $job,
+                        revisions => [$previous_ref],
+                        tag       => $previous_tag,
+                        type      => $type
+                    );
+                }
+                else {
+                    _warn _loc( 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid );
+                }
+            } else {
+                my $revisions = [ values %$revgroup ];
+
+                my $prefix;
+                if ($repo->tags_mode eq 'release') {
+                    $prefix = $self->_find_release_version_by_revisions($revisions);
+                }
+
+                my $tag = $repo->bl_to_tag($bl_to_sync, $prefix);
+
+                $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $tag, $repo->name, $type ) );
+
+                $updated_baselines = $repo->update_baselines( job => $job, revisions => $revisions, tag => $tag, type => $type );
+            }
+
+            # save previous revision by repo mid
+            $stash->{bl_sync}->{ $repo->mid }->{ $project->mid } = $updated_baselines;
+
+            $log->info( _loc( 'Baseline `%1` synchronized with `%2`', $bl_to_sync, $job_bl ) );
+        }
+    }
+}
+
+sub _group_revisions_by_repo {
+    my $self = shift;
+    my ($project_changes) = @_;
+
+    my %rev_repos;
+
+    # first, group revisions by repository
+    for my $pc ( @$project_changes ) {
+        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+        next unless ref $repo_revisions_items eq 'ARRAY';
+        for my $rri ( @$repo_revisions_items ) {
+            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+
+            # TODO if 2 projects share a repository, need to create different tags with project in str?
+            for my $revision ( _array( $revisions ) ) {
+                $rev_repos{ $revision->repo->mid }{ 'project' } //= $project;
+                $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
+                $rev_repos{ $revision->repo->mid }{ $revision->mid } = $revision;
+            }
+        }
+    }
+
+    return \%rev_repos;
 }
 
 sub verify_revisions {
