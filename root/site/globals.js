@@ -73,14 +73,6 @@ Cla.use = function(urls, callback, cache) {
     }
 };
 
-Cla.loadComp = function(url, cb) {
-    Cla.use(url, function(data) {
-        var comp;
-        eval('comp = ' + data + ';');
-        cb(comp());
-    });
-};
-
 Cla.moment_to_js_time_hash = {
     ' H:mm' : ' H:i',
     ' HH:mm' : ' H:i',

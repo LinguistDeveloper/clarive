@@ -14779,7 +14779,7 @@ msgstr ""
 msgid "Total:"
 msgstr ""
 
-#: root/site/common.js root/site/includes/loading.html root/site/top.html
+#: root/site/common.js root/site/header.html root/site/includes/loading.html
 msgid "Loading"
 msgstr ""
 
