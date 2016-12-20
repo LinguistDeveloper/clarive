@@ -1,17 +1,62 @@
-/*
-REPL component.
-
-To do:
-    - line numbering
-    - coloring in the console
-    - save to file in a /Files folder
-    - trim output on the server side
-
-*/
 (function(){
     Cla.help_push({ title:_('REPL'), path:'devel/repl' });
     var last_name = "";
-    var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
+
+    var REPL_CONFIGURATION = {
+        lang: [{
+            text: 'JS Server',
+            lang: 'js-server'
+        }, {
+            text: 'Perl',
+            lang: 'perl'
+        }, {
+            text: 'JS Client',
+            lang: 'js-client'
+        }, {
+            text: 'CSS',
+            lang: 'css',
+            checked: true
+        }, {
+            text: 'SQL',
+            lang: 'sql'
+        }],
+        out: [{
+            text: 'YAML',
+            out: 'yaml'
+        }, {
+            text: 'JSON',
+            out: 'json'
+        }, {
+            text: 'Table',
+            out: 'table'
+        }, {
+            text: 'Data Editor',
+            out: 'data_editor'
+        }],
+        theme: [{
+            text: 'Eclipse',
+            theme: 'eclipse'
+        }, {
+            text: 'Chaos',
+            theme: 'chaos'
+        }, {
+            text: 'Idle Fingers',
+            theme: 'idle_fingers'
+        }, {
+            text: 'Clouds',
+            theme: 'clouds'
+        }, {
+            text: 'Terminal',
+            theme: 'terminal'
+        }]
+    };
+
+    for (var key in REPL_CONFIGURATION) {
+        REPL_CONFIGURATION[key + '_map'] = {};
+        Ext.each(REPL_CONFIGURATION[key], function(item) {
+            REPL_CONFIGURATION[key + '_map'][item[key]] = item;
+        });
+    }
 
     // This is the code that is loaded with the REPL as an example starter, indentation is important here
     var example_js = function(){/*var ci = require("cla/ci");
@@ -38,6 +83,7 @@ col.findOne({'foo':'bar'});
 // utils
 cla.parseVars('${foo}',{ foo: 'bar' });
 */}.heredoc();
+
     // setup defaults
     if( Cla.AceEditor === undefined ) Cla.AceEditor = { theme: 'eclipse', mode: { name:'perl' } };
 
@@ -47,46 +93,29 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         tbar: undefined,
         value: example_js
     });
-    aceditor.on('aftereditor',function(){
-        HashHandler = ace.require("ace/keyboard/hash_handler").HashHandler;
-        var editor_keys = new HashHandler([{
-            bindKey: "Cmd-Enter|Ctrl-Enter", exec: function(ed){
-                run_repl();
-            }
-        }]);
-        aceditor.editor.keyBinding.addKeyboardHandler(editor_keys);
-        aceditor.focus();
-    });
-
-    /*
-    var thist = new Ext.tree.TreeNode({text:'History',draggable : false, expandable:true, leaf:false, url:'/repl/tree_hist' });
-    var tclass = new Ext.tree.TreeNode({text:'Classes',draggable : false, expandable:true, leaf:false, url:'/repl/tree_class' });
-    var tsave = new Ext.tree.TreeNode({text:'Saved',draggable : false, expandable:true, leaf:false, url:'/repl/tree_saved' });
-    var tsave_delete_all = function() { var delNode; while (delNode = tsave.childNodes[0]) tsave.removeChild(delNode); }
-    */
 
     var search = new Baseliner.SearchField({
         width: 180,
         params: {start: 0, limit: 100 },
-	    onTrigger1Click : function(){ // clear button
-		    if(this.hasSearch){
-			    this.el.dom.value = '';
-                // reset tree
+        onTrigger1Click : function(){
+            if(this.hasSearch){
+                this.el.dom.value = '';
+
                 reload_root();
-                // hide clear button
-			    this.triggers[0].hide();
-			    this.hasSearch = false;
-		    }
-	    },
-	    onTrigger2Click : function(){  // search button or enter
-		    var v = this.getRawValue();
-		    if(v.length < 1){ //>
-			    this.onTrigger1Click();
-			    return;
-		    }
+
+                this.triggers[0].hide();
+                this.hasSearch = false;
+            }
+        },
+        onTrigger2Click : function(){
+            var v = this.getRawValue();
+            if(v.length < 1){
+                this.onTrigger1Click();
+                return;
+            }
 
             tree.root.collapseChildNodes();
-            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:'/static/images/icons/folder_explore.svg' });
+            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:IC('folder_explore') });
             results.expand();
             tree.root.eachChild( function(n) {
                 var url = n.attributes.url;
@@ -96,18 +125,17 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 xxx += "\n" + url;
                 set_output( xxx );
                 Baseliner.ajaxEval( url, bb, function(res) {
-                    //set_output( Ext.encode( res ) );
                     if( res !== undefined && typeof(res) == 'object' ){
                         results.appendChild( res );
                     }
                 });
             });
-		    this.hasSearch = true;
-		    this.triggers[0].show();
-	    }
+            this.hasSearch = true;
+            this.triggers[0].show();
+        }
     });
     search.on('click', function(){ alert('ok'); });
-    
+
     function reload_root() {
         var loader = tree.getLoader();
         loader.dataUrl = tree.dataUrl;
@@ -119,18 +147,17 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         title: _("History"),
         width: 280,
         expanded: true,
-        animate : true,          
+        animate : true,
         collapsible: true,
         split: true,
         rootVisible: false,
         dataUrl: '/repl/tree_main',
-        autoScroll : true,          
-        //baseArgs: { singleClickExpand: true },
-        containerScroll : true,          
+        autoScroll : true,
+        containerScroll : true,
         tbar: [ search,
             {   xtype: 'button',
                 tooltip:_('Refresh Node'),
-                icon:'/static/images/icons/refresh.svg',
+                icon:IC('refresh'),
                 cls: 'x-btn-icon',
                 handler: function(){
                     tree.removeAll();
@@ -144,12 +171,9 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             draggable:false,
             id: '/'
         },
-        dropConfig : { appendOnly : true }     
+        dropConfig : { appendOnly : true }
     });
-    //root.appendChild( thist );
-    //root.appendChild( tclass );
-    //root.appendChild( tsave );
-    
+
     tree.getLoader().on("beforeload", function(loader, node) {
         if( node.attributes.url !== undefined ) {
             if( node.attributes.url === "" ) return false;
@@ -158,25 +182,30 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         loader.baseParams = node.attributes.data;
     });
 
-    // code loading on click
     tree.on('click', function(n,e) {
         if( n.attributes.url_click !== undefined ) {
             Baseliner.ajaxEval( n.attributes.url_click, n.attributes.data, function(res) {
-                if( res.code ) { 
+                if( res.code ) {
                     last_name= n.text;
                     aceditor.setValue( res.code );
                 }
                 if( res.output ) set_output( res.output );
-                if( res.lang ) change_lang({ lang: res.lang, checked: true });
-                if( res.out ) change_out({ out: res.out, checked: true });
+
+                if (res.lang) {
+                    langMenu.get(menuElementByValue(langMenu, res.lang)).setChecked(true);
+                }
+
+                if (res.out) {
+                    outMenu.get(menuElementByValue(outMenu, res.out)).setChecked(true);
+                }
+
                 if( res.div ) {
-                    var tab = cons.add({ xtype:'panel', closable: true,
+                    var tab = outputTabPanel.add({ xtype:'panel', closable: true,
                         style: { padding: '10px 10px 10px 10px' },
                         title: n.text, html: '<div id="boot">' + res.div + '</div>',
                         iconCls: 'icon-method' });
-                    cons.setActiveTab( tab );
-                    cons.expand( true );
-                    //output_tabs.
+                    outputTabPanel.setActiveTab( tab );
+                    outputTabPanel.expand( true );
                 }
                 if(!(n instanceof Ext.tree.AsyncTreeNode)){
                     var tooltip = Cla.truncateTooltip(n.text);
@@ -189,41 +218,6 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     });
 
-    var languages = [
-        {text:'JS Server', syntax:'javascript', lang: 'js-server'},
-        {text:'Perl', syntax:'perl', lang: 'perl'},
-        {text:'JS Client', syntax:'javascript', lang: 'js-client'},
-        {text:'CSS', syntax:'css', lang: 'css', checked: true},
-        {text:'SQL', syntax:'plsql', lang: 'sql'}
-    ];
-    var languagesMap = {};
-    for (var i = 0; i < languages.length; i++) {
-        languagesMap[languages[i].lang] = languages[i];
-    }
-
-    var outs = [
-        {text:'YAML', out:'yaml'},
-        {text:'JSON', out:'json'},
-        {text:'Table', out:'table'},
-        {text:'Data Editor', out:'data_editor'}
-    ];
-    var outsMap = {};
-    for (var i = 0; i < outs.length; i++) {
-        outsMap[outs[i].out] = outs[i];
-    }
-
-    var themes = [
-        {text:'Eclipse', theme:'eclipse'},
-        {text:'Chaos', theme:'chaos'},
-        {text:'Idle Fingers', theme:'idle_fingers'},
-        {text:'Clouds', theme:'clouds'},
-        {text:'Terminal', theme:'terminal'}
-    ];
-    var themesMap = {};
-    for (var i = 0; i < themes.length; i++) {
-        themesMap[themes[i].theme] = themes[i];
-    }
-
     var status = new Ext.form.TextField({
         name: 'status',
         fieldLabel: 'Status',
@@ -233,21 +227,20 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var elapsed = new Ext.form.TextField({
         fieldLabel: 'Elapsed',
         readOnly: true,
-        width: 60 
+        width: 60
     });
 
     var output = new Ext.form.TextArea({
         name: 'output',
         title: _('Output'),
         closable: false,
-        style: style_cons,
+        style: 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier',
         width: 700,
         height: 300
     });
 
-    var cons = new Ext.TabPanel({
-        //collapsible: true,
-        defaults: { closable: false, autoScroll: true }, 
+    var outputTabPanel = new Ext.TabPanel({
+        defaults: { closable: false, autoScroll: true },
           plugins: [ new Ext.ux.panel.DraggableTabs()],
         split: true,
         activeTab: 0,
@@ -257,17 +250,17 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         height: 350,
         items: [ output ],
         tbar: [
-            Baseliner.button('Clear', '/static/images/icons/clear.svg', function(b) { set_output(""); } ),
-            Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) { 
-                cons.items.each(function(comp) {
+            Baseliner.button('Clear', IC('clear'), function(b) { set_output(""); } ),
+            Baseliner.button('Close All', IC('clear'), function(b) {
+                outputTabPanel.items.each(function(comp) {
                     if( comp.initialConfig.closable ) {
-                        cons.remove( comp );
+                        outputTabPanel.remove( comp );
                         comp.destroy();
                     }
                 });
             }),
-            Baseliner.button(_('Maximize'), '/static/images/icons/detach.svg', function(b) { 
-                var tab = cons.getActiveTab();
+            Baseliner.button(_('Maximize'), IC('detach'), function(b) {
+                var tab = outputTabPanel.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
                 } else {
@@ -275,23 +268,23 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     Baseliner.addNewTabItem( to , '' );
                 }
             }),
-            Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function(b) { 
+            Baseliner.button(_('Raw'), IC('detach'), function(b) {
                 var ww = window.open('about:blank', '_blank' );
                 ww.document.title = _('REPL');
                 ww.document.write( '<pre>' + output.getValue() + '</pre>' );
                 ww.document.close();
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { cons.collapse(true); } )
+            Baseliner.button('Collapse', IC('arrow_down'), function(b) { outputTabPanel.collapse(true); } )
         ],
         region: 'south'
     });
 
     function set_output( data ) {
         output.setValue( data );
-        cons.setActiveTab( output );
+        outputTabPanel.setActiveTab( output );
         if( data && data !== '' )
-            cons.expand(true);
+            outputTabPanel.expand(true);
     }
 
     var save = function(params) {
@@ -300,7 +293,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         var node_name = params.tx || dt.format("Y-m-d H:i:s") + ": " + short;
         if( params.save!==undefined && params.save ) {
             last_name = node_name;
-            var f = form.getForm();
+            var f = codeFormPanel.getForm();
             f.submit({ url:'/repl/save', params: { code: params.c, id: params.tx, output: params.o, lang: params.lang, out: params.out} });
         }
     };
@@ -311,9 +304,9 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 if( Ext.isObject( d ) ) d = [d];
                 else { d = [ { value: d } ] ; }
             }
-            var ag = new Baseliner.AutoGrid({ data: d, closable:true, title:_('%1', cons.items.length ) });
-            cons.add( ag );
-            cons.setActiveTab( ag );
+            var ag = new Baseliner.AutoGrid({ data: d, closable:true, title:_('%1', outputTabPanel.items.length ) });
+            outputTabPanel.add( ag );
+            outputTabPanel.setActiveTab( ag );
         } catch(e) { set_output( e ); }
     };
 
@@ -323,14 +316,14 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 if( Ext.isObject( d ) ) d = [d];
                 else { d = [ { value: d } ] ; }
             }
-            var ag = new Baseliner.DataEditor({ data: d, closable:true, title:_('%1', cons.items.length ) });
-            cons.add( ag );
-            cons.setActiveTab( ag );
+            var ag = new Baseliner.DataEditor({ data: d, closable:true, title:_('%1', outputTabPanel.items.length ) });
+            outputTabPanel.add( ag );
+            outputTabPanel.setActiveTab( ag );
         } catch(e) { set_output( e ); }
     };
 
-    var save_hist = function(){ // only browser-eval needs this (javascript)
-        Baseliner.ajaxEval( '/repl/save_hist', { code: aceditor.getValue(), lang: btn_lang.lang }, function(res){ 
+    var save_hist = function(){
+        Baseliner.ajaxEval( '/repl/save_hist', { code: aceditor.getValue(), lang: langButton.lang }, function(res){
             reload_hist();
         });
     };
@@ -373,13 +366,13 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                     output.setValue(value + packet.data.result);
 
                     status.setValue("OK");
-                    document.getElementById(output.getId()).style.color = "#10c000"; // green
+                    document.getElementById(output.getId()).style.color = "#10c000";
                 }
             } else {
                 output.setValue(value + packet.data.error);
 
                 status.setValue("ERROR");
-                document.getElementById(output.getId()).style.color = "#f54"; // red
+                document.getElementById(output.getId()).style.color = "#f54";
             }
 
             save_hist();
@@ -389,12 +382,12 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     }
 
     var run_repl = function(){
-        var lang = btn_lang.lang;
+        var lang = langButton.lang;
         var dump = 'yaml', show = 'cons';
-        if( btn_out.out == 'yaml' ) dump = 'yaml';
-        else if( btn_out.out == 'json' ) dump = 'json';
-        else if( btn_out.out == 'table' ) { dump = 'json'; show = 'table'; }
-        else if( btn_out.out == 'data_editor' ) { dump = 'json'; show = 'data_editor'; }
+        if( outButton.out == 'yaml' ) dump = 'yaml';
+        else if( outButton.out == 'json' ) dump = 'json';
+        else if( outButton.out == 'table' ) { dump = 'json'; show = 'table'; }
+        else if( outButton.out == 'data_editor' ) { dump = 'json'; show = 'data_editor'; }
 
         document.getElementById(output.getId()).style.color = "#10c000";
         elapsed.setValue('');
@@ -438,13 +431,13 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
         else if( lang=='js-client' ) {
             var d;
-            try { 
+            try {
                 set_output( '' );
                 save_hist();
                 eval("d=(function(){ " + aceditor.getValue() + " }) ");
                 d = d();
                 if( show == 'table' && d !== undefined ) {
-                    show_table( d ); 
+                    show_table( d );
                 } else if( show == 'data_editor' && d !== undefined ) {
                     show_data_editor( d );
                 } else {
@@ -463,155 +456,176 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         }
     };
 
-    var change_theme = function(x) {
-        if( x.checked && aceditor.editor ) {
-            if (!x.onlyShow){
-                Baseliner.ajaxEval('/user/update_repl_config', {theme: x.theme}, function(res){});
-            }
+    function changeLangHandler(menu, checked) {
+        if (checked) {
+            var lang = menu.value;
             var txt = aceditor.getValue();
-            menu_theme.get(x.theme).checked = true;
-            aceditor.setTheme( x.theme );
-            aceditor.setValue( txt );
-        }
-    };
 
-    var change_lang = function(x) {
-        if (x.checked && aceditor.editor) {
-            if (!x.onlyShow){
-                Baseliner.ajaxEval('/user/update_repl_config', {lang: x.lang, syntax: x.syntax}, function(res){});
+            var syntax;
+            if (lang == 'js-server' || lang == 'js-client') {
+                syntax = 'javascript';
             }
-            var txt = aceditor.getValue();
-            aceditor.setMode(x.syntax);
+            else if (lang == 'perl') {
+                syntax = 'perl';
+            }
+            else if (lang == 'css') {
+                syntax = 'css';
+            }
+            else if (lang == 'sql') {
+                syntax = 'plsql';
+            }
+            aceditor.setMode(syntax);
             aceditor.setValue(txt);
-            var language = languagesMap[x.lang];
-            menu_lang.get(x.lang).checked = true;
-            btn_lang.setText(_('Lang: %1', '<b>' + language.text + '</b>'));
-            btn_lang.setIcon('/static/images/icons/' + language.lang + '.svg');
-            btn_lang.lang = x.lang;
-            aceditor.focus();
-        }
-    };
 
-    var change_out = function(x) {
-        if( x.checked && aceditor.editor ) {
-            if (!x.onlyShow){
-                Baseliner.ajaxEval('/user/update_repl_config', {out: x.out}, function(res){});
-            }
-            menu_out.get(x.out).checked = true;
-            var out = outsMap[x.out];
-            btn_out.setText( _('Output: %1', '<b>'+out.text+'</b>') );
-            btn_out.setIcon( '/static/images/icons/' + out.out + '.svg' );
-            btn_out.out = x.out;
-            aceditor.focus();
-        }
-    };
+            var language = REPL_CONFIGURATION.lang_map[lang];
+            langButton.setText(_('Lang: %1', '<b>' + language.text + '</b>'));
+            langButton.setIcon(IC('' + language.lang + ''));
+            langButton.lang = lang;
 
-    var menu_theme = new Ext.menu.Menu({
-     items: themes.map(function(themes) {
+            aceditor.focus();
+
+            Baseliner.ajaxEval('/user/update_repl_config', {
+                lang: language.lang
+            }, function(res) {});
+        }
+    }
+
+    function changeOutHandler(menu, checked) {
+        if (checked) {
+            var out = REPL_CONFIGURATION.out_map[menu.value];
+
+            outButton.setText(_('Output: %1', '<b>' + out.text + '</b>'));
+            outButton.setIcon(IC('' + out.out + ''));
+            outButton.out = out;
+
+            aceditor.focus();
+
+            Baseliner.ajaxEval('/user/update_repl_config', {
+                out: out.out
+            }, function(res) {});
+        }
+    }
+
+    function changeThemeHandler(menu, checked) {
+        if (checked) {
+            var theme = REPL_CONFIGURATION.theme_map[menu.value];
+
+            aceditor.setTheme(theme.theme);
+            aceditor.focus();
+
+            Baseliner.ajaxEval('/user/update_repl_config', {
+                theme: theme.theme
+            }, function(res) {});
+        }
+    }
+
+    var themeMenu = new Ext.menu.Menu({
+        items: REPL_CONFIGURATION.theme.map(function(theme) {
             return {
-                text: themes.text,
-                theme: themes.theme,
-                id: themes.theme,
+                text: theme.text,
+                value: theme.theme,
                 checked: false,
-                group: 'theme',
-                checkHandler: change_theme
+                group: 'menu-theme',
+                checkHandler: changeThemeHandler
             }
         })
     });
 
-    var config_menu = new Ext.menu.Menu({
-        items: [
-            {
-                text: _('Theme'),
-                icon:'/static/images/icons/wrench.svg',
-                menu: menu_theme
-            }
-        ]
+    var configMenu = new Ext.menu.Menu({
+        items: [{
+            text: _('Theme'),
+            icon: IC('wrench'),
+            menu: themeMenu
+        }]
     });
 
-    var menu_lang = new Ext.menu.Menu({
-        items: languages.map(function(lang) {
+    var langMenu = new Ext.menu.Menu({
+        items: REPL_CONFIGURATION.lang.map(function(lang) {
             return {
                 text: lang.text,
-                lang: lang.lang,
-                id: lang.lang,
-                syntax: lang.syntax,
+                value: lang.lang,
                 checked: false,
-                group: 'repl-lang',
-                checkHandler: change_lang
+                group: 'menu-lang',
+                checkHandler: changeLangHandler
             }
         })
     });
 
-    var btn_lang = new Ext.Button({  
-                text: _('Lang'),
-                icon:'/static/images/icons/register_view.svg',
-                cls: 'x-btn-text-icon',
-                menu: menu_lang 
-            });
-
-    aceditor.on('aftereditor', function(){
-        Baseliner.ajaxEval('/user/repl_config', {}, function(res){
-
-            var lang = 'js-server';
-            if(res.data.lang){
-                lang = res.data.lang;
-            }
-            var info = languagesMap[lang];
-            change_lang({ text: info.text, lang: lang, syntax: info.syntax, checked: true, onlyShow: true });
-
-            var out = 'yaml';
-            if(res.data.out){
-                out = res.data.out;
-            }
-            var out_info = outsMap[out];
-            change_out({ text: out_info.text, out: out, checked: true, onlyShow: true });
-
-            var theme = 'eclipse';
-            if(res.data.theme){
-                theme = res.data.theme;
-            }
-            change_theme({ text: themesMap[theme].text, theme: theme, checked: true, onlyShow: true });
-        });
+    var langButton = new Ext.Button({
+        text: _('Lang'),
+        icon: IC('register_view'),
+        cls: 'x-btn-text-icon',
+        menu: langMenu
     });
 
-    var menu_out = new Ext.menu.Menu({
-        items: outs.map(function(out) {
+    function menuElementByValue(menu, value) {
+        var id;
+        menu.items.items.map(function(item) {
+            if (item.value === value) {
+                id = item.id;
+            }
+        });
+        return id;
+    }
+
+    var outMenu = new Ext.menu.Menu({
+        items: REPL_CONFIGURATION.out.map(function(out) {
             return {
                 text: out.text,
-                out:  out.out,
-                id:   out.out,
+                value: out.out,
                 checked: false,
-                group: 'repl-out',
-                checkHandler: change_out
+                group: 'menu-out',
+                checkHandler: changeOutHandler
             }
         })
     });
 
-    var btn_out = new Ext.Button({  
-                text: _('Output'),
-                icon:'/static/images/icons/register_view.svg',
-                cls: 'x-btn-text-icon',
-                menu: menu_out
-            });
+    var outButton = new Ext.Button({
+        text: _('Output'),
+        icon: IC('register_view'),
+        cls: 'x-btn-text-icon',
+        menu: outMenu
+    });
+
+    aceditor.on('aftereditor', function(){
+        HashHandler = ace.require("ace/keyboard/hash_handler").HashHandler;
+        var editor_keys = new HashHandler([{
+            bindKey: "Cmd-Enter|Ctrl-Enter", exec: function(ed){
+                run_repl();
+            }
+        }]);
+        aceditor.editor.keyBinding.addKeyboardHandler(editor_keys);
+
+        Baseliner.ajaxEval('/user/repl_config', {}, function(res){
+            var lang = res.data.lang || 'js-server';
+            var out = res.data.out || 'yaml';
+            var theme = res.data.theme || 'eclipse';
+
+            langMenu.get(menuElementByValue(langMenu, lang)).setChecked(true);
+            outMenu.get(menuElementByValue(outMenu, out)).setChecked(true);
+            themeMenu.get(menuElementByValue(themeMenu, theme)).setChecked(true);
+        });
+
+        aceditor.focus();
+    });
 
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:'/static/images/icons/debug_view.svg',
+                icon:IC('debug_view'),
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },
-            btn_lang,
-            btn_out,
+            langButton,
+            outButton,
             {   xtype: 'button',
                 text: _('Save'),
-                icon:'/static/images/icons/save.svg',
+                icon:IC('save'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){
                         if (btn == 'ok'){
-                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true, lang: btn_lang.lang, out: btn_out.out });
+                            save({ c: aceditor.getValue(), o: output.getValue(), tx: text, save: true, lang: langButton.lang, out: outButton.out });
                             var tooltip = Cla.truncateTooltip(text);
                             panel.setTabTip(tooltip);
                             text = Cla.truncateText(text);
@@ -622,34 +636,33 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Export all to file'),
-                icon:'/static/images/icons/drive_go.svg',
+                icon:IC('drive_go'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Baseliner.ajaxEval('/repl/save_to_file',{},function(res){
                         if( res.success ) {
                             Baseliner.message(_('Console'), _('Exported all items to files.') );
                         } else {
-                            Ext.Msg.alert(_('Error'), res.msg ); 
+                            Ext.Msg.alert(_('Error'), res.msg );
                         }
                     });
                 }
             },
             {   xtype: 'button',
                 text: _('Delete'),
-                icon:'/static/images/icons/delete.svg',
+                icon:IC('delete'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();
                     if( selectedNode === undefined ) return;
                     var id = selectedNode.text;
-                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the entry %1?', id), 
-                            function(btn){ 
+                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the entry %1?', id),
+                            function(btn){
                                 if(btn=='yes') {
                                     Ext.Ajax.request({
                                         url: '/repl/delete',
-                                        params: { id: id }, 
+                                        params: { id: id },
                                         success: function(xhr) {
-                                            //saved_store.load();
                                             reload_root();
                                         }
                                     });
@@ -660,26 +673,25 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Tidy'),
-                icon:'/static/images/icons/tidy.svg',
+                icon:IC('tidy'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
-                    var lang = btn_lang.lang;
+                    var lang = langButton.lang;
                     if( aceditor.editor.getSelection().isEmpty() ) aceditor.editor.selectAll();
                     var code =  aceditor.editor.getSelectedText();
                     if( lang == 'perl' ) {
                         Baseliner.ajaxEval('/repl/tidy', { code: code }, function(res){
                             if( res.success ) {
-                                aceditor.editor.session.replace(aceditor.editor.selection.getRange(), res.code); 
+                                aceditor.editor.session.replace(aceditor.editor.selection.getRange(), res.code);
                                 aceditor.focus();
                             } else {
                                 set_output( res.msg );
                             }
                         });
                     } else {
-                        // js
                         Cla.use('/static/jsbeautifier/beautify.js',function(){
                             code = js_beautify(code,{});
-                            aceditor.editor.session.replace(aceditor.editor.selection.getRange(), code); 
+                            aceditor.editor.session.replace(aceditor.editor.selection.getRange(), code);
                             aceditor.focus();
                         });
                     }
@@ -687,62 +699,55 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             '->',
             _('Elapsed')+': ', elapsed,
-            {   
-                icon:'/static/images/icons/wrench.svg',
+            {
+                icon:IC('wrench'),
                 cls: 'x-btn-text-icon',
-                menu: config_menu
+                menu: configMenu
             },
             { xtype:'button',
-                icon: '/static/images/icons/fullscreen.svg',
+                icon: IC('fullscreen'),
                 tooltip:_('Fullscreen'),
                 enableToggle: true,
                 pressed: false,
                 toggleGroup: 'x-fullscreen-repl',
                 handler:function(){
                     if( this.pressed ) {
-                        //$(form.el.dom).css({ position:'absolute', top:0, left:0, bottom:0, right:0, 'z-index':9999 });
-                        form.$lastParent = form.el.dom.parentElement;
-                        document.body.appendChild( form.el.dom );
-                        $(form.el.dom).css({ width:'', left:0, right:0, 'z-index':9999 });
-                        form.setWidth( $(document).width() );
-                        form.setHeight( $(document).height() );
+                        codeFormPanel.$lastParent = codeFormPanel.el.dom.parentElement;
+                        document.body.appendChild( codeFormPanel.el.dom );
+                        $(codeFormPanel.el.dom).css({ width:'', left:0, right:0, 'z-index':9999 });
+                        codeFormPanel.setWidth( $(document).width() );
+                        codeFormPanel.setHeight( $(document).height() );
                         aceditor.focus();
-                        //form.doLayout();
                     } else {
-                        //$(form.el.dom).css({ position:'', top:'', left:'', bottom:'', right:'' });
-                        form.$lastParent.appendChild( form.el.dom );
-                        form.doLayout();
-                        form.ownerCt.doLayout();
+                        codeFormPanel.$lastParent.appendChild( codeFormPanel.el.dom );
+                        codeFormPanel.doLayout();
+                        codeFormPanel.ownerCt.doLayout();
                         aceditor.focus();
                     }
                 }
             }
     ];
 
-    var form = new Baseliner.FormPanel({
-            layout   : 'fit',
-            region   : 'center',
-            split    : true,
-            url      : '/repl/eval',
-            frame    : false,
-            hideLabel: false,
-            tbar     : tbar,
-            items    : [ aceditor ]
-        }
-    );
-    form.setTitle("REPL");
+    var codeFormPanel = new Baseliner.FormPanel({
+        layout: 'fit',
+        region: 'center',
+        split: true,
+        url: '/repl/eval',
+        frame: false,
+        hideLabel: false,
+        tbar: tbar,
+        items: [aceditor]
+    });
 
     var panel = new Ext.Panel({
         title: _('REPL'),
         layout: 'border',
-        items: [ tree, form, cons ]
+        items: [ tree, codeFormPanel, outputTabPanel ]
     });
 
-    Baseliner.edit_check( panel, true );  // block window closing from the beginning
+    Baseliner.edit_check( panel, true );
 
     tree.expand();
 
     return panel;
 })();
-
-
