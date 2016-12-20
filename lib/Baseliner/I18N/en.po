@@ -10715,6 +10715,14 @@ msgid "Please, select the role to delete"
 msgstr ""
 
 #: root/comp/role_grid.js
+msgid "The role %1 does not have users assigned, delete this role?"
+msgstr ""
+
+#: root/comp/role_grid.js
+msgid "The role %1 has %2 user(s) assigned, delete this role?"
+msgstr ""
+
+#: root/comp/role_grid.js
 msgid "Could not delete the role"
 msgstr ""
 
