@@ -6056,6 +6056,10 @@ msgid "Update Baselines"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Sync Baselines"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Verify Revision Integrity Rules"
 msgstr ""
 
@@ -6139,6 +6143,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
 msgid "Baseline update of %1 item(s) completed"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Synchronizing baseline `%1` with `%2`"
+msgstr ""
+
+#: lib/BaselinerX/Service/ChangesetServices.pm
+msgid "Baseline `%1` synchronized with `%2`"
 msgstr ""
 
 #: lib/BaselinerX/Service/ChangesetServices.pm
@@ -13546,7 +13558,8 @@ msgstr ""
 msgid "Generator"
 msgstr ""
 
-#: root/forms/catalog_task.js root/reports/listado_jobs.js
+#: root/forms/catalog_task.js root/forms/sync_baselines.js
+#: root/reports/listado_jobs.js
 msgid "BLs"
 msgstr ""
 
