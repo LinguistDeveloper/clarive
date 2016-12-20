@@ -600,27 +600,24 @@ msgid "Missing title for topic with mid %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/Doc.pm lib/Baseliner/Helper/Topic.pm
-#: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
+#: lib/BaselinerX/Fieldlets.pm root/comp/topic/topic_lib_grid.js
+#: root/comp/user_grid.js
 msgid "Modified On"
 msgstr ""
 
 #: lib/Baseliner/Controller/Doc.pm lib/Baseliner/Helper/Topic.pm
-#: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
-#: root/comp/ci-gridtree.js root/comp/job_new.js
+#: lib/BaselinerX/Fieldlets.pm root/comp/ci-gridtree.js root/comp/job_new.js
 #: root/comp/topic/topic_lib_grid.js
 msgid "Modified By"
 msgstr ""
 
 #: lib/Baseliner/Controller/Doc.pm lib/Baseliner/Helper/Topic.pm
-#: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
-#: root/comp/topic/topic_lib_grid.js
+#: lib/BaselinerX/Fieldlets.pm root/comp/topic/topic_lib_grid.js
 msgid "Created On"
 msgstr ""
 
 #: lib/Baseliner/Controller/Doc.pm lib/Baseliner/Helper/Topic.pm
-#: lib/Baseliner/Helper/Topics.pm lib/BaselinerX/Fieldlets.pm
-#: root/comp/ci-gridtree.js root/comp/job_new.js
+#: lib/BaselinerX/Fieldlets.pm root/comp/ci-gridtree.js root/comp/job_new.js
 #: root/comp/topic/topic_lib_grid.js
 msgid "Created By"
 msgstr ""
@@ -2021,18 +2018,18 @@ msgid "View related graph in topics"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Helper/Topic.pm
-#: lib/Baseliner/Helper/Topics.pm lib/Baseliner/Model/Topic.pm
-#: lib/BaselinerX/Fieldlets.pm lib/BaselinerX/Job.pm
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/dashboard_job.html
-#: root/comp/events.js root/comp/lifecycle/report_edit.js
-#: root/comp/monitor_grid.js root/comp/notifications.js
-#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/dashlets/filtered_topics.html root/dashlets/lastjobs.html
-#: root/dashlets/list_jobs.js root/dashlets/my_topics.html
-#: root/dashlets/pending_jobs.html root/dashlets/swarm_config.js
-#: root/fields/system/js/field_status.js root/forms/topic_create.js
-#: root/reports/listado_jobs.js root/site/common.js root/site/model.js
+#: lib/Baseliner/Model/Topic.pm lib/BaselinerX/Fieldlets.pm
+#: lib/BaselinerX/Job.pm lib/BaselinerX/Reports/listado_jobs.pm
+#: root/comp/dashboard_job.html root/comp/events.js
+#: root/comp/lifecycle/report_edit.js root/comp/monitor_grid.js
+#: root/comp/notifications.js root/comp/scheduler_grid.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/dashlets/filtered_topics.html
+#: root/dashlets/lastjobs.html root/dashlets/list_jobs.js
+#: root/dashlets/my_topics.html root/dashlets/pending_jobs.html
+#: root/dashlets/swarm_config.js root/fields/system/js/field_status.js
+#: root/forms/topic_create.js root/reports/listado_jobs.js root/site/common.js
+#: root/site/model.js
 msgid "Status"
 msgstr ""
 
@@ -2664,13 +2661,12 @@ msgstr ""
 msgid "Could not find key '%1' in the registry"
 msgstr ""
 
-#: lib/Baseliner/Helper/Topic.pm lib/Baseliner/Helper/Topics.pm
-#: lib/BaselinerX/Fieldlets.pm root/ci/topic.js root/comp/sms.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/dashlets/filtered_topics.html root/dashlets/my_topics.html
-#: root/email/generic_post.html root/email/generic_topic.html
-#: root/fields/templates/config/grid_editor.js root/forms/link_revision.js
-#: root/forms/topic_create.js root/site/common.js
+#: lib/Baseliner/Helper/Topic.pm lib/BaselinerX/Fieldlets.pm root/ci/topic.js
+#: root/comp/sms.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/dashlets/filtered_topics.html
+#: root/dashlets/my_topics.html root/email/generic_post.html
+#: root/email/generic_topic.html root/fields/templates/config/grid_editor.js
+#: root/forms/link_revision.js root/forms/topic_create.js root/site/common.js
 msgid "Title"
 msgstr ""
 
