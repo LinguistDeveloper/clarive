@@ -2741,21 +2741,9 @@ msgid "Event daemon configuration"
 msgstr "Configuración del demonio de enventos"
 
 #: lib/Baseliner/Model/Events.pm
-msgid "event daemon frequency (secs)"
-msgstr "frecuencia del demonio de eventos (segs)"
-
-#: lib/Baseliner/Model/Events.pm
-msgid "event daemon event rule runner timeout (secs)"
+msgid ""
+"Event daemon starting with frequency %1, timeout %2, iterations %3, boost %4"
 msgstr ""
-"timeout del ejecutor de reglas de eventos del demonio de eventos (segs)"
-
-#: lib/Baseliner/Model/Events.pm
-msgid "how many events to treat at once, default=1"
-msgstr ""
-
-#: lib/Baseliner/Model/Events.pm
-msgid "Event daemon starting with frequency %1, timeout %2, boost %3"
-msgstr "Demonio de eventos iniciándose con frecuencia %1, timeout %2, boost %3"
 
 #: lib/Baseliner/Model/Events.pm
 msgid "Running event %1 (id %2)"
@@ -15933,6 +15921,17 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "event daemon frequency (secs)"
+#~ msgstr "frecuencia del demonio de eventos (segs)"
+
+#~ msgid "event daemon event rule runner timeout (secs)"
+#~ msgstr ""
+#~ "timeout del ejecutor de reglas de eventos del demonio de eventos (segs)"
+
+#~ msgid "Event daemon starting with frequency %1, timeout %2, boost %3"
+#~ msgstr ""
+#~ "Demonio de eventos iniciándose con frecuencia %1, timeout %2, boost %3"
 
 #~ msgid "%1 removed %2"
 #~ msgstr "%1 borró %2"
