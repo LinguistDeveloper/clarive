@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use File::Spec;
+use Encode ();
 use Baseliner::Utils qw(_fail);
 use Clarive::Code::JSUtils;
 

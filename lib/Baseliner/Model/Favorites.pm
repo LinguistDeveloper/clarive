@@ -2,11 +2,14 @@ package Baseliner::Model::Favorites;
 use Moose;
 BEGIN { extends 'Catalyst::Model' }
 
-use Baseliner::Utils qw(_decode_json);
+use Baseliner::Utils qw(_decode_json _fail);
 
 sub rename_favorite {
     my $self = shift;
     my ( $user, $id_favorite, $text ) = @_;
+
+    _fail 'user required' unless $user;
+    _fail 'id_favorite required' unless $id_favorite;
 
     my $favorite = $user->favorites->{$id_favorite};
     $favorite->{text} = $text;

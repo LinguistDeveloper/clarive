@@ -300,7 +300,7 @@ sub _update_topic_priority {
         mdb->topic->update( { mid => "$topic_mid" }, { '$unset' => { "_sort.labels_max_priority" => "" } } );
     }
     else {
-        my $max_priority = max( map { $_->{priority} } @labels ) // 0;
+        my $max_priority = max( map { $_->{priority} // 0 } @labels ) // 0;
         mdb->topic->update( { mid => "$topic_mid" }, { '$set' => { "_sort.labels_max_priority" => $max_priority } } );
     }
 }

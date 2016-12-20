@@ -79,1183 +79,1211 @@ subtest '_pointer: navigates objects' => sub {
     is _pointer( 'foo.bar', { foo => bless { bar => 'baz' }, 'something' } ), 'baz';
 };
 
-######## query_grep
-#
-#my @rows = (
-#    { id => 'bart',  name => 'Bart Simpson' },
-#    { id => 'lisa',  name => 'Lisa Simpson' },
-#    { id => 'moe',   name => 'Moe' },
-#    { id => 'kasim', name => 'Kasim' },
-#);
-#
-#subtest 'query_grep finds rows single field' => sub {
-#    is scalar query_grep( query => 'bart',        fields => ['name'], rows => \@rows ), 1;
-#    is scalar query_grep( query => '"Bart"',      fields => ['name'], rows => \@rows ), 1;
-#    is scalar query_grep( query => 'simpson',     fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => 'Simpson',     fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => '"sim"',       fields => ['name'], rows => \@rows ), 1;
-#    is scalar query_grep( query => '"Sim"',       fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => '"Sim" -bart', fields => ['name'], rows => \@rows ), 1;
-#    is scalar query_grep( query => '+Si',         fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => 'ba +Si',      fields => ['name'], rows => \@rows ), 1;
-#    is scalar query_grep( query => 'li ba +Si',   fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => 'ba?t',        fields => ['name'], rows => \@rows ), 1;
-#
-#    #is scalar query_grep( query=>'"Sim" -"Bart"', fields=>['name'], rows=>\@rows ), 1;
-#};
-#
-#subtest 'query_grep finds rows single field masked' => sub {
-#    is scalar query_grep( query => 'S?mp',        fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => 'Simp*',       fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => '+lisa Simp*', fields => ['name'], rows => \@rows ), 1;
-#    is scalar query_grep( query => '+lisa Simp*', fields => ['name'], rows => \@rows ), 1;
-#};
-#
-#subtest 'query_grep all fields' => sub {
-#    is scalar query_grep( query => 'Simp', all_fields => 1, rows => \@rows ), 2;
-#    is scalar query_grep( query => 'bart', all_fields => 1, rows => \@rows ), 1;
-#};
-#
-#subtest 'query_grep finds rows single field regexp' => sub {
-#    is scalar query_grep( query => '/S..p/',  fields => ['name'], rows => \@rows ), 2;
-#    is scalar query_grep( query => '/S.*ps/', fields => ['name'], rows => \@rows ), 2;
-#};
-#
-#subtest 'query_grep finds rows multi-field' => sub {
-#    is scalar query_grep( query => 'bart',        fields => [ 'name', 'id' ], rows => \@rows ), 1;
-#    is scalar query_grep( query => 'bart Bart',   fields => [ 'name', 'id' ], rows => \@rows ), 1;
-#    is scalar query_grep( query => 'simpson',     fields => [ 'name', 'id' ], rows => \@rows ), 2;
-#    is scalar query_grep( query => 'Simpson',     fields => [ 'name', 'id' ], rows => \@rows ), 2;
-#    is scalar query_grep( query => '"sim"',       fields => [ 'name', 'id' ], rows => \@rows ), 1;
-#    is scalar query_grep( query => '"Sim"',       fields => [ 'name', 'id' ], rows => \@rows ), 2;
-#    is scalar query_grep( query => '"Sim" -bart', fields => [ 'name', 'id' ], rows => \@rows ), 1;
-#};
-#
-#subtest 'query_grep finds none' => sub {
-#    is scalar query_grep( query => 'hank', fields => [ 'name', 'id' ], rows => \@rows ), 0;
-#    is scalar query_grep( query => '"bart"',      fields => ['name'], rows => \@rows ), 0;
-#    is scalar query_grep( query => '-k -m -l -b', fields => ['name'], rows => \@rows ), 0;
-#};
-#
-#subtest '_unique: returns unique fields' => sub {
-#    is_deeply [ _unique() ],   [ () ];
-#    is_deeply [ _unique('') ], [ ('') ];
-#    is_deeply [ _unique( '', undef ) ], [ ( '', undef ) ];
-#    is_deeply [ _unique( undef, undef ) ], [ (undef) ];
-#
-#    is_deeply [ _unique( 'foo', undef, 'foo' ) ], [ ( 'foo', undef ) ];
-#    is_deeply [ _unique( 'foo', 'foo' ) ], [ ('foo') ];
-#    is_deeply [ _unique( 'foo', 'bar', 'foo' ) ], [ ( 'foo', 'bar' ) ];
-#};
-#
-#subtest '_array' => sub {
-#    is_deeply [ _array( undef, '', 0 ) ], [0];
-#    is_deeply [ _array( [ undef, '', 0 ] ) ], [0];
-#
-#    is_deeply [ _array(qw/foo bar baz/) ], [ (qw/foo bar baz/) ];
-#    is_deeply [ _array( [qw/foo bar baz/] ) ], [ (qw/foo bar baz/) ];
-#
-#    is_deeply [ _array( {}, undef, {} ) ], [ {}, {} ];
-#    is_deeply [ _array( [ {}, undef, {} ] ) ], [ {}, {} ];
-#};
-#
-#subtest '_to_camel_case: camelize strings' => sub {
-#    is _to_camel_case(''),                    '';
-#    is _to_camel_case('foo'),                 'foo';
-#    is _to_camel_case('foo_bar'),             'fooBar';
-#    is _to_camel_case('foo_bar_'),            'fooBar_';
-#    is _to_camel_case('_foo_bar'),            '_fooBar';
-#    is _to_camel_case('____foo_____bar____'), '_fooBar_';
-#};
-#
-#subtest 'parse_vars: parses vars' => sub {
-#    is parse_vars('foo'), 'foo';
-#    is parse_vars( '${foo}', { foo => 'bar' } ), 'bar';
-#};
-#
-#subtest 'ns_split: splits namespace' => sub {
-#    is_deeply( [ Util->ns_split('') ],        [ '',    '' ] );
-#    is_deeply( [ Util->ns_split('foo/bar') ], [ 'foo', 'bar' ] );
-#    is_deeply( [ Util->ns_split('/bar') ],    [ '',    'bar' ] );
-#    is_deeply( [ Util->ns_split('foo/') ],    [ 'foo', '' ] );
-#};
-#
-#subtest 'in_range: checks that numbers are in range' => sub {
-#    ok !( Util->in_range() );
-#    ok( Util->in_range( 0,      '0-' ) );
-#    ok( Util->in_range( 11,     '1,2,3,10-' ) );
-#    ok( Util->in_range( 999999, '1,2,3,10-' ) );
-#    ok !( Util->in_range( 7, '1,2,3,10-' ) );
-#};
-#
-#subtest 'icon_path: builds absolute icon path' => sub {
-#    is( Util->icon_path('foo/'),    'foo/' );
-#    is( Util->icon_path('/foo'),    '/foo' );
-#    is( Util->icon_path('foo.bar'), '/static/images/icons/foo.bar' );
-#    is( Util->icon_path('foo'),     '/static/images/icons/foo.svg' );
-#};
-#
-#subtest '_replace_tags: change < and >' => sub {
-#    is( Util->_replace_tags('<'),        '&lt;' );
-#    is( Util->_replace_tags('>'),        '&gt;' );
-#    is( Util->_replace_tags(''),         '' );
-#    is( Util->_replace_tags('<string>'), '&lt;string&gt;' );
-#};
-#
-#subtest '_name_to_id: converts name to id' => sub {
-#    is( Util->_name_to_id(undef),             undef );
-#    is( Util->_name_to_id(''),                '' );
-#    is( Util->_name_to_id('ab    foo'),       'ab_foo' );
-#    is( Util->_name_to_id('foo?bar'),         'foo_bar' );
-#    is( Util->_name_to_id('ab_____foo'),      'ab_foo' );
-#    is( Util->_name_to_id('foobar__'),        'foobar' );
-#    is( Util->_name_to_id('_foobar'),         'foobar' );
-#    is( Util->_name_to_id('foobar'),          'foobar' );
-#    is( Util->_name_to_id('__foo__  ?bar__'), 'foo_bar' );
-#    is( Util->_name_to_id('FOO'),             'foo' );
-#};
-#
-#subtest '_size_unit: human readable format' => sub {
-#    is_deeply( [ Util->_size_unit() ],            [ '0',    'bytes' ] );
-#    is_deeply( [ Util->_size_unit(500) ],         [ '500',  'bytes' ] );
-#    is_deeply( [ Util->_size_unit(1050) ],        [ '1',    'KB' ] );
-#    is_deeply( [ Util->_size_unit(10000000) ],    [ '9.54', 'MB' ] );
-#    is_deeply( [ Util->_size_unit(10000000000) ], [ '9.31', 'GB' ] );
-#};
-#
-#subtest 'job_icon: builds and icon from status' => sub {
-#    is (Util->job_icon ('RUNNING'),'gears.gif');
-#    is (Util->job_icon ('READY'),'busy.svg');
-#    is (Util->job_icon ('APPROVAL'),'user_delete.svg');
-#    is (Util->job_icon ('FINISHED'),'active.svg');
-#    is (Util->job_icon ('FINISHED','1'),'close.svg');
-#    is (Util->job_icon ('IN-EDIT'),'log_w_1.svg');
-#    is (Util->job_icon ('WAITING'),'busy.svg');
-#    is (Util->job_icon ('PAUSED'),'control_pause.svg');
-#    is (Util->job_icon ('TRAPPED_PAUSED'),'control_pause.svg');
-#    is (Util->job_icon ('CANCELLED'),'close.svg');
-#    is (Util->job_icon (),'error_red.svg');
-#};
-#
-#subtest '_cut: joins paths' => sub {
-#    is( Util->_cut( 0, '\foo', '\static\images' ), '\static\images' );
-#    is( Util->_cut( 1, '\foo', '\static\images' ), '\static\images\foo' );
-#    is( Util->_cut( 2, '\bar', '\static\images' ), '\static\images\bar\bar' );
-#};
-#
-#subtest 'is_number: checks if is a number' => sub {
-#    is( Util->is_number('123'), 1 );
-#    is( Util->is_number(123),   1 );
-#    is( Util->is_number('abc'), '' );
-#    ok( Util->is_number('1.8') );
-#};
-#
-#subtest 'is_int: checks if is an integer' => sub {
-#    is( Util->is_int('abc'),  '' );
-#    is( Util->is_int(12.11),  '' );
-#    is( Util->is_int('1234'), 1 );
-#    is( Util->is_int(1234),   1 );
-#};
-#
-#subtest '_trim: remove whitespaces at the beginning and at the end' => sub {
-#    is( Util->_trim(),               '' );
-#    is( Util->_trim('   a'),         'a' );
-#    is( Util->_trim('       foo'),   'foo' );
-#    is( Util->_trim('ab   cd'),      'ab   cd' );
-#    is( Util->_trim('    text    '), 'text' );
-#};
-#
-#subtest '_bool: converts value to 0 or 1' => sub {
-#    is( Util->_bool(),        '0' );
-#    is( Util->_bool('foo'),   '1' );
-#    is( Util->_bool(10),      '1' );
-#    is( Util->_bool('true'),  '1' );
-#    is( Util->_bool('on'),    '1' );
-#    is( Util->_bool('off'),   '0' );
-#    is( Util->_bool('false'), '0' );
-#};
-#
-#subtest '_markdown_escape: escapes special symbols' => sub {
-#    is( Util->_markdown_escape('(foo.bar'),  '\(foo\.bar' );
-#    is( Util->_markdown_escape('(foo__bar'), '\(foo\_\_bar' );
-#};
-#
-#subtest '_markup_escape: encodes special symbols' => sub {
-#    is( Util->_markup_escape('\*'), '&#42;' );
-#    is( Util->_markup_escape('\`'), '&#96;' );
-#    is( Util->_markup_escape('\]'), '&#93;' );
-#};
-#
-#subtest '_markup_unescape: decodes special symbols' => sub {
-#    is( Util->_markup_unescape('&#42;'), '*' );
-#    is( Util->_markup_unescape('&#96;'), '`' );
-#    is( Util->_markup_unescape('&#92;'), '\\' );
-#};
-#
-#subtest '_markup: converts markup to html' => sub {
-#    is( Util->_markup('**$foo**'), '<span><b>$foo</b></span>' );
-#    is( Util->_markup('*$foo*'),   '<b>$foo</b>' );
-#    is( Util->_markup('`$foo`'),   '<code>$foo</code>' );
-#    is( Util->_markup('`*$foo*`'), '<code><b>$foo</b></code>' );
-#};
-#
-#subtest '_trend_line: calculates trend' => sub {
-#    is_deeply _trend_line( x => [ 0, 1, 2, 3, 4, 5 ], y => [ 10, 8, 6, 5, 4 ] ),
-#      [ '10.00', '8.20', '6.40', '4.60', '2.80', '1.00' ];
-#};
-#
-#subtest '_trend_line: calculates trend with special cases' => sub {
-#    is_deeply _trend_line( x => [], y => [] ), [];
-#    is_deeply _trend_line( x => [ 0, 0, 0, 0, 0 ], y => [ 0, 0, 0, 0, 0 ] ),
-#      [ '0.00', '0.00', '0.00', '0.00', '0.00', ];
-#};
-#
-#subtest '_strip_html: strips html' => sub {
-#    is _strip_html('<b>Bold</b>'), 'Bold';
-#    is _strip_html( '<b><script>alert!</script>Bold</b>', rules => { b => [] } ), '<b>Bold</b>';
-#};
-#
-#subtest '_strip_html_editor: strips html preserving allowed html formatting' => sub {
-#    my $html = <<'EOF';
-#    <span style="font-weight: bold;">1</span>
-#    <br>
-#    <span style="font-style: italic;">2</span>
-#    <br>
-#    <span style="text-decoration: underline;">3</span>
-#    <br>
-#    <span style="text-decoration: line-through;">4</span>
-#    <br>
-#    <sub>5</sub>
-#    <br>
-#    <sup>6</sup>
-#    <span style="font-family: Narrow;">
-#        <br>7<br>
-#        <font size="5">8<br>
-#        </font>
-#    </span>
-#    <div>
-#        <span style="font-family: Narrow;">
-#            <font size="5">9<br>
-#                <span style="color: rgb(204, 102, 0);">10<br>
-#                    <span style="background-color: rgb(153, 0, 0);">11<br>
-#                    </span>
-#                </span>
-#            </font>
-#        </span>12<span style="font-family: Narrow;">
-#            <font size="5">
-#                <span style="color: rgb(204, 102, 0);">
-#                    <span style="background-color: rgb(153, 0, 0);">
-#                        <br>
-#                    </span>
-#                </span>
-#            </font>
-#        </span>
-#        <ul>
-#            <li>
-#                <span style="font-family: Narrow;">
-#                    <font size="5">
-#                        <span style="color: rgb(204, 102, 0);">
-#                            <span style="background-color: rgb(153, 0, 0);">13</span>
-#                        </span>
-#                    </font>
-#                </span>
-#            </li>
-#        </ul>
-#        <ol>
-#            <li>
-#                <span style=" font-family: Narrow;">
-#                    <font size="5">
-#                        <span style=" color: rgb(204, 102, 0);">
-#                            <span style=" background-color: rgb(153, 0, 0);">14</span>
-#                        </span>
-#                    </font>
-#                </span>
-#            </li>
-#        </ol>
-#        <span style=" font-family: Narrow;">
-#            <font size="5">
-#                <span style=" color: rgb(204, 102, 0);">
-#                    <span style=" background-color: rgb(153, 0, 0);">
-#                        <br>
-#                    </span>
-#                </span>
-#            </font>
-#        </span>
-#        <div style="text-align: center;">
-#            <span style="color: rgb(204, 102, 0);">
-#                <font size="5">
-#                    <span style="font-family: Narrow;">123123<br>
-#                        <br>
-#                    </span>
-#                </font>
-#            </span>
-#            <div style="text-align: left;">
-#                <hr>
-#                <img src="http://123">
-#                <br>
-#                <img class="bali-topic-editor-image">
-#                <br>
-#                <font size="5">12312</font>
-#                <br>
-#            </div>
-#            <span style="color: rgb(204, 102, 0);">
-#                <font size="5">
-#                    <span style="font-family: Narrow;">
-#                    </span>
-#                </font>
-#            </span>
-#            <span style=" font-family: Narrow;">
-#                <font size="5">
-#                    <span style=" color: rgb(204, 102, 0);">
-#                        <span style=" background-color: rgb(153, 0, 0);">
-#                        </span>
-#                    </span>
-#                </font>
-#            </span>
-#            <a href="http://123">123123</a>
-#            <br>
-#            <span style=" font-family: Narrow;">
-#                <font size="5">
-#                    <span style=" color: rgb(204, 102, 0);">
-#                        <span style=" background-color: rgb(153, 0, 0);">
-#                        </span>
-#                    </span>
-#                </font>
-#            </span>
-#        </div>
-#    </div>
-#    <div>
-#        <span style="font-family: Narrow;">
-#        </span>
-#    </div>
-#EOF
-#
-#    $html =~ s{^\s+}{}g;
-#    $html =~ s{\s+$}{}g;
-#    $html =~ s{>\s+<}{><}g;
-#
-#    is_string _strip_html_editor($html), $html;
-#};
-#
-#subtest '_truncate: truncates string' => sub {
-#    is _truncate( 'foobar',    5 ), '[...]';
-#    is _truncate( 'foobarbaz', 6 ), 'f[...]';
-#    is _truncate( 'foobar', 5,  '...' ), 'fo...';
-#    is _truncate( 'foobar', 5,  '' ),    'fooba';
-#    is _truncate( 'foobar', 10, '' ),    'foobar';
-#};
-#
-#subtest '_md5: calculates md5 of a random string when no args' => sub {
-#    my $md5_1 = _md5();
-#    my $md5_2 = _md5();
-#
-#    isnt $md5_1, $md5_2;
-#};
-#
-#subtest '_md5: calculates md5 of a string' => sub {
-#    like _md5('hello'), qr/^[a-f0-9]{32}$/;
-#    like _md5( 'hello',        'there' ), qr/^[a-f0-9]{32}$/;
-#    like _md5( 'привет', 'there' ), qr/^[a-f0-9]{32}$/;
-#};
-#
-#subtest '_md5: calculates md5 of a file' => sub {
-#    my $fh = tempfile();
-#    print $fh 'hello';
-#    seek $fh, 0, 0;
-#
-#    is _md5($fh), '5d41402abc4b2a76b9719d911017c592';
-#};
-#
-#subtest '_md5: calculates md5 of a with unicode' => sub {
-#    my $fh = tempfile();
-#    print $fh Encode::encode( 'UTF-8', 'привет' );
-#    seek $fh, 0, 0;
-#
-#    is _md5($fh), '608333adc72f545078ede3aad71bfe74';
-#};
-#
-#subtest 'hash_diff_ignore_empty: returns modified field' => sub {
-#    my $old_values = { a => 'old_value', b => 'b', c => 'c' };
-#    my $new_values = { a => 'new_value', b => 'b', c => 'c' };
-#
-#    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
-#
-#    cmp_deeply $diff, { a => 'new_value' };
-#};
-#
-#subtest 'hash_diff_ignore_empty: returns removed field' => sub {
-#    my $old_values = { removed_field => 'a', b => 'b', c => 'c' };
-#    my $new_values = { b => 'b', c => 'c' };
-#
-#    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
-#
-#    cmp_deeply $diff, { removed_field => 'a' };
-#};
-#
-#subtest 'hash_diff_ignore_empty: returns added field' => sub {
-#    my $old_values = { b => 'b', c => 'c' };
-#    my $new_values = { new_field => 'a', b => 'b', c => 'c' };
-#
-#    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
-#
-#    cmp_deeply $diff, { new_field => 'a' };
-#};
-#
-#subtest 'hash_diff_ignore_empty: does not return added undefined field' => sub {
-#    my $old_values = { b => 'b', c => 'c' };
-#    my $new_values = { new_field => undef, b => 'b', c => 'c' };
-#
-#    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
-#
-#    cmp_deeply $diff, {};
-#};
-#
-#subtest 'hash_diff_ignore_empty: does not return added empty field' => sub {
-#    my $old_values = { b => 'b', c => 'c' };
-#    my $new_values = { new_field => '', b => 'b', c => 'c' };
-#
-#    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
-#
-#    cmp_deeply $diff, {};
-#};
-#
-#subtest 'decode_json_safe: catches json errors and sets default value' => sub {
-#    is_deeply _decode_json_safe('asdfasdf'), {};
-#    is_deeply _decode_json_safe( 'asdfasdf', 'default_value' ), 'default_value';
-#    is_deeply _decode_json_safe('{"foo":"bar"}'), { foo => 'bar' };
-#};
-#
-#subtest '_json_pointer: get' => sub {
-#    my $stash = { aa => { bb => 22 } };
-#    is( Util->_json_pointer( $stash, '/aa/bb' ), 22 );
-#};
-#
-#subtest '_json_pointer: set' => sub {
-#    my $stash = { aa => { bb => 22 } };
-#    Util->_json_pointer( $stash, '/aa/bb', 33 );
-#    is( Util->_json_pointer( $stash, '/aa/bb' ), 33 );
-#};
-#
-#subtest '_json_pointer: set existing' => sub {
-#    my $stash = { aa=>{ bb=>22 } };
-#    Util->_json_pointer($stash,'/aa/bb',33);
-#    is ( Util->_json_pointer($stash,'/aa/bb'), 33 );
-#};
-#
-#subtest '_json_pointer: set new' => sub {
-#    my $stash = { foo=>'bar' };
-#    Util->_json_pointer($stash,'/aa/bb',33);
-#    is $stash->{foo}, 'bar', 'preserved ok';
-#    is $stash->{aa}{bb}, 33, 'stored';
-#    is ( Util->_json_pointer($stash,'/aa/bb'), 33, 'retrieve' );
-#};
-#
-#subtest '_json_pointer: get/set arrays' => sub {
-#    my $stash = { aa => { bb => [ 33, { zz => 22 } ] } };
-#    Util->_json_pointer( $stash, '/aa/bb/1/zz', 99 );
-#    is( Util->_json_pointer( $stash, '/aa/bb/1/zz' ), 99 );
-#    is( Util->_json_pointer( $stash, '/aa/bb/0' ),    33 );
-#};
-#
-#subtest '_json_pointer: set non-pointers' => sub {
-#    my $stash = { aa => { bb => 22 } };
-#
-#    Util->_json_pointer( $stash, 'aa/bb', 77 );
-#    is( Util->_json_pointer( $stash, 'aa/bb' ), 77 );
-#    is( $stash->{'aa/bb'}, 77 );
-#
-#    Util->_json_pointer( $stash, '//aa/bb', 88 );
-#    is( Util->_json_pointer( $stash, '//aa/bb' ), 88 );
-#    is( $stash->{'/aa/bb'}, 88 );
-#};
-#
-#subtest '_json_pointer supports ARRAY as pointer' => sub {
-#    my $stash = { aa=>{ bb=>22 } };
-#    Util->_json_pointer($stash,[qw(aa bb)],33);
-#    is ( Util->_json_pointer($stash,[qw(aa bb)]), 33 );
-#};
-#
-#subtest '_json_pointer returns undef if ARRAY not found but value exists' => sub {
-#    my $stash = { aa=>{ bb=>22 } };
-#    Util->_json_pointer($stash,[qw(aa bb)],33);
-#    is ( Util->_json_pointer($stash,[qw(aa bb cc)]), undef );
-#};
-#
-#subtest '_probe_one_row: basic one term' => sub {
-#    my $row = { aa=>'foo', bb=>'bar' };
-#    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ }) );
-#    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/tata/ }) );
-#};
-#
-#subtest '_is_binary: thows an exception when parameter size is 0' => sub {
-#    like exception { _is_binary() }, qr/sub is_bianry needs one parameter/;
-#};
-#
-#subtest '_is_binary: thows an exception when parameter size is greater than 1' => sub {
-#    like exception { _is_binary( data => 'data', path => '/my_path' ) }, qr/sub is_bianry needs one parameter/;
-#};
-#
-#subtest '_is_binary: thows an exception when parameter is not the correct one' => sub {
-#    like exception { _is_binary( datas => 'data' ) }, qr/_is_binary accept only parameters: data, fh or path/;
-#};
-#
-#subtest '_is_binary: return false when data is not binary' => sub {
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/foo";
-#
-#    TestUtils->write_file( "foobar", $filename );
-#    my $file = Util->_file($filename);
-#    my $data = scalar $file->slurp;
-#
-#    my $is_binary = Util->_is_binary( data => $data );
-#
-#    ok !$is_binary;
-#};
-#
-#subtest '_is_binary: return false when fh is not from a binary file' => sub {
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/foo";
-#
-#    TestUtils->write_file( "foobar", $filename );
-#    my $file = Util->_file($filename);
-#
-#    my $is_binary = Util->_is_binary( fh => $file->open() );
-#
-#    ok !$is_binary;
-#};
-#
-#subtest '_is_binary: return false when path is not from a binary file' => sub {
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/foo";
-#
-#    TestUtils->write_file( "foobar", $filename );
-#
-#    my $is_binary = Util->_is_binary( path => $filename );
-#
-#    ok !$is_binary;
-#};
-#
-#subtest '_is_binary: return true when data is binary' => sub {
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/foo";
-#
-#    TestUtils->write_file( "foobar", $filename );
-#    my $file = Util->_file($filename);
-#    my $data = scalar $file->slurp;
-#
-#    my $is_binary = Util->_is_binary( data => Util->compress($data) );
-#
-#    ok $is_binary;
-#};
-#
-#subtest '_is_binary: return true when fh is from a binary file' => sub {
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/file";
-#    my $tar_file = "$tmp/file.tar.gz";
-#
-#    TestUtils->write_file( "foobar", $filename );
-#    system("tar cvzf $tmp/file.tar.gz $tmp/file");
-#
-#    my $file = Util->_file($tar_file);
-#
-#    my $is_binary = Util->_is_binary( fh => $file->open() );
-#
-#    ok $is_binary;
-#};
-#
-#subtest '_is_binary: return true when path is from a binary file' => sub {
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/file";
-#    my $tar_file = "$tmp/file.tar.gz";
-#
-#    TestUtils->write_file( "foobar", $filename );
-#    system("tar cvzf $tmp/file.tar.gz $tmp/file");
-#
-#    my $is_binary = Util->_is_binary( path => $tar_file );
-#
-#    ok $is_binary;
-#};
-#
-#subtest '_timeout: does nothing when timeout is zero' => sub {
-#    my $output = _timeout(
-#        0,
-#        sub {
-#            return 'foo';
-#        },
-#        'alarm timeout'
-#    );
-#
-#    is $output, 'foo';
-#};
-#
-#subtest '_timeout: returns the scalar return value' => sub {
-#    my $output = _timeout(
-#        3,
-#        sub {
-#            return 'foo';
-#        },
-#        'alarm timeout'
-#    );
-#
-#    is $output, 'foo';
-#};
-#
-#subtest '_timeout: returns the list return value' => sub {
-#    my @output = _timeout(
-#        3,
-#        sub {
-#            return ( 1, 2, 3 );
-#        },
-#        'alarm timeout'
-#    );
-#
-#    is_deeply \@output, [ 1, 2, 3 ];
-#};
-#
-#subtest '_timeout: rethrows exception' => sub {
-#    like exception {
-#        _timeout(
-#            3 => sub {
-#                die 'foo';
-#            },
-#            'error timeout'
-#        );
-#    }, qr/foo/;
-#};
-#
-#subtest '_timeout: throws when timeout with default message' => sub {
-#    like exception {
-#        _timeout(
-#            1 => sub {
-#                sleep(2);
-#            }
-#        );
-#    }, qr/timeout/;
-#};
-#
-#subtest '_timeout: throws when timeout' => sub {
-#    like exception {
-#        _timeout(
-#            1 => sub {
-#                sleep(2);
-#            },
-#            'error timeout'
-#        );
-#    }, qr/error timeout/;
-#};
-#
-#subtest '_timeout: supports nested timeouts with outer timeout' => sub {
-#    like exception {
-#        _timeout(
-#            1 => sub {
-#                _timeout(
-#                    5 => sub {
-#                        sleep 2;
-#                    },
-#                    'internal timeout'
-#                );
-#            },
-#            'external timeout'
-#        );
-#    }, qr/external timeout/;
-#};
-#
-#subtest '_timeout: supports nested timeouts with inner timeout' => sub {
-#    my $e;
-#
-#    _timeout 10 => sub {
-#        $e = exception {
-#            _timeout(
-#                1 => sub {
-#                    sleep 2;
-#                },
-#                'internal timeout'
-#            );
-#        }
+####### query_grep
+
+my @rows = (
+    { id => 'bart',  name => 'Bart Simpson' },
+    { id => 'lisa',  name => 'Lisa Simpson' },
+    { id => 'moe',   name => 'Moe' },
+    { id => 'kasim', name => 'Kasim' },
+);
+
+subtest 'query_grep finds rows single field' => sub {
+    is scalar query_grep( query => 'bart',        fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '"Bart"',      fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => 'simpson',     fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'Simpson',     fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '"sim"',       fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '"Sim"',       fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '"Sim" -bart', fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '+Si',         fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'ba +Si',      fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => 'li ba +Si',   fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'ba?t',        fields => ['name'], rows => \@rows ), 1;
+
+    #is scalar query_grep( query=>'"Sim" -"Bart"', fields=>['name'], rows=>\@rows ), 1;
+};
+
+subtest 'query_grep finds rows single field masked' => sub {
+    is scalar query_grep( query => 'S?mp',        fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => 'Simp*',       fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '+lisa Simp*', fields => ['name'], rows => \@rows ), 1;
+    is scalar query_grep( query => '+lisa Simp*', fields => ['name'], rows => \@rows ), 1;
+};
+
+subtest 'query_grep all fields' => sub {
+    is scalar query_grep( query => 'Simp', all_fields => 1, rows => \@rows ), 2;
+    is scalar query_grep( query => 'bart', all_fields => 1, rows => \@rows ), 1;
+};
+
+subtest 'query_grep finds rows single field regexp' => sub {
+    is scalar query_grep( query => '/S..p/',  fields => ['name'], rows => \@rows ), 2;
+    is scalar query_grep( query => '/S.*ps/', fields => ['name'], rows => \@rows ), 2;
+};
+
+subtest 'query_grep finds rows multi-field' => sub {
+    is scalar query_grep( query => 'bart',        fields => [ 'name', 'id' ], rows => \@rows ), 1;
+    is scalar query_grep( query => 'bart Bart',   fields => [ 'name', 'id' ], rows => \@rows ), 1;
+    is scalar query_grep( query => 'simpson',     fields => [ 'name', 'id' ], rows => \@rows ), 2;
+    is scalar query_grep( query => 'Simpson',     fields => [ 'name', 'id' ], rows => \@rows ), 2;
+    is scalar query_grep( query => '"sim"',       fields => [ 'name', 'id' ], rows => \@rows ), 1;
+    is scalar query_grep( query => '"Sim"',       fields => [ 'name', 'id' ], rows => \@rows ), 2;
+    is scalar query_grep( query => '"Sim" -bart', fields => [ 'name', 'id' ], rows => \@rows ), 1;
+};
+
+subtest 'query_grep finds none' => sub {
+    is scalar query_grep( query => 'hank', fields => [ 'name', 'id' ], rows => \@rows ), 0;
+    is scalar query_grep( query => '"bart"',      fields => ['name'], rows => \@rows ), 0;
+    is scalar query_grep( query => '-k -m -l -b', fields => ['name'], rows => \@rows ), 0;
+};
+
+subtest '_unique: returns unique fields' => sub {
+    is_deeply [ _unique() ],   [ () ];
+    is_deeply [ _unique('') ], [ ('') ];
+    is_deeply [ _unique( '', undef ) ], [ ( '', undef ) ];
+    is_deeply [ _unique( undef, undef ) ], [ (undef) ];
+
+    is_deeply [ _unique( 'foo', undef, 'foo' ) ], [ ( 'foo', undef ) ];
+    is_deeply [ _unique( 'foo', 'foo' ) ], [ ('foo') ];
+    is_deeply [ _unique( 'foo', 'bar', 'foo' ) ], [ ( 'foo', 'bar' ) ];
+};
+
+subtest '_array' => sub {
+    is_deeply [ _array( undef, '', 0 ) ], [0];
+    is_deeply [ _array( [ undef, '', 0 ] ) ], [0];
+
+    is_deeply [ _array(qw/foo bar baz/) ], [ (qw/foo bar baz/) ];
+    is_deeply [ _array( [qw/foo bar baz/] ) ], [ (qw/foo bar baz/) ];
+
+    is_deeply [ _array( {}, undef, {} ) ], [ {}, {} ];
+    is_deeply [ _array( [ {}, undef, {} ] ) ], [ {}, {} ];
+};
+
+subtest '_to_camel_case: camelize strings' => sub {
+    is _to_camel_case(''),                    '';
+    is _to_camel_case('foo'),                 'foo';
+    is _to_camel_case('foo_bar'),             'fooBar';
+    is _to_camel_case('foo_bar_'),            'fooBar_';
+    is _to_camel_case('_foo_bar'),            '_fooBar';
+    is _to_camel_case('____foo_____bar____'), '_fooBar_';
+};
+
+subtest 'parse_vars: parses vars' => sub {
+    is parse_vars('foo'), 'foo';
+    is parse_vars( '${foo}', { foo => 'bar' } ), 'bar';
+};
+
+subtest 'ns_split: splits namespace' => sub {
+    is_deeply( [ Util->ns_split('') ],        [ '',    '' ] );
+    is_deeply( [ Util->ns_split('foo/bar') ], [ 'foo', 'bar' ] );
+    is_deeply( [ Util->ns_split('/bar') ],    [ '',    'bar' ] );
+    is_deeply( [ Util->ns_split('foo/') ],    [ 'foo', '' ] );
+};
+
+subtest 'in_range: checks that numbers are in range' => sub {
+    ok !( Util->in_range() );
+    ok( Util->in_range( 0,      '0-' ) );
+    ok( Util->in_range( 11,     '1,2,3,10-' ) );
+    ok( Util->in_range( 999999, '1,2,3,10-' ) );
+    ok !( Util->in_range( 7, '1,2,3,10-' ) );
+};
+
+subtest 'icon_path: builds absolute icon path' => sub {
+    is( Util->icon_path('foo/'),    'foo/' );
+    is( Util->icon_path('/foo'),    '/foo' );
+    is( Util->icon_path('foo.bar'), '/static/images/icons/foo.bar' );
+    is( Util->icon_path('foo'),     '/static/images/icons/foo.svg' );
+};
+
+subtest '_replace_tags: change < and >' => sub {
+    is( Util->_replace_tags('<'),        '&lt;' );
+    is( Util->_replace_tags('>'),        '&gt;' );
+    is( Util->_replace_tags(''),         '' );
+    is( Util->_replace_tags('<string>'), '&lt;string&gt;' );
+};
+
+subtest '_name_to_id: converts name to id' => sub {
+    is( Util->_name_to_id(undef),             undef );
+    is( Util->_name_to_id(''),                '' );
+    is( Util->_name_to_id('ab    foo'),       'ab_foo' );
+    is( Util->_name_to_id('foo?bar'),         'foo_bar' );
+    is( Util->_name_to_id('ab_____foo'),      'ab_foo' );
+    is( Util->_name_to_id('foobar__'),        'foobar' );
+    is( Util->_name_to_id('_foobar'),         'foobar' );
+    is( Util->_name_to_id('foobar'),          'foobar' );
+    is( Util->_name_to_id('__foo__  ?bar__'), 'foo_bar' );
+    is( Util->_name_to_id('FOO'),             'foo' );
+};
+
+subtest '_size_unit: human readable format' => sub {
+    is_deeply( [ Util->_size_unit() ],            [ '0',    'bytes' ] );
+    is_deeply( [ Util->_size_unit(500) ],         [ '500',  'bytes' ] );
+    is_deeply( [ Util->_size_unit(1050) ],        [ '1',    'KB' ] );
+    is_deeply( [ Util->_size_unit(10000000) ],    [ '9.54', 'MB' ] );
+    is_deeply( [ Util->_size_unit(10000000000) ], [ '9.31', 'GB' ] );
+};
+
+subtest 'job_icon: builds and icon from status' => sub {
+    is (Util->job_icon ('RUNNING'),'gears.gif');
+    is (Util->job_icon ('READY'),'busy.svg');
+    is (Util->job_icon ('APPROVAL'),'user_delete.svg');
+    is (Util->job_icon ('FINISHED'),'active.svg');
+    is (Util->job_icon ('FINISHED','1'),'close.svg');
+    is (Util->job_icon ('IN-EDIT'),'log_w_1.svg');
+    is (Util->job_icon ('WAITING'),'busy.svg');
+    is (Util->job_icon ('PAUSED'),'control_pause.svg');
+    is (Util->job_icon ('TRAPPED_PAUSED'),'control_pause.svg');
+    is (Util->job_icon ('CANCELLED'),'close.svg');
+    is (Util->job_icon (),'error_red.svg');
+};
+
+subtest '_cut: joins paths' => sub {
+    is( Util->_cut( 0, '\foo', '\static\images' ), '\static\images' );
+    is( Util->_cut( 1, '\foo', '\static\images' ), '\static\images\foo' );
+    is( Util->_cut( 2, '\bar', '\static\images' ), '\static\images\bar\bar' );
+};
+
+subtest 'is_number: checks if is a number' => sub {
+    is( Util->is_number('123'), 1 );
+    is( Util->is_number(123),   1 );
+    is( Util->is_number('abc'), '' );
+    ok( Util->is_number('1.8') );
+};
+
+subtest 'is_int: checks if is an integer' => sub {
+    is( Util->is_int('abc'),  '' );
+    is( Util->is_int(12.11),  '' );
+    is( Util->is_int('1234'), 1 );
+    is( Util->is_int(1234),   1 );
+};
+
+subtest '_trim: remove whitespaces at the beginning and at the end' => sub {
+    is( Util->_trim(),               '' );
+    is( Util->_trim('   a'),         'a' );
+    is( Util->_trim('       foo'),   'foo' );
+    is( Util->_trim('ab   cd'),      'ab   cd' );
+    is( Util->_trim('    text    '), 'text' );
+};
+
+subtest '_bool: converts value to 0 or 1' => sub {
+    is( Util->_bool(),        '0' );
+    is( Util->_bool('foo'),   '1' );
+    is( Util->_bool(10),      '1' );
+    is( Util->_bool('true'),  '1' );
+    is( Util->_bool('on'),    '1' );
+    is( Util->_bool('off'),   '0' );
+    is( Util->_bool('false'), '0' );
+};
+
+subtest '_markdown_escape: escapes special symbols' => sub {
+    is( Util->_markdown_escape('(foo.bar'),  '\(foo\.bar' );
+    is( Util->_markdown_escape('(foo__bar'), '\(foo\_\_bar' );
+};
+
+subtest '_markup_escape: encodes special symbols' => sub {
+    is( Util->_markup_escape('\*'), '&#42;' );
+    is( Util->_markup_escape('\`'), '&#96;' );
+    is( Util->_markup_escape('\]'), '&#93;' );
+};
+
+subtest '_markup_unescape: decodes special symbols' => sub {
+    is( Util->_markup_unescape('&#42;'), '*' );
+    is( Util->_markup_unescape('&#96;'), '`' );
+    is( Util->_markup_unescape('&#92;'), '\\' );
+};
+
+subtest '_markup: converts markup to html' => sub {
+    is( Util->_markup('**$foo**'), '<span><b>$foo</b></span>' );
+    is( Util->_markup('*$foo*'),   '<b>$foo</b>' );
+    is( Util->_markup('`$foo`'),   '<code>$foo</code>' );
+    is( Util->_markup('`*$foo*`'), '<code><b>$foo</b></code>' );
+};
+
+subtest '_trend_line: calculates trend' => sub {
+    is_deeply _trend_line( x => [ 0, 1, 2, 3, 4, 5 ], y => [ 10, 8, 6, 5, 4 ] ),
+      [ '10.00', '8.20', '6.40', '4.60', '2.80', '1.00' ];
+};
+
+subtest '_trend_line: calculates trend with special cases' => sub {
+    is_deeply _trend_line( x => [], y => [] ), [];
+    is_deeply _trend_line( x => [ 0, 0, 0, 0, 0 ], y => [ 0, 0, 0, 0, 0 ] ),
+      [ '0.00', '0.00', '0.00', '0.00', '0.00', ];
+};
+
+subtest '_strip_html: strips html' => sub {
+    is _strip_html('<b>Bold</b>'), 'Bold';
+    is _strip_html( '<b><script>alert!</script>Bold</b>', rules => { b => [] } ), '<b>Bold</b>';
+};
+
+subtest '_strip_html_editor: strips html preserving allowed html formatting' => sub {
+    my $html = <<'EOF';
+    <span style="font-weight: bold;">1</span>
+    <br>
+    <span style="font-style: italic;">2</span>
+    <br>
+    <span style="text-decoration: underline;">3</span>
+    <br>
+    <span style="text-decoration: line-through;">4</span>
+    <br>
+    <sub>5</sub>
+    <br>
+    <sup>6</sup>
+    <span style="font-family: Narrow;">
+        <br>7<br>
+        <font size="5">8<br>
+        </font>
+    </span>
+    <div>
+        <span style="font-family: Narrow;">
+            <font size="5">9<br>
+                <span style="color: rgb(204, 102, 0);">10<br>
+                    <span style="background-color: rgb(153, 0, 0);">11<br>
+                    </span>
+                </span>
+            </font>
+        </span>12<span style="font-family: Narrow;">
+            <font size="5">
+                <span style="color: rgb(204, 102, 0);">
+                    <span style="background-color: rgb(153, 0, 0);">
+                        <br>
+                    </span>
+                </span>
+            </font>
+        </span>
+        <ul>
+            <li>
+                <span style="font-family: Narrow;">
+                    <font size="5">
+                        <span style="color: rgb(204, 102, 0);">
+                            <span style="background-color: rgb(153, 0, 0);">13</span>
+                        </span>
+                    </font>
+                </span>
+            </li>
+        </ul>
+        <ol>
+            <li>
+                <span style=" font-family: Narrow;">
+                    <font size="5">
+                        <span style=" color: rgb(204, 102, 0);">
+                            <span style=" background-color: rgb(153, 0, 0);">14</span>
+                        </span>
+                    </font>
+                </span>
+            </li>
+        </ol>
+        <span style=" font-family: Narrow;">
+            <font size="5">
+                <span style=" color: rgb(204, 102, 0);">
+                    <span style=" background-color: rgb(153, 0, 0);">
+                        <br>
+                    </span>
+                </span>
+            </font>
+        </span>
+        <div style="text-align: center;">
+            <span style="color: rgb(204, 102, 0);">
+                <font size="5">
+                    <span style="font-family: Narrow;">123123<br>
+                        <br>
+                    </span>
+                </font>
+            </span>
+            <div style="text-align: left;">
+                <hr>
+                <img src="http://123">
+                <br>
+                <img class="bali-topic-editor-image">
+                <br>
+                <font size="5">12312</font>
+                <br>
+            </div>
+            <span style="color: rgb(204, 102, 0);">
+                <font size="5">
+                    <span style="font-family: Narrow;">
+                    </span>
+                </font>
+            </span>
+            <span style=" font-family: Narrow;">
+                <font size="5">
+                    <span style=" color: rgb(204, 102, 0);">
+                        <span style=" background-color: rgb(153, 0, 0);">
+                        </span>
+                    </span>
+                </font>
+            </span>
+            <a href="http://123">123123</a>
+            <br>
+            <span style=" font-family: Narrow;">
+                <font size="5">
+                    <span style=" color: rgb(204, 102, 0);">
+                        <span style=" background-color: rgb(153, 0, 0);">
+                        </span>
+                    </span>
+                </font>
+            </span>
+        </div>
+    </div>
+    <div>
+        <span style="font-family: Narrow;">
+        </span>
+    </div>
+EOF
+
+    $html =~ s{^\s+}{}g;
+    $html =~ s{\s+$}{}g;
+    $html =~ s{>\s+<}{><}g;
+
+    is_string _strip_html_editor($html), $html;
+};
+
+subtest '_truncate: truncates string' => sub {
+    is _truncate( 'foobar',    5 ), '[...]';
+    is _truncate( 'foobarbaz', 6 ), 'f[...]';
+    is _truncate( 'foobar', 5,  '...' ), 'fo...';
+    is _truncate( 'foobar', 5,  '' ),    'fooba';
+    is _truncate( 'foobar', 10, '' ),    'foobar';
+};
+
+subtest '_md5: calculates md5 of a random string when no args' => sub {
+    my $md5_1 = _md5();
+    my $md5_2 = _md5();
+
+    isnt $md5_1, $md5_2;
+};
+
+subtest '_md5: calculates md5 of a string' => sub {
+    like _md5('hello'), qr/^[a-f0-9]{32}$/;
+    like _md5( 'hello',        'there' ), qr/^[a-f0-9]{32}$/;
+    like _md5( 'привет', 'there' ), qr/^[a-f0-9]{32}$/;
+};
+
+subtest '_md5: calculates md5 of a file' => sub {
+    my $fh = tempfile();
+    print $fh 'hello';
+    seek $fh, 0, 0;
+
+    is _md5($fh), '5d41402abc4b2a76b9719d911017c592';
+};
+
+subtest '_md5: calculates md5 of a with unicode' => sub {
+    my $fh = tempfile();
+    print $fh Encode::encode( 'UTF-8', 'привет' );
+    seek $fh, 0, 0;
+
+    is _md5($fh), '608333adc72f545078ede3aad71bfe74';
+};
+
+subtest 'hash_diff_ignore_empty: returns modified field' => sub {
+    my $old_values = { a => 'old_value', b => 'b', c => 'c' };
+    my $new_values = { a => 'new_value', b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, { a => 'new_value' };
+};
+
+subtest 'hash_diff_ignore_empty: returns removed field' => sub {
+    my $old_values = { removed_field => 'a', b => 'b', c => 'c' };
+    my $new_values = { b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, { removed_field => 'a' };
+};
+
+subtest 'hash_diff_ignore_empty: returns added field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => 'a', b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, { new_field => 'a' };
+};
+
+subtest 'hash_diff_ignore_empty: does not return added undefined field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => undef, b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, {};
+};
+
+subtest 'hash_diff_ignore_empty: does not return added empty field' => sub {
+    my $old_values = { b => 'b', c => 'c' };
+    my $new_values = { new_field => '', b => 'b', c => 'c' };
+
+    my $diff = Util->hash_diff_ignore_empty( $old_values, $new_values );
+
+    cmp_deeply $diff, {};
+};
+
+subtest 'decode_json_safe: catches json errors and sets default value' => sub {
+    is_deeply _decode_json_safe('asdfasdf'), {};
+    is_deeply _decode_json_safe( 'asdfasdf', 'default_value' ), 'default_value';
+    is_deeply _decode_json_safe('{"foo":"bar"}'), { foo => 'bar' };
+};
+
+subtest '_json_pointer: get' => sub {
+    my $stash = { aa => { bb => 22 } };
+    is( Util->_json_pointer( $stash, '/aa/bb' ), 22 );
+};
+
+subtest '_json_pointer: set' => sub {
+    my $stash = { aa => { bb => 22 } };
+    Util->_json_pointer( $stash, '/aa/bb', 33 );
+    is( Util->_json_pointer( $stash, '/aa/bb' ), 33 );
+};
+
+subtest '_json_pointer: set existing' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33 );
+};
+
+subtest '_json_pointer: set new' => sub {
+    my $stash = { foo=>'bar' };
+    Util->_json_pointer($stash,'/aa/bb',33);
+    is $stash->{foo}, 'bar', 'preserved ok';
+    is $stash->{aa}{bb}, 33, 'stored';
+    is ( Util->_json_pointer($stash,'/aa/bb'), 33, 'retrieve' );
+};
+
+subtest '_json_pointer: get/set arrays' => sub {
+    my $stash = { aa => { bb => [ 33, { zz => 22 } ] } };
+    Util->_json_pointer( $stash, '/aa/bb/1/zz', 99 );
+    is( Util->_json_pointer( $stash, '/aa/bb/1/zz' ), 99 );
+    is( Util->_json_pointer( $stash, '/aa/bb/0' ),    33 );
+};
+
+subtest '_json_pointer: set non-pointers' => sub {
+    my $stash = { aa => { bb => 22 } };
+
+    Util->_json_pointer( $stash, 'aa/bb', 77 );
+    is( Util->_json_pointer( $stash, 'aa/bb' ), 77 );
+    is( $stash->{'aa/bb'}, 77 );
+
+    Util->_json_pointer( $stash, '//aa/bb', 88 );
+    is( Util->_json_pointer( $stash, '//aa/bb' ), 88 );
+    is( $stash->{'/aa/bb'}, 88 );
+};
+
+subtest '_json_pointer supports ARRAY as pointer' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,[qw(aa bb)],33);
+    is ( Util->_json_pointer($stash,[qw(aa bb)]), 33 );
+};
+
+subtest '_json_pointer returns undef if ARRAY not found but value exists' => sub {
+    my $stash = { aa=>{ bb=>22 } };
+    Util->_json_pointer($stash,[qw(aa bb)],33);
+    is ( Util->_json_pointer($stash,[qw(aa bb cc)]), undef );
+};
+
+subtest '_probe_one_row: basic one term' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ }) );
+    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/tata/ }) );
+};
+
+subtest '_is_binary: thows an exception when parameter size is 0' => sub {
+    like exception { _is_binary() }, qr/sub is_bianry needs one parameter/;
+};
+
+subtest '_is_binary: thows an exception when parameter size is greater than 1' => sub {
+    like exception { _is_binary( data => 'data', path => '/my_path' ) }, qr/sub is_bianry needs one parameter/;
+};
+
+subtest '_is_binary: thows an exception when parameter is not the correct one' => sub {
+    like exception { _is_binary( datas => 'data' ) }, qr/_is_binary accept only parameters: data, fh or path/;
+};
+
+subtest '_is_binary: return false when data is not binary' => sub {
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+    my $file = Util->_file($filename);
+    my $data = scalar $file->slurp;
+
+    my $is_binary = Util->_is_binary( data => $data );
+
+    ok !$is_binary;
+};
+
+subtest '_is_binary: return false when fh is not from a binary file' => sub {
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+    my $file = Util->_file($filename);
+
+    my $is_binary = Util->_is_binary( fh => $file->open() );
+
+    ok !$is_binary;
+};
+
+subtest '_is_binary: return false when path is not from a binary file' => sub {
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+
+    my $is_binary = Util->_is_binary( path => $filename );
+
+    ok !$is_binary;
+};
+
+subtest '_is_binary: return true when data is binary' => sub {
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    TestUtils->write_file( "foobar", $filename );
+    my $file = Util->_file($filename);
+    my $data = scalar $file->slurp;
+
+    my $is_binary = Util->_is_binary( data => Util->compress($data) );
+
+    ok $is_binary;
+};
+
+subtest '_is_binary: return true when fh is from a binary file' => sub {
+    my $tmp      = tempdir();
+    my $filename = "$tmp/file";
+    my $tar_file = "$tmp/file.tar.gz";
+
+    TestUtils->write_file( "foobar", $filename );
+
+    capture_merged {
+        system("tar cvzf $tmp/file.tar.gz $tmp/file");
+    };
+
+    my $file = Util->_file($tar_file);
+
+    my $is_binary = Util->_is_binary( fh => $file->open() );
+
+    ok $is_binary;
+};
+
+subtest '_is_binary: return true when path is from a binary file' => sub {
+    my $tmp      = tempdir();
+    my $filename = "$tmp/file";
+    my $tar_file = "$tmp/file.tar.gz";
+
+    TestUtils->write_file( "foobar", $filename );
+
+    capture_merged {
+        system("tar cvzf $tmp/file.tar.gz $tmp/file");
+    };
+
+    my $is_binary = Util->_is_binary( path => $tar_file );
+
+    ok $is_binary;
+};
+
+subtest '_timeout: does nothing when timeout is zero' => sub {
+    my $output = _timeout(
+        0,
+        sub {
+            return 'foo';
+        },
+        'alarm timeout'
+    );
+
+    is $output, 'foo';
+};
+
+subtest '_timeout: returns the scalar return value' => sub {
+    my $output = _timeout(
+        3,
+        sub {
+            return 'foo';
+        },
+        'alarm timeout'
+    );
+
+    is $output, 'foo';
+};
+
+subtest '_timeout: returns the list return value' => sub {
+    my @output = _timeout(
+        3,
+        sub {
+            return ( 1, 2, 3 );
+        },
+        'alarm timeout'
+    );
+
+    is_deeply \@output, [ 1, 2, 3 ];
+};
+
+subtest '_timeout: rethrows exception' => sub {
+    like exception {
+        _timeout(
+            3 => sub {
+                die 'foo';
+            },
+            'error timeout'
+        );
+    }, qr/foo/;
+};
+
+subtest '_timeout: throws when timeout with default message' => sub {
+    like exception {
+        _timeout(
+            1 => sub {
+                sleep(2);
+            }
+        );
+    }, qr/timeout/;
+};
+
+subtest '_timeout: throws when timeout' => sub {
+    like exception {
+        _timeout(
+            1 => sub {
+                sleep(2);
+            },
+            'error timeout'
+        );
+    }, qr/error timeout/;
+};
+
+subtest '_timeout: supports nested timeouts with outer timeout' => sub {
+    like exception {
+        _timeout(
+            1 => sub {
+                _timeout(
+                    5 => sub {
+                        sleep 2;
+                    },
+                    'internal timeout'
+                );
+            },
+            'external timeout'
+        );
+    }, qr/external timeout/;
+};
+
+subtest '_timeout: supports nested timeouts with inner timeout' => sub {
+    my $e;
+
+    _timeout 10 => sub {
+        $e = exception {
+            _timeout(
+                1 => sub {
+                    sleep 2;
+                },
+                'internal timeout'
+            );
+        }
+    };
+
+    like $e, qr/internal timeout/;
+};
+
+subtest '_chdir: returns scalar return value' => sub {
+    my $tmp = tempdir();
+
+    my $output = _chdir(
+        $tmp => sub {
+            return 'foo';
+        }
+    );
+
+    is $output, 'foo';
+};
+
+subtest '_chdir: returns list return value' => sub {
+    my $tmp = tempdir();
+
+    my @output = _chdir(
+        $tmp => sub {
+            return ( 1, 2, 3 );
+        }
+    );
+
+    is_deeply \@output, [ 1, 2, 3 ];
+};
+
+subtest '_chdir: changes back to previous directory' => sub {
+    my $cwd = getcwd();
+    my $tmp = tempdir();
+    my $cwd_new;
+
+    my @output = _chdir(
+        $tmp => sub {
+            $cwd_new = getcwd();
+        }
+    );
+
+    isnt( $cwd_new, $cwd );
+    is( $cwd, getcwd() );
+};
+
+subtest '_chdir: changes back to previous directory in case of error' => sub {
+    my $cwd = getcwd();
+    my $tmp = tempdir();
+
+    like exception {
+        _chdir(
+            $tmp => sub {
+                die "Error";
+            }
+        );
+    }, qr/Error/;
+
+    is $cwd, getcwd();
+};
+
+subtest 'capture_pipe: returns correct results' => sub {
+    my $output = '';
+
+    my $ret = Util->_capture_pipe(
+        sub {
+            print 'hello';
+            print STDERR 'bye';
+            return 123;
+        }
+    );
+
+    is_deeply $ret,
+      {
+        exit_code => 0,
+        stdout    => 'hello',
+        stderr    => 'bye',
+        ret       => 123
+      };
+};
+
+subtest 'capture_pipe: captures merge outputs' => sub {
+    my $output = '';
+
+    my $ret = Util->_capture_pipe(
+        sub {
+            print 'hello';
+            print STDERR 'bye';
+            return 123;
+        },
+        merge => 1
+    );
+
+    is_deeply $ret,
+      {
+        exit_code => 0,
+        stdout    => 'hellobye',
+        stderr    => '',
+        ret       => 123
+      };
+};
+
+subtest 'capture_pipe: calls a callback on stdout' => sub {
+    my $output = '';
+
+    Util->_capture_pipe(
+        sub {
+            for ( 1 .. 5 ) {
+                print "$_\n";
+            }
+        },
+        stdout => sub {
+            $output .= $_[0] if defined $_[0];
+        }
+    );
+
+    is $output, "1\n2\n3\n4\n5\n";
+};
+
+subtest 'capture_pipe: returns error exit code' => sub {
+    my $ret = Util->_capture_pipe(
+        sub {
+            die 'here';
+        }
+    );
+
+    like $ret->{error}, qr/here/;
+    isnt $ret->{exit_code}, 0;
+};
+
+subtest 'zip_dir: throws an error when zipfile path does not exist' => sub {
+    my $self = shift;
+    my $tmp  = tempdir();
+
+    like exception {
+        zip_dir( $self, source_dir => $tmp, zipfile => $PATH_UNLIKELY_TO_EXIST );
+    }, qr/Could not create zip file `$PATH_UNLIKELY_TO_EXIST`/;
+};
+
+subtest 'zip_dir: throws an error when source_dir path does not exist' => sub {
+    my $self = shift;
+    my $file = File::Temp->new;
+
+    like exception {
+        zip_dir( $self, source_dir => $PATH_UNLIKELY_TO_EXIST, zipfile => $file );
+    }, qr/Could not find dir `$PATH_UNLIKELY_TO_EXIST` to zip/;
+};
+
+subtest 'zip_dir: returns true when zipfile path exists' => sub {
+    my $self = shift;
+
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    my $output = zip_dir( $self, source_dir => $tmp, zipfile => $filename );
+    is $output, '1';
+};
+
+subtest 'zip_dir: compresses the files correctly in the zipfile when is a filehandle' => sub {
+    my $self = shift;
+
+    my $tmp      = tempdir();
+    my $file     = File::Temp->new;
+    my $zip      = Archive::Zip->new();
+    my $filename = "$tmp/foo";
+    TestUtils->write_file( 'foo', $filename );
+
+    zip_dir( $self, source_dir => $tmp, zipfile => $file );
+
+    $zip->read( $file->filename );
+    my @members = $zip->memberNames();
+    is $members[1], 'foo';
+};
+
+subtest 'zip_dir: compresses the files correctly in the zipfile when zipfile is a path' => sub {
+    my $self = shift;
+
+    my $zip      = Archive::Zip->new();
+    my $tmp      = tempdir();
+    my $filename = "$tmp/foo";
+
+    my $output = zip_dir( $self, source_dir => $tmp, zipfile => $filename );
+    $zip->read($filename);
+    my @members = $zip->memberNames();
+    is $members[1], 'foo';
+};
+
+subtest 'zip_dir: excludes files correctly in the zipfile' => sub {
+    my $self = shift;
+
+    my $tmp       = tempdir();
+    my $file      = File::Temp->new;
+    my $zip       = Archive::Zip->new();
+    my $filename  = "$tmp/foo";
+    my $filename2 = "$tmp/bar";
+
+    TestUtils->write_file( 'foo', $filename );
+    TestUtils->write_file( 'bar', $filename2 );
+    zip_dir( $self, source_dir => $tmp, zipfile => $file, exclude => $filename );
+
+    $zip->read( $file->filename );
+    my @members = $zip->memberNames();
+
+    ok( !grep( /foo/, @members ) );
+};
+
+subtest 'zip_dir: includes files correctly in the zipfile' => sub {
+    my $self = shift;
+
+    my $tmp       = tempdir();
+    my $file      = File::Temp->new;
+    my $zip       = Archive::Zip->new();
+    my $filename  = "$tmp/foo";
+    my $filename2 = "$tmp/bar";
+
+    TestUtils->write_file( 'foo', $filename );
+    TestUtils->write_file( 'bar', $filename2 );
+    zip_dir( $self, source_dir => $tmp, zipfile => $file, include => $filename );
+
+    $zip->read( $file->filename );
+    my @members = $zip->memberNames();
+
+    ok( grep( /foo/, @members ) );
+    ok( !grep( /bar/, @members ) );
+};
+
+subtest '_probe_one_row: basic one term' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ }) );
+    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/tata/ }) );
+};
+
+subtest '_probe_one_row: and mode' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ },{ bb=>qr/a/ }) );
+    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/foo/ },{ bb=>qr/x/ }) );
+};
+
+subtest '_probe_one_row: or mode' => sub {
+    my $row = { aa=>'foo', bb=>'bar' };
+    ok( Util->_probe_one_row('or', $row, { aa=>qr/xx/ }, { bb=>'bar' }) );
+    ok( ! Util->_probe_one_row('or', $row, { aa=>qr/xx/ },{ bb=>qr/tt/ }) );
+};
+
+subtest '_retry: rethrows last error' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        die "error=" . $attempts++;
+    };
+
+    like exception { Util->_retry( $cb, attempts => 3 ) }, qr/error=2/;
+};
+
+subtest '_retry: returns last value on success' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        return $attempts if $attempts > 1;
+        die "error=" . $attempts++;
+    };
+
+    is(Util->_retry( $cb, attempts => 3 ), '2');
+};
+
+subtest '_retry: returns on the first success' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        $attempts++;
+
+        return $attempts;
+    };
+
+    Util->_retry( $cb, attempts => 3 );
+
+    is $attempts, 1;
+};
+
+subtest '_retry: rethrows error when no match' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        $attempts++;
+        die 'that=' . $attempts;
+    };
+
+    like exception { Util->_retry( $cb, attempts => 3, when => qr/this/ ) }, qr/that=1/;
+};
+
+subtest '_retry: retries when error matches' => sub {
+    my $attempts = 0;
+    my $cb       = sub {
+        $attempts++;
+        die 'this=' . $attempts;
+    };
+
+    like exception { Util->_retry( $cb, attempts => 3, when => qr/^this/ ) }, qr/this=3/;
+};
+
+subtest 'slice_page: returns slice page' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '0', limit => '3', data => \@data);
+
+    is scalar(@info),3;
+    is $info[0], 1;
+    is $info[1], 2;
+    is $info[2], 3;
+};
+
+subtest 'slice_page: returns slice page with offset' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '4', limit => '3', data => \@data );
+
+    is scalar(@info),3;
+    is $info[0], 5;
+    is $info[1], 6;
+    is $info[2], 7;
+};
+
+subtest 'slice_page: returns slice page with start + limit  bigger than number elements ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '7', limit => '3', data => \@data );
+
+    is scalar(@info),2;
+    is $info[0], 8;
+    is $info[1], 9;
+};
+
+subtest 'slice_page: returns slice page with start biger than number elements ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '9', limit => '3', data => \@data );
+
+    is scalar(@info),0;
+};
+
+subtest 'slice_page: returns slice page with bad input params ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => 'r', limit => undef, data => \@data );
+
+    is scalar(@info),0;
+};
+
+subtest 'slice_page: returns slice page with limit bigger than number elements ' => sub {
+    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+
+    my @info = Util->slice_page( start => '0', limit => '100', data => \@data );
+
+    is scalar(@info),9;
+};
+
+subtest 'capture_tee: captures stdout' => sub {
+    my $output;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            print 'OK';
+            warn 'ERR';
+        };
+    };
+
+    like $output, qr/OK/;
+    like $output, qr/ERR/;
+
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+subtest 'capture_tee: captures several times' => sub {
+    my $output;
+    my $output2;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            print 'OK';
+            warn 'ERR';
+        };
+
+        $output2 = _capture_tee {
+            print 'OK2';
+            warn 'ERR2';
+        };
+    };
+
+    like $output, qr/ERR/;
+    like $output, qr/OK/;
+
+    like $output2, qr/OK2/;
+    like $output2, qr/ERR2/;
+
+    like $tee_output, qr/OK2/;
+    like $tee_output, qr/ERR2/;
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+subtest 'capture_tee: captures recursively' => sub {
+    my $output;
+    my $output2;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            $output2 = _capture_tee {
+                print 'OK2';
+                warn 'ERR2';
+            };
+
+            print 'OK';
+            warn 'ERR';
+        };
+    };
+
+    like $output, qr/ERR/;
+    like $output, qr/OK/;
+
+    like $output2, qr/OK2/;
+    like $output2, qr/ERR2/;
+
+    like $tee_output, qr/OK2/;
+    like $tee_output, qr/ERR2/;
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+#subtest 'capture_tee: captures system output' => sub {
+#    my $output = _capture_tee {
+#        system("echo -n 'OK'; echo -n 'ERR' 2>&1");
 #    };
 #
-#    like $e, qr/internal timeout/;
+#    like $output, qr/OKERR/;
 #};
-#
-#subtest '_chdir: returns scalar return value' => sub {
-#    my $tmp = tempdir();
-#
-#    my $output = _chdir(
-#        $tmp => sub {
-#            return 'foo';
-#        }
-#    );
-#
-#    is $output, 'foo';
-#};
-#
-#subtest '_chdir: returns list return value' => sub {
-#    my $tmp = tempdir();
-#
-#    my @output = _chdir(
-#        $tmp => sub {
-#            return ( 1, 2, 3 );
-#        }
-#    );
-#
-#    is_deeply \@output, [ 1, 2, 3 ];
-#};
-#
-#subtest '_chdir: changes back to previous directory' => sub {
-#    my $cwd = getcwd();
-#    my $tmp = tempdir();
-#    my $cwd_new;
-#
-#    my @output = _chdir(
-#        $tmp => sub {
-#            $cwd_new = getcwd();
-#        }
-#    );
-#
-#    isnt( $cwd_new, $cwd );
-#    is( $cwd, getcwd() );
-#};
-#
-#subtest '_chdir: changes back to previous directory in case of error' => sub {
-#    my $cwd = getcwd();
-#    my $tmp = tempdir();
-#
-#    like exception {
-#        _chdir(
-#            $tmp => sub {
-#                die "Error";
-#            }
-#        );
-#    }, qr/Error/;
-#
-#    is $cwd, getcwd();
-#};
-#
-#subtest 'capture_pipe: returns correct results' => sub {
-#    my $output = '';
-#
-#    my $ret = Util->_capture_pipe(
-#        sub {
-#            print 'hello';
-#            print STDERR 'bye';
-#            return 123;
-#        }
-#    );
-#
-#    is_deeply $ret,
-#      {
-#        exit_code => 0,
-#        stdout    => 'hello',
-#        stderr    => 'bye',
-#        ret       => 123
-#      };
-#};
-#
-#subtest 'capture_pipe: captures merge outputs' => sub {
-#    my $output = '';
-#
-#    my $ret = Util->_capture_pipe(
-#        sub {
-#            print 'hello';
-#            print STDERR 'bye';
-#            return 123;
-#        },
-#        merge => 1
-#    );
-#
-#    is_deeply $ret,
-#      {
-#        exit_code => 0,
-#        stdout    => 'hellobye',
-#        stderr    => '',
-#        ret       => 123
-#      };
-#};
-#
-#subtest 'capture_pipe: calls a callback on stdout' => sub {
-#    my $output = '';
-#
-#    Util->_capture_pipe(
-#        sub {
-#            for ( 1 .. 5 ) {
-#                print "$_\n";
-#            }
-#        },
-#        stdout => sub {
-#            $output .= $_[0] if defined $_[0];
-#        }
-#    );
-#
-#    is $output, "1\n2\n3\n4\n5\n";
-#};
-#
-#subtest 'capture_pipe: returns error exit code' => sub {
-#    my $ret = Util->_capture_pipe(
-#        sub {
-#            die 'here';
-#        }
-#    );
-#
-#    like $ret->{error}, qr/here/;
-#    isnt $ret->{exit_code}, 0;
-#};
-#
-#subtest 'zip_dir: throws an error when zipfile path does not exist' => sub {
-#    my $self = shift;
-#    my $tmp  = tempdir();
-#
-#    like exception {
-#        zip_dir( $self, source_dir => $tmp, zipfile => $PATH_UNLIKELY_TO_EXIST );
-#    }, qr/Could not create zip file `$PATH_UNLIKELY_TO_EXIST`/;
-#};
-#
-#subtest 'zip_dir: throws an error when source_dir path does not exist' => sub {
-#    my $self = shift;
-#    my $file = File::Temp->new;
-#
-#    like exception {
-#        zip_dir( $self, source_dir => $PATH_UNLIKELY_TO_EXIST, zipfile => $file );
-#    }, qr/Could not find dir `$PATH_UNLIKELY_TO_EXIST` to zip/;
-#};
-#
-#subtest 'zip_dir: returns true when zipfile path exists' => sub {
-#    my $self = shift;
-#
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/foo";
-#
-#    my $output = zip_dir( $self, source_dir => $tmp, zipfile => $filename );
-#    is $output, '1';
-#};
-#
-#subtest 'zip_dir: compresses the files correctly in the zipfile when is a filehandle' => sub {
-#    my $self = shift;
-#
-#    my $tmp      = tempdir();
-#    my $file     = File::Temp->new;
-#    my $zip      = Archive::Zip->new();
-#    my $filename = "$tmp/foo";
-#    TestUtils->write_file( 'foo', $filename );
-#
-#    zip_dir( $self, source_dir => $tmp, zipfile => $file );
-#
-#    $zip->read( $file->filename );
-#    my @members = $zip->memberNames();
-#    is $members[1], 'foo';
-#};
-#
-#subtest 'zip_dir: compresses the files correctly in the zipfile when zipfile is a path' => sub {
-#    my $self = shift;
-#
-#    my $zip      = Archive::Zip->new();
-#    my $tmp      = tempdir();
-#    my $filename = "$tmp/foo";
-#
-#    my $output = zip_dir( $self, source_dir => $tmp, zipfile => $filename );
-#    $zip->read($filename);
-#    my @members = $zip->memberNames();
-#    is $members[1], 'foo';
-#};
-#
-#subtest 'zip_dir: excludes files correctly in the zipfile' => sub {
-#    my $self = shift;
-#
-#    my $tmp       = tempdir();
-#    my $file      = File::Temp->new;
-#    my $zip       = Archive::Zip->new();
-#    my $filename  = "$tmp/foo";
-#    my $filename2 = "$tmp/bar";
-#
-#    TestUtils->write_file( 'foo', $filename );
-#    TestUtils->write_file( 'bar', $filename2 );
-#    zip_dir( $self, source_dir => $tmp, zipfile => $file, exclude => $filename );
-#
-#    $zip->read( $file->filename );
-#    my @members = $zip->memberNames();
-#
-#    ok( !grep( /foo/, @members ) );
-#};
-#
-#subtest 'zip_dir: includes files correctly in the zipfile' => sub {
-#    my $self = shift;
-#
-#    my $tmp       = tempdir();
-#    my $file      = File::Temp->new;
-#    my $zip       = Archive::Zip->new();
-#    my $filename  = "$tmp/foo";
-#    my $filename2 = "$tmp/bar";
-#
-#    TestUtils->write_file( 'foo', $filename );
-#    TestUtils->write_file( 'bar', $filename2 );
-#    zip_dir( $self, source_dir => $tmp, zipfile => $file, include => $filename );
-#
-#    $zip->read( $file->filename );
-#    my @members = $zip->memberNames();
-#
-#    ok( grep( /foo/, @members ) );
-#    ok( !grep( /bar/, @members ) );
-#};
-#
-#subtest '_probe_one_row: basic one term' => sub {
-#    my $row = { aa=>'foo', bb=>'bar' };
-#    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ }) );
-#    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/tata/ }) );
-#};
-#
-#subtest '_probe_one_row: and mode' => sub {
-#    my $row = { aa=>'foo', bb=>'bar' };
-#    ok( Util->_probe_one_row('and', $row, { aa=>qr/foo/ },{ bb=>qr/a/ }) );
-#    ok( ! Util->_probe_one_row('and', $row, { aa=>qr/foo/ },{ bb=>qr/x/ }) );
-#};
-#
-#subtest '_probe_one_row: or mode' => sub {
-#    my $row = { aa=>'foo', bb=>'bar' };
-#    ok( Util->_probe_one_row('or', $row, { aa=>qr/xx/ }, { bb=>'bar' }) );
-#    ok( ! Util->_probe_one_row('or', $row, { aa=>qr/xx/ },{ bb=>qr/tt/ }) );
-#};
-#
-#subtest '_retry: rethrows last error' => sub {
-#    my $attempts = 0;
-#    my $cb       = sub {
-#        die "error=" . $attempts++;
-#    };
-#
-#    like exception { Util->_retry( $cb, attempts => 3 ) }, qr/error=2/;
-#};
-#
-#subtest '_retry: returns last value on success' => sub {
-#    my $attempts = 0;
-#    my $cb       = sub {
-#        return $attempts if $attempts > 1;
-#        die "error=" . $attempts++;
-#    };
-#
-#    is(Util->_retry( $cb, attempts => 3 ), '2');
-#};
-#
-#subtest '_retry: returns on the first success' => sub {
-#    my $attempts = 0;
-#    my $cb       = sub {
-#        $attempts++;
-#
-#        return $attempts;
-#    };
-#
-#    Util->_retry( $cb, attempts => 3 );
-#
-#    is $attempts, 1;
-#};
-#
-#subtest '_retry: rethrows error when no match' => sub {
-#    my $attempts = 0;
-#    my $cb       = sub {
-#        $attempts++;
-#        die 'that=' . $attempts;
-#    };
-#
-#    like exception { Util->_retry( $cb, attempts => 3, when => qr/this/ ) }, qr/that=1/;
-#};
-#
-#subtest '_retry: retries when error matches' => sub {
-#    my $attempts = 0;
-#    my $cb       = sub {
-#        $attempts++;
-#        die 'this=' . $attempts;
-#    };
-#
-#    like exception { Util->_retry( $cb, attempts => 3, when => qr/^this/ ) }, qr/this=3/;
-#};
-#
-#subtest 'slice_page: returns slice page' => sub {
-#    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-#
-#    my @info = Util->slice_page( start => '0', limit => '3', data => \@data);
-#
-#    is scalar(@info),3;
-#    is $info[0], 1;
-#    is $info[1], 2;
-#    is $info[2], 3;
-#};
-#
-#subtest 'slice_page: returns slice page with offset' => sub {
-#    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-#
-#    my @info = Util->slice_page( start => '4', limit => '3', data => \@data );
-#
-#    is scalar(@info),3;
-#    is $info[0], 5;
-#    is $info[1], 6;
-#    is $info[2], 7;
-#};
-#
-#subtest 'slice_page: returns slice page with start + limit  bigger than number elements ' => sub {
-#    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-#
-#    my @info = Util->slice_page( start => '7', limit => '3', data => \@data );
-#
-#    is scalar(@info),2;
-#    is $info[0], 8;
-#    is $info[1], 9;
-#};
-#
-#subtest 'slice_page: returns slice page with start biger than number elements ' => sub {
-#    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-#
-#    my @info = Util->slice_page( start => '9', limit => '3', data => \@data );
-#
-#    is scalar(@info),0;
-#};
-#
-#subtest 'slice_page: returns slice page with bad input params ' => sub {
-#    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-#
-#    my @info = Util->slice_page( start => 'r', limit => undef, data => \@data );
-#
-#    is scalar(@info),0;
-#};
-#
-#subtest 'slice_page: returns slice page with limit bigger than number elements ' => sub {
-#    my @data = ( '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-#
-#    my @info = Util->slice_page( start => '0', limit => '100', data => \@data );
-#
-#    is scalar(@info),9;
-#};
-#
-#subtest 'capture_tee: captures stdout' => sub {
-#    my $output;
-#
-#    my $tee_output = capture_merged {
-#        $output = _capture_tee {
-#            print 'OK';
-#            warn 'ERR';
-#        };
-#    };
-#
-#    like $output, qr/OK/;
-#    like $output, qr/ERR/;
-#
-#    like $tee_output, qr/OK/;
-#    like $tee_output, qr/ERR/;
-#};
-#
-#subtest 'capture_tee: captures several times' => sub {
-#    my $output;
-#    my $output2;
-#
-#    my $tee_output = capture_merged {
-#        $output = _capture_tee {
-#            print 'OK';
-#            warn 'ERR';
-#        };
-#
-#        $output2 = _capture_tee {
-#            print 'OK2';
-#            warn 'ERR2';
-#        };
-#    };
-#
-#    like $output, qr/ERR/;
-#    like $output, qr/OK/;
-#
-#    like $output2, qr/OK2/;
-#    like $output2, qr/ERR2/;
-#
-#    like $tee_output, qr/OK2/;
-#    like $tee_output, qr/ERR2/;
-#    like $tee_output, qr/OK/;
-#    like $tee_output, qr/ERR/;
-#};
-#
-#subtest 'capture_tee: captures recursively' => sub {
-#    my $output;
-#    my $output2;
-#
-#    my $tee_output = capture_merged {
-#        $output = _capture_tee {
-#            $output2 = _capture_tee {
-#                print 'OK2';
-#                warn 'ERR2';
-#            };
-#
-#            print 'OK';
-#            warn 'ERR';
-#        };
-#    };
-#
-#    like $output, qr/ERR/;
-#    like $output, qr/OK/;
-#
-#    like $output2, qr/OK2/;
-#    like $output2, qr/ERR2/;
-#
-#    like $tee_output, qr/OK2/;
-#    like $tee_output, qr/ERR2/;
-#    like $tee_output, qr/OK/;
-#    like $tee_output, qr/ERR/;
-#};
-#
-##subtest 'capture_tee: captures system output' => sub {
-##    my $output = _capture_tee {
-##        system("echo -n 'OK'; echo -n 'ERR' 2>&1");
-##    };
-##
-##    like $output, qr/OKERR/;
-##};
-#
-#subtest 'capture_tee: captures stdout from fork' => sub {
-#    my $pid;
-#    my $output;
-#
-#    my $tee_output = capture_merged {
-#        $output = _capture_tee {
-#            $pid = fork;
-#            if ( !$pid ) {
-#                print 'OK';
-#                warn 'ERR';
-#                exit;
-#            }
-#
-#            sleep 1;
-#        };
-#
-#        waitpid $pid, 0;
-#    };
-#
-#    like $output, qr/OK/;
-#    like $output, qr/ERR/;
-#
-#    like $tee_output, qr/OK/;
-#    like $tee_output, qr/ERR/;
-#};
-#
-#subtest 'capture_tee: captures stdout from pipe' => sub {
-#    my $output;
-#
-#    my $tee_output = capture_merged {
-#        $output = _capture_tee {
-#            open my $fh, "echo 'OK' |";
-#
-#            while (<$fh>) {
-#                print;
-#            }
-#        };
-#    };
-#
-#    like $output, qr/OK/;
-#
-#    like $tee_output, qr/OK/;
-#};
-#
-#subtest 'get_extension_file: returns the extension of a file' => sub {
-#    my $result = Util->_get_extension_file('');
-#    is $result, '', 'empty extension, no file';
-#
-#    $result = Util->_get_extension_file('filename.jpg');
-#    is $result, 'jpg', 'single extension filename.jpg';
-#
-#    $result = Util->_get_extension_file('filename.tar.gz');
-#    is $result, 'tar.gz', 'double extension filename.tar.gz';
-#};
+
+subtest 'capture_tee: captures stdout from fork' => sub {
+    my $pid;
+    my $output;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            $pid = fork;
+            if ( !$pid ) {
+                print 'OK';
+                warn 'ERR';
+                exit;
+            }
+
+            sleep 1;
+        };
+
+        waitpid $pid, 0;
+    };
+
+    like $output, qr/OK/;
+    like $output, qr/ERR/;
+
+    like $tee_output, qr/OK/;
+    like $tee_output, qr/ERR/;
+};
+
+subtest 'capture_tee: captures stdout from pipe' => sub {
+    my $output;
+
+    my $tee_output = capture_merged {
+        $output = _capture_tee {
+            open my $fh, "echo 'OK' |";
+
+            while (<$fh>) {
+                print;
+            }
+        };
+    };
+
+    like $output, qr/OK/;
+
+    like $tee_output, qr/OK/;
+};
+
+subtest 'get_extension_file: returns the extension of a file' => sub {
+    my $result = Util->_get_extension_file('');
+    is $result, '', 'empty extension, no file';
+
+    $result = Util->_get_extension_file('filename.jpg');
+    is $result, 'jpg', 'single extension filename.jpg';
+
+    $result = Util->_get_extension_file('filename.tar.gz');
+    is $result, 'tar.gz', 'double extension filename.tar.gz';
+};
+
+subtest 'to_dur: ' => sub {
+    my $chk = sub {
+        my ( $orig, $v ) = @_;
+        my $k = 0;
+        while ( $v =~ /(\d+)(\w)\s?/g ) {
+            my ( $n, $t ) = ( $1, $2 );
+            $k +=
+              $n *
+              (   $t eq 'Y' ? 31622400
+                : $t eq 'M' ? 2629743.999999999317419
+                : $t eq 'D' ? 86400
+                : $t eq 'h' ? 3600
+                : $t eq 'm' ? 60
+                :             1 );
+        }
+        my $d = abs( ( $k - $orig ) / $orig );
+        ok $d < .1, "to_dur check: $d < .01 ($orig,$k - $v)";
+    };
+
+    $chk->( $_, Util->to_dur($_) ) for map { int( $_ * 12**( 1 + ( $_ % 10 ) ) ) } 1 .. 1000;
+};
 
 done_testing;

@@ -3320,7 +3320,7 @@ subtest 'report_csv: returns rows' => sub {
                             }
                         ],
                         query => {
-                            'xnode-525' => {
+                            '123' => {
                                 id_category => [ $topic_data->{id_category} ],
                                 name_category =>
                                     [ $topic_data->{name_category} ],
