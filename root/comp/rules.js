@@ -1311,31 +1311,52 @@
             }
         };
         var menu_click = function(node,event){
-            if( node.attributes.is_current ) return false;
-            if( node.attributes.is_version ) {
+            if (node.attributes.is_current) return false;
+            if (node.attributes.is_version) {
                 node.select();
                 var has_version_tag = node.attributes.hasOwnProperty('version_tag') && node.attributes.version_tag;
-                var items = [
-                    { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.svg' },
-                    { text: has_version_tag ? _('Change tag') : _('Add tag'), handler: function(){ tag_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.svg' }
-                ];
+                var items = [{
+                    text: _('Rollback'),
+                    handler: function() {
+                        rollback_version(btn_refresh_tree, node)
+                    },
+                    icon: IC('arrow_undo')
+                }, {
+                    text: has_version_tag ? _('Change tag') : _('Add tag'),
+                    handler: function() {
+                        tag_version(btn_refresh_tree, node)
+                    },
+                    icon: IC('arrow_undo')
+                }];
                 if (has_version_tag) {
-                    items.push({ text: _('Delete tag'), handler: function(){ untag_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.svg' });
+                    items.push({
+                        text: _('Delete tag'),
+                        handler: function() {
+                            untag_version(btn_refresh_tree, node)
+                        },
+                        icon: IC('arrow_undo')
+                    });
                 }
-                var stmts_menu = new Ext.menu.Menu({ items: items });
+                var stmts_menu = new Ext.menu.Menu({
+                    items: items
+                });
 
                 stmts_menu.showAt(event.xy);
                 return;
             }
-            if(node.attributes.is_custom_folders_node){
-            node.select();
-            var stmts_menu = new Ext.menu.Menu({
-                items: [
-                    { text: _('Add new custom folder'), handler: function(){ add_custom_folder( node ) }, icon:'/static/images/icons/folder_new.svg' }
-                ]
-            });
-            stmts_menu.showAt(event.xy);
-        } 
+            if (node.attributes.is_custom_folders_node) {
+                node.select();
+                var stmts_menu = new Ext.menu.Menu({
+                    items: [{
+                        text: _('Add new custom folder'),
+                        handler: function() {
+                            add_custom_folder(node)
+                        },
+                        icon: IC('folder_new')
+                    }]
+                });
+                stmts_menu.showAt(event.xy);
+            }
 
             var items = [{
                 text: _('Configuration'),
