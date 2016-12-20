@@ -239,12 +239,6 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 self.refresh_dashlet(id_dashlet);
             };
         });
-
-        self.on('beforeshow', function(){
-            for(var id_dashlet in self.dashlets) {
-                self.refresh_dashlet(id_dashlet);
-            };
-        });
     },
     refresh_tab : function(){
         return new Cla.Dashboard(this);
