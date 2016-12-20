@@ -386,7 +386,7 @@ register 'fieldlet.system.title' => {
     section     => 'title',
     section_allowed => ['title'],
     limit_height   => 1,
-    show_in_palette => 0,
+    show_in_palette => 0
 };
 
 register 'fieldlet.system.labels' => {
