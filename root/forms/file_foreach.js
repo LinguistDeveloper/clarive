@@ -21,6 +21,12 @@
         new Baseliner.MonoTextArea({ fieldLabel: _('Path'), height: 80, name: 'path', value: params.data.path }),
         path_mode,
         dir_mode,
+        {
+            xtype: "checkbox",
+            name: "relative_paths",
+            checked: data.relative_paths == 'on' ? true : false,
+            fieldLabel: _('Return relative paths?')
+        },
         { xtype:'tabpanel', fieldLabel: _('Filters'), height: 200, activeTab:0, items:[
             new Baseliner.ArrayGrid({
                 title:_('Include Paths'),
