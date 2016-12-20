@@ -1930,3 +1930,13 @@ div.x-panel-body .job-calendar {
 ::-webkit-scrollbar-thumb {
     background-color: #ccc;
 }
+
+#boot input[type="search"]:focus {
+    background-color: #fff !important;
+    border-color: #a46ec0;
+    box-shadow: 0 0 3px #a46ec0 !important;
+    transition: border 500ms ease-out;
+    -webkit-transition : border 500ms ease-out;
+    -moz-transition : border 500ms ease-out;
+    -o-transition : border 500ms ease-out;
+}
