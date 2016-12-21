@@ -567,7 +567,8 @@ sub view : Local {
 
     my $category;
 
-    my $is_root = Baseliner::Model::Permissions->new->is_root($c->username);
+    my $permissions = Baseliner::Model::Permissions->new;
+    my $is_root = $permissions->new->is_root($c->username);
 
     try {
         my $topic_doc;
@@ -637,13 +638,15 @@ sub view : Local {
                 $c->stash->{menu_deploy} = _encode_json($menu);
             }
 
-            if ( !$categories_view{$category->{id} } ) {
-                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
-            }
+            my $action = $permissions->user_action( $c->username, 'action.topics.view',
+                bounds => { id_category => $category->{id} } );
 
-            if ( !Baseliner::Model::Permissions->user_has_security( $c->username, $topic_doc->{_project_security} ) ) {
-                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );
-            }
+            _fail( _loc( "User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid ) )
+              unless $action && Baseliner::Model::Permissions->user_has_security(
+                $c->username,
+                $topic_doc->{_project_security},
+                roles => $action->{roles}
+              );
 
             $c->stash->{category_meta} = $category->{forms};
 
