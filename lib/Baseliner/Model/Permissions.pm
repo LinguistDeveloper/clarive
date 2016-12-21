@@ -4,6 +4,7 @@ BEGIN { extends 'Catalyst::Model' }
 
 use Array::Utils qw(intersect);
 use Scalar::Util qw(blessed);
+use List::Util qw(first);
 use Try::Tiny;
 use Class::Load qw(load_class);
 use experimental 'signatures';
@@ -458,6 +459,7 @@ sub user_action ($self, $username, $action_key, %options) {
     my $action = {};
 
     if (@bounds_available) {
+        my $bounds_by_role = {};
         my @bounds;
         my @bounds_denied;
       ROLE: foreach my $id ( keys %allow_roles ) {
@@ -475,6 +477,7 @@ sub user_action ($self, $username, $action_key, %options) {
 
                         if (@negative_bounds) {
                             push @bounds, {};
+                            push @{ $bounds_by_role->{$id} }, {};
                             push @bounds_denied, @negative_bounds;
                         }
 
@@ -482,15 +485,18 @@ sub user_action ($self, $username, $action_key, %options) {
                     }
 
                     @bounds = ();
+                    $bounds_by_role->{$id} = [];
                     last ROLE;
                 }
 
                 push @bounds, _array @new_bounds;
+                push @{ $bounds_by_role->{$id} }, _array @new_bounds;
             }
         }
 
-        $action->{bounds}        = [];
-        $action->{bounds_denied} = [];
+        $action->{bounds_by_role} = {};
+        $action->{bounds}         = [];
+        $action->{bounds_denied}  = [];
 
         if (@bounds_denied) {
             foreach my $bound_denied (@bounds_denied) {
@@ -505,6 +511,7 @@ sub user_action ($self, $username, $action_key, %options) {
             }
         }
         else {
+            $action->{bounds_by_role} = $bounds_by_role;
             $action->{bounds} = \@bounds;
         }
 
@@ -512,6 +519,7 @@ sub user_action ($self, $username, $action_key, %options) {
         $action->{bounds_denied} = [ grep { %$_ } _array $action->{bounds_denied} ];
     }
 
+    $action->{roles} = [ grep { !$deny_roles{$_} } sort keys %allow_roles ];
     $action->{projects} = [ _unique @projects_ids ];
 
     return $action;
@@ -563,7 +571,7 @@ sub match_security ($self, $restricted_security, $available_security) {
     return 1;
 }
 
-sub user_has_security ($self, $username, $security) {
+sub user_has_security ($self, $username, $security, %params) {
     if ( $self->is_root($username) ) {
         return 1;
     }
@@ -578,6 +586,8 @@ sub user_has_security ($self, $username, $security) {
     foreach my $id_role ( keys %$user_security ) {
         my $role_security = $user_security->{$id_role};
 
+        next if $params{roles} && !first { $_ eq $id_role } @{ $params{roles} };
+
         return 1 if $self->match_security($role_security, $security);
     }
 
@@ -587,6 +597,15 @@ sub user_has_security ($self, $username, $security) {
 sub inject_security_filter ($self, $username, $where) {
     if ( $self->is_root($username) ) {
         return;
+    }
+
+    my $categories = {};
+    my $action = $self->user_action( $username, "action.topics.view", bounds => '*' );
+
+    my $bounds_by_role = $action->{bounds_by_role};
+
+    foreach my $id_role ( keys %$bounds_by_role ) {
+        $categories->{$id_role} = [ map { $_->{id_category} } @{ $bounds_by_role->{$id_role} } ];
     }
 
     my $user = ci->user->find_one( { username => $username }, { project_security => 1, _id => 0 } );
@@ -605,8 +624,10 @@ sub inject_security_filter ($self, $username, $where) {
             }
 
             push @subfilter,
-              { "_project_security.$dimension" =>
-                  { '$in' => [ _unique @extra, _array $user_security->{$id_role}->{$dimension} ] } };
+              {
+                "_project_security.$dimension" => { '$in' => [ _unique @extra, _array $user_security->{$id_role}->{$dimension} ] },
+                $categories->{$id_role} ? ('category.id' => { '$in' => $categories->{$id_role} }) : ()
+              };
         }
 
         push @filter, { '$and' => \@subfilter };

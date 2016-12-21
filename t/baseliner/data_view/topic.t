@@ -60,12 +60,13 @@ subtest 'build_where: builds correct where project_security' => sub {
                 '$and' => [
                     {
                         '_project_security.project' => {
-                            '$in' => [ undef, $project->mid ]
+                            '$in' => [ undef, $project->mid ],
                         },
+                        'category.id' => { '$in' => bag( $id_category1, $id_category2 ) }
                     }
                 ]
-            },
-        ]
+            }
+        ],
       };
 };
 

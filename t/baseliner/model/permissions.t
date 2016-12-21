@@ -893,6 +893,32 @@ subtest 'user_action: returns action ignoring bounds if no bounds supported' => 
     ok $action;
 };
 
+subtest 'user_action: returns action with roles' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.some' => {} );
+    Baseliner::Core::Registry->add( 'main', 'action.another' => { bounds => [ { key => 'foo' } ] } );
+
+    my $project1 = TestUtils->create_ci('project');
+    my $id_role1 = TestSetup->create_role( actions => [{ action => 'action.some' }] );
+
+    my $project2 = TestUtils->create_ci('project');
+    my $id_role2 = TestSetup->create_role( actions => [{ action => 'action.another' }] );
+
+    my $user = TestSetup->create_user(
+        project_security => {
+            $id_role1 => { project => $project1 },
+            $id_role2 => { project => $project2 },
+        }
+    );
+
+    my $permissions = _build_permissions();
+
+    my $action = $permissions->user_action( $user->username, 'action.some' );
+    ok $action;
+    is_deeply $action->{roles}, [$id_role1];
+};
+
 subtest 'user_action: returns action with bounds' => sub {
     _setup();
 
@@ -911,6 +937,7 @@ subtest 'user_action: returns action with bounds' => sub {
     $action = $permissions->user_action( $user->username, 'action.another', bounds => '*' );
     ok $action;
     is_deeply $action->{bounds}, [ { foo => 'bar' } ];
+    is_deeply $action->{bounds_by_role}, { $action->{roles}->[0] => [ { foo => 'bar' } ] };
 };
 
 subtest 'user_action: returns action with filtered bounds by deny rules' => sub {
@@ -1068,6 +1095,35 @@ subtest 'user_action: returns projects ids with action' => sub {
     is_deeply [ sort @{ $action->{projects} } ], [ $project1->mid, $project2->mid ];
 };
 
+subtest 'user_action: does not return roles that are denied' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.some' => { bounds => [ { key => 'foo' }, { key => 'bar' } ] } );
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role1 =
+      TestSetup->create_role(
+        actions => [ { action => 'action.some', bounds => [ { _deny => 1, foo => 'bar' }, {} ] } ] );
+    my $id_role2 = TestSetup->create_role( actions => [ { action => 'action.some', bounds => [ {} ] } ] );
+
+    my $user = TestSetup->create_user(
+        project_security => {
+            $id_role1 => {
+                project => $project->mid
+            },
+            $id_role2 => {
+                project => $project->mid
+            }
+        }
+    );
+
+    my $permissions = _build_permissions();
+
+    my $action = $permissions->user_action( $user->username, 'action.some', bounds => { foo => 'bar' } );
+
+    is_deeply $action->{roles}, [$id_role2];
+};
+
 subtest 'match_security: returns true when no limitations' => sub {
     _setup();
 
@@ -1142,6 +1198,26 @@ subtest 'user_has_security: returns true when permission not restrictive' => sub
     my $permissions = _build_permissions();
 
     ok $permissions->user_has_security( $user->username, { project => [ 1, 2, 3 ], area => [ 2, 3 ] } );
+};
+
+subtest 'user_has_security: returns false when role filter not matched' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( project_security => { '1' => { project => [1] } } );
+
+    my $permissions = _build_permissions();
+
+    ok !$permissions->user_has_security( $user->username, { project => [ 1, 2, 3 ] }, roles => ['2'] );
+};
+
+subtest 'user_has_security: returns true when role filter matched' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( project_security => { '1' => { project => [1] } } );
+
+    my $permissions = _build_permissions();
+
+    ok $permissions->user_has_security( $user->username, { project => [ 1, 2, 3 ] }, roles => ['1'] );
 };
 
 subtest 'user_has_security: returns false when restrictive by multiple dimensions' => sub {

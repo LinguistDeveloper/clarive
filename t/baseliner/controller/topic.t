@@ -3516,6 +3516,56 @@ subtest 'view: denies view of topic not allowed by project security' => sub {
     };
 };
 
+subtest 'view: denies view of topic allowed by project security but other role' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $project2 = TestUtils->create_ci('project');
+
+    my $id_changeset_rule = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category( id_rule => $id_changeset_rule );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            }
+        ]
+    );
+    my $id_role2 = TestSetup->create_role();
+
+    my $user = TestSetup->create_user(
+        project_security => {
+            $id_role  => { project => $project->mid },
+            $id_role2 => { project => $project2->mid },
+        }
+    );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project2
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+    $controller->view($c);
+
+    cmp_deeply $c->stash->{json}, {
+        success => \0,
+        msg => re(qr/User developer is not allowed to access topic/)
+    };
+};
+
 subtest 'view: allows users with action to see job monitor to see it' => sub {
     _setup();
 
