@@ -1393,8 +1393,8 @@
     });
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
 
-    var filters = new Ext.ux.grid.GridFilters({
-		menuFilterText: _('Filters'),
+    var filters = new Cla.GridFilters({
+        menuFilterText: _('Filters'),
         encode: true,
         local: false,
         filters: [

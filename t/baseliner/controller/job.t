@@ -9,6 +9,7 @@ use TestEnv;
 BEGIN { TestEnv->setup }
 use TestSetup;
 use TestUtils ':catalyst', 'mock_time';
+use Baseliner::Utils qw(_encode_json);
 
 use Capture::Tiny qw(capture);
 
@@ -449,6 +450,204 @@ subtest 'monitor_json: returns the jobs filtered by project' => sub {
 
     is $c->stash->{json}->{totalCount}, 1;
     is $c->stash->{json}->{data}[0]->{mid}, $job_ci->mid;
+};
+
+subtest 'monitor_json: returns the jobs filtered on the date indicated' => sub {
+    _setup();
+
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [ { bl => 'QA' } ]
+            },
+            { action => 'action.job.view_monitor', },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    my $job_ci;
+    capture {
+        mock_time '2016-01-01 00:05:00' => sub {
+            $job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+                bl           => 'QA'
+            );
+        };
+    };
+
+    my $other_job_ci;
+    capture {
+        mock_time '2016-01-02 00:05:00' => sub {
+            $other_job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+                bl           => 'QA'
+            );
+        };
+    };
+
+    my $filter
+        = _encode_json( [ { type => 'date', comparison => 'eq', value => '2016-01-01', field => 'starttime' } ] );
+
+    my $c =
+      mock_catalyst_c( username => $user->username, req => { params => { query_id => '-1', filter => $filter } } );
+
+    my $controller = _build_controller();
+
+    $controller->monitor_json($c);
+
+    is $c->stash->{json}->{totalCount}, 1;
+};
+
+subtest 'monitor_json: returns the jobs filtered before the date indicated' => sub {
+    _setup();
+
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [ { bl => 'QA' } ]
+            },
+            { action => 'action.job.view_monitor', },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    my $job_ci;
+    capture {
+        mock_time '2016-01-01 00:05:00' => sub {
+            $job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+                bl           => 'QA'
+            );
+        };
+    };
+
+    my $other_job_ci;
+    capture {
+        mock_time '2016-01-02 00:05:00' => sub {
+            $other_job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+                bl           => 'QA'
+            );
+        };
+    };
+
+    my $filter
+        = _encode_json( [ { type => 'date', comparison => 'lt', value => '2016-01-02', field => 'starttime' } ] );
+
+    my $c =
+      mock_catalyst_c( username => $user->username, req => { params => { query_id => '-1', filter => $filter } } );
+
+    my $controller = _build_controller();
+
+    $controller->monitor_json($c);
+
+    is $c->stash->{json}->{totalCount}, 1;
+};
+
+subtest 'monitor_json: returns the jobs filtered after the date indicated' => sub {
+    _setup();
+
+    my $id_changeset_rule = TestSetup->create_common_topic_rule_form;
+    my $id_changeset_category = TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule );
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.job.viewall',
+                bounds => [ { bl => 'QA' } ]
+            },
+            { action => 'action.job.view_monitor', },
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic(
+        id_category  => $id_changeset_category,
+        project      => $project,
+        is_changeset => 1,
+        username     => $user->username
+    );
+
+    mdb->rule->insert( { id => '1', rule_when => 'promote' } );
+
+    my $job_ci;
+    capture {
+        mock_time '2016-01-01 00:05:00' => sub {
+            $job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+                bl           => 'QA'
+            );
+        };
+    };
+
+    my $other_job_ci;
+    capture {
+        mock_time '2016-01-05 00:05:00' => sub {
+            $other_job_ci = TestUtils->create_ci(
+                'job',
+                final_status => 'FINISHED',
+                changesets   => [$changeset_mid],
+                bl           => 'QA'
+            );
+        };
+    };
+
+    my $filter
+        = _encode_json( [ { type => 'date', comparison => 'gt', value => '2016-01-02', field => 'starttime' } ] );
+
+    my $c =
+      mock_catalyst_c( username => $user->username, req => { params => { query_id => '-1', filter => $filter } } );
+
+    my $controller = _build_controller();
+
+    $controller->monitor_json($c);
+
+    is $c->stash->{json}->{totalCount}, 1;
 };
 
 subtest 'monitor: sets correct empty values when use has no permissions to view any jobs' => sub {

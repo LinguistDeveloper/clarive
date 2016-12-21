@@ -1634,7 +1634,7 @@
         return notifications_checked;
     }
 
-    var filters = new Ext.ux.grid.GridFilters({
+    var filters = new Cla.GridFilters({
         local: true,
         menuFilterText: _('Filters'),
         filters: [{

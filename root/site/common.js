@@ -14,6 +14,23 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+Cla.GridFilters = Ext.extend(Ext.ux.grid.GridFilters, {
+    onCheckChange: function(item, checked) {
+        var filter = this.getMenuFilter();
+        var scrollMenu = filter.menu.items.items;
+
+        filter.setActive(checked);
+        if (checked === false) {
+            scrollMenu.map(function(item) {
+                if (item.checked) {
+                    item.setChecked(false);
+                }
+
+                return item;
+            });
+        }
+    },
+});
 
 window._bool = function(v,undef){
     if( undef===undefined ) undef=false;

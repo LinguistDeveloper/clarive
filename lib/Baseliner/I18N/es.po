@@ -10355,7 +10355,7 @@ msgstr "Antes"
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
 msgid "After"
-msgstr "Despues"
+msgstr "Después"
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
 msgid "On"

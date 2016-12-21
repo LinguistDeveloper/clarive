@@ -1459,7 +1459,7 @@ Cla.topic_grid = function(params){
          });
     }
 
-    var filters = new Ext.ux.grid.GridFilters({
+    var filters = new Cla.GridFilters({
         menuFilterText: _('Filters'),
           encode: true,
           local: false,
