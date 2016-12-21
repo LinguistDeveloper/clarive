@@ -60,7 +60,16 @@ function generate_chart(params, res, result_type, decimal_zone, numberfield_grou
             type: graph_type,
             colors: res.colors,
             onclick: function(d, i) {
-                Baseliner.add_tabcomp('/comp/topic/topic_grid.js', d.id, {
+                var title;
+                var color;
+                var filter = params.data.group_by;
+                if (filter == 'category.name' || filter == 'topics_by_category') {
+                    color = res.colors[d.id];
+                    title = Baseliner.category_title('', d.id, color);
+                } else {
+                    title = d.id;
+                }
+                Baseliner.add_tabcomp('/comp/topic/topic_grid.js', title, {
                     topic_list: res.topics_list[d.id],
                     clear_filter: 1
                 });
