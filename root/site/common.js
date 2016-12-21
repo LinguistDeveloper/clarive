@@ -2074,15 +2074,6 @@ Baseliner.RowDragger = Ext.extend(Ext.util.Observable, {
 
     getRowClass : function(record, rowIndex, p, ds){
         return 'x-grid3-row-expanded';
-        p.cols = p.cols-1;
-        var content = this.bodyContent[record.id];
-        if(!content && !this.lazyRender){
-            content = this.getBodyContent(record, rowIndex);
-        }
-        if(content){
-            p.body = content;
-        }
-        return this.state[record.id] ? 'x-grid3-row-expanded' : 'x-grid3-row-collapsed';
     },
 
     init : function(grid){

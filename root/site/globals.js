@@ -15,7 +15,6 @@ window.Cla = Baseliner;
 Baseliner.tabInfo = {};
 Baseliner.keyMap = {};
 Baseliner.in_edit = {};
-Ext.Ajax.timeout = 60000;
 Baseliner.DEBUG = <% Baseliner->debug ? 'true' : 'false' %>;
 
 IC = function(icon){
@@ -72,14 +71,6 @@ Cla.use = function(urls, callback, cache) {
     } else {
         load_url(urls, callback);
     }
-};
-
-Cla.loadComp = function(url, cb) {
-    Cla.use(url, function(data) {
-        var comp;
-        eval('comp = ' + data + ';');
-        cb(comp());
-    });
 };
 
 Cla.moment_to_js_time_hash = {

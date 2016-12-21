@@ -1,4 +1,5 @@
-Ext.onReady(function(){
+(function(){
+
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     Ext.QuickTips.init();
     Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
@@ -545,7 +546,7 @@ Ext.onReady(function(){
     };
     */
 
-});
+})();
 
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
     window.onbeforeunload=  function(){ if( Cla.is_in_edit() ) return '' };
