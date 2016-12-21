@@ -5980,7 +5980,8 @@ msgid "Failed"
 msgstr "Falló"
 
 #: lib/BaselinerX/Reports/estadisticas_jobs_mes.pm
-#: lib/BaselinerX/Reports/trending_requests_by_month.pm root/comp/sem.js
+#: lib/BaselinerX/Reports/trending_requests_by_month.pm
+#: root/comp/monitor_grid.js root/comp/sem.js
 msgid "Cancelled"
 msgstr "Cancelado"
 
@@ -8780,7 +8781,7 @@ msgstr "Activar"
 msgid "Success"
 msgstr "Éxito"
 
-#: root/comp/daemon_grid.js root/comp/label_admin.js root/comp/monitor_grid.js
+#: root/comp/daemon_grid.js root/comp/label_admin.js
 #: root/comp/notifications.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
@@ -10277,77 +10278,73 @@ msgstr ""
 msgid "Update"
 msgstr "Actualizar"
 
-#: root/comp/monitor_grid.js
-msgid "REJECTED"
-msgstr "RECHAZADO"
+#: root/comp/monitor_grid.js root/site/common.js
+msgid "Rejected"
+msgstr "Rechazado"
 
 #: root/comp/monitor_grid.js
-msgid "CANCELLED"
-msgstr "CANCELADO"
+msgid "Trapped"
+msgstr "Capturado"
 
 #: root/comp/monitor_grid.js
-msgid "TRAPPED"
-msgstr "CAPTURADO"
+msgid "Trapped_Paused"
+msgstr "Capturado en Pausa"
 
 #: root/comp/monitor_grid.js
-msgid "TRAPPED_PAUSED"
-msgstr "CAPTURADO EN PAUSA"
+msgid "Running"
+msgstr "Ejecutando"
 
 #: root/comp/monitor_grid.js
-msgid "RUNNING"
-msgstr "EN EJECUCIÓN"
+msgid "Finished"
+msgstr "Finalizado"
+
+#: root/comp/monitor_grid.js root/comp/sem.js
+msgid "Killed"
+msgstr "Abortado"
 
 #: root/comp/monitor_grid.js
-msgid "FINISHED"
-msgstr "FINALIZADO"
+msgid "In-Edit"
+msgstr "En Edición"
+
+#: root/comp/monitor_grid.js root/comp/sem.js
+msgid "Waiting"
+msgstr "Esperando"
 
 #: root/comp/monitor_grid.js
-msgid "KILLED"
-msgstr "ABORTADO"
+msgid "Ready"
+msgstr "Listo"
+
+#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/site/common.js
+msgid "Approval"
+msgstr "Aprobación"
 
 #: root/comp/monitor_grid.js
-msgid "IN-EDIT"
-msgstr "EN EDICIÓN"
+msgid "Suspended"
+msgstr "Suspendido"
 
 #: root/comp/monitor_grid.js
-msgid "WAITING"
-msgstr "ESPERANDO"
+msgid "Paused"
+msgstr "Retenido"
 
 #: root/comp/monitor_grid.js
-msgid "SUSPENDED"
-msgstr "SUSPENDIDO"
+msgid "Rollbackfail"
+msgstr "Error marcha atrás"
 
 #: root/comp/monitor_grid.js
-msgid "RESUME"
-msgstr "REINICIADO"
+msgid "Rolledback"
+msgstr "Marcha atrás Ok"
 
 #: root/comp/monitor_grid.js
-msgid "PAUSED"
-msgstr "RETENIDO"
-
-#: root/comp/monitor_grid.js root/comp/rules.js
-msgid "ROLLBACK"
-msgstr "MARCHA ATRÁS"
+msgid "Pending"
+msgstr "Pendiente"
 
 #: root/comp/monitor_grid.js
-msgid "ROLLBACKFAIL"
-msgstr "ERROR MARCHA ATRÁS"
+msgid "Superseded"
+msgstr "Sobreseído"
 
 #: root/comp/monitor_grid.js
-msgid "ROLLEDBACK"
-msgstr "MARCHA ATRÁS OK"
-
-#: root/comp/monitor_grid.js root/fields/system/js/list_tasks.js
-msgid "PENDING"
-msgstr "PENDIENTE"
-
-#: root/comp/monitor_grid.js
-msgid "SUPERSEDED"
-msgstr "SOBRESEÍDO"
-
-#: root/comp/monitor_grid.js
-msgid "EXPIRED"
-msgstr "CADUCADO"
+msgid "Expired"
+msgstr "Caducado"
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
 msgid "Before"
@@ -10745,10 +10742,6 @@ msgstr "Ver Email"
 #: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
 msgid "Tipo"
 msgstr "Tipo"
-
-#: root/comp/revision/grid.mas root/site/common.js
-msgid "Approval"
-msgstr "Aprobación"
 
 #: root/comp/revision/grid.mas
 msgid "Application"
@@ -11403,6 +11396,10 @@ msgid "NO ROLLBACK"
 msgstr "NO MARCHA ATRÁS"
 
 #: root/comp/rules.js
+msgid "ROLLBACK"
+msgstr "MARCHA ATRÁS"
+
+#: root/comp/rules.js
 msgid "NO RUN"
 msgstr "NO EJECUTAR"
 
@@ -11571,10 +11568,6 @@ msgid "Legend"
 msgstr "Leyenda"
 
 #: root/comp/sem.js
-msgid "Waiting"
-msgstr "Esperando"
-
-#: root/comp/sem.js
 msgid "Busy"
 msgstr "Ocupado"
 
@@ -11585,10 +11578,6 @@ msgstr "Concedido"
 #: root/comp/sem.js root/site/model.js
 msgid "Done"
 msgstr "Finalizado"
-
-#: root/comp/sem.js
-msgid "Killed"
-msgstr "Abortado"
 
 #: root/comp/sem.js
 msgid "Who"
@@ -13449,6 +13438,10 @@ msgstr ""
 msgid "Create tasks"
 msgstr "Crear tareas"
 
+#: root/fields/system/js/list_tasks.js
+msgid "PENDING"
+msgstr "PENDIENTE"
+
 #: root/fields/system/js/list_topics.js
 msgid ""
 "You are about to replace the contents of the following fields: \\n - %1\\n"
@@ -15132,10 +15125,6 @@ msgid "Rejection requires a commentary"
 msgstr ""
 
 #: root/site/common.js
-msgid "Rejected"
-msgstr "Rechazado"
-
-#: root/site/common.js
 msgid "Capture"
 msgstr "Captura"
 
@@ -15951,6 +15940,54 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "REJECTED"
+#~ msgstr "RECHAZADO"
+
+#~ msgid "CANCELLED"
+#~ msgstr "CANCELADO"
+
+#~ msgid "TRAPPED"
+#~ msgstr "CAPTURADO"
+
+#~ msgid "TRAPPED_PAUSED"
+#~ msgstr "CAPTURADO EN PAUSA"
+
+#~ msgid "RUNNING"
+#~ msgstr "EN EJECUCIÓN"
+
+#~ msgid "FINISHED"
+#~ msgstr "FINALIZADO"
+
+#~ msgid "KILLED"
+#~ msgstr "ABORTADO"
+
+#~ msgid "IN-EDIT"
+#~ msgstr "EN EDICIÓN"
+
+#~ msgid "WAITING"
+#~ msgstr "ESPERANDO"
+
+#~ msgid "SUSPENDED"
+#~ msgstr "SUSPENDIDO"
+
+#~ msgid "RESUME"
+#~ msgstr "REINICIADO"
+
+#~ msgid "PAUSED"
+#~ msgstr "RETENIDO"
+
+#~ msgid "ROLLBACKFAIL"
+#~ msgstr "ERROR MARCHA ATRÁS"
+
+#~ msgid "ROLLEDBACK"
+#~ msgstr "MARCHA ATRÁS OK"
+
+#~ msgid "SUPERSEDED"
+#~ msgstr "SOBRESEÍDO"
+
+#~ msgid "EXPIRED"
+#~ msgstr "CADUCADO"
+
 #~ msgid "event daemon frequency (secs)"
 #~ msgstr "frecuencia del demonio de eventos (segs)"
 
@@ -15967,9 +16004,6 @@ msgstr "destino"
 
 #~ msgid "User removed a file"
 #~ msgstr "El usuario borró un fichero"
-
-#~ msgid "Running"
-#~ msgstr "Ejecutando"
 
 #~ msgid "Last Process ID"
 #~ msgstr "Último ID de proceso"
@@ -16494,9 +16528,6 @@ msgstr "destino"
 
 #~ msgid "Historical"
 #~ msgstr "Histórico"
-
-#~ msgid "Pending"
-#~ msgstr "Pendiente"
 
 #~ msgid "Are you sure you want to cancel the request '%1' for item '%2'?"
 #~ msgstr ""
@@ -17060,9 +17091,6 @@ msgstr "destino"
 #~ msgid "Check All"
 #~ msgstr "Marcar Todas"
 
-#~ msgid "Paused"
-#~ msgstr "Retenido"
-
 #~ msgid "Manual Deployment"
 #~ msgstr "Despliegue Manual"
 
@@ -17555,9 +17583,6 @@ msgstr "destino"
 
 #~ msgid "Workflow: %1"
 #~ msgstr "Flujo de trabajo: %1"
-
-#~ msgid "Ready"
-#~ msgstr "Disponible"
 
 #~ msgid "Enable Job"
 #~ msgstr "Disponible para Pase"

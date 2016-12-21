@@ -5899,7 +5899,8 @@ msgid "Failed"
 msgstr ""
 
 #: lib/BaselinerX/Reports/estadisticas_jobs_mes.pm
-#: lib/BaselinerX/Reports/trending_requests_by_month.pm root/comp/sem.js
+#: lib/BaselinerX/Reports/trending_requests_by_month.pm
+#: root/comp/monitor_grid.js root/comp/sem.js
 msgid "Cancelled"
 msgstr ""
 
@@ -8671,7 +8672,7 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: root/comp/daemon_grid.js root/comp/label_admin.js root/comp/monitor_grid.js
+#: root/comp/daemon_grid.js root/comp/label_admin.js
 #: root/comp/notifications.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
@@ -10121,76 +10122,72 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
-#: root/comp/monitor_grid.js
-msgid "REJECTED"
+#: root/comp/monitor_grid.js root/site/common.js
+msgid "Rejected"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "CANCELLED"
+msgid "Trapped"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "TRAPPED"
+msgid "Trapped_Paused"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "TRAPPED_PAUSED"
+msgid "Running"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "RUNNING"
+msgid "Finished"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/comp/sem.js
+msgid "Killed"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "FINISHED"
+msgid "In-Edit"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/comp/sem.js
+msgid "Waiting"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "KILLED"
+msgid "Ready"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/comp/revision/grid.mas root/site/common.js
+msgid "Approval"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "IN-EDIT"
+msgid "Suspended"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "WAITING"
+msgid "Paused"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "SUSPENDED"
+msgid "Rollbackfail"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "RESUME"
+msgid "Rolledback"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "PAUSED"
-msgstr ""
-
-#: root/comp/monitor_grid.js root/comp/rules.js
-msgid "ROLLBACK"
+msgid "Pending"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "ROLLBACKFAIL"
+msgid "Superseded"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "ROLLEDBACK"
-msgstr ""
-
-#: root/comp/monitor_grid.js root/fields/system/js/list_tasks.js
-msgid "PENDING"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "SUPERSEDED"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "EXPIRED"
+msgid "Expired"
 msgstr ""
 
 #: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
@@ -10588,10 +10585,6 @@ msgstr ""
 
 #: root/comp/revision/grid.mas root/comp/revision/grid_live.mas
 msgid "Tipo"
-msgstr ""
-
-#: root/comp/revision/grid.mas root/site/common.js
-msgid "Approval"
 msgstr ""
 
 #: root/comp/revision/grid.mas
@@ -11245,6 +11238,10 @@ msgid "NO ROLLBACK"
 msgstr ""
 
 #: root/comp/rules.js
+msgid "ROLLBACK"
+msgstr ""
+
+#: root/comp/rules.js
 msgid "NO RUN"
 msgstr ""
 
@@ -11413,10 +11410,6 @@ msgid "Legend"
 msgstr ""
 
 #: root/comp/sem.js
-msgid "Waiting"
-msgstr ""
-
-#: root/comp/sem.js
 msgid "Busy"
 msgstr ""
 
@@ -11426,10 +11419,6 @@ msgstr ""
 
 #: root/comp/sem.js root/site/model.js
 msgid "Done"
-msgstr ""
-
-#: root/comp/sem.js
-msgid "Killed"
 msgstr ""
 
 #: root/comp/sem.js
@@ -13273,6 +13262,10 @@ msgstr ""
 msgid "Create tasks"
 msgstr ""
 
+#: root/fields/system/js/list_tasks.js
+msgid "PENDING"
+msgstr ""
+
 #: root/fields/system/js/list_topics.js
 msgid ""
 "You are about to replace the contents of the following fields: \\n - %1\\n"
@@ -14946,10 +14939,6 @@ msgstr ""
 
 #: root/site/common.js
 msgid "Rejection requires a commentary"
-msgstr ""
-
-#: root/site/common.js
-msgid "Rejected"
 msgstr ""
 
 #: root/site/common.js
