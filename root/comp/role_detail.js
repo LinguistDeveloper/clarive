@@ -607,7 +607,7 @@
                         handler: function() {
                             if (callback) {
                                 var values = [];
-
+                                boundsStore.clearFilter();
                                 boundsStore.each(function(record) {
                                     values.push(record.data);
                                 });
