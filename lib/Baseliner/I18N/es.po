@@ -10871,6 +10871,14 @@ msgid "Please, select the role to delete"
 msgstr "Por favor, seleccione el rol a borrar"
 
 #: root/comp/role_grid.js
+msgid "The role %1 does not have users assigned, delete this role?"
+msgstr "El rol %1 no tiene usuarios asignados, ¿desea borrar el rol?"
+
+#: root/comp/role_grid.js
+msgid "The role %1 has %2 user(s) assigned, delete this role?"
+msgstr "El rol %1 tiene %2 usuario(s) asignados, ¿desea borrar el rol?"
+
+#: root/comp/role_grid.js
 msgid "Could not delete the role"
 msgstr "No se ha podido borrar el rol"
 
@@ -16020,12 +16028,6 @@ msgstr "destino"
 
 #~ msgid "Created file %1 to topic [%2] %3"
 #~ msgstr "Creadp el fichero %1 a tópico [%2] %3"
-
-#~ msgid "The role %1 does not have users assigned, delete this role?"
-#~ msgstr "El rol %1 no tiene usuarios asignados, ¿desea borrar el rol?"
-
-#~ msgid "The role %1 has %2 user(s) assigned, delete this role?"
-#~ msgstr "El rol %1 tiene %2 usuario(s) asignados, ¿desea borrar el rol?"
 
 #~ msgid "Actions (%1)"
 #~ msgstr "Acciones (%1)"
