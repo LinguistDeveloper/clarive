@@ -226,7 +226,7 @@ Baseliner.topic_name = function(args) {
         var style = String.format( style_str, color, icon, top, bot, img, size, iconSize );
         //if( color == undefined ) color = '#777';
         var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored("{0}","{1}", "{2}", "{3}");return false', args.mid, cat_name, color, args.parent_id ) : '';
-        var cursor = args.link ? 'cursor:pointer' : '';
+        var cursor = 'cursor:pointer';
 
         var ret = args.mini
             ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0} topic-name-{6}" mid="{7}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span class="topic-name-{6}" mid="{7}" style="{5};font-weight:bolder;font-size:11px">{2} {3}</span></span>',
@@ -2080,14 +2080,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
         self.refresh(true);
-        self.on("rowdblclick", function(grid, rowIndex, e ) {
-            var r = grid.getStore().getAt(rowIndex);
 
-            //var title = Baseliner.topic_title( r.get('mid'), _(r.get( 'categories' ).name), r.get('color') );
-            var title = Baseliner.topic_title( r.get('mid'), _(r.get('name')), r.get('color') );
-            Baseliner.show_topic( r.get('mid'), title, { topic_mid: r.get('mid'), title: title, _parent_grid: undefined } );
-
-        });
         self.on('afterrender', function(){
             var ddrow = new Baseliner.DropTarget(self.container, {
                 comp: self,
@@ -2186,7 +2179,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         }else{
             category_name = d.categories.name;
         }
-        return String.format('<a href="javascript:void(0);" onclick="javascript:Baseliner.show_topic_colored({0},\'{1}\',\'{2}\');return false;">{3}</a>',
+        return String.format('<a href="javascript:void(0);" style="cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({0},\'{1}\',\'{2}\');return false;">{3}</a>',
             d.mid,
             category_name,
             d.color,
