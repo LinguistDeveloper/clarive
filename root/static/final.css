@@ -1229,3 +1229,9 @@ ul.x-tab-strip li {
     margin-top:20px;
     padding-top: 2px;
 }
+
+#boot span.label.monitor-env-tag {
+    color: #fff;
+    background: #193a8d !important;
+    width: 100%;
+}
