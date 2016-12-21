@@ -908,17 +908,6 @@ sub _promotes_and_demotes {
     $id_status_from //= $topic->{category_status}{id} // $topic->{id_category_status};
     my %statuses = ci->status->statuses;
 
-    if ( $mode eq 'changeset' ) {
-        if ( $statuses{$id_status_from}->{bind_releases} ) {
-            if ($job_mode) {
-                return ();
-            }
-            else {
-                return ( {}, {}, {}, [], [], [] );
-            }
-        }
-    }
-
     _fail _loc('Missing topic parameter') unless $topic;
 
     #Personalized _workflow!
@@ -1110,8 +1099,7 @@ sub job_transitions : Local {
 sub cs_menu {
     my ($self, $c, %p ) = @_;
     my ( $topic, $bl_state, $state_name, $id_status_from, $id_project, $categories ) = @p{ qw/topic bl_state state_name id_status_from id_project categories/ };
-    #_warn \%p;
-    #return [] if $bl_state eq '*';
+
     my $job_mode = $p{job_mode} || 0;
     my ( @menu, @menu_s, @menu_p, @menu_d );
     my $sha = '';
@@ -1124,28 +1112,16 @@ sub cs_menu {
     my @topic_transitions;
 
     if ( $is_release ) {
-        # releases take the menu of their first child
-        #   TODO but should be intersection
-        my @chi =
-            grep { $$_{category}{is_changeset} }
-            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic->{mid}, state_id=>$id_status_from, id_project=>$id_project );
+        ## releases take the menu of their first child
+        ##   TODO but should be intersection
+        #my @chi =
+        #    grep { $$_{category}{is_changeset} }
+        #    $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic->{mid}, state_id=>$id_status_from, id_project=>$id_project );
 
-        if( @chi ) {
-           my ($menu_s, $menu_p, $menu_d );
-           if ( $job_mode ) {
-                @topic_transitions = $self->promotes_and_demotes( topic => $chi[0], username => $username, id_project => $id_project, job_mode => 1 );
-            } else {
-               ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
-                    username   => $c->username,
-                    topic      => $chi[0],
-                    id_project => $id_project
-                );
-               push @menu_s, _array( $menu_s );
-               push @menu_p, _array( $menu_p );
-               push @menu_d, _array( $menu_d );
-            }
-        }
-    } else {
+        #$topic = $chi[0];
+    }
+
+    if ($topic) {
         my ( $menu_s, $menu_p, $menu_d );
         if ( $job_mode ) {
              @topic_transitions = $self->promotes_and_demotes( topic => $topic, username => $username, id_project => $id_project, job_mode => 1 );
@@ -1160,6 +1136,7 @@ sub cs_menu {
             push @menu_d, _array($menu_d);
         }
     }
+
     if ( $job_mode ) {
          return @topic_transitions;
      } else {
