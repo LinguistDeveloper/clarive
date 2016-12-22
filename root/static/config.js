@@ -71,7 +71,8 @@ require.config({
 		spinnerStrategy: '/static/ex.ux.form.spinner/SpinnerStrategy',
 		prefs: '/site/prefs',
 		d3: '/static/d3/d3.min',
-		c3: '/static/c3/c3.min'
+		c3: '/static/c3/c3.min',
+		calendar: '/static/model/calendar'
 	},
 	shim: {
 		bootstrap: {
