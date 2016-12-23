@@ -10211,6 +10211,10 @@ msgid "MID"
 msgstr ""
 
 #: root/comp/monitor_grid.js
+msgid "Env"
+msgstr ""
+
+#: root/comp/monitor_grid.js
 msgid "Status Code"
 msgstr ""
 
