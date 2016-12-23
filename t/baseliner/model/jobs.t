@@ -33,7 +33,7 @@ subtest 'monitor: returns nothing when user does not have permissions' => sub {
     is @rows, 0;
 };
 
-subtest 'monitor: returns progress 100% when job finished' => sub {
+subtest 'monitor: returns progress 100 when job finished' => sub {
     _setup();
 
     my $changeset_mid = TestSetup->create_changeset();
@@ -45,8 +45,8 @@ subtest 'monitor: returns progress 100% when job finished' => sub {
     my $model = _build_model();
 
     my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
-
-    is $rows[0]->{progress}, '100%';
+    my $progress = $rows[0]->{progress};
+    is $progress, '100';
 };
 
 subtest 'monitor: returns progress start' => sub {
@@ -60,7 +60,9 @@ subtest 'monitor: returns progress start' => sub {
 
     my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
 
-    is $rows[0]->{progress}, ' 0% (0/4)';
+    my $progress = $rows[0]->{progress};
+
+    is $progress, '0';
 };
 
 subtest 'monitor: returns progress in beetween' => sub {
@@ -71,8 +73,9 @@ subtest 'monitor: returns progress in beetween' => sub {
     my $job = _create_job( changesets => [$changeset_mid] );
 
     mdb->job_log->insert(
-        {   mid        => $job->mid,
-            lev        => 'debug',
+        {
+            mid        => $job->mid,
+            exec       => 1,
             stmt_level => 1,
         }
     );
@@ -80,8 +83,9 @@ subtest 'monitor: returns progress in beetween' => sub {
     my $model = _build_model();
 
     my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
+    my $progress = $rows[0]->{progress};
 
-    is $rows[0]->{progress}, ' 25% (1/4)';
+    is $progress, '25';
 };
 
 subtest 'monitor: does not return progress over 100%' => sub {
@@ -91,10 +95,11 @@ subtest 'monitor: does not return progress over 100%' => sub {
 
     my $job = _create_job( changesets => [$changeset_mid] );
 
-    for ( 1 .. 5 ) {
+    for ( 1 .. 8 ) {
         mdb->job_log->insert(
-            {   mid        => $job->mid,
-                lev        => 'debug',
+            {
+                mid        => $job->mid,
+                exec       => 1,
                 stmt_level => 1,
             }
         );
@@ -103,8 +108,9 @@ subtest 'monitor: does not return progress over 100%' => sub {
     my $model = _build_model();
 
     my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
+    my $progress = $rows[0]->{progress};
 
-    is $rows[0]->{progress}, ' 25% (1/4)';
+    is $progress, '100';
 };
 
 subtest 'monitor: sets true when user has permission to force the rollback' => sub {
@@ -204,6 +210,34 @@ subtest 'monitor: row property not gives permission to execute restart' => sub {
         = $model->monitor( { username => $user->username, query_id => -1 } );
 
     is $rows[0]->{can_restart}, '0';
+};
+
+subtest 'monitor: returns correct percentage after restart' => sub {
+    _setup();
+
+    my $changeset_mid = TestSetup->create_changeset();
+    my $project       = TestUtils->create_ci_project();
+    my $id_role       = TestSetup->create_role();
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $job = _create_job( changesets => [$changeset_mid] );
+    $job->save;
+    capture {
+        $job->reset( { username => $user->name, step => 'RUN', last_finish_status => 'ERROR' } );
+    };
+    $job->save;
+    mdb->job_log->insert(
+        {
+            mid        => $job->mid,
+            exec       => 2,
+            stmt_level => 1,
+        }
+    );
+    my $model = _build_model();
+
+    my ( $count, @rows ) = $model->monitor( { username => 'root', query_id => -1 } );
+    my $progress = $rows[0]->{progress};
+    is $progress, '25';
 };
 
 done_testing;

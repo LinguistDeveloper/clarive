@@ -1326,6 +1326,60 @@
         }
     };
 
+    var STATUSES = {
+       'RUNNING': { cls: "info", active: true },
+       'READY': { cls: "info" },
+       'APPROVAL': { cls: "info" },
+       'FINISHED': { cls:"success" },
+       'IN-EDIT': { cls:"info" },
+       'WAITING': { cls:"info" },
+       'PAUSED': { cls:"info" },
+       'TRAPPED': { cls:"warning" },
+       'TRAPPED_PAUSED': { cls:"warning" },
+       'CANCELLED': { cls: "danger" },
+       'none': { cls: "danger" }
+    };
+
+    function progressBarRenderer(value, meta, rec) {
+        var status = STATUSES[rec.data.status_code] || STATUSES['none'];
+        var cls = status.cls || "info";
+        var active = status.active;
+        var prog = progressBar({
+            content: '',
+            progress: value,
+            cls: cls,
+            status,
+            active: active
+        });
+
+        return prog;
+    };
+
+    function progressBar(args) {
+        var template = {
+            width: args.progress,
+            content: args.progress + '%',
+            color: 'white',
+            cls: args.cls,
+            active: args.active
+        };
+        var progress = template.width;
+        if (progress == 0) {
+            if (template.cls == 'danger') {
+                template.color = 'red';
+            } else {
+                template.color = 'black';
+            }
+        }
+        return function(){/*
+            <span id="boot" style="background: transparent">
+            <div class="progress progress-[%= cls %] [% if(active) { %] progress-striped active [% } %]" style="width: 100%; height: 12px">
+                <div class="bar" style="color:[%= color %];font-size: 10px; line-height: 13px; width: [%= width %]%">[%= content %]</div>
+            </div>
+            </span>
+        */}.tmpl(template);
+    };
+
     var render_job = function(value, metadata, record){
         var contents = ''; record.data.contents.join('<br />');
         var execs = record.data.exec > 1 ? " ("+record.data.exec+")" : '';
@@ -1452,7 +1506,7 @@
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job, groupable: false },
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
-                { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true, groupable: false },
+                { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true,  renderer: progressBarRenderer, groupable: false },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },
                 { header: _('Project'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
