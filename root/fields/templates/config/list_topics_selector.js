@@ -1,28 +1,35 @@
 (function(params) {
     var data = params.data || {};
 
-    var value_type = Baseliner.generic_list_fields(data);
-    var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
-    var cstatus = new Baseliner.StatusBox({ name: 'statuses', fieldLabel: _('Select topics in statuses'), value: data.statuses || ''});
+    var categoryBox = new Baseliner.CategoryBox({
+        name: 'categories',
+        fieldLabel: _('Select topics in categories'),
+        value: data.categories || ''
+    });
+    var statusBox = new Baseliner.StatusBox({
+        name: 'statuses',
+        fieldLabel: _('Select topics in statuses'),
+        value: data.statuses || ''
+    });
 
-    var comboDatatable = new Baseliner.ComboDouble({
+    var datatableCombo = new Baseliner.ComboDouble({
         name: 'datatable',
         editable: false,
         fieldLabel: _('Table format?'),
-        data:[
-            [ 'always', _('Always') ],
-            [ 'paging', _('Only if paging') ],
-            [ 'never', _('Never') ],
+        data: [
+            ['always', _('Always')],
+            ['paging', _('Only if paging')],
+            ['never', _('Never')],
         ],
         value: /paging|always|never/.test(data.datatable) ? data.datatable : 'paging'
     });
 
     var logicField = new Baseliner.LogicField(params, data);
 
-    var comboPaging = new Baseliner.ComboSingle({
+    var pagingCombo = new Baseliner.ComboSingle({
         name: 'paging_datatable',
         fieldLabel: _('Grid Page Size'),
-        data:[10,20,25,50,100] ,
+        data: [10, 20, 25, 50, 100],
         value: data.paging_datatable || 10
     });
 
@@ -56,7 +63,7 @@
         }
     };
 
-    var columnIdTextfield = {
+    var customColumnIdTextfield = {
         header: _('Id Column'),
         dataIndex: 'id_column',
         editor: new Ext.form.TextField({
@@ -65,7 +72,7 @@
         })
     };
 
-    var columnDisplayTextfield = {
+    var customColumnDisplayTextfield = {
         header: _('Display Column'),
         dataIndex: 'display_column',
         editor: {
@@ -73,7 +80,7 @@
         }
     };
 
-    var columnTypeCombo = {
+    var customColumnTypeCombo = {
         dataIndex: 'column_type',
         header: _('Column Type'),
         editor: new Baseliner.ComboDouble({
@@ -89,17 +96,17 @@
             listeners: {
                 select: function(combo) {
                     if (this.value == 'variable') {
-                        columnVariableBox.editor.allowBlank = false;
-                        columnVariableBox.editor.enable();
+                        customColumnVariableBox.editor.allowBlank = false;
+                        customColumnVariableBox.editor.enable();
                     } else {
                         customColumnVariableBox.editor.allowBlank = true;
                         customColumnVariableBox.editor.setValue('');
                         customColumnVariableBox.editor.disable();
                     }
                 },
-		specialkey: function(combo, e) {
-			return false;
-		}
+                specialkey: function(combo, e) {
+                    return false;
+                }
             }
         }),
         default_value: 'text',
@@ -122,10 +129,10 @@
         enableColumnMove: false,
         allowCSV: false,
         columns: [
-            columnIdTextfield,
-            columnDisplayTextfield,
-            columnTypeCombo,
-            columnVariableBox
+            customColumnIdTextfield,
+            customColumnDisplayTextfield,
+            customColumnTypeCombo,
+            customColumnVariableBox
         ],
         viewConfig: {
             forceFit: true,
@@ -133,8 +140,8 @@
     });
 
     customColumnsGrid.editor.on('afteredit', function() {
-        columnVariableBox.editor.allowBlank = true;
-        columnVariableBox.editor.disable();
+        customColumnVariableBox.editor.allowBlank = true;
+        customColumnVariableBox.editor.disable();
     });
 
     customColumnsGrid.editor.on('show', function() {
@@ -148,7 +155,7 @@
     });
 
     customColumnsGrid.editor.on('validateedit', function(editor, record, row, rowIndex) {
-	var isValid = true;
+        var isValid = true;
         var values;
         if (record.id_column) {
             values = customColumnsGrid.getStore().data.items;
@@ -168,59 +175,65 @@
             })
         }
 
-	return isValid;
+        return isValid;
     });
 
-    Cla.help_push({ title:_('Topic Selector'), path:'rules/palette/fieldlets/topic-selector' });
+    Cla.help_push({
+        title: _('Topic Selector'),
+        path: 'rules/palette/fieldlets/topic-selector'
+    });
 
     return Baseliner.generic_fields(data).concat(
-        ccategory,
-        cstatus,
-        { xtype : 'checkbox', name : 'not_in_status', checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
-        value_type,
-    [{
-            xtype: 'textfield',
-            fieldLabel: _('List of columns to show in grid'),
-            name: 'columns',
-            value: data.columns
-        }, {
-            xtype: 'numberfield',
-            fieldLabel: _('Height of grid in edit mode'),
-            name: 'height',
-            fieldClass: 'x-fieldlet-type-height',
-            minValue: '1',
-            value: data.height || 250
-        }, {
-            xtype: 'numberfield',
-            name: 'page_size',
-            fieldLabel: _('Page size'),
-            value: data.page_size || 20
-        }, {
-            xtype: 'textfield',
-            name: 'parent_field',
-            fieldLabel: _('Parent field'),
-            value: data.parent_field
+        categoryBox,
+        statusBox, {
+            xtype: 'checkbox',
+            name: 'not_in_status',
+            checked: data.not_in_status == 'on' ? true : false,
+            boxLabel: _('Exclude selected statuses?')
         },
-        logicField,
-        comboPaging,
-        comboDatatable, {
-            xtype: 'textfield',
-            fieldLabel: _('Sort By'),
-            name: 'sort',
-            value: data.sort
-        },
-        new Baseliner.ComboDouble({
-            forceSelection: true,
-            allowBlank: false,
-            fieldLabel: _('Sort Order'),
-            editable: false,
-            name: 'dir',
-            value: data.dir || '',
-            data: [
-                ['DESC', _('DESC')],
-                ['ASC', _('ASC')]
-            ]
-        }),
-        customColumnsGrid
-    ]);
+        Baseliner.generic_list_fields(data), [{
+                xtype: 'textfield',
+                fieldLabel: _('List of columns to show in grid'),
+                name: 'columns',
+                value: data.columns
+            }, {
+                xtype: 'numberfield',
+                fieldLabel: _('Height of grid in edit mode'),
+                name: 'height',
+                fieldClass: 'x-fieldlet-type-height',
+                minValue: '1',
+                value: data.height || 250
+            }, {
+                xtype: 'numberfield',
+                name: 'page_size',
+                fieldLabel: _('Page size'),
+                value: data.page_size || 20
+            }, {
+                xtype: 'textfield',
+                name: 'parent_field',
+                fieldLabel: _('Parent field'),
+                value: data.parent_field
+            },
+            logicField,
+            pagingCombo,
+            datatableCombo, {
+                xtype: 'textfield',
+                fieldLabel: _('Sort By'),
+                name: 'sort',
+                value: data.sort
+            },
+            new Baseliner.ComboDouble({
+                forceSelection: true,
+                allowBlank: false,
+                fieldLabel: _('Sort Order'),
+                editable: false,
+                name: 'dir',
+                value: data.dir || '',
+                data: [
+                    ['DESC', _('DESC')],
+                    ['ASC', _('ASC')]
+                ]
+            }),
+            customColumnsGrid
+        ]);
 })
