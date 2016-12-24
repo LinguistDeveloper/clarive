@@ -2,7 +2,7 @@
 my $iid = Util->_md5;
 </%perl>
 
-(function(params){ 
+(function(params){
     var id = params.id_div;
     var project_id = params.project_id;
     var rows = params.data.rows;

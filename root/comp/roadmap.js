@@ -53,7 +53,7 @@
                 var topic_name = label ? label : String.format('<b>{2}#{0}</b> {1}', topic.mid, topic.title, acronym );
                 cell_text += String.format(
                         '<td width="{7}%" class="truncate roadmap-cell-div" onclick="javascript:Cla.show_topic_colored(\'{0}\',\'{5}\',\'{6}\');return false;"'
-                        + 'style="cursor: pointer; padding: 4px 4px 4px 4px; font-size: .9em; color:{2}; background-color: {3}" mid="{0}">{1}</td>', 
+                        + 'style="cursor: pointer; padding: 4px 4px 4px 4px; font-size: .9em; color:{2}; background-color: {3}" mid="{0}">{1}</td>',
                         topic.mid, topic_name, '#fff', hcolor[topic.mid], acronym, topic.category.name, topic.category.color, width );
             }
             cell_color = hcolor[first_mid];
@@ -63,7 +63,7 @@
                 ? 'line-height:20px; color: #fff; background-color: '+ cell_color
                 : 'line-height:20px; color: #fff';  */
         meta.style += 'line-height:20px; color: #fff';
-        return cell_text ? '<table width="100%" border=0 style="margin-bottom: -2px; margin-top: -2px; margin-left: -2px, margin-right: -2px"><tr>'+cell_text+'</tr></table>' : ''; 
+        return cell_text ? '<table width="100%" border=0 style="margin-bottom: -2px; margin-top: -2px; margin-left: -2px, margin-right: -2px"><tr>'+cell_text+'</tr></table>' : '';
     }
 
     var render_date = function(value,meta,rec,rowIndex,colIndex,store) {

@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
 
     var format = '%Y-%m-%d';
 

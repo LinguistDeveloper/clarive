@@ -1,5 +1,5 @@
 (function(){
-    var fields = [ 
+    var fields = [
             {  name: 'id' },
             {  name: 'id_config' },
             {  name: 'subject' },
@@ -12,22 +12,22 @@
             {  name: 'type' }
     ];
     var store=new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/config/json',
         fields: fields
     });
 
     ///////////////// Config Single Row
     var config_data_store=new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/config/detail',
-        fields: fields 
+        fields: fields
     });
 
     var config_form = new Ext.FormPanel({
@@ -37,11 +37,11 @@
         resizeable: true,
         height: 350,
         frame: true,
-        labelWidth: 100, 
+        labelWidth: 100,
         defaults: { width: 650 },
         items: [
-            {  xtype: 'hidden', name: 'id', value: -1 }, 
-            {  xtype: 'textfield', name: 'subject', fieldLabel: '<% _loc('Subject') %>' }, 
+            {  xtype: 'hidden', name: 'id', value: -1 },
+            {  xtype: 'textfield', name: 'subject', fieldLabel: '<% _loc('Subject') %>' },
             {  xtype: 'textarea', name: 'config', height: 200, fieldLabel: '<% _loc('Config') %>' }
         ]
     });
@@ -80,7 +80,7 @@
         params: {start: 0, limit: ptool.pageSize},
         emptyText: _('<Enter your search string>')
     });
-    
+
     var grid = new Ext.grid.GridPanel({
         region: 'center',
         header: false,
@@ -94,12 +94,12 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { header: _('From'), width: 200, dataIndex: 'sender', sortable: true }, 
-            { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true }, 
-            { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true }, 
-            { header: _('Config'), width: 300, dataIndex: 'config', sortable: true },   
+            { header: _('From'), width: 200, dataIndex: 'sender', sortable: true },
+            { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true },
+            { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },
+            { header: _('Config'), width: 300, dataIndex: 'config', sortable: true },
             { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
-            { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }  
+            { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }
         ],
         autoSizeColumns: true,
         deferredRender:true,
@@ -115,7 +115,7 @@
                         var sel = sm.getSelected();
                         config_view(sel.data.id);
                     } else {
-                        Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
+                        Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');
                     };
                 }
             }),
@@ -126,8 +126,8 @@
                 handler: function() {
                     var sm = grid.getSelectionModel();
                     var sel = sm.getSelected();
-                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config') + ' <b>' + sel.data.subject + '</b>?', 
-                        function(btn){ 
+                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the config') + ' <b>' + sel.data.subject + '</b>?',
+                        function(btn){
                             if(btn=='yes') {
                                 var conn = new Ext.data.Connection();
                                 conn.request({
@@ -135,7 +135,7 @@
                                     params: { id_config: sel.data.id_config },
                                     success: function(resp,opt) { grid.getStore().remove(sel); },
                                     failure: function(resp,opt) { Ext.Msg.alert( _('Error'), _('Could not delete the config') ); }
-                                }); 
+                                });
                             }
                         } );
                 }

@@ -11,10 +11,10 @@
 
     var store_category = new Ext.data.SimpleStore({
         fields: ['category', 'category_name' ],
-        data: []  
+        data: []
     });
-    Baseliner.ajaxEval('/topic/list_category', {cmb:'category'}, function(res){ 
-        var data = []; 
+    Baseliner.ajaxEval('/topic/list_category', {cmb:'category'}, function(res){
+        var data = [];
         res.data.forEach(function(elem){
             data.push([ elem.category, elem.category_name]);
         });
@@ -37,11 +37,11 @@
         allowBlank: false,
         listeners:{
             'select': function(cmd, rec, idx){
-                selected_category.setValue(rec.data.category_name);   
+                selected_category.setValue(rec.data.category_name);
             }
         }
     });
-    ret.push([ 
+    ret.push([
         { xtype:'numberfield',fieldLabel: _('Depth'), name: 'depth', allowBlank: false, value: data.depth },
         { xtype:'textfield',fieldLabel: _('Role filter'), name: 'filter', value: data.filter },
         combo_category,

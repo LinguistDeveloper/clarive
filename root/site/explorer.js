@@ -10,7 +10,7 @@ var base_menu_items = [ ];
 /*
  * Baseliner.TreeLoader
  *
- *   - manages node attribute url and params 
+ *   - manages node attribute url and params
  *   - paging (TODO)
  *
  */
@@ -20,7 +20,7 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
         Baseliner.TreeLoader.superclass.constructor.call(this,c);
         var self = this;
         self.id = Ext.id();
-        
+
         self.on("beforeload", function(loader, node) {
             // save params
             self.$baseParams = Ext.apply( {}, self.baseParams );
@@ -34,7 +34,7 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
         });
         self.on("load", function(loader, node) {
             // reset params back
-            self.baseParams = self.$baseParams;  
+            self.baseParams = self.$baseParams;
             self.dataUrl = self.$dataUrl;
         });
         self.on("loadexception", function(loader, node, res) {
@@ -46,7 +46,7 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
             }
             if( ! Ext.isObject(obj) ) obj={};
             if( res.status == 401 || obj.logged_out ) {
-                Baseliner.login({ no_reload: 1, on_login: function(){ 
+                Baseliner.login({ no_reload: 1, on_login: function(){
                     loader.load( node );
                 }});
             } else if( ! obj.success )  {
@@ -58,8 +58,8 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
                 Baseliner.error( _('Unknown Error'), _('Contact your administrator') );
             }
 
-            self.baseParams = self.$baseParams;  
-            self.dataUrl = self.$dataUrl;  
+            self.baseParams = self.$baseParams;
+            self.dataUrl = self.$dataUrl;
         });
     }
 });
@@ -87,7 +87,7 @@ Baseliner.class_name = function(v){
 Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
     getDDHandles : function(){ // drag and drop
         var nodes = [this.iconNode, this.textNode, this.elNode];
-        if( this.textNode == undefined || this.textNode.childNodes == undefined ) 
+        if( this.textNode == undefined || this.textNode.childNodes == undefined )
              return nodes;
         var recurse_children = function(par) {
             if( !par ) return;
@@ -96,7 +96,7 @@ Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
             //var imax = ( Ext.isIE71 || Ext.isIE81 ) ? 2 : nodelist.length;
             for( var i=0; i < nodelist.length; i++) {
                 var cn = Baseliner.class_name( nodelist[i] );
-                if( ! ( cn=='Text' && Ext.isIE ) ) 
+                if( ! ( cn=='Text' && Ext.isIE ) )
                     nodes.push( nodelist[i] );
                 recurse_children( nodelist[i] );
             }
@@ -115,34 +115,34 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         self.tool_bar = Ext.getCmp('tool_bar');
 
         Baseliner.ExplorerTree.superclass.initComponent.call(this);
-        
+
         self.on("activate", function (p){
             if(self.onload){
-                self.onload();    
+                self.onload();
             }
         });
 
-        self.on('beforeexpandnode', function(node, deep, anim) { 
+        self.on('beforeexpandnode', function(node, deep, anim) {
             // self.tool_bar.disable_all();
             node.attributes.is_refreshing = true;
         });
 
-        self.on('beforeload', function(node) { 
+        self.on('beforeload', function(node) {
             self.tool_bar.disable_all();
             node.attributes.is_refreshing = true;
         });
 
-        self.on('expandnode', function(node, deep, anim) { 
+        self.on('expandnode', function(node, deep, anim) {
             // self.tool_bar.enable_all();
             node.attributes.is_refreshing = false;
         });
 
-        self.on('load', function(node, deep, anim) { 
+        self.on('load', function(node, deep, anim) {
             self.tool_bar.enable_all();
             //node.attributes.is_refreshing = false;
         });
 
-        self.on('beforerefresh', function(node) { 
+        self.on('beforerefresh', function(node) {
             self.tool_bar.disable_all();
             //node.attributes.is_refreshing = true;
         });
@@ -169,8 +169,8 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 if( node != undefined ) {
                     var name = new Array();
                     node.bubble( function(pnode){
-                       if( pnode.text != '/' && pnode.text != undefined ) 
-                          name.unshift( pnode.text ); 
+                       if( pnode.text != '/' && pnode.text != undefined )
+                          name.unshift( pnode.text );
                     });
                     Baseliner.ajaxEval( '/lifecycle/favorite_add',
                         {
@@ -294,8 +294,8 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             }
         });
         if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
-            tree_menu.removeAll(); 
-            var node_menu_items = new Array(); 
+            tree_menu.removeAll();
+            var node_menu_items = new Array();
 
             // click turns into a menu-item Open...
             var click = node.attributes.data.click;
@@ -314,14 +314,14 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 // create js handlers for menu items
                 for( var i = 0; i < node_menu.length; i++ ) {
                     var menu_item = node_menu[i];
-                    menu_item.text = _( menu_item.text ); 
+                    menu_item.text = _( menu_item.text );
                     var url = "";
                     // component opener menu
                     if( menu_item.comp != undefined ) {
                         url = menu_item.comp.url;
                         menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
                         menu_item.handler = function(item) {
-                            item.click_data.node = item.node;   
+                            item.click_data.node = item.node;
                             var d = menu_item.comp.data ||{ node: item.node, action: menu_item.comp };
                             Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
                         };
@@ -329,7 +329,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         url = menu_item.page.url;
                         menu_item.click_data = { action: menu_item.page }; // need this before to preserve scope
                         menu_item.handler = function(item) {
-                            item.click_data.node = item.node;   
+                            item.click_data.node = item.node;
                             var d = { node: item.node, action: menu_item.page, tab_icon: menu_item.icon };
                             Baseliner.add_tab( item.url, _(menu_item.page.title), d );
                         };
@@ -346,7 +346,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                             else if( item.eval.url ) {
                                 var params = Ext.apply({ data:node.attributes.data },item.eval.data||item.click_data);
                                 Baseliner.ajaxEval( item.eval.url, params , function(comp) { });
-                            } 
+                            }
                             else{
                                 // TODO this is not used anywhere? can't access
                                 Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
@@ -385,9 +385,9 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         // add search box
         if( node.attributes && node.attributes.has_query && node.isExpanded()) {
             var query = node.attributes.data.query;
-            var query_box = new Baseliner.SearchSimple({ 
+            var query_box = new Baseliner.SearchSimple({
                 width: 180,
-                value: query, 
+                value: query,
                 iconCls: 'no-icon',
                 handler: function(){
                     var t = this.getValue();
@@ -397,7 +397,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         this.triggers[0].hide();
                     } else {
                         node.attributes.data.query = t;
-                        // indicator that a search is in effect 
+                        // indicator that a search is in effect
                         var nel = node.ui.getTextEl();
                         if( nel ) {
                             var badge = '<span class="badge" style="font-size: 9px; background-color: #bbb;"><img style="width: 12px; height: 12px; margin-right: 4px;" src="/static/images/icons/search-small-white.svg" />'+t+'</span>';
@@ -674,7 +674,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             },
             listeners: Baseliner.gen_btn_listener()
         });
-        
+
         var button_releases = new Ext.Button({
             cls: 'x-btn-icon ui-explorer-releases',
             icon: '/static/images/icons/release_explorer.svg',
@@ -693,7 +693,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_releases ) self.$tree_releases.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
-        });        
+        });
 
         var button_search_folders = new Ext.Button({
             cls: 'x-btn-icon ui-explorer-reports',
@@ -713,7 +713,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_reports ) self.$tree_reports.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
-        });        
+        });
 
         var button_dashboards = new Ext.Button({
             cls: 'x-btn-icon ui-explorer-dashboards',
@@ -733,7 +733,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_dashboards ) self.$tree_dashboards.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
-        });        
+        });
 
     var button_collapseall = new Ext.Button({
         cls: 'x-btn-icon',
@@ -799,7 +799,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         });
 
         var button_collapse = new Ext.Component({
-            cls: 'x-tool x-tool-expand-east', 
+            cls: 'x-tool x-tool-expand-east',
             style: 'margin: -2px 0px 0px 0px',
             //hidden; true,
             listeners: {
@@ -840,7 +840,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 ' '
             ],
             id: 'tool_bar',
-            
+
             enable_all: function() {
                 refresh_count--;
                 if ( refresh_count <= 0 ) {
@@ -876,8 +876,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 /* ------------- Folder Functions ------------- */
 
 Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
-    modal: true, 
-    autoHeight: true, 
+    modal: true,
+    autoHeight: true,
     width: 300,
     constructor: function(c){
         Baseliner.TextFieldWin.superclass.constructor.call(this, c);
@@ -886,7 +886,7 @@ Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
         var self = this;
         self.addEvents('saved','save_error');
         Baseliner.TextFieldWin.superclass.initComponent.call(this);
-        
+
         var btn_cerrar = new Ext.Toolbar.Button({
             text: _('Close'),
             width: 50,
@@ -897,13 +897,13 @@ Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
             width: 50,
             handler: function(){self.submit_form()}
         });
-        
+
         self.text_field = new Ext.form.TextField({
             fieldLabel: self.field_label,
             name: 'name',
             value: self.default_text, allowBlank: false
         });
-        
+
         self.form_folder = new Ext.FormPanel({
                                 name: self.form_folder,
                                 url: self.url,
@@ -913,18 +913,18 @@ Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
                                 defaults:{anchor:'100%'},
                                 items: self.text_field
         });
-        self.text_field.on('afterrender', function(){ 
+        self.text_field.on('afterrender', function(){
             setTimeout(function(){
                 self.text_field.focus(true);
             },200);
         });
-        
+
         self.add( self.form_folder );
     },
     value : function(v){
         if( v )
             this.text_field.setValue( v );
-        return this.text_field.getValue(); 
+        return this.text_field.getValue();
     },
     submit_form : function(){
         var self = this;
@@ -937,7 +937,7 @@ Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
                 success: function(f,a){
                     Baseliner.message(_('Success'), a.result.msg );
                     self.fireEvent('saved', a.result, self);
-                    if( self.close_on_save ) 
+                    if( self.close_on_save )
                         self.close();
                 },
                 failure: function(f,a){
@@ -956,10 +956,10 @@ Baseliner.new_folder = function(node){
         url:'/fileversion/new_folder',
         data: node.attributes.data
     });
-    
+
     win.on('saved', function(res){
         if(node.isExpanded()){
-            if( res.node ) 
+            if( res.node )
                 node.appendChild( res.node );
         };
     });
@@ -992,8 +992,8 @@ Baseliner.delete_folder = function(node){
                 Baseliner.message( _('ERROR'), response.msg );
             }
         }
-    
-    );    
+
+    );
 };
 
 Baseliner.remove_folder_item = function(node_data1, node_data2){
@@ -1082,25 +1082,25 @@ Baseliner.open_apply_filter_from_release = function(n){
         rootVisible: false,
         root: treeRoot
     });
-    
+
     tree_filters.on('dblclick', function(n, ev){
         Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release, id_report: n.attributes.data.id_report }, function(res){
-            Baseliner.ajaxEval( '/comp/lifecycle/report_run.js', { 
-                id_report: n.attributes.data.id_report, 
-                report_name: _('%1: %2', name, n.attributes.data.report_name), //n.attributes.data.report_name, 
-                report_rows: n.attributes.data.report_rows, 
-                hide_tree: n.attributes.data.hide_tree, 
+            Baseliner.ajaxEval( '/comp/lifecycle/report_run.js', {
+                id_report: n.attributes.data.id_report,
+                report_name: _('%1: %2', name, n.attributes.data.report_name), //n.attributes.data.report_name,
+                report_rows: n.attributes.data.report_rows,
+                hide_tree: n.attributes.data.hide_tree,
                 topic_list: res.topics,
-                tab_icon: '/static/images/icons/topic.svg' }, 
+                tab_icon: '/static/images/icons/topic.svg' },
                 function(res){
                     //N/D
             });
-        });         
+        });
         win.close();
     });
-    
+
     var title = _('Select a filter');
-    
+
     var form_filters = new Ext.FormPanel({
         padding: 10,
         border: false,
@@ -1119,7 +1119,7 @@ Baseliner.open_apply_filter_from_release = function(n){
         modal: true,
         items: form_filters
     });
-    win.show();     
+    win.show();
 }
 
 Baseliner.open_kanban_from_folder = function(n){
@@ -1130,7 +1130,7 @@ Baseliner.open_kanban_from_folder = function(n){
             Baseliner.message( _('Kanban'), _('Folder does not contain any topics') );
             return;
         }
-        var kanban = new Baseliner.Kanban({ topics: res.topics }); 
+        var kanban = new Baseliner.Kanban({ topics: res.topics });
         kanban.goto_tab();
     });
 }
@@ -1151,7 +1151,7 @@ Baseliner.delete_search = function(n){
         node.attributes.mid = node.attributes.data.id_report;
     }
     Baseliner.confirm( _('Are you sure you want to delete the search %1?', n.text), function(){
-        Baseliner.ci_call( node.attributes.mid, 'report_update', { action:'delete' }, 
+        Baseliner.ci_call( node.attributes.mid, 'report_update', { action:'delete' },
             function(response) {
                 if ( response.success ) {
                     Baseliner.message( _('Success'), response.msg );
@@ -1160,7 +1160,7 @@ Baseliner.delete_search = function(n){
                     Baseliner.message( _('ERROR'), response.msg );
                 }
             }
-        );    
+        );
     });
 }
 

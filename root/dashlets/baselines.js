@@ -1,7 +1,7 @@
 <%perl>
 my $iid = Util->_md5;
 </%perl>
-(function(params){ 
+(function(params){
     var id = params.id_div;
 
     var project_id = params.project_id;
@@ -103,7 +103,7 @@ my $iid = Util->_md5;
             ('[%=bl%] - [%=totError%]/[%=total%] ERROR'));">
             <span class="sr-only" >[%=totError%]</span>
           </div>
-        </div>        
+        </div>
     */};
     Cla.ajax_json('/dashboard/list_baseline', {
         topic_mid: topic_mid,

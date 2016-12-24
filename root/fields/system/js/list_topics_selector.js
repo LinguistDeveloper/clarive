@@ -4,14 +4,14 @@ params:
     html: '/fields/system/html/field_topics.html'
     js: '/fields/system/js/list_topics_selector.js'
     relation: 'system'
-    type: 'listbox'    
-    get_method: 'get_topics'    
+    type: 'listbox'
+    get_method: 'get_topics'
     set_method: 'set_topics'
     field_order: 14
     section: 'details'
     page_size: 20
     filter: 'none'
-    single_mode: 'false'    
+    single_mode: 'false'
     meta_type: 'topic'
     rel_type: 'topic_topic'
     parent_field: ''
@@ -29,7 +29,7 @@ params:
     var ps = parseInt(meta.page_size) || 10;  // for combos, 10 is a much nicer on a combo
     var id_required = Ext.id()
     //var lbl_required = 'lbl_' + meta.id_field + '_' + id
-    
+
     if(data && data[ meta.bd_field] ){
         var eval_topics = data[ meta.bd_field ];
         for(i=0; i<eval_topics.length;i++){
@@ -42,16 +42,16 @@ params:
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
     var hidden = Baseliner.eval_boolean( !meta.active );
-    if (meta.dir == 'ASC') 
-        {order_sort =1} 
+    if (meta.dir == 'ASC')
+        {order_sort =1}
     else {order_sort = -1}
     var topic_box;
     var topic_box_store = new Baseliner.store.Topics({
-        baseParams: { 
+        baseParams: {
             limit: ps,
-            topic_child_data: true, 
-            mid: data ? data.topic_mid : '', 
-            show_release: 0, 
+            topic_child_data: true,
+            mid: data ? data.topic_mid : '',
+            show_release: 0,
             filter: meta.filter ? meta.filter : '',
             sort_field: meta.sort,
             dir: order_sort,
@@ -66,18 +66,18 @@ params:
 
     if( meta.list_type == 'grid' ) {
         // Grid
-        
+
         var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
         });
-        
+
         var readonly = meta && meta.readonly ? meta.readonly : false,
-        
+
         topic_box = new Baseliner.TopicGrid({
             fieldLabel: _(meta.name_field),
             sm: sm ,
-            //fieldLabel:_( meta.name_field ), 
+            //fieldLabel:_( meta.name_field ),
             combo_store: topic_box_store,
             columns: meta.columns,
             mode: 'remote',
@@ -115,9 +115,9 @@ params:
             fieldLabel: _(meta.name_field),
             pageSize: ps,
             name: meta.id_field,
-            hiddenName: meta.id_field,          
+            hiddenName: meta.id_field,
             emptyText: _( meta.emptyText ),
-            allowBlank: meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
+            allowBlank: meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),
             store: topic_box_store,
             disabled: meta ? meta.readonly : true,
             value: topics,

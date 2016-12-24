@@ -1,5 +1,5 @@
 <%args>
-    $title 
+    $title
     $username
     $subject
     $mid
@@ -73,7 +73,7 @@
                         <div class="title"><strong><% $subject %></strong></div>
                         <div class="hr" style="clear: both;">&nbsp;</div>
                         <br>
-                            <div class="body-text">                             
+                            <div class="body-text">
                                 <% _strip_html($post) %>
                                 <br><br>
                                 <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>"><% _loc('Click here to review') %></a>
@@ -115,7 +115,7 @@
                                         </table>
                                     </td>
                                 </tr>
-% }                            
+% }
                             </table>
                             </div>
 
@@ -126,7 +126,7 @@
                             <div class="subtitle">
                                 <% _loc('Send to:') %> <% join ",",@{$to->{users}} %>
                             </div>
-%}  
+%}
                             <br>
                         </td> <!-- ESTEEEEEEEEE -->
                     </tr>

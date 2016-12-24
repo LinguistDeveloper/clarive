@@ -5,32 +5,32 @@
     var action_role = ' ( ' + _('All') + ' )';
 
     var store_roles_projects_user = new Baseliner.JsonStore({
-    root: 'data' , 
+    root: 'data' ,
     remoteSort: true,
-    totalProperty:"totalCount", 
+    totalProperty:"totalCount",
     url: '/user/infodetail',
     fields: [
         {name: 'id_role'},
         {name: 'role' },
         {name: 'description' },
-        {name: 'projects' }            
+        {name: 'projects' }
         ]
     });
-  
+
     var store_actions_user = new Baseliner.JsonStore({
-    root: 'data' , 
+    root: 'data' ,
     remoteSort: true,
-    totalProperty:"totalCount", 
+    totalProperty:"totalCount",
     url: '/user/infoactions',
-    fields: [ 
+    fields: [
         {name: 'action' },
         {name: 'description' },
-        {name: 'bl' }    
+        {name: 'bl' }
         ]
     });
-    
+
     var ps = 100; //page_size
-    
+
     var render_descriptions = function (val){
     if( val == null || val == undefined ) return '';
     var str = '';
@@ -56,8 +56,8 @@
         }
         }
         return str;
-    }    
-    
+    }
+
     var grid_roles_projects_user = new Ext.grid.GridPanel({
     title: _('Roles/Projects User'),
     stripeRows: true,
@@ -70,9 +70,9 @@
     selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
     loadMask: true,
     columns: [
-        { hidden: true, dataIndex:'id_role' }, 
+        { hidden: true, dataIndex:'id_role' },
         //{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },
-        { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },        
+        { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },
         { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
         { header: _('Scope'), width: 100, dataIndex: 'projects', sortable: false, renderer: render_projects }
     ],
@@ -80,14 +80,14 @@
     deferredRender:true,
     height:200
     });
-    
+
     grid_roles_projects_user.on('rowclick', function(grid, rowIndex, columnIndex, e) {
     var row = grid.getStore().getAt(rowIndex);
     store_actions_user.load({ params: {username: username, id_role: row.get('id_role')} });
     btn_watch_all_actions.enable();
     grid_actions_user.setTitle(title_action_grid + ' ( ' + row.get('role') + ' )');
-    });        
- 
+    });
+
     var btn_watch_all_actions = new Ext.Toolbar.Button({
             text: _('Watch all actions'),
             icon:'/static/images/icons/advanced.svg',
@@ -113,7 +113,7 @@
     selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
     loadMask: true,
     columns: [
-        { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },    
+        { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },
         { header: _('Description'), width: 350, dataIndex: 'description', sortable: false, renderer: render_descriptions },
         { header: _('Baseline'), width: 100, dataIndex: 'bl', sortable: false}
     ],
@@ -125,7 +125,7 @@
     });
 
     var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, height:10});
-    
+
     var btn_cerrar = new Ext.Toolbar.Button({
         text: _('Close'),
         icon:'/static/images/icons/close.svg',
@@ -138,11 +138,11 @@
     var form = new Ext.FormPanel({
     frame: true,
             items   : [
-% if ($c->stash->{swAsistentePermisos} != 1){             
+% if ($c->stash->{swAsistentePermisos} != 1){
             {
             // column layout with 2 columns
             layout:'column'
- 
+
             // defaults for columns
             ,defaults:{
                 layout:'form'
@@ -183,9 +183,9 @@
                             ]
                         }
                     ]
-                    },                    
+                    },
                     ///////////////////////////////////
-                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true},                    
+                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true},
                     {
                     // column layout with 2 columns
                     layout:'column'
@@ -239,32 +239,32 @@
                 }
             ]
             },
-            blank_image    
+            blank_image
             ,
 %}
             grid_roles_projects_user
             ,
-            blank_image    
+            blank_image
             ,
             grid_actions_user
         ]
-        
+
     });
 
     var win = new Ext.Window({
         title: username,
         autoHeight: true,
         width: 730,
-        closeAction: 'close',        
+        closeAction: 'close',
         items: form
     });
-    
+
     store_roles_projects_user.load({ params: {username: username} });
     store_actions_user.load({ params: {username: username, role: ''} });
 
-    
+
     if(swAsistentePermisos != 1){
-    return win;    
+    return win;
     }
     else{
     return form;

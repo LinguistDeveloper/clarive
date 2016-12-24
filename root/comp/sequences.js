@@ -7,7 +7,7 @@
         autoLoad: false,
         totalProperty:"totalCount",
         url: '/repl/sequence_store',
-        fields: [ 
+        fields: [
                 {  name: '_id' },
                 {  name: 'seq' }
         ]
@@ -23,7 +23,7 @@
                                     Baseliner.error( _('ERROR'), response.msg );
                                 }
                             }
-        );            
+        );
     }});
 
     var btn_refresh = new Ext.Button({ text:_('Refresh'), icon:'/static/images/icons/refresh.svg', handler: function(){

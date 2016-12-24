@@ -7,15 +7,15 @@
         'custom',
         'silent'
     ]});
-    var custom_error = new Ext.Panel({ 
-        layout:'column', fieldLabel:_('Return Codes'), frame: true, 
+    var custom_error = new Ext.Panel({
+        layout:'column', fieldLabel:_('Return Codes'), frame: true,
         hidden: data.errors!='custom',
         items: [
             { layout:'form', columnWidth:.33, labelAlign:'top', frame: true, items: { xtype:'textfield', anchor:'100%', fieldLabel: _('Ok'), name: 'rc_ok', value: data.rc_ok } },
             { layout:'form', columnWidth:.33, labelAlign:'top', frame: true, items: { xtype:'textfield', anchor:'100%', fieldLabel: _('Warn'), name: 'rc_warn', value: data.rc_warn } },
             { layout:'form', columnWidth:.33, labelAlign:'top', frame: true, items: { xtype:'textfield', anchor:'100%', fieldLabel: _('Error'), name: 'rc_error', value: data.rc_error } }
         ],
-        show_hide : function(){ 
+        show_hide : function(){
             errors.getValue()=='custom' ? this.show() : this.hide();
             this.doLayout();
         }
@@ -41,7 +41,7 @@
         }),
         new Baseliner.MonoTextArea({ fieldLabel: _('Home Directory'), height: 50, name: 'home', value: data.home }),
         errors, custom_error,
-        new Baseliner.ErrorOutputTabs({ data: data }) 
+        new Baseliner.ErrorOutputTabs({ data: data })
     ]
 })
 

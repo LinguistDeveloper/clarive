@@ -6,7 +6,7 @@ params:
     html: '/fields/templates/html/upload_files.html'
     js: '/fields/templates/js/upload_files.js'
     relation: 'system'
-    get_method: 'get_files'    
+    get_method: 'get_files'
     field_order: 3
     section: 'details'
     allowBlank: true
@@ -17,8 +17,8 @@ params:
     var data = params.topic_data;
     var form = params.form;
     var allow = Baseliner.eval_boolean(meta.allowBlank, true);
-    var readonly = Baseliner.eval_boolean(meta.readonly, false);   
-    var editable = Baseliner.eval_boolean(meta.editable, true);    
+    var readonly = Baseliner.eval_boolean(meta.readonly, false);
+    var editable = Baseliner.eval_boolean(meta.editable, true);
 
     var up = new Baseliner.UploadFilesPanel({
         name:  meta.id_field,
@@ -26,7 +26,7 @@ params:
         allowBlank  : allow,
         height: ( meta.height ? parseInt(meta.height) : 200 ),
         readOnly    : readonly,
-        hidden: !editable, 
+        hidden: !editable,
         disabled: readonly,
         id_field    : meta.id_field,
         form : form,

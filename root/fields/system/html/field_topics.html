@@ -15,10 +15,10 @@
     <ul class="" style="margin-left: 20px">
 % foreach my $topic ( _array( $data->{$meta->{id_field}} ) ) {
         <li style="margin: 6px 0px 6px 0px;">
-% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );            
-% #if($topic->{progress}){                            
+% my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
+% #if($topic->{progress}){
             <!--<span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>-->
-% #}            
+% #}
             <& /partial/topic_name.html, topic => $topic, show_short_name => 0 &>
 
         </li>
@@ -26,7 +26,7 @@
     </ul>
 
 % }
-% if ($meta->{section} eq 'head' && !$meta->{hidden} ){ 
+% if ($meta->{section} eq 'head' && !$meta->{hidden} ){
 </td>
 </tr>
 % }

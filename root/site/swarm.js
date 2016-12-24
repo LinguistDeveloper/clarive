@@ -1,5 +1,5 @@
 Cla.Swarm = Ext.extend( Ext.Panel, {
-    
+
     background_color: '#FFFFFF',
     start_mode: 'manual',
     //anim_bucle: 'on',
@@ -15,7 +15,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     initComponent : function(){
 
         var self = this;
-        
+
         //self.cuenta = 0;
         self.res = { data:[] };
         self.parents =  {};
@@ -47,23 +47,23 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause = new Ext.Button({ icon: IC('pause'), disabled: true, handler: function(){ self.pause_anim() } });
         self.btn_stop = new Ext.Button({ icon: IC('stop'), disabled: true, handler: function(){ self.stop_anim() } });
 
-        // self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false, 
+        // self.scale_bar = new Ext.Button({ text:'Scale Time', icon: IC('scaleTime'), disabled: false,
         //     menu : {
         //         items: [{
-        //             text: 'Today', handler: function(){ self.get_days(0) } 
+        //             text: 'Today', handler: function(){ self.get_days(0) }
         //         }, {
-        //             text: '2D', handler: function(){ self.get_days(2) } 
+        //             text: '2D', handler: function(){ self.get_days(2) }
         //         }, {
-        //             text: '7D', handler: function(){ self.get_days(7) } 
+        //             text: '7D', handler: function(){ self.get_days(7) }
         //         }, {
-        //             text: '1M', handler: function(){ self.get_days(30) } 
+        //             text: '1M', handler: function(){ self.get_days(30) }
         //         }, {
-        //             text: '3M', handler: function(){ self.get_days(90) } 
+        //             text: '3M', handler: function(){ self.get_days(90) }
         //         }, {
-        //             text: '6M', handler: function(){ self.get_days(180) } 
+        //             text: '6M', handler: function(){ self.get_days(180) }
         //         }]
         //     },
-        //     //handler: function(){ self.start_anim() } 
+        //     //handler: function(){ self.start_anim() }
         // });
 
         self.slider = new Ext.Slider({
@@ -84,34 +84,34 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             plugins: new Ext.slider.Tip(),
         });
 
-        self.bbar = [ 
-        self.btn_start, 
-        self.btn_pause, 
-        self.btn_stop, 
-        {xtype: 'tbfill'}, 
+        self.bbar = [
+        self.btn_start,
+        self.btn_pause,
+        self.btn_stop,
+        {xtype: 'tbfill'},
         //{ xtype: 'tbspacer', width: 100 },
-        {xtype: 'tbtext', text: 'Speed', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        {xtype: 'tbtext', text: 'Speed', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
         { xtype: 'tbspacer', width: 10 },
         {xtype: 'tbtext', text: '-', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
         { xtype: 'tbspacer', width: 10 },
-        self.slider, 
+        self.slider,
         { xtype: 'tbspacer', width: 10 },
-        {xtype: 'tbtext', text:' +', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
-        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
+        {xtype: 'tbtext', text:' +', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
+        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"},
         { xtype: 'tbspacer', width: 100 },
-        {xtype: 'tbtext', text: 'Event Driven ', style : "color:#FF0000;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"}, 
+        {xtype: 'tbtext', text: 'Event Driven ', style : "color:#FF0000;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
         { xtype: 'tbspacer', width: 10 },
-        self.slidertime, 
+        self.slidertime,
         { xtype: 'tbspacer', width: 10 },
         {xtype: 'tbtext', text: ' Real Time', style : "color:#009933;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
         { xtype: 'tbspacer', width: 100 },
-        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"}, 
+        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"},
         //self.scale_bar,
         { xtype: 'tbspacer', width: 25 },
         ];
 
         Cla.Swarm.superclass.initComponent.call(this);
-         
+
         self.on('resize', function(p,w,h){
             if( self.svg ) {
             }
@@ -146,12 +146,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' }
         });
 
-        var id = self.body.id; 
-        var selector = '#' + id; 
+        var id = self.body.id;
+        var selector = '#' + id;
 
         self.vis = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%').style("background-color", self.background_color).attr("preserveAspectRatio", "xMinYMin meet");
         //.append("text").text("HOLA ESTOY PROBANDO").attr("fill","#00CCFF");
-        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g'); 
+        self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g');
 
         //CREAMOS UN RECTANGULO EN BLANCO DONDE SE VA A PINTAR TODO Y ES EL QUE HACE EL ZOOM
         self.svg.append('svg:rect')
@@ -167,7 +167,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             .links(self.links)
             .charge(-80)
             .friction(.6)
-            .linkDistance(     
+            .linkDistance(
                 function(lnk){
                     return lnk.target.node=='iniciales' || lnk.target.node=='iniciales'  ? 10 : 100; //1 : 80
                 }
@@ -191,8 +191,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         //color = self.nodes[col].color;
         //var color_brillo = self.getLuxColor(self.nodes[col].color,0.8);
-  
-        //COLORES DE LOS NODOS  
+
+        //COLORES DE LOS NODOS
 
         var Color_Nodos_Raiz = self.svg.append("defs").append("radialGradient").attr("id", "Color_Nodos_Raiz").attr("cx", "50%").attr("cy", "50%").attr("r", "50%").attr("fx", "50%").attr("fy", "50%");
         //De donde podemos coger los rangos de colores http://www.w3schools.com/tags/ref_colorpicker.asp
@@ -435,7 +435,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         // if(self.i==self.res.data.length){
 
-        
+
         var row = self.res.data[ self.j++ ];
         self.i++;
 
@@ -447,12 +447,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         }
         row.id = Ext.id();
 
-        var next_timer = (10-self.slider.getValue())*100;  
+        var next_timer = (10-self.slider.getValue())*100;
         //self.calculo_horas();
 
         if(self.slidertime.getValue()==0){
             //#########################################################################
-            //PARTE PARA QUE PUEDA SOLO SALGAN LOS NODOS 
+            //PARTE PARA QUE PUEDA SOLO SALGAN LOS NODOS
             //#########################################################################
             self.cambio_realtime=true;
 
@@ -507,16 +507,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                     var row = self.res.data[ self.j-- ];
                                     self.i--;
                                 }
-                        }           
+                        }
                     }else{
                         self.parents[row.parent] = true;
                         self.add_inicial( row.parent );
                         var row = self.res.data[ self.j-- ];
-                        self.i--;                        
+                        self.i--;
                     }
 
                 }else{
-                    
+
                     self.comprobar_timer_usuario(row);
                     //alert("compruebo timer usuario");
 
@@ -525,9 +525,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     }
                     /*if(self.nodos_modificados.length >= 2){
 
-                    self.comprobar_nodo_modificado(); 
+                    self.comprobar_nodo_modificado();
 
-                    }else*/ 
+                    }else*/
                     if(self.statuses){
                         if(self.not_in_status == 'on'){
 
@@ -589,7 +589,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                 if(!encontrado){
                                     self.del(row);
                                 }
-                        }        
+                        }
                     }else{
 
                             if(row.ev == 'add') {
@@ -604,7 +604,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                                 self.del(row);
 
-                            }                
+                            }
 
                     }
                 }
@@ -616,7 +616,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //#########################################################################
             //PARTE PARA QUE PUEDA SALIR CON LA FUNCION REALTIME
             //#########################################################################
-         
+
             if(self.cambio_realtime){
 
                 self.date=row.t;
@@ -626,8 +626,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             //alert(row.t+" la fecha nodo y la fecha normal  "+self.date);
 
             if(row.t==self.date){
-                //alert("entro aqui");        
-                self.del_timer=0;        
+                //alert("entro aqui");
+                self.del_timer=0;
                 if( row.parent ) {
 
                     if( !self.parents[row.parent] ) {
@@ -679,16 +679,16 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                         var row = self.res.data[ self.j-- ];
                                         self.i--;
                                     }
-                            }           
+                            }
                         }else{
                             self.parents[row.parent] = true;
                             self.add_inicial( row.parent );
                             var row = self.res.data[ self.j-- ];
-                            self.i--;                        
+                            self.i--;
                         }
 
                     }else{
-                        
+
                         self.comprobar_timer_usuario(row);
                         //alert("compruebo timer usuario");
 
@@ -697,9 +697,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         }
                         /*if(self.nodos_modificados.length >= 2){
 
-                        self.comprobar_nodo_modificado(); 
+                        self.comprobar_nodo_modificado();
 
-                        }else*/ 
+                        }else*/
                         if(self.statuses){
                             if(self.not_in_status == 'on'){
 
@@ -761,7 +761,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                     if(!encontrado){
                                         self.del(row);
                                     }
-                            }        
+                            }
                         }else{
 
                                 if(row.ev == 'add') {
@@ -777,12 +777,12 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                     self.del(row);
 
                                 }
-                    
+
                         }
                     }
-                }               
+                }
             }else{
-           
+
                 var row = self.res.data[ self.j-- ];
                 self.i--;
 
@@ -827,7 +827,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             if(date.getDate()>=30){
                                 if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
                                    day = '01';
-                                   month = date.getMonth()+1; 
+                                   month = date.getMonth()+1;
                                     if(date.getMonth()>=11){
                                         month = 00;
                                         year= date.getFullYear()+1;
@@ -881,9 +881,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 //...........................................................................................................
                 //...........................................................................................................
                 //////////////////////////////////////////
-                //var d = new Date();                   
-                //d.setDate(d.getDate() + 0.00000578);  
-                //self.date = d;                        
+                //var d = new Date();
+                //d.setDate(d.getDate() + 0.00000578);
+                //self.date = d;
                 //////////////////////////////////////////
 
                 /*self.vis.append("text")
@@ -911,7 +911,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         //quitamos la parte de el nodo para que no aparezca, solo definimos el elemento circulo
         self.node.enter().append("circle").attr("r",0);//.attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
         self.node.exit().remove();
-        
+
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         //Nos pasa igual que con el circulo. Si hacemos visible el .text vemos el texto del nodo raiz.
         self.node4.enter().append("text");//.text(a.node);
@@ -932,7 +932,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
 
         var a = self.nodes[0];
-        var d = { id: "#d"+Math.random(), t: "iniciales", ev: "iniciales", 
+        var d = { id: "#d"+Math.random(), t: "iniciales", ev: "iniciales",
             who: "iniciales", node: "iniciales", parent: parent_node };
 
         if (!a){
@@ -945,7 +945,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.links.push({source: d, target: a});
 
             }
-        
+
         self.start_inicial();
 
     },
@@ -954,13 +954,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         var self = this;
 
         if (self.background_color == '#000000'){
-            
+
             self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
             self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","#FFFFFF").attr("stroke-opacity",0.4)
             self.link.exit().remove();
 
-            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-            self.texto.enter().append('text').attr("fill","#FFFFFF").text(function(d) { return d.source.parent;});   
+            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.texto.enter().append('text').attr("fill","#FFFFFF").text(function(d) { return d.source.parent;});
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
             self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill","#FFFFFF").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
@@ -968,13 +968,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         }
         if (self.background_color == '#FFFFFF'){
-            
+
             self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
             self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","#000000").attr("stroke-opacity",0.4)
             self.link.exit().remove();
 
-            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-            self.texto.enter().append('text').attr("fill","#000000").text(function(d) { return d.source.parent;});   
+            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.texto.enter().append('text').attr("fill","#000000").text(function(d) { return d.source.parent;});
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
             self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill","#000000").attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
@@ -987,8 +987,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke", self.opuesto);
             self.link.exit().remove();
 
-            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-            self.texto.enter().append('text').attr("fill",self.opuesto).text(function(d) { return d.source.parent;});   
+            self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+            self.texto.enter().append('text').attr("fill",self.opuesto).text(function(d) { return d.source.parent;});
 
             self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
             self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 5).attr("fill",self.opuesto).attr("fill-opacity",0.4).on("zoom", function(){self.rescale()});
@@ -1004,7 +1004,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.node5.enter().append("text");//.text(function(d) { return d.node;}).attr("fill",self.background_color);
             self.node5.exit().remove();
 
-            //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS   
+            //CREAMOS EL LINK2 Y LOS NODOS 2 Y 3 VACIOS YA QUE EN EL ARBOL INICIAL NO HAY USUARIOS
             self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
             self.link2.enter().insert("line", ".node");
             self.link2.exit().remove();
@@ -1041,14 +1041,14 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             while (j < self.nodes.length){
 
                 if (self.nodes[j].parent ==  row.parent && self.nodes[j].node == "iniciales"){
-                   
+
                     self.nodes.push(row);
                     self.date = row.t;
                     self.links.push({source: row, target: self.nodes[j]});
-                    
+
                     j=self.nodes.length;
 
-                } 
+                }
 
                 j++;
 
@@ -1081,7 +1081,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     while(z < self.links.length){
 
                         if(self.links[z].source.node==row.node && (self.links[z].source.node != 'iniciales' || self.links[z].source.node != 'usuarios')){
-                            
+
                             self.links.splice(self.links.indexOf(self.links[z]),1);
                             z=self.links.length;
 
@@ -1093,7 +1093,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     j=self.nodes.length;
 
-                }   
+                }
 
             j++;
 
@@ -1117,7 +1117,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         self.links.push({source: row, target: self.nodes[j]});
 
                         //CONTADOR PARA SABER QUE NODOS SE HAN MODIFICADO. LO UTILIZAREMOS EN EL COMPROBAR NODO MODIFICADO
-                        if(!self.nodos_modificados[0]){ 
+                        if(!self.nodos_modificados[0]){
 
                             self.nodos_modificados.push(row);
 
@@ -1135,10 +1135,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             if (contador==0){self.nodos_modificados.push(row);}
 
                         }
-                        
+
                         j=self.nodes.length;
 
-                }   
+                }
 
                 j++;
 
@@ -1150,7 +1150,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             self.add_user(row);
 
         }
-    },     
+    },
     del : function(row){
 
         var self = this;
@@ -1176,10 +1176,10 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         self.nodes.push(row);
                         self.date = row.t;
                         self.links.push({source: row, target: self.nodes[i]});
-                        
+
                         j=self.nodes.length;
 
-                }   
+                }
 
                 j++;
 
@@ -1205,7 +1205,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     }
 
                     j=self.nodes.length;
-                }   
+                }
 
             j++;
         }
@@ -1243,7 +1243,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             self.links.splice(self.links.indexOf(self.links[i]),1);
                             i=self.links.length;
 
-                        } 
+                        }
                         i++;
                     }
 
@@ -1293,7 +1293,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                 self.nodes.push(d);
                 self.links.push({source: d, target: row });
 
-            }      
+            }
 
         }
         self.userstart(d);
@@ -1308,18 +1308,18 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                     var k = 0;
                     while(k < self.links.length){
-                        
+
                         if(self.links[k].source.who == self.nodes[j].who && self.links[k].source.node == "usuarios"){
 
                             self.links.splice(self.links.indexOf(self.links[k]),1);
                             k=self.links.length;
 
-                        } 
+                        }
 
                         k++;
 
                     }
-                self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1); 
+                self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
                 //self.node3.pop();
                 self.userstart(self.nodes[j]);
             }
@@ -1337,7 +1337,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         while (j < self.nodes.length){
 
             if (self.nodes[j].node == "usuarios"){
-                        
+
                     self.nodes[j].t = self.nodes[j].t-1;
                     if(self.nodes[j].t <= 4 && self.nodes[j].t > 0){
 
@@ -1349,7 +1349,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                 self.links.splice(self.links.indexOf(self.links[i]),1);
                                 i=self.links.length;
 
-                            } 
+                            }
 
                             i++;
 
@@ -1360,13 +1360,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                         var k = 0;
                         while(k < self.links.length){
-                            
+
                             if(self.links[k].source.who == self.nodes[j].who && self.links[k].source.node == "usuarios"){
 
                                 self.links.splice(self.links.indexOf(self.links[k]),1);
                                 k=self.links.length;
 
-                            } 
+                            }
 
                             k++;
 
@@ -1383,11 +1383,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         if (self.nodes[j].who != row.who){
                             //alert("borro el nodo " + self.nodes[j].who);
                             self.del_timer=1;
-                            self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1); 
+                            self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);
                             j=self.nodes.length;
 
                         }
-                        
+
                     }
             }
 
@@ -1431,7 +1431,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     //AQUI EL CONTADOR NOS DA EL NUMERO MINIMO DE NODOS POR CATEGORIA
                     if (self.nodes[j].node != "usuarios" && self.nodes[j].node != "iniciales" && self.nodes[j].node != "raiz" && contador > min_node){
 
-                      
+
                         var i = 0;
                         while(i < self.links.length){
 
@@ -1440,7 +1440,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                                     self.links.splice(self.links.indexOf(self.links[i]),1);
                                     i=self.links.length;
 
-                                } 
+                                }
 
                                 i++;
                         }
@@ -1465,7 +1465,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     comprobar_nodo_modificado : function(){
 
         var self = this;
-  
+
         //if(self.nodos_modificados.length >= 2){
 
             var a = self.nodes[0];
@@ -1476,7 +1476,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             var j = self.nodes.length-1;
 
             while (j >= 0){
-                    //Buscamos el nodo a borrar.   
+                    //Buscamos el nodo a borrar.
                     if (self.nodes[j].node == modificado.node){
 
                         self.nodes.splice(self.nodes.indexOf(self.nodes[j]),1);//borro el nodo - posicion y nº de nodos a borrar.
@@ -1497,7 +1497,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                         }
 
                         j=-1;
-                    }   
+                    }
                 j--;
             }
 
@@ -1515,23 +1515,23 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
                             self.nodes.push(modificado);
                             self.links.push({source: modificado, target: self.nodes[j]});
-                            
+
                             j=self.nodes.length;
-                    } 
+                    }
 
                     j++;
                 }
 
                 self.start({ row: modificado, timer: timer });
-                //self.add_user(row); 
+                //self.add_user(row);
             }
         //}
-      
+
     },
     start : function(dt){
 
         var self = this;
-        
+
         var row = dt.row;
         var timer = dt.timer;
 
@@ -1557,39 +1557,39 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         texto_nodos = row.color;
 
         /*switch (row.parent) {
-            case "Changeset":   
+            case "Changeset":
                 nodos = "url(#Color_Nodos_Verde)"
                 texto_nodos = "url(#Color_Texto_Nodos_Verde)"
                 break;
-            case "Emergency":   
+            case "Emergency":
                 nodos = "url(#Color_Nodos_Rojo)"
                 texto_nodos = "url(#Color_Texto_Nodos_Rojo)"
                 break;
-            case "KB":          
+            case "KB":
                 nodos = "url(#Color_Nodos_Marron)"
                 texto_nodos = "url(#Color_Texto_Nodos_Marron)"
                 break;
-            case "Impact Estimation":   
+            case "Impact Estimation":
                 nodos = "url(#Color_Nodos_Morado)"
                 texto_nodos = "url(#Color_Texto_Nodos_Morado)"
                 break;
-            case "Project":   
+            case "Project":
                 nodos = "url(#Color_Nodos_MoradoOscuro)"
                 texto_nodos = "url(#Color_Texto_Nodos_MoradoOscuro)"
                 break;
-            case "Release":   
+            case "Release":
                 nodos = "url(#Color_Nodos_AzulOscuro)"
                 texto_nodos = "url(#Color_Texto_Nodos_AzulOscuro)"
                 break;
-            case "Requirement":   
+            case "Requirement":
                 nodos = "url(#Color_Nodos_Amarillo)"
                 texto_nodos = "url(#Color_Texto_Nodos_Amarillo)"
                 break;
-            case "Test Case":   
+            case "Test Case":
                 nodos = "url(#Color_Nodos_Azul)"
                 texto_nodos = "url(#Color_Texto_Nodos_Azul)"
                 break;
-            default: 
+            default:
                 nodos = "url(#Color_Nodos)"
                 texto_nodos = "url(#Color_Texto_Nodos)"
         }*/
@@ -1601,9 +1601,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         self.node5.enter().append("text").text(row.node).attr("fill", texto_nodos).attr("fill-opacity",0.6).style("visibility", "hidden");
         self.node5.exit().remove();
-       
-        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
+
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");
 
         self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
         self.node6.enter().append("text").style("visibility", "hidden");
@@ -1621,13 +1621,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill", texto_nodos).remove();
         self.node4.exit().remove();
-      
+
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
                          /*.on('mouseover', function(d)
                          {
                             d3.select(this).transition()*/
-                           //this is a second part to visibility 
+                           //this is a second part to visibility
                           /*  .duration(750)
                             .attr("r", 55)
                             .attr("fill","url(#Amarillo)")
@@ -1665,13 +1665,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             modal: false,
                             closeAction: 'hide',
                             items: [new Baseliner.MonoTextArea({ value:  '\n'
-                                                                        +'\n'                                                                        
-                                                                        +'Event: ' + row.ev +'\n' 
+                                                                        +'\n'
+                                                                        +'Event: ' + row.ev +'\n'
                                                                         +'Parent: ' + row.parent +'\n'
                                                                         +'User: ' + row.who +'\n'
                                                                         +'Id: ' + row.id +'\n'
                                                                         +'Color in Hex: ' + row.color +'\n'
-                                                                        +'Date: ' + row.t +'\n'                                                                        
+                                                                        +'Date: ' + row.t +'\n'
                                                                     })]
                         });
                         win.show();
@@ -1692,7 +1692,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
     start_modify : function(dt){
 
         var self = this;
-        
+
         var row = dt.row;
         var timer = dt.timer;
 
@@ -1703,9 +1703,9 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5 = self.node5.data(self.force.nodes(), function(d) { return d.id;});
         self.node5.enter().append("text").text(row.node).attr("fill","url(#Verde)").attr("fill-opacity",0.6).style("visibility", "hidden");
         self.node5.exit().remove();
-       
-        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");   
+
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.texto.enter().append('text').attr("fill",self.background_color).text(function(d) { return d.source.parent;}).style("visibility", "hidden");
 
         self.node6 = self.node6.data(self.force.nodes(), function(d) { return d.id;});
         self.node6.enter().append("text").style("visibility", "hidden");
@@ -1723,7 +1723,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text").text(row.node).attr("fill","url(#Verde)").transition().duration(timer).attr("fill","url(#Verde)").remove();
         self.node4.exit().remove();
-      
+
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 10).attr("fill","url(#Verde)").attr("fill-opacity",0.6)
                          /*.on('mouseover', function(d)
@@ -1766,13 +1766,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                             modal: false,
                             closeAction: 'hide',
                             items: [new Baseliner.MonoTextArea({ value: '\n'
-                                                                        +'\n'                                                                        
-                                                                        +'Event: ' + row.ev +'\n' 
+                                                                        +'\n'
+                                                                        +'Event: ' + row.ev +'\n'
                                                                         +'Parent: ' + row.parent +'\n'
                                                                         +'User: ' + row.who +'\n'
                                                                         +'Id: ' + row.id +'\n'
                                                                         +'Color in Hex: ' + row.color +'\n'
-                                                                        +'Date: ' + row.t +'\n'  
+                                                                        +'Date: ' + row.t +'\n'
                                                                     })]
                         });
                         win.show();
@@ -1790,11 +1790,11 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
     },
     userstart : function(row){
-        
+
         var self = this;
 
-        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });   
-        self.texto.enter().append('text'); 
+        self.texto = self.texto.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
+        self.texto.enter().append('text');
 
         self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
         self.node4.enter().append("text");
@@ -1804,13 +1804,13 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.node5.enter().append("text");
         self.node5.exit().remove();
 
-        //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO   
+        //CREAMOS LOS NODO NODE Y NODE3 QUE SON LOS NODOS Y EL LINK DEL USUARIO
 
         if (self.background_color == '#000000'){
-            
+
             self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
-            self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");
+            self.link.enter().insert("line", ".node").attr("stroke","url(#Amarillo)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");
             self.link.exit().remove();
 
         }
@@ -1818,8 +1818,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         if (self.background_color == '#FFFFFF'){
 
             self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
-            self.link.enter().insert("line", ".node").attr("stroke","url(#Color_Nodos_AzulOscuro)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");
+            self.link.enter().insert("line", ".node").attr("stroke","url(#Color_Nodos_AzulOscuro)").attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");
             self.link.exit().remove();
 
         }
@@ -1827,8 +1827,8 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         if(self.background_color != "#000000" || self.background_color != "#FFFFFF") {
 
             self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link"); 
-            self.link.enter().insert("line", ".node").attr("stroke", self.opuesto).attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");       
+            //self.link2.enter().insert("line", ".node").attr("stroke","orange").attr("stroke-opacity",0.6).attr("class", "link");
+            self.link.enter().insert("line", ".node").attr("stroke", self.opuesto).attr().attr("stroke-opacity",0.6).attr("stroke-width", 6).attr("class", "link");
             self.link.exit().remove();
         }
 
@@ -1849,7 +1849,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.force.start();
 
-    }, 
+    },
     calcular_fecha : function(date){
 
         self = this;
@@ -1910,7 +1910,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
                     if(date.getDate()>=30){
                         if(date.getDate()==31 && (date.getMonth()==0 || date.getMonth()==2 || date.getMonth()==4 || date.getMonth()==6 || date.getMonth()==7 || date.getMonth()==9 || date.getMonth()==11)){
                            day = '01';
-                           month = date.getMonth()+1; 
+                           month = date.getMonth()+1;
                             if(date.getMonth()>=11){
                                 month = 00;
                                 year= date.getFullYear()+1;
@@ -1938,7 +1938,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         return fecha;
     },
     get_days : function(days){
-        
+
         var self = this;
 
         self.stop_anim();
@@ -2094,7 +2094,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
-   
+
         self.node4.attr("x", function(d) { return d.x-10; })
             .attr("y", function(d) { return d.y-10; })
 
@@ -2113,7 +2113,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         // EN EL CASO DE QUERER SACAR EL TEXTO POR FUERA DEL PUNTO SOURCE
         self.texto.attr('x',function(d){ return (d.source.x-(d.target.x*0.33))/0.67;})
         .attr('y',function(d){ return (d.source.y-(d.target.y*0.33))/0.67;});
-        
+
 
 
         self.link.attr("x1", function(d) { return d.source.x; })
@@ -2153,7 +2153,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         });
 
         Cla.ajax_json(self.controller, {start_date: self.start_date, end_date: self.end_date, limit: self.limit, skip: skip, statuses: self.statuses, categories: self.categories, not_in_status: self.not_in_status}, function(res){
-            
+
             if(res.data.length <= 0){
                 alert(_("No data for selection dates.  Please select another period"));
                 //self.mostrar=true;
@@ -2168,7 +2168,7 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
             var tiempo =fecha.getTime();
             var total= fecha.setTime(tiempo-self.days);
             //var fecha_inicio = new Date(total);
-          
+
             //var calculo = self.calcula_contador(fecha_inicio);
             //calculo = new Date(calculo);
             //self.date = self.calcular_fecha(calculo);

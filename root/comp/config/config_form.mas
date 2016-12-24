@@ -6,7 +6,7 @@
 <%perl>
     use JavaScript::Dumper;
     my $cnt = 0;
-    
+
     if( $c->stash->{config} ) {  #it's an array of arrays!
         for my $config ( @{ $c->stash->{config} || [] } ) {
 </%perl>
@@ -36,14 +36,14 @@
         } ## foreach metadata
     }
 </%perl>
-% if( $c->stash->{ns} ) {        
+% if( $c->stash->{ns} ) {
     {  xtype: 'hidden', name: 'ns', value: '<% $c->stash->{ns} %>' },
 % }
-% if( $c->stash->{bl} ) {        
+% if( $c->stash->{bl} ) {
     {  xtype: 'hidden', name: 'bl', value: '<% $c->stash->{bl} %>' },
 % }
     {  type: 'Submit', name: 'Sb' }
-]        
+]
 
 <%filter>
     s/,[\s|\t|\n]*\]/\]/g;

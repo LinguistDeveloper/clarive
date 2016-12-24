@@ -5,7 +5,7 @@ params:
     relation: 'system'
     js: '/fields/templates/js/topic_grid.js'
     html: '/fields/templates/html/topic_grid.html'
-    get_method: 'get_topics'    
+    get_method: 'get_topics'
     set_method: 'set_topics'
     field_order: 100
     field_order_html: 1200
@@ -16,22 +16,22 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
+
     /*
     Baseliner.TopicGridField = Ext.extend( Baseliner.CIGrid, {
     });
     var grid = new Baseliner.TopicGridField({
         fieldLabel: _( meta.name_field ),
         columns: [
-            'name', 
+            'name',
             { header:'Description', dataIndex:'description', editor: new Ext.field.TextField() }
         ]
     });
     */
     var readonly = Baseliner.eval_boolean(meta.readonly);
-    var p = { 
-        fieldLabel:_( meta.name_field ), 
-        name: meta.id_field, 
+    var p = {
+        fieldLabel:_( meta.name_field ),
+        name: meta.id_field,
         value: data[ meta.id_field ],
         readOnly:  readonly,
         height: meta.height || 250,

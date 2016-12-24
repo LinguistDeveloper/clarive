@@ -7,7 +7,7 @@
 
     var store = {
         reload: function() {
-           tree.root.reload(); 
+           tree.root.reload();
         }
     };
     <& /comp/search_field.mas &>
@@ -28,15 +28,15 @@
     };
     var render_mapping = function(value,metadata,rec,rowIndex,colIndex,store) {
         var ret = '<table>';
-        ret += '<tr>'; 
+        ret += '<tr>';
         var k = 0;
         for( var k in value ) {
             if( value[k]==undefined ) value[k]='';
             ret += '<td style="font-size: 10px;font-weight: bold;padding: 1px 3px 1px 3px;">' + _(k) + '</td>'
             ret += '<td width="80px" style="font-size: 10px; background: #f5f5f5;padding: 1px 3px 1px 3px;"><code>' + value[k] + '</code></td>'
             if( k % 2 ) {
-                ret += '</tr>'; 
-                ret += '<tr>'; 
+                ret += '</tr>';
+                ret += '<tr>';
             }
         }
         ret += '</table>';
@@ -104,7 +104,7 @@
 
     var properties = new Ext.TabPanel({
         //collapsible: true,
-        defaults: { closable: true, autoScroll: true }, 
+        defaults: { closable: true, autoScroll: true },
          plugins: [ new Ext.ux.panel.DraggableTabs()],
         split: true,
         activeTab: 0,
@@ -114,7 +114,7 @@
         collapsed: true,
         height: 350,
         tbar: [
-            Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) { 
+            Baseliner.button('Close All', '/static/images/icons/clear.svg', function(b) {
                 properties.items.each(function(comp) {
                     if( comp.closable ) {
                         properties.remove( comp );
@@ -123,7 +123,7 @@
                     properties.items.getCount()==0 && properties.collapse();
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/detach.svg', function(b) { 
+            Baseliner.button('Maximize', '/static/images/icons/detach.svg', function(b) {
                 var tab = properties.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );
@@ -250,7 +250,7 @@
     var properties = new Ext.TabPanel({
         //collapsible: true,
         pane: 'hist',  //default pane
-        defaults: { closable: true, autoScroll: true }, 
+        defaults: { closable: true, autoScroll: true },
         split: true,
         activeTab: 0,
         enableTabScroll: true,
@@ -269,7 +269,7 @@
                     }
                 });
             }),
-            Baseliner.button('Maximize', '/static/images/icons/detach.svg', function(b) { 
+            Baseliner.button('Maximize', '/static/images/icons/detach.svg', function(b) {
                 var tab = properties.getActiveTab();
                 if( tab.initialConfig.closable ) {
                     Baseliner.addNewTabItem( tab, '' );

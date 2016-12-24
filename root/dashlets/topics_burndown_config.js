@@ -4,7 +4,7 @@
     var days_from_format_date = new Ext.form.DateField({
       fieldLabel: _('Shift in days from today to show in chart.'),
       name: 'days_from_format_date',
-      value: data.days_from_format_date, 
+      value: data.days_from_format_date,
       format: 'Y-m-d',
       width: 165,
       hidden: true
@@ -12,7 +12,7 @@
     days_from_format_date.hide();
 
     var days_from = new Ext.ux.form.SpinnerField({
-        value: data.days_from, 
+        value: data.days_from,
         name: "days_from",
         anchor:'100%',
         fieldLabel: _("Shift in days before today to show in chart. 0 or blank means today"),
@@ -41,20 +41,20 @@
                   items: [
                       { id: 'dateselection', boxLabel: _('Date'), name: 'rdoMethod', inputValue: 'dateselection', checked: data.rdoMethod === 'dateselection'},
                       { id: 'numberselection', boxLabel: _('Number'), name: 'rdoMethod', width: 20, inputValue: 'numberSelection', checked: data.rdoMethod === 'numberSelection' }
-                     
+
                   ],
                   listeners: {
                       'change': function(rg,checked){
-                           
+
                             if(checked.id == 'dateselection'){
-            
+
                                 days_from.hide();
                                 days_from_format_date.setValue(days_from_format_date.originalValue);
                                 days_from_format_date.show();
                                 days_from.setValue('');
 
                             }else if (checked.id == 'numberselection'){
-                                
+
                                 days_from.show();
                                 days_from.setValue(days_from.originalValue);
                                 days_from_format_date.hide();
@@ -72,7 +72,7 @@
         ['today', _('Today')],
         ['yesterday', _('Yesterday')],
         ['date', _('Date')]
-      ] 
+      ]
     });
 
     var common = params.common_options || Cla.dashlet_common(params);
@@ -87,13 +87,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: .5, 
+            { layout:'form',
+              columnWidth: .5,
               bodyStyle: 'background:transparent;',
               items: [
                 { xtype:'textfield', anchor:'100%',allowBlank: false, fieldLabel: _('Date field with scheduled start date'), name: 'date_field', value: data.date_field },
@@ -101,14 +101,14 @@
                     ['area', _('Area')],
                     ['stack-area-step', _('Area step')],
                     ['line', _('Line')],
-                    ['bar', _('Bar')], 
+                    ['bar', _('Bar')],
                     ['scatter', _('Scatter')]
-                  ] 
-                })              
+                  ]
+                })
               ]
             },
-            { layout:'form', 
-              columnWidth: .5, 
+            { layout:'form',
+              columnWidth: .5,
               bodyStyle: 'background:transparent;',
               items: [
                 selector,
@@ -127,13 +127,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: 1, 
+            { layout:'form',
+              columnWidth: 1,
               bodyStyle: 'background:transparent;',
               items: [
                 ccategory

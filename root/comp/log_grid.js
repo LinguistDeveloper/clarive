@@ -25,28 +25,28 @@
         debug: false,
         error: true
     };
-    
+
     var store_load = function(params) {
         if( params == undefined ) params={};
         if( params.anim == undefined ) params.anim='f';
         params.callback = function(){
             Baseliner.hideLoadingMaskFade(grid.getEl());
-            if( params.anim == 'f' ) 
+            if( params.anim == 'f' )
                 grid.getGridEl().fadeIn({ duration: .1 });
-            if( params.anim == 'r' ) 
+            if( params.anim == 'r' )
                 grid.getGridEl().slideIn('r', { duration: .1 });
-            if( params.anim == 'l' ) 
+            if( params.anim == 'l' )
                 grid.getGridEl().slideIn('l', { duration: .1 });
         };
         store.load( params );
     };
-    
+
     var reader = new Ext.data.JsonReader({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         id: 'id'
-        }, [ 
+        }, [
             {  name: 'id' },
             {  name: 'id_data' },
             {  name: 'mid' },
@@ -80,7 +80,7 @@
             //sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: grouping
     });
-    
+
 
     var current_job = function() { return store.reader.jsonData.data[0] }
     var current_hash = function() { return store.reader.jsonData.job_key }
@@ -97,7 +97,7 @@
         cm.setHidden( cm.getIndexById('module'), !filter_obj['debug'] );
         cm.setHidden( cm.getIndexById('service_key'), !filter_obj['debug'] );
         cm.setHidden( cm.getIndexById('milestone'), !filter_obj['debug'] );
-        Baseliner.cookie.set( filter_key , filter_obj ); 
+        Baseliner.cookie.set( filter_key , filter_obj );
         params.filter_obj = filter_obj;
         store_load();
     };
@@ -142,7 +142,7 @@
 
     // AutoRefresh
     var button_autorefresh = new Ext.Button({ tooltip: _('Refresh'),
-        icon: '/static/images/icons/refresh.svg', 
+        icon: '/static/images/icons/refresh.svg',
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
@@ -162,7 +162,7 @@
     var task_off_count = ATTEMPTS;
     var task = {
         run: function() {
-            if( mid == "" ) return; 
+            if( mid == "" ) return;
             var f = Ext.util.JSON.encode( filter_obj );
             var je = store.baseParams.job_exec || job_exec;
             Ext.Ajax.request({
@@ -182,7 +182,7 @@
                         } else {
                             task_off_count = ATTEMPTS;
                             autorefresh.stop(task);
-                            button_autorefresh.toggle( false ); 
+                            button_autorefresh.toggle( false );
                             Baseliner.message( _('Warning'), _('Job is not active') );
                         }
                     } else {
@@ -192,7 +192,7 @@
                 failure: function(xhr) {
                 }
             });
-                
+
         },
         interval: 3000
     };
@@ -204,7 +204,7 @@
     var annotation = function(r) {
         var a_form = new Ext.FormPanel({
             frame: true,
-            url: '/wiki/post', 
+            url: '/wiki/post',
             items: [
                 {
                     xtype: 'textarea',
@@ -230,7 +230,7 @@
         field_file.on('complete', function(up,params){
             store_load();
         });
-        
+
         var severity = new Ext.form.ComboBox ({
                 editable: false,
                 forceSelection: true,
@@ -261,7 +261,7 @@
             //autoDestroy: true,
             title: _('Annotations'),
             tbar: [
-                { 
+                {
                     text: _('Save'),
                     icon:'/static/images/icons/save.svg',
                     cls: 'x-btn-text-icon',
@@ -272,7 +272,7 @@
                                 msg: _('Field limit exceeded: %1 chars. Use the Data field for large content', 2000) });
                             return ;
                         }
-                        Baseliner.ci_call( mid, 'annotate',  
+                        Baseliner.ci_call( mid, 'annotate',
                             { text: field_annotate.getValue(), data: field_data.getValue(),
                                 jobid: mid, job_exec: store.baseParams.job_exec || job_exec, level: severity.getValue() },
                             function(res){
@@ -283,7 +283,7 @@
                 }
                 }, '->', new Ext.Toolbar.TextItem (_("Severity")), severity
             ],
-            items : [ { xtype:'tabpanel', activeTab:0,  plugins: [new Ext.ux.panel.DraggableTabs()], items: [ field_annotate, field_data, field_file ] } ] 
+            items : [ { xtype:'tabpanel', activeTab:0,  plugins: [new Ext.ux.panel.DraggableTabs()], items: [ field_annotate, field_data, field_file ] } ]
         });
 
         win.show();
@@ -300,7 +300,7 @@
         var section = rec.data.section;
         if( ( section != undefined && section != 'general') && (rec.data.lev == 'comment' || rec.data.lev == 'warn' || rec.data.lev == 'error') ) value = '<b>' + section + '</b>: ' + value;
         if( prefix!=undefined && prefix!='' ) {
-            return div1 + '<b>'+prefix+'</b>: ' + value + div2; 
+            return div1 + '<b>'+prefix+'</b>: ' + value + div2;
         } else {
             if( milestone!=undefined && milestone!='' )
                 return div1 + '<b>'+value+'</b>' + div2;
@@ -359,7 +359,7 @@
                   img = '/static/images/icons/mime/file_extension_zip.svg';
                } else {
                   img = '/static/images/icons/save.svg';
-           } 
+           }
                ret += "<a href='/job/log/download_data?id=" + rec.data.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
            } else {
                if( value.more!='file' && value.data && xdatalen < 250000 ) {  // 250Ks max
@@ -372,7 +372,7 @@
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
                    ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/icons/page_new.svg'></a> "
                    ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/icons/save.svg'/></a> " + datalen ;
-               } 
+               }
            }
            return ret;
     };
@@ -410,9 +410,9 @@
            else menu_exec_left.enable();
         if( job_exec >= job_exec_max ) menu_exec_right.disable();
            else menu_exec_right.enable();
-        if( job_exec_max > 1 ) 
+        if( job_exec_max > 1 )
             menu_exec.setText( '<b>' +  _('Execution %1/%2', job_exec, job_exec_max) + '</b>' );
-        else 
+        else
             menu_exec.setText( _('Execution', job_exec ) );
     }
 
@@ -437,7 +437,7 @@
                     win_opener( res.job_key + '?' + par);
                 });
             }
-        } 
+        }
     });
 
     var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete.svg', cls: 'x-btn-text-icon', hidden: false,
@@ -446,7 +446,7 @@
                 confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().mid, job_exec) }, function(res) {
                     Baseliner.message( _('Delete Log'), res.msg );
             });
-        } 
+        }
     };
 
     var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.svg', cls: 'x-btn-text-icon', hidden: false,
@@ -468,9 +468,9 @@
             Baseliner.ci_call( current_job().mid, 'resume', { confirm: _('Do you wish to resume job %1',current_job().job) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );
             });
-        } 
+        }
     });
-    
+
     var gview = new Ext.grid.GroupingView({
         forceFit: true,
         enableRowBody: true,
@@ -517,24 +517,24 @@
                 scrollOffset: 2,
                 forceFit: true
             },
-            selModel: row_sel, 
+            selModel: row_sel,
             loadMask: true,
             columns: [
-                { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, hidden: true, renderer: render_job_exec },   
+                { header: _('Job'), width: 120, dataIndex: 'job', sortable: true, hidden: true, renderer: render_job_exec },
                 { header: _('Step'), width: 40, dataIndex: 'step', sortable: true },
                 { header: _('Execution'), width: 60, dataIndex: 'exec', sortable: true, hidden: true },
                 { header: _('Level'), width: 30, dataIndex: 'lev', renderer: Baseliner.levRenderer, sortable: true },
-                { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true }, 
+                { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
                 { header: _('Op'), width: 120, id:'service_key', dataIndex: 'service_key', sortable: true, hidden: false, renderer: render_task },
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid', renderer: render_msg  },
-                { header: _('Scope'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
+                { header: _('Scope'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },
                 { header: _('Provider'), width: 100, dataIndex: 'provider', sortable: true, hidden: true },
                 { header: _('PID'), width: 45, dataIndex: 'pid', sortable: true, hidden: true },
                 { header: _('Module'), width: 280, id: 'module', dataIndex: 'module', sortable: true, hidden: true, editor: new Ext.form.TextArea() },
                 { header: _('Milestone'), width: 40, id: 'milestone', dataIndex: 'milestone', sortable: true, hidden: true },
                 { header: _('Log Id'), width: 80, dataIndex: 'id', sortable: true, hidden: true },
                 { header: _('Rule Id'), width: 80, dataIndex: 'rule', sortable: true, hidden: true },
-                { header: _('Actions'), width: 100, dataIndex: 'more', renderer: Baseliner.actionsRenderer, sortable: true } 
+                { header: _('Actions'), width: 100, dataIndex: 'more', renderer: Baseliner.actionsRenderer, sortable: true }
             ],
             bbar: ptool,
             tbar: [ _('Search') + ': ', ' ', searchField,
@@ -545,17 +545,17 @@
                 menu_exec_right,
                 {
                     text: _('Annotate'),
-                    icon: '/static/images/icons/comment_new.svg', 
+                    icon: '/static/images/icons/comment_new.svg',
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
                 button_resume,
 % if( Baseliner::Model::Permissions->user_has_action($c->username, 'action.job.advanced_menu') ) {
-                new Ext.Toolbar.Button({ 
+                new Ext.Toolbar.Button({
                     text: _('Advanced'),
-                    icon: '/static/images/icons/password.svg', 
+                    icon: '/static/images/icons/password.svg',
                     cls: 'x-btn-text-icon ui-job-advanced-menu',
-                    menu: { 
+                    menu: {
                         items: [ menu_stash, menu_delete, menu_logfile ]
                     }
                 }),
@@ -581,17 +581,17 @@
         var title = r.get('job') + " - Log ID " + r.get('id') + ": " + r.get('service_key');
         var msg = r.get('text');
         var lev = r.get('lev');
-        var win = new Baseliner.Window({ 
-            layout: 'fit', 
+        var win = new Baseliner.Window({
+            layout: 'fit',
             //autoScroll: true,
             maximizable: true,
             //style: 'white-space: pre-wrap; white-space: -moz-pre-wrap; word-wrap: break-word;',
             title: title,
-            height: 600, width: 700, 
+            height: 600, width: 700,
             items: [ new Baseliner.MonoTextArea({ value: msg, style:'font-family: Consolas, Courier New, Courier; color:'+ ( lev=='error' ? '#d23' : lev=='warn' ? '#997A00' : '#000' ) }) ]
         });
         win.show();
-    });        
+    });
 
     //Scroll to bottom when the store reloads
     store.on('load', function(){
@@ -603,8 +603,8 @@
             job_exec = store.baseParams.job_exec || job_exec;
             menu_exec_review();
         }
-    });   
-    
+    });
+
     // Yellow row selection
     row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-white');
@@ -631,18 +631,18 @@
 
    grid.getView().getRowClass = function(rec, index){
         var css = '';
-        if( rec.data.lev == 'debug' ) 
+        if( rec.data.lev == 'debug' )
             css = index % 2 > 0 ? 'level-row debug-odd' : 'level-row debug-even' ;
-        else if( rec.data.lev == 'error' )  
+        else if( rec.data.lev == 'error' )
             css = index % 2 > 0 ? 'level-row error-odd' : 'level-row error-even' ;
-        else if( rec.data.lev == 'warn' )  
+        else if( rec.data.lev == 'warn' )
             css = index % 2 > 0 ? 'level-row warn-odd' : 'level-row warn-even' ;
         else
             css = index % 2 > 0 ? 'level-row info-odd' : 'level-row info-even' ;
 
         return css;
-    }; 
-        
+    };
+
     //Ext.getCmp('main-panel').setActiveTab( Ext.getCmp('main-panel').add(grid) ) ;
 
     store_load();

@@ -1452,7 +1452,7 @@ Cla.topic_grid = function(params){
         filters: fields_filter
     });
 
- 
+
     var grid_topics = new Ext.grid.GridPanel({
         cls: 'ui-topics-grid',
         region: 'center',

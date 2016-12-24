@@ -32,15 +32,15 @@
 %# cuando la propiedad nullable sea igual a 0 el campo será obligario, por defecto no lo es
 % if($row->{vtype}) {
         vtype: "<% $row->{vtype} %>",
-% }            
-% for my $e_name ( keys %{ $row->{extjs} || {} } ) {              
+% }
+% for my $e_name ( keys %{ $row->{extjs} || {} } ) {
         <% $e_name %>:  "<% $row->{extjs}->{$e_name} %>",
 % }
 
         allowBlank: <% ($row->{nullable} eq "")? 1 : $row->{nullable} %>
 }
 % if( ! $c->stash->{single_comp} ) {
-,         
+,
 % }
 
 % if( $c->stash->{single_comp} ) {

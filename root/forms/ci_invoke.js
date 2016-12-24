@@ -1,42 +1,42 @@
 (function(params){
     var data = params.data || {};
-    
+
     var ci_class =  new Baseliner.CIClassCombo({
         name: 'ci_class',
         allowBlank: false,
         fieldLabel: _('CI Class'),
         value: data.ci_class
     });
-    
+
     ci_class.on('select', function(){
         ci_method.show();
-        ci_method.setValue(''); 
+        ci_method.setValue('');
         ci_method.store.reload();
     });
-    
+
     Baseliner.CIMethodCombo = Ext.extend(Baseliner.ComboSingleRemote, {
         fieldLabel: _('CI Methods'),
         field: 'name',
         fields: [ 'classname', 'name', 'p_required','p_optional','n_required','n_optional' ],
         url: '/ci/class_methods'
     });
-    
+
     var ci_method = new Baseliner.CIMethodCombo({
         name: 'ci_method',
         allowBlank: false,
         hidden: !data.ci_class,
         value: data.ci_method
     });
-    
-    var named = new Baseliner.DataEditor({ 
-           name:'named', title: _('Named'), 
+
+    var named = new Baseliner.DataEditor({
+           name:'named', title: _('Named'),
            hide_save: true, hide_cancel: true,
-           data: data.named || {} 
+           data: data.named || {}
     });
     var ta = Baseliner.cols_templates['textarea'];
     var positional = new Baseliner.GridEditor({
         title: _('Positional'),
-        name: 'positional', records: data.positional, preventMark: false,        
+        name: 'positional', records: data.positional, preventMark: false,
         columns: [
             Ext.apply({ dataIndex:'variable', header: _('Name') }, ta() ),
             Ext.apply({ dataIndex:'value', header:_('Value') }, ta() )
@@ -62,7 +62,7 @@
     ci_method.store.on('beforeload', function(){
         this.baseParams = Ext.apply( this.baseParams, { classname: ci_class.getValue() });
     });
-    return [ 
+    return [
        ci_class, ci_method,
        { xtype: 'textfield', name:'ci_mid', fieldLabel: _('MID'), allowBlank: true, value: data.ci_mid },
        { xtype: 'tabpanel', activeTab: 0, height: 300, fieldLabel: _('Arguments'), items: [ named, positional ] }

@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
 
     var id = params.id_div;
     var project_id = params.project_id;
@@ -14,7 +14,7 @@
     var days_after_format_date = params.data.days_after_format_date || 0;
     var graph_type = params.data.type || 'area';
     var group = params.data.group || 'day';
- 
+
     var format = '%Y/%m/%d';
 
       Cla.ajax_json('/dashboard/topics_period_burndown', {
@@ -29,7 +29,7 @@
             date: date,
             categories: categories,
             date_field: date_field,
-            _ignore_conn_errors: true 
+            _ignore_conn_errors: true
         }, function(res){
            graph = c3.generate({
                 bindto: '#'+id,

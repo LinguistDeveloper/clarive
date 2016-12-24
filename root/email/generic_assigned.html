@@ -1,5 +1,5 @@
 <%args>
-    $title 
+    $title
     $username
     $subject
     $mid
@@ -40,7 +40,7 @@
                             <div class="hr" style="clear: both;">&nbsp;</div>
                             <br>
 
-                            <div class="body-text">                             
+                            <div class="body-text">
                                 <% _loc('Topic %1 (%2) has been assigned to you',$mid,$name_category) %>
                                 <br>
                                 <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>"><% _loc('Click here to review') %></a>

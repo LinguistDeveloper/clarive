@@ -8,25 +8,25 @@
     var ps = 30;
 
     var record = Ext.data.Record.create([ 'mid','_id','bl', '_parent','_is_leaf',
-        'type', 'pretty_properties', 
+        'type', 'pretty_properties',
         'name', 'item', 'ci_form', 'active', 'moniker',
         'class', 'modified_by', 'created_by',
         'classname', 'versionid','ts','tags','data','properties','icon','collection', 'title' ]);
 
-    var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
-       autoLoad : true,  
+    var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({
+       autoLoad : true,
        url: '/ci/gridtree',
        remoteSort: true,
        baseParams: Ext.apply( { pretty: true }, params ),
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, record )
-    }); 
+    });
 
     var searchField = new Baseliner.SearchField({
         store: store_ci,
         params: {start: 0, limit: ps },
         emptyText: _('<Enter your search string>')
     });
-    
+
     var show_graph = function(){
         var mids = [];
         Ext.each( check_sm.getSelections(), function(r){
@@ -38,7 +38,7 @@
     // only globals can be seen from grid
     Baseliner.ci_edit = function( gridid, rowIndex ){
         var g = Ext.getCmp( gridid );
-        if( g!= undefined ) 
+        if( g!= undefined )
             ci_edit( g.getStore(), g.getStore().getAt(rowIndex).data );
     };
 
@@ -104,7 +104,7 @@
            var sel = get_valid_selections();
            rec = sel[0].data;
            rec.name = _('Copy of %1', rec.name );
-        } 
+        }
         Baseliner.add_tabcomp( '/ci/edit', _('New: %1' , Cla.ci_loc(params.item) ), {
                 _parent_grid: ci_grid.id,
                 ci_form: data.ci_form,
@@ -243,7 +243,7 @@
             } else {
                 Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format}, function(res) {
                     if( res.success ) {
-                        var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });       
+                        var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });
                         win.show();
                     } else {
                         Baseliner.error( _('CI'), res.msg );
@@ -253,7 +253,7 @@
         } else if(format == 'csv') {
             Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format, ci_type: mode }, function(res) {
                 if( res.success ) {
-                    var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });       
+                    var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });
                     win.show();
                 } else {
                     Baseliner.error( _('CI'), res.msg );
@@ -266,8 +266,8 @@
 
     var ci_export_file = function(url, format, ci_type, target) {
         var checked = multi_check_data( check_sm, 'mid' );
-       
-        var form = form_report.getForm(); 
+
+        var form = form_report.getForm();
         form.findField('mids').setValue( checked.data );
         form.findField('format').setValue( format );
         form.findField('ci_type').setValue( ci_type );
@@ -276,7 +276,7 @@
         targetD.nodeValue = target || "_blank";
         el.setAttributeNode(targetD);
         el.action = url;
-        el.submit(); 
+        el.submit();
     };
 
     var form_report = new Ext.form.FormPanel({
@@ -305,11 +305,11 @@
         if( rec.data.type == 'class' ) {
             // we create objects
             value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
-        } 
+        }
         else if( rec.data.type == 'topic' ) {
             var d = rec.data.data;
             return Baseliner.topic_name({
-                mid: rec.data.mid, 
+                mid: rec.data.mid,
                 mini: false,
                 size: '11',
                 category_name: d.name,
@@ -352,15 +352,15 @@
         if( value == undefined ) return '';
         if( typeof value == 'string' ) return '';
         var ret = '<table>';
-        ret += '<tr>'; 
+        ret += '<tr>';
         var k = 0;
         for( var k in value ) {
             if( value[k]==undefined ) value[k]='';
             ret += '<td style="font-size: 10px;font-weight: bold;padding: 1px 3px 1px 3px;">' + _(k) + '</td>'
             ret += '<td width="80px" style="font-size: 10px; background: #f5f5f5;padding: 1px 3px 1px 3px;"><code>' + value[k] + '</code></td>'
             if( k % 2 ) {
-                ret += '</tr>'; 
-                ret += '<tr>'; 
+                ret += '</tr>';
+                ret += '<tr>';
             }
         }
         ret += '</table>';
@@ -374,7 +374,7 @@
         checkOnly: true
     });
     check_sm.on('selectionchange', function(){
-        if ( can_save ) {        
+        if ( can_save ) {
             if ( check_sm.hasSelection() ) {
                 btn_delete.enable();
                 //btn_create.enable();
@@ -404,7 +404,7 @@
     });
 
     var id_auto = Ext.id();
-    
+
     var bbar = new Ext.ux.maximgb.tg.PagingToolbar({
             store: store_ci,
             pageSize: ps,
@@ -468,11 +468,11 @@
         sortable: true,
         store: store_ci,
         sm: check_sm,
-        tbar: [ 
+        tbar: [
             searchField,
             btn_create,
             btn_delete,
-            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Export'), icon: '/static/images/icons/downloads_favicon.svg', cls: 'x-btn-text-icon',
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.svg', handler:function(){ ci_export('yaml') } },
                     { text:_('JSON'), icon: '/static/images/icons/json.svg', handler:function(){ ci_export('json') } },
@@ -483,7 +483,7 @@
                         ci_export_file('/ci/export_file', 'csv', params.item, 'FrameDownload')} }
                 ]
             },
-            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.svg', hidden: !can_save, cls: 'x-btn-text-icon', 
+            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.svg', hidden: !can_save, cls: 'x-btn-text-icon',
                 menu:[
                     { text:_('YAML'), icon: '/static/images/icons/yaml.svg', handler:function(){ ci_import('yaml') } },
                     { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_import('csv', params.item) } }

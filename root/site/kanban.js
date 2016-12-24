@@ -1,6 +1,6 @@
 /*
 
-  Kanban Panel 
+  Kanban Panel
 
   There are 3 usage modes:
 
@@ -18,7 +18,7 @@
 
 Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     //margins:'5 5 5 0',
-    height: 400, 
+    height: 400,
     width: 800,
     is_fullscreen : false,
     is_tab : false,
@@ -41,28 +41,28 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         self.statuses_hash = {};
         self.column_by_status = {};
         self.status_btn = new Ext.Button({ text:_('Statuses'), menu:[] });
-        self.tab_btn = new Ext.Button({ 
+        self.tab_btn = new Ext.Button({
             icon:'/static/images/icons/tab.svg', iconCls:'x-btn-icon',
             handler: function(){
-                if( self.is_tab ) 
+                if( self.is_tab )
                     self.fullscreen();
-                else 
+                else
                     self.goto_tab();
             }
         });
-        self.btn_save = new Ext.Button({ 
-            text:_('Save Layout'), icon: IC('save'), tooltip:_('Save Current Layout'), hidden: self.topic_mid==undefined, 
+        self.btn_save = new Ext.Button({
+            text:_('Save Layout'), icon: IC('save'), tooltip:_('Save Current Layout'), hidden: self.topic_mid==undefined,
             handler: function(){
                 self.save_statuses();
             }
         });
-        self.bodyCfg = { 
+        self.bodyCfg = {
             style: {
              'background': self.background,
              'background-repeat': 'repeat'
             }
         };
-        self.tbar = [ 
+        self.tbar = [
             '<img src="/static/images/icons/kanban.svg" />',
             'KANBAN',
             '-',
@@ -70,7 +70,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             self.status_btn, self.btn_save,
             '->',
             self.tab_btn,
-            { icon:'/static/images/icons/close.svg', iconCls:'x-btn-icon', handler: function(){ 
+            { icon:'/static/images/icons/close.svg', iconCls:'x-btn-icon', handler: function(){
                     if( self.fireEvent('beforeclose') === false ) {
                         return;
                     }
@@ -146,7 +146,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     Baseliner.warning( _('Kanban'), _(res.msg) );
                     // send portlet back to where it came from
                     var old_status = portlet.id_status;
-                    var old_column_id = self.column_by_status[ old_status ]; 
+                    var old_column_id = self.column_by_status[ old_status ];
                     var old_column = Ext.getCmp( old_column_id );
                     if( old_column ) {
                         old_column.add( portlet );
@@ -182,7 +182,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     goto_tab : function(){
         var self = this;
         self.is_tab = true;
-        var params = { tab_icon: '/static/images/icons/kanban.svg' };  
+        var params = { tab_icon: '/static/images/icons/kanban.svg' };
         self.tab_info = { type: 'object', params: params }; // XXX this should be simplified
         var id = Baseliner.addNewTabItem( self, self.title, params );
         if( self.is_fullscreen ) {
@@ -288,15 +288,15 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 for( var i=0; i<col_num; i++ ) {
                     var cs = statuses[i];
                     var smids = status_mids[cs.id];
-                    //cs.visible = col_num<10 || (smids && smids.length > 0); 
+                    //cs.visible = col_num<10 || (smids && smids.length > 0);
                     cs.visible = visible_status[ cs.id ];
                     if( cs.visible ) kvisible++;
                     self.statuses_hash[ cs.name ] = { colnum: i, hidden: !cs.visible };  // store colnum for status
                 }
                 var col_width = 1 / kvisible;
                 var add_column = function( id_status, name, visible, bl ) {
-                   var status_title = 
-                       '<div id="boot" style="background:transparent;font-size:8px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' 
+                   var status_title =
+                       '<div id="boot" style="background:transparent;font-size:8px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">'
                        + _(name) + ( !bl || bl=='*' ? '' : '&nbsp;<div class="label" style="font-size: 8px;background-color:#666;">'
                         + bl+'</div>' ) + '</div>';
                    // create columns
@@ -318,10 +318,10 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
 
                 for( var k=0; k< statuses.length; k++ ) {
                     var cs = statuses[k];
-                    self.status_btn.menu.addMenuItem({ 
-                        id_status: cs.id, text: cs.name, 
-                        checked: !!cs.visible, 
-                        checkHandler: function(opt){ return self.check_column(opt) } 
+                    self.status_btn.menu.addMenuItem({
+                        id_status: cs.id, text: cs.name,
+                        checked: !!cs.visible,
+                        checkHandler: function(opt){ return self.check_column(opt) }
                     });
                 }
 
@@ -334,7 +334,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     reload : function(){  // used by topics when refreshing _parent_grid
         var self = this;
-        self.refresh(); 
+        self.refresh();
     },
     create_portlets : function( id_status ){
         var self = this;
@@ -349,9 +349,9 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             var col = sh ? sh.colnum : undefined;
             // portlet contents
             var contents = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: mid });
-            contents.on('afterrender', function(){ 
+            contents.on('afterrender', function(){
                 // double-click on portlet opens either window or tab
-                this.ownerCt.body.on('dblclick',function(){ 
+                this.ownerCt.body.on('dblclick',function(){
                     var title = rec.data.topic_name;
                     var params = { topic_mid: mid, title: _( title ), _parent_grid: self.id };
                     if( self.is_tab ) {
@@ -360,14 +360,14 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                         params.window_mode = true;
                         Baseliner.ajaxEval( '/topic/view', params, function(topic_panel) {
                             var win = new Baseliner.Window({
-                                layout: 'fit', 
+                                layout: 'fit',
                                 tabifiable : true,
                                 //modal: true,
                                 autoScroll: true,
                                 style: { overflow: 'hide' },
                                 border: false,
                                 title: _(title),
-                                height: 600, width: 1000, 
+                                height: 600, width: 1000,
                                 maximizable: true,
                                 items: topic_panel
                             });
@@ -379,9 +379,9 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     }
                 });
             });
-            self.add_portlet({ 
+            self.add_portlet({
               title: _(t),
-              comp: contents, 
+              comp: contents,
               mid: mid,
               id_status: rec.data.category_status_id,
               portlet_type: 'comp',
@@ -419,7 +419,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         self.create_portlets();
         self.doLayout();
 
-        // show/hide tools for the column 
+        // show/hide tools for the column
         var cols = self.findByType( 'kanbancolumn' );
         for( var i = 0; i<cols.length; i++ ) {
             cols[i].header.on( 'mouseover', function(ev,obj){
@@ -479,7 +479,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             if ( newStatus != portlet_obj.id_status ){
                 // check if we deploy
                 if( col.bl && col.bl!='*' ) {
-                    var fake_node = { attributes:{ data: {} } }; 
+                    var fake_node = { attributes:{ data: {} } };
                     var params = { topic_mid: portlet_obj.mid, title: _( portlet_obj.title ), _parent_grid: self.id };
                     Baseliner.ajaxEval( '/topic/view', params, function(topic_panel) {
                         if(topic_panel.menu_deploy.length > 0){
@@ -550,7 +550,7 @@ Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
             'font-size':'10px'
         }
     },
-    bodyCfg: { 
+    bodyCfg: {
         style: {
             margin: '0px 0px 0px 0px',
             padding: '2px 2px 2px 2px',

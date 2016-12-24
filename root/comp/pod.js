@@ -8,7 +8,7 @@ POD.addTab = function (title, url, section,module) {
     }
     POD.clearTOC();
     var tab = POD.tabs.add({
-        title: title, 
+        title: title,
         id: "tab-" + title,
         closable: true,
         closeAction: "hide",
@@ -20,14 +20,14 @@ POD.addTab = function (title, url, section,module) {
     );
     tab.show();
     return tab;
-    
+
 }
 
 POD.proxyLink = function(link) {
     var re = new RegExp("^" + Ext.escapeRe("http://localhost:3000/pod"));
     if(!re.test(link.href)) return true;
     var module = link.href.replace(new RegExp(Ext.escapeRe("http://localhost:3000/pod/module/")), "");
-    
+
         var parts = module.split(/#/);
         section = unescape(parts[1]);
         module = parts[0];
@@ -37,7 +37,7 @@ POD.proxyLink = function(link) {
     var tab = POD.addTab(module, link.href, section, module);
     POD.scrollToSection(tab, section, module);
     return false;
-    
+
 }
 
 POD.scrollToSection = function(tab, section, module){
@@ -72,8 +72,8 @@ listeners:  {
 loader: new Ext.tree.TreeLoader({
     dataUrl:'http://localhost:3000/pod/modules',
     autoLoad: false,
-    listeners: { 
-        'beforeload' : function() { POD.tree.getEl().mask('Modules are being loaded') }, 
+    listeners: {
+        'beforeload' : function() { POD.tree.getEl().mask('Modules are being loaded') },
         'load' : function() { POD.tree.getEl().unmask() }
     }
 
@@ -120,7 +120,7 @@ POD.TOC = new Ext.tree.TreePanel({
     split: true,
     region: "north",
 listeners:  {
-    "click" : function(node) { 
+    "click" : function(node) {
       var module = POD.tabs.getActiveTab().getId().replace(/tab-/,"");
       // alert(node.text + module);
       POD.scrollToSection(POD.tabs.getActiveTab(), node.text, module);
@@ -146,7 +146,7 @@ POD.leftColumn = new Ext.Panel({
     split: true,
     width: 200,
     items: [POD.tree, POD.TOC]
-    
+
 });
 
 POD.TOCs = {};
@@ -204,7 +204,7 @@ Memoria.Search = {};
 Memoria.Search.InstantAdd = new (function(){
 this.init = function(combo) {
     this.combo = combo;
-    var add = new Ext.Layer({cls: "x-combo-list", html: "test1234", zindex: "100"});    
+    var add = new Ext.Layer({cls: "x-combo-list", html: "test1234", zindex: "100"});
     var lw = combo.listWidth || Math.max(combo.wrap.getWidth(), combo.minListWidth);
     add.setWidth(lw);
     add.alignTo(combo.wrap, combo.listAlign);
@@ -233,11 +233,11 @@ this.hide = function () {
 })();
 
 
-POD.tabs = 
+POD.tabs =
     new Ext.TabPanel({
         region:'center',
         activeTab:0,
-        plugins: [ new Ext.ux.panel.DraggableTabs()], 
+        plugins: [ new Ext.ux.panel.DraggableTabs()],
         autoScroll: true,
         margins: "5 5 5 5",
         enableTabScroll: true,
@@ -268,17 +268,17 @@ POD.tabs =
     });
 
     Ext.Updater.defaults.loadScripts = true;
-    
-    
+
+
     var viewport = new Ext.Viewport({
         layout:'border',
         items:[POD.tabs, POD.leftColumn
          ]
     });
-    
 
 
-    
+
+
 //    var search = new Ext.form.ComboBox( {
 //        store :POD.searchStore,
 //        typeAhead :false,
@@ -292,14 +292,14 @@ POD.tabs =
 //        tpl :resultTpl,
 //        applyTo :Ext.getDom('search'),
 //        itemSelector :'div.search-item',
-//        
+//
 //        listeners: {"render": function(combo) { Memoria.Search.InstantAdd.init(combo) },
 //                    "collapse": function() { Memoria.Search.InstantAdd.show() },
-//                    "select": function(combo, record) { 
+//                    "select": function(combo, record) {
 //                        POD.addTab(record.get("name"), "http://localhost:3000/pod/module/"+record.get("name"));
 //                          Memoria.Search.InstantAdd.hide();
 //                        }, "blur": function(){Memoria.Search.InstantAdd.hide();} }
-//    
+//
 //
 //    });
     //Ext.getDom('search').focus(100, true);

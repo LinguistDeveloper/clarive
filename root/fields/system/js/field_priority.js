@@ -15,7 +15,7 @@ params:
 (function(params){
     var data = params.topic_data;
     var meta = params.topic_meta;
-    
+
     function get_expr_response_time(row){
         var str_expr = '';
         var expr = row.data.expr_response_time.split(':');
@@ -29,7 +29,7 @@ params:
         }
         return str_expr;
     }
-    
+
     function get_expr_deadline(row){
         var str_expr = '';
         var expr = row.data.expr_deadline.split(':');
@@ -43,7 +43,7 @@ params:
         }
         return str_expr;
     }
-    
+
     function load_txt_values_priority(row){
         var ff = params.form.getForm();
         var obj_rsp_expr_min = ff.findField("txt_rsptime_expr_min");
@@ -65,12 +65,12 @@ params:
             }
         }
     }
-    
+
     var store_category_priority = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/topicadmin/get_config_priority',
         fields: [
             {  name: 'id' },
@@ -80,11 +80,11 @@ params:
             {  name: 'expr_response_time' },
             {  name: 'deadline_min' },
             {  name: 'expr_deadline' },
-            {  name: 'is_active' }  
+            {  name: 'is_active' }
         ]
     });
-    
-    
+
+
     var combo_priority = new Ext.form.ComboBox({
         value: data ? data.name_priority : '',
         mode: 'local',
@@ -103,10 +103,10 @@ params:
             'select': function(cmd, rec, idx){
                 load_txt_values_priority(rec);
             }
-        }           
+        }
     });
-    
-    
+
+
     return [
         {
             xtype:'textfield',
@@ -125,6 +125,6 @@ params:
         { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
         { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
         combo_priority
-        
+
     ]
 })

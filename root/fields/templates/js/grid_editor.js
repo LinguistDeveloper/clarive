@@ -17,7 +17,7 @@ params:
 
     var allow = Baseliner.eval_boolean(meta.allowBlank);
     var readonly = Baseliner.eval_boolean(meta.readonly);
-    
+
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var grid = new Baseliner.GridEditor({
         fieldLabel: _(meta.name_field),
@@ -31,8 +31,8 @@ params:
         cls:'grid_editor_look',
         id_field: meta.id_field,
         bd_field: meta.bd_field,
-        records: records, 
-        preventMark: false,        
+        records: records,
+        preventMark: false,
         columns: meta.columns,
         html_view_columns: meta.html_view_columns,
         disabled: readonly,

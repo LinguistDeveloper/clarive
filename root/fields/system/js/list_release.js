@@ -4,13 +4,13 @@ params:
     html: '/fields/system/html/field_release.html'
     js: '/fields/system/js/list_release.js'
     relation: 'system'
-    type: 'listbox'    
-    get_method: 'get_release'    
+    type: 'listbox'
+    get_method: 'get_release'
     set_method: 'set_release'
     field_order: 7
     section: 'body'
     filter: 'none'
-    release_field: '' 
+    release_field: ''
     allowBlank: true
     single_mode: true
     rel_type: 'topic_topic'

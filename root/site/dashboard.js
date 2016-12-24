@@ -178,10 +178,10 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 var now = new moment();
                 var last_update = now.format("YYYY-MM-DD HH:mm:ss");
                 dashlet.id_div = id_div;
-                var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update, 
-                    id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows, 
+                var dh = dashlet_tpl.tmpl({ id_cmp: self.id, autorefresh: dashlet.data.autorefresh || 0, last_update: last_update,
+                    id_dashlet: dashlet.id, js_file: dashlet.js_file, rowspan: dashlet.data.rows,
                     no_boot: dashlet.no_boot,
-                    colspan: dashlet.data.columns, 
+                    colspan: dashlet.data.columns,
                     dashlet: dashlet, id_div: id_div });
                 html += dh;
                 Cla.ajaxEval(dashlet.js_file, { id_div: id_div, project_id: self.project_id, topic_mid: self.topic_mid, data: dashlet.data }, function(){
@@ -230,7 +230,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     };
 
                 });
-                self.dashlets[ dashlet.id ] = dashlet; 
+                self.dashlets[ dashlet.id ] = dashlet;
             });
             $('.'+id_class).append(html+"</div>");
         });
@@ -266,7 +266,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 form.data = form.getValues();
 
                 Baseliner.ci_call('user', 'save_dashlet_config', { data: form.data, id_dashlet:id_dashlet}, function(res){
-                    Baseliner.message( _('Dashlet config'), res.msg ); 
+                    Baseliner.message( _('Dashlet config'), res.msg );
                     win.close();
                     self.dashlets[ id_dashlet ].data = res.data;
                     self.refresh_dashlet(id_dashlet);
@@ -277,7 +277,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
 
             var restore_originals = function(){
                 Baseliner.ci_call('user', 'remove_dashlet_config', {id_dashlet:id_dashlet}, function(res){
-                    Baseliner.message( _('Dashlet config'), res.msg ); 
+                    Baseliner.message( _('Dashlet config'), res.msg );
                     win.close();
                     self.dashlets[ id_dashlet ].data = dashlet.data_orig;
                     self.refresh_dashlet(id_dashlet);
@@ -286,9 +286,9 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 win.destroy();
             };
 
-            var form = new Baseliner.FormPanel({ 
-                frame: false, 
-                forceFit: true, 
+            var form = new Baseliner.FormPanel({
+                frame: false,
+                forceFit: true,
                 defaults: { msgTarget: "under", anchor:"100%" },
                 labelWidth: 150,
                 width: 800, height: 600,
@@ -330,13 +330,13 @@ Cla.dashlet_common = (function(params){
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 5px; padding: 5px 3px;background:transparent;',
           items:[
-                {layout:'form', 
-                 columnWidth: .48, 
+                {layout:'form',
+                 columnWidth: .48,
                  bodyStyle: 'background:transparent;',
                  items: [
                     new Cla.ComboSingle({
@@ -355,8 +355,8 @@ Cla.dashlet_common = (function(params){
                     })
                   ]
                 },
-                {layout:'form', 
-                 columnWidth: .48, 
+                {layout:'form',
+                 columnWidth: .48,
                  bodyStyle: 'background:transparent;',
                  items:
                     new Baseliner.ComboDouble({ anchor: '100%',fieldLabel: _('Autorefresh frequency in minutes (0 disabled)'), name: 'autorefresh', value:data.autorefresh?data.autorefresh:'0', data: [
@@ -368,7 +368,7 @@ Cla.dashlet_common = (function(params){
                         [1800000, 30],
                         [3600000, 60],
                         [7200000, 120],
-                      ] 
+                      ]
                     })
                 }
             ]

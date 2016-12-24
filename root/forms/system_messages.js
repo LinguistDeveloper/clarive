@@ -1,8 +1,8 @@
 (function(params){
     var data = params.data || {};
-    
+
     var user_box = new Baseliner.model.Users({
-        fieldLabel: _('Username'), 
+        fieldLabel: _('Username'),
         store: new Baseliner.Topic.StoreUsers({ autoLoad: true }),
         singleMode: true,
     });

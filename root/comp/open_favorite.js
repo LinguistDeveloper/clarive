@@ -4,7 +4,7 @@
     var tabfav = click.tabfav;
     var fooname = tabfav.foo;  // function name
     var args = tabfav.args;  // function args
-    var foo = eval(""+fooname); 
+    var foo = eval(""+fooname);
     var params = args[2] || {};
     params.current_state = click.current_state || {};
     //foo.apply({},args);

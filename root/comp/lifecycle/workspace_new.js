@@ -1,7 +1,7 @@
 (function(node) {
     if( node == undefined ) node = {};
     var form = new Ext.FormPanel({
-        frame: true, 
+        frame: true,
         width: 700,
         defaults: { width: 550 },
         items: [
@@ -16,14 +16,14 @@
                 handler: function(){
                     var fdata = form.getForm().getValues();
                     Baseliner.ci_call('user', 'workspace_create', fdata, function(res){
-                        Baseliner.message( _('Workspace'), res.msg ); 
+                        Baseliner.message( _('Workspace'), res.msg );
                         win.close();
                     });
                 }
             }
         ]
     });
-    var win = new Baseliner.Window({ 
+    var win = new Baseliner.Window({
         title: _('New Workspace'),
         closeAction: 'destroy',
         items: [ form ]

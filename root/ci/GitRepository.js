@@ -2,17 +2,17 @@
     if( params==undefined ) params={};
     params = params.rec;
 
-    var include = new Baseliner.ArrayGrid({ 
-        title:_('Include'), 
-        name: 'include', 
+    var include = new Baseliner.ArrayGrid({
+        title:_('Include'),
+        name: 'include',
         flex:1,
         value: params.include,
         description:_('Element pattern regex to include')
     });
-    
-    var exclude = new Baseliner.ArrayGrid({ 
-        title:_('Exclude'), 
-        name: 'exclude', 
+
+    var exclude = new Baseliner.ArrayGrid({
+        title:_('Exclude'),
+        name: 'exclude',
         flex:1,
         value: params.exclude,
         description:_('Element pattern regex to exclude')
@@ -20,11 +20,11 @@
 
     var tabs = new Ext.TabPanel({
         activeTab: 0,
-        plugins: [ new Ext.ux.panel.DraggableTabs()], 
+        plugins: [ new Ext.ux.panel.DraggableTabs()],
         fieldLabel: _('Configuration'),
         height: 430,
         items: [
-            { xtype:'panel', layout:'vbox', 
+            { xtype:'panel', layout:'vbox',
                layoutConfig:{ align:'stretch' },
                anchor: '100%', title:_('Branches'), items: [ include, exclude ] },
         ]

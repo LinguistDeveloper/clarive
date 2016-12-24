@@ -37,15 +37,15 @@
 
     var filter_field = new Ext.form.Field({
         xtype: "textfield",
-        fieldLabel: _('Apply role filter'), 
-        name: 'filter', 
+        fieldLabel: _('Apply role filter'),
+        name: 'filter',
         value: data.filter
     });
     filter_field.hide();
 
     var store_types = new Ext.data.SimpleStore({
         fields: ['type', 'name'],
-        data:[ 
+        data:[
             [ 'release', _('Release') ],
             [ 'projects', _('Projects') ],
             [ 'users', _('Users') ],
@@ -59,7 +59,7 @@
 
     var store_values = new Ext.data.SimpleStore({
         fields: ['value_type', 'name'],
-        data:[ 
+        data:[
             [ 'single', _('Single') ],
             [ 'multiple', _('Multiple') ],
             [ 'grid', _('Grid') ]
@@ -77,7 +77,7 @@
         editable: false,
         mode: 'local',
         forceSelection: true,
-        triggerAction: 'all', 
+        triggerAction: 'all',
         fieldLabel: _('Value type'),
         emptyText: _('select value type...'),
         autoLoad: true
@@ -99,13 +99,13 @@
         editable: false,
         mode: 'local',
         forceSelection: true,
-        triggerAction: 'all', 
+        triggerAction: 'all',
         fieldLabel: _('Data type'),
         emptyText: _('select data type...'),
         autoLoad: true
     });
     value_combo.hide();
-    
+
 
     type_combo.on('select', function(combo,rec,ix) {
         if(rec.data.type != 'revisions'){
@@ -152,13 +152,13 @@
             meta_type.setValue('ci');
         }
         if(rec.data.type == 'tasks'){
-            
+
         }else{
             relation.setValue('system');
         }
     });
 
-    ret.push([ 
+    ret.push([
         type_combo,
         value_combo,
         filter_field

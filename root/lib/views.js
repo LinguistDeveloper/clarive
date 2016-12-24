@@ -3,7 +3,7 @@ Ext.ns('Cla.ui');
 /**
  * @private
  * @class Cla.ui.Field
- */ 
+ */
 /**
  * @cfg {String} name The field's HTML name attribute (defaults to '').
  * <b>Note</b>: this property must be set if this field is to be automatically included with
@@ -39,7 +39,7 @@ Ext.ns('Cla.ui');
  * event after hiding the component. Note this method is called internally if
  * the component is configured to be <code>{@link #hidden}</code>.
  * @return {Ext.Component} this
- */    
+ */
 
 
 
@@ -54,7 +54,7 @@ var textfield = Cla.ui.textField({
     allowBlank: false
 });
  * </code></pre>
- */ 
+ */
 Cla.ui.textField = function (options){
     var API = ['name', 'fieldLabel', 'value', 'readOnly', 'hidden', 'allowBlank', 'anchor', 'height', 'maxLength', 'style'];
     var validAPI = Cla.$validateAPI(API, options);
@@ -76,7 +76,7 @@ var numberfield = Cla.ui.numberField({
     vtype:  'port'
 });
  * </code></pre>
- */  
+ */
 Cla.ui.numberField = function (options){
     var API = ['name', 'fieldLabel', 'value', 'readOnly', 'hidden', 'allowBlank', 'anchor', 'height', 'maxValue', 'style'];
     var validAPI = Cla.$validateAPI(API, options);
@@ -100,7 +100,7 @@ Cla.ui.datetimeField = function (options){
     var API = ['name', 'fieldLabel', 'value', 'readOnly', 'hidden', 'allowBlank', 'format'];
     var validAPI = Cla.$validateAPI(API, options);
 
-    return new Cla.ui.form.datetimeField(validAPI);  
+    return new Cla.ui.form.datetimeField(validAPI);
 };
 
 /**
@@ -119,7 +119,7 @@ Cla.ui.timeField = function (options){
     var API = ['name', 'fieldLabel', 'value', 'readOnly', 'hidden', 'allowBlank', 'format'];
     var validAPI = Cla.$validateAPI(API, options);
 
-    return new Cla.ui.form.timeField(validAPI);  
+    return new Cla.ui.form.timeField(validAPI);
 };
 
 /**
@@ -202,7 +202,7 @@ Cla.ui.userCombo = function (options){
     //var API = ['name', 'fieldLabel', 'value', 'disabled', 'hidden', 'allowBlank', 'anchor', 'singleMode', 'categories', 'statuses', 'exlcudeStatus', 'filter'];
     //var validAPI = Cla.$validateAPI(API, options);
 
-    return Cla.ui.form.userCombo(options);   
+    return Cla.ui.form.userCombo(options);
 };
 
 /**
@@ -246,7 +246,7 @@ var editor = Cla.ui.markdownEditor({
     fieldLabel: 'Comment',
     height: 300
 });
-</code></pre> 
+</code></pre>
  */
 Cla.ui.markdownEditor = function (options){
     var API = ['fieldLabel', 'name', 'height', 'value', 'hidden', 'anchor', 'readOnly', 'allowBlank','font'];
@@ -257,8 +257,8 @@ Cla.ui.markdownEditor = function (options){
 
 /**
  * @class Cla.ui.checkBox
- * @extend Cla.ui.Field 
- * Single checkbox field.  Can be used as a direct replacement for traditional checkbox fields. 
+ * @extend Cla.ui.Field
+ * Single checkbox field.  Can be used as a direct replacement for traditional checkbox fields.
  * <pre><code>
 var combo = Cla.ui.comboBox({
     name: 'active',
@@ -303,7 +303,7 @@ Cla.ui.pill = function (options){
     var API = ['name', 'fieldLabel', 'value', 'readOnly', 'options', 'anchor'];
     var validAPI = Cla.$validateAPI(API, options);
 
-    return Cla.ui.form.pill(validAPI);    
+    return Cla.ui.form.pill(validAPI);
 };
 
 
@@ -410,7 +410,7 @@ Cla.ui.form.$comboBox = Ext.extend(Ext.ux.form.SuperBoxSelect, {
         for (var typeEvent in Cla.model.events.combo) {
             if (self['event.' + typeEvent]){
                 var methodEvent = String.format('self.on("{0}", function({1}){{2}});', typeEvent, Cla.model.events.combo[typeEvent], self['event.' + typeEvent]);
-                eval(methodEvent);            
+                eval(methodEvent);
             }
         }
 
@@ -710,17 +710,17 @@ Cla.ui.form.userCombo = function (validAPI){
                      limit: validAPI.pageSize || 9999999,
                     }
     });
-    
+
     var user_box = new Baseliner.model.Users({
         fieldLabel: validAPI.fieldLabel,
         name: validAPI.name,
-        hiddenName: validAPI.name,      
+        hiddenName: validAPI.name,
         store: user_box_store,
         disabled: validAPI.disabled,
         singleMode: validAPI.singleMode,
         allowBlank: validAPI.allowBlank
     });
-    
+
     user_box_store.on('load',function(){
         user_box.setValue( users ) ;
     });
@@ -932,7 +932,7 @@ Cla.ui.form.markdownEditor = function (validAPI){
         height: validAPI.height || 300,
         value: validAPI.value || ''
     });
-    
+
     return [
         new Ext.Panel({
             layout:'fit',
@@ -954,7 +954,7 @@ Cla.ui.form.markdownEditor = function (validAPI){
                     this.on_change_lab.style.display = 'none';
                 }
                 return is_valid;
-            }             
+            }
         })
     ]
 };
@@ -971,12 +971,12 @@ Cla.ui.form.checkBox = function (validAPI) {
 };
 
 Cla.ui.form.progressBar = function (validAPI) {
-    return  { 
-        xtype:'sliderfield', 
+    return  {
+        xtype:'sliderfield',
         fieldLabel: validAPI.fieldLabel,
         name: validAPI.name,
         value: validAPI.value || 0,
-        anchor: '100%', 
+        anchor: '100%',
         tipText: function(thumb){
             return String(thumb.value) + '%';
         },

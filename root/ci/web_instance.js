@@ -1,5 +1,5 @@
 (function(params){
-    var data = params.rec || {}; 
+    var data = params.rec || {};
 
     var bp = {};
     bp.class = 'web_instance';

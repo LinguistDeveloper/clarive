@@ -1,5 +1,5 @@
 <%args>
-$subject 
+$subject
 $msg => ''
 $message => ''
 $to
@@ -40,7 +40,7 @@ $mid => ''
                             <div class="hr" style="clear: both;">&nbsp;</div>
                             <br>
 
-                            <div class="body-text">                             
+                            <div class="body-text">
                                 <% $msg ? $msg : $message ? $message : 'Empty message' %>
                             </div>
 % if ( $ENV{BASELINER_DEBUG} ) {

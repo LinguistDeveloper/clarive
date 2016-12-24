@@ -14,9 +14,9 @@ params:
 (function(params){
     var data = params.topic_data;
     var meta = params.topic_meta;
-    
+
     var store_category = new Baseliner.Topic.StoreCategory({
-        fields: ['category', 'category_name' ]  
+        fields: ['category', 'category_name' ]
     });
 
     //TODO -> Ojo si se puede cambiar categoria, tratar a parte de los estados las prioridades.
@@ -46,17 +46,17 @@ params:
                     if(ff.findField("txtcategory_old").getValue() == this.getValue()){
                         obj_combo_status.store.load({
                             params:{ 'categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
-                        });                   
+                        });
                     }else{
                         obj_combo_status.store.load({
                             params:{ 'change_categoryId': this.getValue(), 'statusId': ff.findField("status").getValue() }
-                        });                    
+                        });
                     }
                 }
             }
         }
     });
-    
+
     return [
         { xtype: 'hidden', name: 'txtcategory_old' },
         combo_category

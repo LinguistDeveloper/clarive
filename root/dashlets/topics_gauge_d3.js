@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
     var id = params.id_div;
     var project_id = params.project_id;
     var topic_mid = params.topic_mid;
@@ -68,7 +68,7 @@
                 yellow = maxValue;
             }
         }
-        
+
         var minValue;
 
         if ( start > res.max ) {
@@ -89,19 +89,19 @@
                  clipHeight                  : div.offsetHeight + 20,
                  ringInset                   : 40,
                  ringWidth                   : 40,
-                 
+
                  pointerWidth                : 6,
                  pointerTailLength           : 4,
                  pointerHeadLengthPercent    : needle_length,
-                 
+
                  minValue                    : minValue,
                  maxValue                    : maxValue,
-                 
+
                  minAngle                    : -90,
                  maxAngle                    : 90,
-                 
+
                  transitionMs                : 750,
-                 
+
                  majorTicks                  : 3,
                  labelFormat                 : d3.format(',g'),
                  labelInset                  : 30
@@ -112,7 +112,7 @@
              var value = 0;
              var innerRadius = undefined;
              var outerRadius = undefined;
-             
+
              var svg = undefined;
              var arc = undefined;
              var scale = undefined;
@@ -121,23 +121,23 @@
              var pointer = undefined;
 
              var donut = d3.layout.pie();
-             
+
              function deg2rad(deg) {
                  return deg * Math.PI / 180;
              }
-             
+
              function newAngle(d) {
                  var ratio = scale(d);
                  var newAngle = config.minAngle + (ratio * range);
                  return newAngle;
              }
-             
+
              function configure(configuration) {
                  var prop = undefined;
                  for ( prop in configuration ) {
                      config[prop] = configuration[prop];
                  }
-                 
+
                  range = config.maxAngle - config.minAngle;
                  r = config.size / 2;
                  innerRadius = r - config.ringWidth - config.ringInset;
@@ -148,7 +148,7 @@
                  scale = d3.scale.linear()
                      .range([0,1])
                      .domain([config.minValue, config.maxValue]);
-                     
+
                  if ( end_remaining == 'on' || reverse == 'on') {
                      ticks = [minValue, yellow, green];//scale.ticks(config.majorTicks);
                      tickData = [scale(maxValue), scale(green), scale(yellow) ];
@@ -177,29 +177,29 @@
                      });
              }
              that.configure = configure;
-             
+
              function centerTranslation() {
                  return 'translate('+r +','+ r +')';
              }
-             
+
              function isRendered() {
                  return (svg !== undefined);
              }
              that.isRendered = isRendered;
-             
+
              function render(newValue) {
                  svg = d3.select(container)
                      .append('svg:svg')
                          .attr('class', 'gauge')
                          .attr('width', config.clipWidth)
                          .attr('height', config.clipHeight);
-                 
+
                  var centerTx = centerTranslation();
-                 
+
                  var arcs = svg.append('g')
                          .attr('class', 'arc')
                          .attr('transform', centerTx);
-                 
+
                  arcs.selectAll('path')
                          .data(tickData)
                      .enter().append('path')
@@ -269,7 +269,7 @@
                          })
                          .text(config.labelFormat);
 
-                 var lineData = [ [config.pointerWidth / 2, 0], 
+                 var lineData = [ [config.pointerWidth / 2, 0],
                                  [0, -pointerHeadLength],
                                  [-(config.pointerWidth / 2), 0],
                                  [0, config.pointerTailLength],
@@ -278,15 +278,15 @@
                  var pg = svg.append('g').data([lineData])
                          .attr('class', 'pointer')
                          .attr('transform', centerTx);
-                         
+
                  pointer = pg.append('path')
                      .attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/ )
                      .attr('transform', 'rotate(' +config.minAngle +')');
-                 
+
                  update(newValue === undefined ? 0 : newValue);
              }
              that.render = render;
-             
+
              function update(newValue, newConfiguration) {
                  if ( newConfiguration  !== undefined) {
                      configure(newConfiguration);
@@ -301,7 +301,7 @@
              that.update = update;
 
              configure(configuration);
-             
+
              return that;
          };
 

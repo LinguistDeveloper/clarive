@@ -24,7 +24,7 @@
         ],
         listeners: {
             'load': function(){
-                if( grid.getSelectionModel().hasSelection() ) 
+                if( grid.getSelectionModel().hasSelection() )
                     init_buttons('enable');
                 else
                     init_buttons('disable');
@@ -101,10 +101,10 @@
                         Baseliner.message( _("Surrogate Error"), _("Error during surrogate: %1", err ));
                     }
                 });
-            } 
+            }
         }
     });
-                
+
     var btn_buzon = new Ext.Toolbar.Button({
         text: _('Inbox'),
         icon:'/static/images/icons/envelope.svg',
@@ -125,24 +125,24 @@
     var add_edit = function(rec) {
         var win;
         //var username_readonly = false;
-        
+
         var store_user_roles_projects = new Baseliner.JsonStore({
-            root: 'data' , 
+            root: 'data' ,
             remoteSort: true,
-            totalProperty:"totalCount", 
-            id: 'id_role', 
+            totalProperty:"totalCount",
+            id: 'id_role',
             url: '/user/infodetail',
-            fields: [ 
+            fields: [
                 {name: 'id_role' },
                 {name: 'role' },
                 {name: 'description' },
-                {name: 'projects' }         
+                {name: 'projects' }
             ],
             listeners: {
                 'load': function(){
                     control_buttons();
                 }
-            }       
+            }
         });
 
         var btn_asignar_roles_projects = new Ext.Toolbar.Button({
@@ -152,14 +152,14 @@
                 disabled: true,
                 handler: function() {
                     var form = form_user.getForm();
-                    var action = 'update';                  
+                    var action = 'update';
                     var projects_checked = new Array();
                     var projects_parents_checked = new Array();
                     var roles_checked = new Array();
                     check_roles_sm.each(function(rec){
                         roles_checked.push(rec.get('id'));
-                    });                         
-                
+                    });
+
                     selNodes = tree_projects.getChecked();
                     Ext.each(selNodes, function(node){
                         if(node.attributes.leaf){
@@ -173,7 +173,7 @@
                             }
                         }
                     });
-    
+
                     ////////////////////////////////////////////////////////////////////
                     if (form.getValues()['id'] != -1) {
                            form.submit({
@@ -190,26 +190,26 @@
                                    form.findField("username").getEl().dom.setAttribute('readOnly', true);
                                },
                                failure: function(f,a){
-                                   Ext.Msg.show({  
-                                   title: _('Information'), 
-                                   msg: a.result.msg , 
-                                   buttons: Ext.Msg.OK, 
+                                   Ext.Msg.show({
+                                   title: _('Information'),
+                                   msg: a.result.msg ,
+                                   buttons: Ext.Msg.OK,
                                    icon: Ext.Msg.INFO
-                                   });                      
+                                   });
                                }
                            });
                     }
                     else{
-                        Ext.Msg.show({  
-                            title: _('Information'), 
-                            msg: _('You must save the user before'), 
-                            buttons: Ext.Msg.OK, 
+                        Ext.Msg.show({
+                            title: _('Information'),
+                            msg: _('You must save the user before'),
+                            buttons: Ext.Msg.OK,
                             icon: Ext.Msg.INFO
-                        });                         
+                        });
                     }
                 }
         })
-        
+
         var btn_desasignar_roles_projects = new Ext.Toolbar.Button({
             text: _('Unassign roles/projects'),
             icon:'/static/images/icons/key_delete.svg',
@@ -217,14 +217,14 @@
             disabled: true,
             handler: function() {
                 var form = form_user.getForm();
-                var action = 'delete_roles_projects';                   
+                var action = 'delete_roles_projects';
                 var projects_checked = new Array();
                 var projects_parents_checked = new Array();
                 var roles_checked = new Array();
                 check_roles_sm.each(function(rec){
                     roles_checked.push(rec.get('id'));
-                });                         
-            
+                });
+
                 selNodes = tree_projects.getChecked();
                 Ext.each(selNodes, function(node){
                         if(node.attributes.leaf){
@@ -254,28 +254,28 @@
                                form.findField("username").getEl().dom.setAttribute('readOnly', true);
                            },
                            failure: function(f,a){
-                               Ext.Msg.show({  
-                               title: _('Information'), 
-                               msg: a.result.msg , 
-                               buttons: Ext.Msg.OK, 
+                               Ext.Msg.show({
+                               title: _('Information'),
+                               msg: a.result.msg ,
+                               buttons: Ext.Msg.OK,
                                icon: Ext.Msg.INFO
-                               });                      
+                               });
                            }
                            });
                     }
                     else{
-                        Ext.Msg.show({  
-                            title: _('Information'), 
-                            msg: _("User doesn't exist"), 
-                            buttons: Ext.Msg.OK, 
+                        Ext.Msg.show({
+                            title: _('Information'),
+                            msg: _("User doesn't exist"),
+                            buttons: Ext.Msg.OK,
                             icon: Ext.Msg.INFO
-                        });                         
+                        });
                     }
                 //////////////////////////////////////////////////////////////////////////
 
             }
         })
-        
+
         var btn_cerrar = new Ext.Toolbar.Button({
             text: _('Close'),
             icon:'/static/images/icons/close.svg',
@@ -362,22 +362,22 @@
             autoWidth: true,
             viewConfig: {
                 forceFit: true
-            },          
+            },
             height:150,
             cls:'user_grid_edit_window',
             loadMask: true,
             columns: [
                 check_roles_sm,
-                { hidden: true, dataIndex:'id' }, 
+                { hidden: true, dataIndex:'id' },
                 { header: _('All'), width:250, dataIndex: 'role', sortable: true }
             ],
             autoSizeColumns: true
         });
-        
+
         grid_roles.on('rowclick', function(grid, rowIndex, columnIndex, e) {
             control_buttons();
-        });     
-    
+        });
+
         var blank_image = new Ext.BoxComponent({
              autoEl: {
                  tag: 'img',
@@ -385,7 +385,7 @@
              },
              height: 10
          });
-    
+
         var treeRoot = new Ext.tree.AsyncTreeNode({
             text: _('All'),
             draggable: false,
@@ -398,7 +398,7 @@
                 parent_checked: ''
             }
         });
-        
+
 
         var tree_projects = new Ext.tree.TreePanel({
             title: _('Available Projects'),
@@ -411,20 +411,20 @@
             enableDrag: true,
             containerScroll: true,
             autoScroll: true,
-            height:150,         
+            height:150,
             rootVisible: true,
             preloadChildren: true,
             cls:'user_grid_edit_window',
             root: treeRoot
         });
-        
+
         tree_projects.getLoader().on("beforeload", function(treeLoader, node) {
             var loader = tree_projects.getLoader();
             loader.baseParams = node.attributes.data;
             loader.dataUrl = window.location.origin + "/" + tree_projects.dataUrl;
             node.attributes.data.parent_checked = (node.attributes.checked)?1:0;
         });
-        
+
         tree_projects.on('checkchange', function(node, checked) {
             if(node != treeRoot){
                 if (node.attributes.checked == false){
@@ -435,10 +435,10 @@
             node.eachChild(function(n) {
                 n.getUI().toggleCheck(checked);
             });
-            
-            control_buttons();      
+
+            control_buttons();
         });
-        
+
         //tree_projects.on('click', function(node, event){
         //  //node.getUI().toggleCheck(!node.attributes.checked);
         //  //node.attributes.data.parent_checked = (!node.attributes.checked)?1:0;
@@ -450,7 +450,7 @@
             var projects_nodes = tree_projects.getChecked().length;
             var roles_nodes = check_roles_sm.getCount();
             var rows_roles_projects = store_user_roles_projects.getCount();
-            
+
             if(roles_nodes < 1 && projects_nodes < 1){
                 btn_desasignar_roles_projects.disable();
                 btn_asignar_roles_projects.disable();
@@ -475,10 +475,10 @@
                         rows_roles_projects < 1 ? btn_desasignar_roles_projects.disable():btn_desasignar_roles_projects.enable();
                         btn_asignar_roles_projects.enable();
                     }
-                    
+
                 }
             }
-        }   
+        }
 
 
         //Para cuando se envia el formulario no coja el atributo emptytext de los textfields
@@ -504,8 +504,8 @@
                 var sm = grid_user_roles_projects.getSelectionModel();
                 if (sm.hasSelection()) {
                     var row = sm.getSelected();
-                    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), 
-                    function(btn){ 
+                    Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'),
+                    function(btn){
                         if(btn=='yes') {
                             var form = form_user.getForm();
                             var id_role = row.data.id_role;
@@ -532,7 +532,7 @@
             icon:'/static/images/icons/del_all.svg',
             cls: 'x-btn-text-icon',
             handler: function() {
-                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){ 
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the row selected?'), function(btn){
                     if(btn=='yes') {
                         var form = form_user.getForm();
                         var action = 'delete_roles_projects';
@@ -607,7 +607,7 @@
                 btn_delete_row.enable();
             }
         });
-        
+
         var form_user = new Ext.FormPanel({
             name: form_user,
             url: '/user/update',
@@ -707,8 +707,8 @@
                         }
                     ]
                     },
-                    
-                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},                   
+
+                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},
                     { fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'},
                     {
                     // column layout with 2 columns
@@ -764,7 +764,7 @@
                 }
             ]
             },
-            blank_image 
+            blank_image
             ,
             {
             xtype: 'panel',
@@ -772,9 +772,9 @@
             bbar: [
                    btn_asignar_roles_projects,
                    btn_desasignar_roles_projects
-            ],          
+            ],
             items:  [
-                {  
+                {
                 columnWidth: .49,
                 items:  grid_roles
                 },
@@ -782,10 +782,10 @@
                 columnWidth: .02,
                 items: blank_image
                 },
-                {  
+                {
                 columnWidth: .49,
                 items: tree_projects
-            }]  
+            }]
             },
             grid_user_roles_projects
         ]
@@ -799,13 +799,13 @@
             }
             return true;
             },
-        
+
             passwordText : _('Passwords do not match')
-        });     
-        
+        });
+
         var username = '';
         var title = _('Create user');
-        
+
         if(rec){
             var ff = form_user.getForm();
             ff.loadRecord( rec );
@@ -830,8 +830,8 @@
         store_user_roles_projects.load({ params: {username: username} });
         store_roles.load({params:{start:0 }});
     };
-    
- 
+
+
     //var btn_add = new Ext.Toolbar.Button({
     //    text: _('New'),
     //    //icon:'/static/images/icons/add.svg',
@@ -841,16 +841,16 @@
     //        add_edit();
     //    }
     //});
-    
+
     var btn_add = new Baseliner.Grid.Buttons.Add({
         cls: 'ui-comp-users-create',
         handler: function() {
             add_edit();
-        }       
-    });    
-    
-    
-    
+        }
+    });
+
+
+
 
     var btn_edit = new Ext.Toolbar.Button({
         text: _('Edit'),
@@ -864,11 +864,11 @@
                 var sel = sm.getSelected();
                 add_edit(sel);
             } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                Baseliner.message( _('ERROR'), _('Select at least one row'));
             };
         }
     });
-    
+
     var btn_prefs = new Ext.Toolbar.Button({
         text: _('Preferences'),
         icon:'/static/images/icons/prefs.svg',
@@ -880,13 +880,13 @@
                 var sel = sm.getSelected();
                 Prefs.open_editor({ username: sel.data.username, on_save: function(res){
                     store.reload();
-                }}); 
+                }});
             } else {
-                Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                Baseliner.message( _('ERROR'), _('Select at least one row'));
             };
         }
     });
-    
+
     var btn_duplicate = new Ext.Toolbar.Button({
         text: _('Duplicate'),
         icon:'/static/images/icons/copy.svg',
@@ -906,14 +906,14 @@
                             Baseliner.message( _('ERROR'), response.msg );
                         }
                     }
-                
-                );                
+
+                );
             } else {
-                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
+                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');
             };
         }
-    });    
-    
+    });
+
     var btn_delete = new Ext.Toolbar.Button({
         text: _('Delete'),
         icon:'/static/images/icons/delete.svg',
@@ -922,8 +922,8 @@
         handler: function() {
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
-            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the user') + ' <b>' + sel.data.username + '</b>?', 
-            function(btn){ 
+            Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the user') + ' <b>' + sel.data.username + '</b>?',
+            function(btn){
                 if(btn=='yes') {
                     Baseliner.ajaxEval( '/user/update?action=delete',
                         { id: sel.data.id,
@@ -1008,7 +1008,7 @@
                 btn_duplicate,
 %}
 
-% if ($c->stash->{can_surrogate}) { 
+% if ($c->stash->{can_surrogate}) {
                     btn_surrogate,
 %}
                 btn_buzon,
@@ -1021,14 +1021,14 @@
         var r = grid.getStore().getAt(rowIndex);
         var active = r.get( 'active' );
         if(active != '0'){
-            init_buttons('enable');   
+            init_buttons('enable');
         }else{
-            init_buttons('disable');   
+            init_buttons('disable');
         }
     });
     sm.on('rowdeselect', function(grid,rowIndex){
         init_buttons('disable');
     });
-            
+
     return grid;
 })

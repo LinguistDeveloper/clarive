@@ -3,7 +3,7 @@
 </%args>
 (function(theForm<% $c->stash->{$componentId}{id} %>){
     // shorthand alias
-    var fm<% $c->stash->{$componentId}{id} %> = Ext.form;      
+    var fm<% $c->stash->{$componentId}{id} %> = Ext.form;
     var cm<% $c->stash->{$componentId}{id} %> = new Ext.grid.ColumnModel([{
            id:'<% $c->stash->{$componentId}{id} %>',
            header: "<% $c->stash->{$componentId}{header} %>",
@@ -27,20 +27,20 @@
     var store<% $c->stash->{$componentId}{id} %> = new Baseliner.JsonStore({
         url: '<% $c->stash->{$componentId}{json_url} %>',
         root:'data',
-        fields: [ 
+        fields: [
             {  name: '<% $c->stash->{$componentId}{itemName} %>' }
         ]
     });
-    
-                     var rowSelMod<% $c->stash->{$componentId}{id} %>=new Ext.grid.RowSelectionModel({singleSelect:true}); 
-                         rowSelMod<% $c->stash->{$componentId}{id} %>.addListener('rowselect', 
-                                             function (grid, rowIndex, e) 
+
+                     var rowSelMod<% $c->stash->{$componentId}{id} %>=new Ext.grid.RowSelectionModel({singleSelect:true});
+                         rowSelMod<% $c->stash->{$componentId}{id} %>.addListener('rowselect',
+                                             function (grid, rowIndex, e)
                                              {
-                                           
+
                                                 var record = rowSelMod<% $c->stash->{$componentId}{id} %>.getSelected();
                                                 return record;
                                             }
-                                );   
+                                );
 
     // create the editor grid
     var grid<% $c->stash->{$componentId}{id} %> = new Ext.grid.EditorGridPanel({
@@ -72,16 +72,16 @@
             text: '<% $c->stash->{$componentId}{delLabel} %>',
             icon: '/static/ext/resources/images/default/dd/del.gif',
                cls: 'x-btn-text-icon',
-            handler : function(){     
+            handler : function(){
                 var selectedRecord = grid<% $c->stash->{$componentId}{id} %>.getSelectionModel().getSelected();
                 if(selectedRecord!=null){
                     grid<% $c->stash->{$componentId}{id} %>.getStore().remove(selectedRecord);
                 }
-                
+
             }
         }]
     });
-    
+
     theForm<% $c->stash->{$componentId}{id} %>.addListener('beforeaction',
                 function(frm) {
                      var myStore = store<% $c->stash->{$componentId}{id} %>;
@@ -91,12 +91,12 @@
                      }
                      if(vals!="")
                          frm.setValues({<% $c->stash->{$componentId}{id} %>:vals});
-                    
+
                 }
         );
 
     // trigger the data store load
     store<% $c->stash->{$componentId}{id} %>.load();
-    
+
     return grid<% $c->stash->{$componentId}{id} %>;
 });

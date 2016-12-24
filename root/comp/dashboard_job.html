@@ -5,7 +5,7 @@
     my $namejob = $c->stash->{name_job};
     my $status_id = "status". _nowstamp;
     my $details_file_id = "details_file". _nowstamp;
-    
+
     my $resumen = $c->stash->{summary};
     my $servicios = $c->stash->{services};
     my $contenido = $c->stash->{contents};
@@ -50,7 +50,7 @@
                     <tr>
                         <td><% _loc( 'Total Time') %></td>
                         <td><%$resumen->{execution_time}?sprintf("%.02f %s",
-                            $resumen->{execution_time} < 60 ? $resumen->{execution_time} : ($resumen->{execution_time}/60), 
+                            $resumen->{execution_time} < 60 ? $resumen->{execution_time} : ($resumen->{execution_time}/60),
                             $resumen->{execution_time} < 60? 'seg.' : 'min.'):''%></td>
                     </tr>
                     <tr>
@@ -61,11 +61,11 @@
                         <td><% _loc('User') %></td>
                         <td><%$resumen->{owner}%></td>
                     </tr>
-                </tbody>    
+                </tbody>
             </table>
             <!--######FIN TABLA RESUMEN #######################################################################################-->
         </div>
-        
+
         <div class="grid_1">&nbsp;</div>
 
         <div class="grid_12">
@@ -81,17 +81,17 @@
             $tot_aplicaciones = scalar @aplicaciones;
         }
 </%perl>
-                    <tr>     
+                    <tr>
                         <td rowspan="<%$tot_aplicaciones%>"><b><% _loc( 'Projects') %></b></td>
-%       my $first = 1;                            
+%       my $first = 1;
 %       for my $aplicacion (@aplicaciones){
-%                   if ( $first ) {    
+%                   if ( $first ) {
                         <td><%$aplicacion%></td>
 %                       $first = 0;
 %                   }
 %                   else {
                         <td><%$aplicacion%></td>
-%                   }                            
+%                   }
                     </tr>
 %       }
 <%perl>
@@ -101,13 +101,13 @@
                 my $first = 1;
                 for my $changeset ( @paquetes ) {
                     if ( $first ) {
-</%perl>                        
+</%perl>
                     <tr>
                         <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %></b></td>
 <%perl>
                         $first = 0;
                     }
-</%perl>                            
+</%perl>
                         <td>
                           <span id="topic_<% $changeset->{mid} %>_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored('<% $changeset->{mid} %>', '<% $changeset->{category}->{name} %>', '<% $changeset->{category}->{color} %>')" style="cursor:pointer;background:'<% $changeset->{category}->{color} %>'"><a><% $changeset->{category}->{name} %> #<% $changeset->{mid} %> - <% $changeset->{title} %></a>
                           </span>
@@ -121,19 +121,19 @@
                 my $first = 1;
                 for my $changeset ( @paquetes ) {
                     if ( $first ) {
-</%perl>                        
+</%perl>
                     <tr>
                         <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %></b></td>
 <%perl>
                         $first = 0;
                     }
-</%perl>                            
+</%perl>
                         <td><% $changeset %></td>
                     </tr>
 <%perl>
                 }
             }
-</%perl>                        
+</%perl>
                     <tr>
                         <td><b><% _loc( 'Job Items') %></b></td>
                         <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?mid=<%$mid%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.svg' } );"><% _loc("Items") %>&nbsp;<img border=0 class="force_size_in_icon" src='/static/images/icons/moredata.svg'/></a></b></td>
@@ -142,7 +142,7 @@
     my $tot_tecnologias;
     my @tecnologias = _array $contenido->{list_natures};
     $tot_tecnologias = scalar @tecnologias;
-</%perl> 
+</%perl>
                     <tr>
                         <td rowspan="<%$tot_tecnologias%>"><b><% _loc( 'Natures') %></b></td>
 %   for my $tecnologia ( @tecnologias ){
@@ -151,14 +151,14 @@
                         </td>
                     </tr>
 %}
-                </tbody>    
+                </tbody>
             </table>
             <!--######FIN TABLA CONTENIDO #######################################################################################-->
-        </div>        
+        </div>
 
-        
+
         <div class="clear"></div>
-        
+
         <div class="grid_11">
             <!--######INICIO TABLA EJECUCION ##################################################################################-->
             <h3><% _loc( 'Run Summary') %></h3>
@@ -201,13 +201,13 @@
         }
     }
 </%perl>
-                </tbody>    
+                </tbody>
             </table>
             <!--######FIN TABLA EJECUCION ##################################################################################-->
         </div>
 
         <div class="grid_1">&nbsp;</div>
-    
+
         <div class="grid_12">
             <!--######INICIO TABLA SALIDA ###################################################################################-->
             <h3><% _loc( 'Output') %></h3>
@@ -226,7 +226,7 @@
                                datalen += 'KB';
                             }
                         }
-                    
+
                         if( obj.more=='jes' ) {
                              ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + obj.id + "&job=" + rec.data.job +"\");'><img border=0 class='force_size_in_icon' src='/static/images/icons/mainframe.svg' /></a> ";
                         } else if( obj.more=='link'  ) {
@@ -238,7 +238,7 @@
                                img = '/static/images/icons/mime/file_extension_zip.svg';
                             } else {
                                img = '/static/images/icons/save.svg';
-                        } 
+                        }
                             ret += "<a href='/job/log/download_data?id=" + obj.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
                         } else {
                             if( obj.more!='file' && obj.data && xdatalen < 250000 ) {  // 250Ks max
@@ -257,13 +257,13 @@
                         td_details_file.innerHTML = ret || '&nbsp';;
                 };
             </script>
-                
+
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th colspan="2"><% _loc( 'Artifacts') %></th>
                     </tr>
-                </thead>                
+                </thead>
                 <tbody>
 <%perl>
     my @ficheros = _array $salida->{outputs};
@@ -281,7 +281,7 @@
             if ($fichero->{more}->{data}){
                 $data = 1;
 </%perl>
-                    <tr>     
+                    <tr>
                         <td class="datos"><%$fichero->{more}->{data_name} || $fichero->{more}->{file} %></td>
                         <td class="link" id="row<%$row%>_<%$details_file_id%>" width="25%">&nbsp;</td>
                     </tr>
@@ -295,13 +295,13 @@
                         details_file.file = '<%$fichero->{more}->{file}%>';
                         details_file.link = '<%$fichero->{more}->{link}%>';
                         file(details_file, 'row<%$row%>_<%$details_file_id%>');
-                    </script>                        
-<%perl>                        
+                    </script>
+<%perl>
             }
         }
     }
-</%perl>                        
-                </tbody>    
+</%perl>
+                </tbody>
             </table>
             <!--######FIN TABLA SALIDA #######################################################################################-->
 

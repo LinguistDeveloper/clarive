@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
 
     var id = params.id_div;
 
@@ -13,14 +13,14 @@
     var days_from_format_date =  params.data.days_from_format_date || 0;
     var graph_type = params.data.type || 'area';
 
-      Cla.ajax_json('/dashboard/topics_burndown', { 
-       topic_mid: topic_mid, 
-       project_id: project_id, 
-       days_from: days_from, 
+      Cla.ajax_json('/dashboard/topics_burndown', {
+       topic_mid: topic_mid,
+       project_id: project_id,
+       days_from: days_from,
        days_from_format_date: days_from_format_date,
-       date_type: date_type, date: date, 
+       date_type: date_type, date: date,
        tegories: categories, date_field: date_field,
-       _ignore_conn_errors: true  }, 
+       _ignore_conn_errors: true  },
        function(res){
            graph = c3.generate({
                 bindto: '#'+id,

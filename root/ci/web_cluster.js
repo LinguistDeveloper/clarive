@@ -1,15 +1,15 @@
 (function(params){
     var data = params.rec || {};
-    
+
     var webinstance_cis = function(c) {
         var bp  = {};
         bp['class'] = c['isa'];
-        var ci_store = new Baseliner.store.CI({ 
-            url:'/ci/web_instance/store', 
-            autoLoad:true, 
-            baseParams: bp, 
+        var ci_store = new Baseliner.store.CI({
+            url:'/ci/web_instance/store',
+            autoLoad:true,
+            baseParams: bp,
             totalProperty: 'totalCount',
-            fields: ['mid','name','bl','moniker', 'server'] 
+            fields: ['mid','name','bl','moniker', 'server']
         });
         var tpl_list = new Ext.XTemplate(
             '<tpl for="."><div class="search-item">',
@@ -19,19 +19,19 @@
             '</tpl>',
             '<tpl for="server">',
                 ' ({name})',
-            '</tpl>',  
+            '</tpl>',
             '</span>',
             '</div></tpl>'
         );
         var cis = new Baseliner.model.CISelect(Ext.apply({
             store: ci_store,
-            hiddenName:'ci', 
+            hiddenName:'ci',
             triggerAction: 'all',
             tpl:tpl_list,
         }, c));
         ci_store.on('load',function(){
             if( c.value != undefined )  {
-               cis.setValue( c.value ) ;            
+               cis.setValue( c.value ) ;
             }
         });
         return cis;

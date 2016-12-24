@@ -2,7 +2,7 @@
  * Ext JS Library 2.3.0
  * Copyright(c) 2006-2009, Ext JS, LLC.
  * licensing@extjs.com
- * 
+ *
  * http://extjs.com/license
  */
 
@@ -59,7 +59,7 @@ pre.code{
     visibility: hidden;
 
     }
-     
+
 .dd-arrow-down {
   background-image:url(/static/images/icons/arrow_down_black.svg );
   display: block;

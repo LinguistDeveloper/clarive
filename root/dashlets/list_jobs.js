@@ -32,11 +32,11 @@ my $iid = Util->_md5;
         }
 
         if( status == 'APPROVAL' ) {
-            value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\");'><b>{1}</b></a>", obj.mid, _(status) ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval(\"{0}\");'><b>{1}</b></a>", obj.mid, _(status) );
         }
 
         if( icon!=undefined ) {
-            var ret = div1 
+            var ret = div1
                 + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/icons/"+icon+"' />"
                 + value + div2 ;
         } else {

@@ -151,7 +151,7 @@
         height: 400,
         hidden: params.rec.mid == undefined,
         variable_name: params.rec.name,
-        default_value: params.rec.variables || params.rec.var_default, // var_default is for legacy 
+        default_value: params.rec.variables || params.rec.var_default, // var_default is for legacy
         data: params.rec.variables,
         deferredRender: false,
         renderHidden: false

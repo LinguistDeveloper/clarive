@@ -47,8 +47,8 @@
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
             columns: [
-                { header: _('Tarea'), width: 200, dataIndex: 'name', sortable: true, renderer: render_bold },    
-                { header: _('Category'), width: 200, dataIndex: 'category', sortable: true, renderer: render_category },    
+                { header: _('Tarea'), width: 200, dataIndex: 'name', sortable: true, renderer: render_bold },
+                { header: _('Category'), width: 200, dataIndex: 'category', sortable: true, renderer: render_category },
                 { header: _('AssignedTo'), width: 150, dataIndex: 'assigned', sortable: true },
                 { header: _('Description'), width: 350, dataIndex: 'description', sortable: true }
             ],
@@ -68,8 +68,8 @@
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         var sel = sm.getSelected();
-                        Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the project ' + sel.data.name + '?', 
-                            function(btn){ 
+                        Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the project ' + sel.data.name + '?',
+                            function(btn){
                                 if(btn=='yes') {
                                     var conn = new Ext.data.Connection();
                                     conn.request({
@@ -77,7 +77,7 @@
                                         params: { action: 'delete', id: sel.data.id },
                                         success: function(resp,opt) { grid.getStore().remove(sel); },
                                         failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the release.')); }
-                                    });    
+                                    });
                                 }
                             } );
                     }

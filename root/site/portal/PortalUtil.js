@@ -10,7 +10,7 @@
     Baseliner.portalConfig.last_col = 0;
     var col_width = 1 / Baseliner.portalConfig.col_number;
     col_width = col_width - .002;
-    
+
     Baseliner.portal = new Ext.ux.Portal({
             region:'center',
             margins:'5 5 5 0',
@@ -24,15 +24,15 @@
                 id: 'baseliner-portal-column-2',
                 style:'padding:10px'
             }]
-            
+
             /*
              * Uncomment this block to test handling of the drop event. You could use this
-             * to save portlet position state for example. The event arg e is the custom 
+             * to save portlet position state for example. The event arg e is the custom
              * event defined in Ext.ux.Portal.DropZone.
              */
 //            ,listeners: {
 //                'drop': function(e){
-//                    Ext.Msg.alert('Portlet Dropped', e.panel.title + '<br />Column: ' + 
+//                    Ext.Msg.alert('Portlet Dropped', e.panel.title + '<br />Column: ' +
 //                        e.columnIndex + '<br />Position: ' + e.position);
 //                }
 //            }
@@ -49,12 +49,12 @@
     //var cc = new Ext.Panel({
      //   html: 'aaa'
     //});
-    
+
 
     Baseliner.portalTools = [{
         id:'maximize',
         handler: function(e, target, panel ){
-            if( panel.portlet_type == 'comp' ) 
+            if( panel.portlet_type == 'comp' )
                 Baseliner.addNewTabComp( panel.url_max, panel.title );
             else
                 Baseliner.addNewTab( panel.url_max, panel.title );
@@ -86,7 +86,7 @@
         Baseliner.portalConfig.last_col++;
         if( Baseliner.portalConfig.last_col > Baseliner.portalConfig.col_number )
             return 1;
-        else 
+        else
             return Baseliner.portalConfig.last_col;
     };
 

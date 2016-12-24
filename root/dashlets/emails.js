@@ -1,7 +1,7 @@
 <%perl>
 my $iid = Util->_md5;
 </%perl>
-(function(params){ 
+(function(params){
     var id = params.id_div;
     var rows = params.data.rows;
     Cla.ajax_json('/dashboard/list_emails', { _ignore_conn_errors: true }, function(res){

@@ -1,10 +1,10 @@
 (function(){
     // La fuente de Datos JSON con todos el listado:
     var store=new Baseliner.JsonStore({
-        root: 'cat' , 
+        root: 'cat' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'rownum', 
+        totalProperty:"totalCount",
+        id: 'rownum',
         url: '<% $c->stash->{url_store} %>?fid=<% 1 %>&par1=<% 2 %>&cam=<% 3 %>&filtro=ALL',
         fields: <% $c->stash->{fields} %>
     });
@@ -22,9 +22,9 @@
                 comp.setActiveTab(newComponent);
             },
             failure: function(xhr) {
-                var win = new Ext.Window({ layout: 'fit', 
-                    autoScroll: true, title: ptitle+' create failed', 
-                    height: 600, width: 600, 
+                var win = new Ext.Window({ layout: 'fit',
+                    autoScroll: true, title: ptitle+' create failed',
+                    height: 600, width: 600,
                     html: 'Server communication failure:' + xhr.responseText });
                 win.show();
             }
@@ -91,11 +91,11 @@
                 handler: function() {
                     var sm = grid.getSelectionModel();
                     var sel = sm.getSelected();
-                    Ext.Msg.confirm('Confirmation', 'Are you sure you want to delete the element<br>' + sel.data.elemento + '?', 
-                        function(btn){ 
+                    Ext.Msg.confirm('Confirmation', 'Are you sure you want to delete the element<br>' + sel.data.elemento + '?',
+                        function(btn){
                             if(btn=='yes') {
                                 var conn = new Ext.data.Connection();
-                
+
                                 conn.request({
                                     url: '<% $c->stash->{url_del} %>',
                                     params: {
@@ -108,7 +108,7 @@
                                     failure: function(resp,opt) {
                                         Ext.Msg.alert('Error', 'Could not delete the item');
                                     }
-                                });    
+                                });
                             }
                         } );
                 }
@@ -123,7 +123,7 @@
         var ttitle = '<% $c->stash->{detail_title} %>';
         var tfield = '<% $c->stash->{detail_field} %>';
         if( ttitle!='' ) ttitle+=" ";
-        if( tfield!='' ) { 
+        if( tfield!='' ) {
             ttitle += r.get( tfield );
             url += "?" + tfield + "=" + r.get(tfield);
         }
@@ -144,13 +144,13 @@
         var win = new Ext.Window( win_data );
         win.show();
         */
-    });        
+    });
 
     Baseliner.templateLoader.getTemplate('', '/templates/log.tpl', function(tpl) {
-        grid.tpl = tpl;    
+        grid.tpl = tpl;
     });
 
     Ext.getCmp('main-panel').setActiveTab( Ext.getCmp('main-panel').add(grid) ) ;
-        
+
     return grid;
 })();

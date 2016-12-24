@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
     var id = params.id_div;
 
     var graph;
@@ -17,7 +17,7 @@
       graph_title = _('Last quarter');
     } else if ( graph_period == '1Y') {
       graph_title = _('Last year');
-    }    
+    }
 
     var reload_dashlet = function( period, title ) {
         graph_title = title;

@@ -18,20 +18,20 @@
 (function(){
    var delete_menu = new Ext.Button({ title: 'Delete', label: 'Me' });
 
-   var baselines = new Ext.data.SimpleStore({ 
-       fields: ['bl', 'name'], 
+   var baselines = new Ext.data.SimpleStore({
+       fields: ['bl', 'name'],
        data : <% js_dumper( $c->stash->{baselines} ) %>
-   }); 
+   });
 
    var bl_combo = new Ext.form.ComboBox({
-            name: 'bl', 
+            name: 'bl',
             hiddenName: 'bl',
-            fieldLabel: '<% _loc('Baseline') %>', 
-            mode: 'local', 
-            store: baselines, 
+            fieldLabel: '<% _loc('Baseline') %>',
+            mode: 'local',
+            store: baselines,
             valueField: 'bl',
             value: '<% $c->stash->{baselines}->[0]->[0] %>',
-            displayField:'name', 
+            displayField:'name',
             editable: false,
             forceSelection: true,
             triggerAction: 'all',
@@ -48,12 +48,12 @@
                     }
                } }
             },
-            width: 120 
+            width: 120
     });
 
     var config_tabs = new Ext.TabPanel({
         region: 'center',
-        plugins: [ new Ext.ux.panel.DraggableTabs()], 
+        plugins: [ new Ext.ux.panel.DraggableTabs()],
         layoutOnTabChange:true,
         deferredRender: false,
         autoScroll: true,
@@ -79,7 +79,7 @@
                 },
                 text: '<% _loc('Save') %>'
             }
-        ], 
+        ],
         items : [{
                   xtype : "panel",
                   title : "<% _loc('Main') %>"
@@ -162,12 +162,12 @@
                                     var node = dd.dragData.node;
                                     var already_warned = false;
                                     var add_node = function(nodes) {
-                                        //Baseliner.ajaxEval( '/config/ns_panel', { ns: ns, filter: [ node.id ] }, function(obj) 
+                                        //Baseliner.ajaxEval( '/config/ns_panel', { ns: ns, filter: [ node.id ] }, function(obj)
                                         if( nodes.length < 1 ) return;
                                         var node = nodes.shift();
                                         Baseliner.ajaxEval( '/config/field', { key:  node.id }, function(arr) {
                                                 try {
-                                                    var obj = arr[0];  
+                                                    var obj = arr[0];
                                                     obj.labelWidth = 150;
                                                     var fs_name = node.parentNode.text; // the config set name
                                                     var done = false;
@@ -229,9 +229,9 @@
                     if( xhr.responseText.indexOf('dhandler') > -1 ) {
                         Ext.Msg.alert("Error: ", xhr.responseText );
                     } else {
-                        var str=""; 
+                        var str="";
                         for(var i in err) {
-                            str+="<li>" + i + "=" + err[i]; 
+                            str+="<li>" + i + "=" + err[i];
                         }
                         var res = xhr.responseText;
                         res.replace(/\</,'&lt;');
@@ -242,9 +242,9 @@
                 }
             },
             failure: function(xhr) {
-                var win = new Ext.Window({ layout: 'fit', 
-                    autoScroll: true, title: "<% _loc('Form creation failed') %>", 
-                    height: 600, width: 600, 
+                var win = new Ext.Window({ layout: 'fit',
+                    autoScroll: true, title: "<% _loc('Form creation failed') %>",
+                    height: 600, width: 600,
                     html: 'Server communication failure:' + xhr.responseText });
                 win.show();
             }
@@ -272,7 +272,7 @@
     var panel = new Ext.Panel({
       layout : "border",
       title  : '<% _loc('Config Matrix') %>',
-      items : [    config_tabs,   
+      items : [    config_tabs,
       {
           region : "west",
           title : "<% _loc('Infrastructure') %>",

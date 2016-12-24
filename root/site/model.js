@@ -611,9 +611,9 @@ Baseliner.combo_baseline = function(params) {
         root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || params,
-        id: 'id', 
+        id: 'id',
         url: '/baseline/json',
         fields: ['id','name','description', 'active']
     });
@@ -1076,7 +1076,7 @@ Baseliner.ci_box = function(c) {
     if( security != undefined ) bp.security = 1;
     if( order_by != undefined ) bp.order_by = order_by;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp }); 
+    var store = new Baseliner.store.CI({ autoLoad: true, jsonData: bp });
     var tpl = c.tpl; delete c.tpl;
     if (!tpl) {
         tpl = new Ext.XTemplate(

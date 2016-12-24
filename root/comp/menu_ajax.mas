@@ -2,7 +2,7 @@
     $title => '',
     $url => '/html/blank.html'
 </%args>
-function(){ 
+function(){
         var myTabPanel = Ext.getCmp('main-panel');
         Ext.Ajax.request({
             url: '<% $url %>'
@@ -13,7 +13,7 @@ function(){
                 comp.setActiveTab(newComponent);
             },
             failure: function(xhr) {
-                var win = new Ext.Window({ 
+                var win = new Ext.Window({
                      layout: 'fit',
                      autoScroll: true,
                      title: '<% $title %> create failed',

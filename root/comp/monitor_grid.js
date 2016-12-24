@@ -664,7 +664,7 @@
                     items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.svg',
                         handler:function(){trap_do(mid,'skip')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
-                { flex:1, layout:'hbox', padding: 20, 
+                { flex:1, layout:'hbox', padding: 20,
                     items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.svg',
                         handler:function(){trap_do(mid,'abort')}  },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
@@ -1071,7 +1071,7 @@
                         {text:_('Rerun'), handler:function(f){
                             var but = this;
                             but.disable();
-                            var form_data = form_res.getForm().getValues(); 
+                            var form_data = form_res.getForm().getValues();
                             step_buttons.items.each(function(btn){
                                 if( btn.pressed ) form_data.step = btn.text;
                             });

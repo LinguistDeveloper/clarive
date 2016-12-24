@@ -130,11 +130,11 @@
     };
     var first_load = true;
     var ps = 60;
-    var sms_store =  new Baseliner.JsonStore({ 
+    var sms_store =  new Baseliner.JsonStore({
             url:'/systemmessages/sms_list', root: 'data' , totalProperty:"totalCount", id:'_id', autoLoad: true,
             fields:['_id','title','text','more','read','t','expires','expired', 'users']
         });
-    var grid = new Ext.grid.GridPanel({ 
+    var grid = new Ext.grid.GridPanel({
         store: sms_store,
         width:800,
         height:600,
@@ -145,13 +145,13 @@
         viewConfig: { forceFit: true },
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         columns: [
-            { header: _('ID'), width: 50, dataIndex: '_id', sortable: true, 
-                renderer: function(v,m,row){ 
-                    return row.data.expired 
+            { header: _('ID'), width: 50, dataIndex: '_id', sortable: true,
+                renderer: function(v,m,row){
+                    return row.data.expired
                         ?'<span style="color:#ccc;text-decoration:line-through">'+v+'</span>'
                         :'<span style="font-weight:bold">'+v+'</span>'
                 }
-            },    
+            },
             { header: _('Message'), width: 200, dataIndex: 'text', sortable: true, renderer: render_msg  },
             { header: _('More'), width: 200, hidden: true, dataIndex: 'more', sortable: true },
             { header: _('Expires'), width: 80, dataIndex: 'expires', sortable: true, renderer:function(v,m,row){

@@ -10,7 +10,7 @@
         Baseliner.error( _('Job'), _('Missing mid') );
         return;
     }
-    
+
     var bl = node.attributes.data.bl || menu_action.bl_to;
     if( bl == undefined  ) {
         Ext.Msg.alert( _('Error'), _('Missing bl') );
@@ -27,16 +27,16 @@
     var id = menu_action.id;
     var data = node.attributes.data;
     var is_release = node.attributes.data.is_release;
-    var topic = { 
-            text: node.text, 
-            topic_mid: data.topic_mid, 
+    var topic = {
+            text: node.text,
+            topic_mid: data.topic_mid,
             id: id,
-            id_project: data.id_project, 
+            id_project: data.id_project,
             is_release: is_release,
-            state_id: data.state_id, 
-            promotable: data.promotable, 
-            demotable: data.demotable, 
-            deployable: data.deployable , 
+            state_id: data.state_id,
+            promotable: data.promotable,
+            demotable: data.demotable,
+            deployable: data.deployable ,
             job_type: job_type,
             state_to: state_to
     };

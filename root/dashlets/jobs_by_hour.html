@@ -9,17 +9,17 @@ html: /dashlets/jobs_by_hour.html
 
 <div id="principal" style="clear:left;" >
     <h2><% _loc('Jobs Daily (7 days)') %></h2><br>
-        <div id="<%$graph_id%>" 
-            style="width: 95%; height: 250px; float: left; " 
+        <div id="<%$graph_id%>"
+            style="width: 95%; height: 250px; float: left; "
             onmouseout="document.body.style.cursor='default';"></div>
 </div>
 
 <script type="text/javascript">
- 
+
     function gd(year, month, day) {
         return new Date(year, month, day).getTime();
     }
- 
+
     $(function () {
         var id = "#<% $graph_id %>";
         var data = [];
@@ -30,9 +30,9 @@ html: /dashlets/jobs_by_hour.html
             };
             for( var i=0; i<24; i++ ) {
                 //var hr = ( i>11 ? (i-12)+'pm' : i+'am' );
-                ticks.push([i,i+'h']); 
+                ticks.push([i,i+'h']);
             }
-             
+
             $.plot( $(id), [
                     {
                         data: data,
@@ -42,14 +42,14 @@ html: /dashlets/jobs_by_hour.html
                 ],
                 {
                     legend: { show: true },
-                    xaxis: { 
+                    xaxis: {
                         ticks: ticks,
                         axisLabelUseCanvas: true,
                         labelAngle: -90
                     }
                 }
             );
-             
+
 
         });
     });

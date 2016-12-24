@@ -9,14 +9,14 @@
                     //Baseliner.message( _('Stash Log'), res.stash );
                     stash.setValue( res.stash );
                 }
-            ); 
+            );
         };
         var save_stash = function() {
             Baseliner.ajaxEval( '/job/job_stash_save', { mid: params.mid, stash: stash.getValue() },
                 function(res) {
                     Baseliner.message( _('Save'), res.msg );
                 }
-            ); 
+            );
         };
         load_stash();
     var panel = new Ext.Panel({

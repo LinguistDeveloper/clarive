@@ -3,7 +3,7 @@
 // rgo: heredoc quote fix, XXX heredoc comment only works in FF >= 17
 Baseliner.TMP_FOO_STR = function(){/*$*/}.toString();
 Baseliner.HEREDOC_SLICE_START = Baseliner.TMP_FOO_STR.indexOf('$');
-Baseliner.HEREDOC_SLICE_END   = Baseliner.HEREDOC_SLICE_START-Baseliner.TMP_FOO_STR.length+1; 
+Baseliner.HEREDOC_SLICE_END   = Baseliner.HEREDOC_SLICE_START-Baseliner.TMP_FOO_STR.length+1;
 Function.prototype.heredoc = function(s){ return this.toString().slice(Baseliner.HEREDOC_SLICE_START,Baseliner.HEREDOC_SLICE_END) };
 Function.prototype.tmpl = function(data){ return Baseliner.tmpl(this.heredoc(),data) };
 String.prototype.tmpl = function(data){ return Baseliner.tmpl(this+"",data) };
@@ -13,12 +13,12 @@ Baseliner.tmpl = function (str, data){
     // load the template - and be sure to cache the result.
     var st = Baseliner.HEREDOC_SLICE_START;
     var en = Baseliner.HEREDOC_SLICE_END;
-    var he = ['function(){/*', '*/}.toString().slice('+st+','+en+')']; 
+    var he = ['function(){/*', '*/}.toString().slice('+st+','+en+')'];
     var fn = !/\W/.test(str) && str.length>0
         ? Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
-           Baseliner.tmpl(document.getElementById(str).innerHTML) 
+           Baseliner.tmpl(document.getElementById(str).innerHTML)
         :
-     
+
       // Generate a reusable function that will serve as a template
       // generator (and which will be cached).
      new Function("obj",
@@ -29,7 +29,7 @@ Baseliner.tmpl = function (str, data){
 
         // Convert the template into pure JavaScript
          str
-          .replace(/[\r\t\n]/g, " ")    
+          .replace(/[\r\t\n]/g, " ")
           .split("[%").join("\t")
           .replace(/((^|%\])[^\t]*)/g, "$1\r")
           .replace(/\t=(.*?)%\]/g, he[1]+",$1,"+he[0])

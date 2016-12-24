@@ -15,7 +15,7 @@ params:
 (function(params){
     var data = params.topic_data;
     var meta = params.topic_meta;
-    
+
     allow = Baseliner.eval_boolean(meta.allowBlank);
     readonly = Baseliner.eval_boolean(meta.readonly);
 

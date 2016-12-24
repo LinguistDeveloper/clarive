@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
     var data = params.data || {};
     var id = params.id_div;
     var project_id = params.project_id;
@@ -21,14 +21,14 @@
     if( mid ) {
         div.innerHTML = '';
         var graph = new Baseliner.CIGraph({
-            mid: mid, 
-            direction:'children', 
-            depth: 3, 
+            mid: mid,
+            direction:'children',
+            depth: 3,
             toolbar: data.toolbar_mode == 'hide' ? false : data.toolbar_mode,
             include_cl: data.include_cl,
             not_in_class: data.not_in_class,
             condition: data.condition,
-            which: data.graph_type||'st', 
+            which: data.graph_type||'st',
             height: $(div).height()
         });
         graph.render( id );

@@ -2,20 +2,20 @@
     var common = params.common_options || Cla.dashlet_common(params);
 
     var data = params.data;
-    var states_store = new Baseliner.JsonStore({ 
-        id: 'id', 
+    var states_store = new Baseliner.JsonStore({
+        id: 'id',
         baseParams: {},
         root: 'data',
         autoLoad: true,
         url: '/job/states',
-        fields: ['id','name'] 
+        fields: ['id','name']
     });
 
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
 
     var states = new Ext.ux.form.SuperBoxSelect({
         msgTarget: 'under',
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         triggerAction: 'all',
         store: states_store,
         mode: 'remote',
@@ -40,13 +40,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: 1, 
+            { layout:'form',
+              columnWidth: 1,
               bodyStyle: 'background:transparent;',
               items: [
                 states,

@@ -1,14 +1,14 @@
 (function(){
     var ps = 9999;
     <& /comp/search_field.mas &>
-    
+
     var store_sem=new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/semaphore/sems',
-        fields: [ 
+        fields: [
             {  name: 'key' },
             {  name: 'active' },
             {  name: 'slots' },
@@ -19,12 +19,12 @@
     });
 
     var reader_queue = new Ext.data.JsonReader({
-            root: 'data', 
+            root: 'data',
             remoteSort: true,
-            totalProperty:'totalCount', 
-            id: 'id' 
+            totalProperty:'totalCount',
+            id: 'id'
         },
-        [ 
+        [
             {  name: 'id' },
             {  name: 'key' },
             {  name: 'who' },
@@ -60,7 +60,7 @@
             if ( sm.hasSelection() ) {
                 var row = sm.getSelected();
                 Baseliner.ajaxEval( '/semaphore/change_status', { id: row.data.id, status:'granted' }, function(res) {
-                    Baseliner.message( _("Semaphore"), res.message ); 
+                    Baseliner.message( _("Semaphore"), res.message );
                     store_queue.load();
                 });
             }
@@ -76,7 +76,7 @@
             if ( sm.hasSelection() ) {
                 var row = sm.getSelected();
                 Baseliner.ajaxEval( '/semaphore/change_status', { id: row.data.id, status:'cancelled' }, function(res) {
-                    Baseliner.message( _("Semaphore"), res.message ); 
+                    Baseliner.message( _("Semaphore"), res.message );
                     store_queue.load();
                 });
             }
@@ -92,7 +92,7 @@
             if ( sm.hasSelection() ) {
                 var row = sm.getSelected();
                 Baseliner.ajaxEval( '/semaphore/purge', { }, function(res) {
-                    Baseliner.message( _("Semaphore"), res.message ); 
+                    Baseliner.message( _("Semaphore"), res.message );
                     store_queue.load();
                 });
             }
@@ -104,7 +104,7 @@
         if ( sm.hasSelection() ) {
             var row = sm.getSelected();
             Baseliner.ajaxEval( '/semaphore/activate', { id: row.data.id, active: active }, function(res) {
-                Baseliner.message( _("Semaphore"), res.message ); 
+                Baseliner.message( _("Semaphore"), res.message );
                 store_queue.load();
             });
         }
@@ -126,7 +126,7 @@
 
     Baseliner.sem_mod = function(action, key) {
         Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
-            Baseliner.message( key, res.message ); 
+            Baseliner.message( key, res.message );
             store_sem.load();
         });
      };
@@ -135,7 +135,7 @@
         cls: 'x-btn-text-icon',
         handler: function() {
             Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
-                Baseliner.message( key, res.message ); 
+                Baseliner.message( key, res.message );
                 store_sem.load();
             });
         }
@@ -165,7 +165,7 @@
         var key = value;
         var is_infinite = rec.data.slots == -1;
         var is_stopped = rec.data.slots == 0;
-        var strike = is_stopped ? 'color:#932;' : is_infinite ? 'color: #293' : ''; 
+        var strike = is_stopped ? 'color:#932;' : is_infinite ? 'color: #293' : '';
         return "<div style='font-weight:bold; font-size: 12px; "+strike+"'>" + key + "</div><br />" ;
     };
 
@@ -176,7 +176,7 @@
         var slots = rec.data.slots;
         var up = '<a href="#" onclick="javascript:Baseliner.sem_mod(\'add\', \''+ rec.data.key +'\', \''+rec.data.bl+'\' )">'
                 + '<img src="/static/images/icons/arrow-up.svg"></img></a>';
-        var down = slots > -1 
+        var down = slots > -1
             ? '<a href="#" onclick="javascript:Baseliner.sem_mod(\'del\', \''+ rec.data.key +'\', \''+rec.data.bl+'\')">'
                 + '<img src="/static/images/icons/arrow-down.svg"></img></a>'
             : '';
@@ -185,7 +185,7 @@
 
     Baseliner.queue_move = function(action,id_from,id_to) {
         Baseliner.ajaxEval( '/semaphore/queue_move', { id_from: id_from, id_to: id_to, action: action }, function(res) {
-            Baseliner.message( _("Moved up"), res.message ); 
+            Baseliner.message( _("Moved up"), res.message );
             store_queue.load();
         });
     };
@@ -195,7 +195,7 @@
             ? '<img src="/static/images/icons/arrow-up.svg" style="visibility: hidden"></img>'
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'up\', \''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex-1).id+'\' )">'
                 + '<img src="/static/images/icons/arrow-up.svg"></img></a>';
-        var down = rowIndex == store_queue.getCount() -1  
+        var down = rowIndex == store_queue.getCount() -1
             ? ''
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'down\',\''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex+1).id +'\')">'
             + '<img src="/static/images/icons/arrow-down.svg"></img></a>';
@@ -204,19 +204,19 @@
 
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
         var img = value;
-        if( value == 'waiting' ) 
+        if( value == 'waiting' )
             img = '<img src="/static/images/icons/busy.svg" alt="'+value+'"/>';
         else if( value == 'granted' )
             img = '<img src="/static/images/icons/start.svg" alt="'+value+'"/>';
-        else if( value == 'busy' ) 
+        else if( value == 'busy' )
             img = '<img src="/static/images/loading/loading-fast.gif" alt="'+value+'"/>';
-        else if( value == 'idle' ) 
+        else if( value == 'idle' )
             img = '<img src="/static/images/icons/write.svg" alt="'+value+'"/>';
-        else if( value == 'done' ) 
+        else if( value == 'done' )
             img = '<img src="/static/images/icons/active.svg" alt="'+value+'"/>';
-        else if( value == 'cancelled' ) 
+        else if( value == 'cancelled' )
             img = '<img src="/static/images/icons/stop.svg" alt="'+value+'"/>';
-        else if( value == 'killed' ) 
+        else if( value == 'killed' )
             img = '<img src="/static/images/icons/error_red.svg" alt="'+value+'"/>';
         return img;
     };
@@ -264,7 +264,7 @@
                             + '</tr></table></div>'
                             , slots, (is_infinite ? '\u221E' : maxslots), occ, waiting, _('slots'), _('max'), _('busy'), _('waiting') );
                         var css = '';
-                        if( rec.data.active == 0  ) 
+                        if( rec.data.active == 0  )
                             css = index % 2 > 0 ? 'level-row debug-odd' : 'level-row debug-even' ;
                         else
                             css = index % 2 > 0 ? 'level-row warn-odd' : 'level-row warn-even' ;
@@ -277,8 +277,8 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { width: 20, sortable: false, renderer: function() { return '<img src="/static/images/icons/semaphore.svg" width="16px"/>' } },    
-            { header: _('Semaphore'), width: 100, dataIndex: 'key', sortable: true, renderer: render_sem }, 
+            { width: 20, sortable: false, renderer: function() { return '<img src="/static/images/icons/semaphore.svg" width="16px"/>' } },
+            { header: _('Semaphore'), width: 100, dataIndex: 'key', sortable: true, renderer: render_sem },
             { width: 50, dataIndex: 'key', renderer: render_sem_actions  }
         ]
     });
@@ -289,7 +289,7 @@
                 params: {start: 0, limit: ps},
                 emptyText: _('<Enter your search string>')
             }),
-            button_grant, button_cancel, 
+            button_grant, button_cancel,
             //button_activate, button_deactivate,
             '->', button_queue_refresh
         ]
@@ -330,18 +330,18 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'key', sortable: false, menuDisabled: true },    
+            { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'key', sortable: false, menuDisabled: true },
             { width: 30, dataIndex: 'status', sortable: false, renderer: render_status, menuDisabled: true},
-            { header: _('Who'), width: 200, dataIndex: 'who', sortable: false , menuDisabled: true},    
-            { header: _('Sequence'), width: 60, dataIndex: 'seq', sortable: false , menuDisabled: true}, 
-            { header: _('Process'), width: 60, dataIndex: 'pid', sortable: false , menuDisabled: true}, 
-            { header: _('Host'), width: 60, dataIndex: 'hostname', sortable: false , menuDisabled: true}, 
-            { header: _('Status Text'), width: 100, dataIndex: 'status', hidden: true, sortable: false , menuDisabled: true},   
-            { header: _('Requested On'), width: 100, dataIndex: 'ts_request', sortable: false , menuDisabled: true, renderer: Cla.render_date },    
-            { header: _('Granted On'), width: 100, dataIndex: 'ts_grant', sortable: false , menuDisabled: true, renderer: Cla.render_date },    
-            { header: _('Released On'), width: 100, dataIndex: 'ts_release', sortable: false, menuDisabled: true, renderer: Cla.render_date  }, 
-            { header: _('Wait'), width: 100, dataIndex: 'wait_time', sortable: false, menuDisabled: true }, 
-            { header: _('Run'), width: 100, dataIndex: 'run_time', sortable: false, menuDisabled: true }, 
+            { header: _('Who'), width: 200, dataIndex: 'who', sortable: false , menuDisabled: true},
+            { header: _('Sequence'), width: 60, dataIndex: 'seq', sortable: false , menuDisabled: true},
+            { header: _('Process'), width: 60, dataIndex: 'pid', sortable: false , menuDisabled: true},
+            { header: _('Host'), width: 60, dataIndex: 'hostname', sortable: false , menuDisabled: true},
+            { header: _('Status Text'), width: 100, dataIndex: 'status', hidden: true, sortable: false , menuDisabled: true},
+            { header: _('Requested On'), width: 100, dataIndex: 'ts_request', sortable: false , menuDisabled: true, renderer: Cla.render_date },
+            { header: _('Granted On'), width: 100, dataIndex: 'ts_grant', sortable: false , menuDisabled: true, renderer: Cla.render_date },
+            { header: _('Released On'), width: 100, dataIndex: 'ts_release', sortable: false, menuDisabled: true, renderer: Cla.render_date  },
+            { header: _('Wait'), width: 100, dataIndex: 'wait_time', sortable: false, menuDisabled: true },
+            { header: _('Run'), width: 100, dataIndex: 'run_time', sortable: false, menuDisabled: true },
             { header: _('Active'), width: 50, dataIndex: 'active', sortable: false, menuDisabled: true, renderer: Baseliner.render_active},
             { width: 100, renderer: render_actions, menuDisabled: true }
         ]
@@ -374,7 +374,7 @@
         }
         tbar_queue.doLayout();
     };
-    grid_queue.on('rowclick', buttons_on_off ); 
+    grid_queue.on('rowclick', buttons_on_off );
     store_queue.on('load', buttons_on_off );
     button_activate.hide();
     button_deactivate.hide();

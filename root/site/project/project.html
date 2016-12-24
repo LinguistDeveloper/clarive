@@ -95,7 +95,7 @@
 
 .novelty input[type="checkbox"] + input +  label {
   display: inline;
-} 
+}
 
 .novelty input {
   font-size: 150%;
@@ -274,7 +274,7 @@ ul.errors li {
 }
 
 /*
-    Pagination Styles 
+    Pagination Styles
 */
 
 #project .pagination {
@@ -348,32 +348,32 @@ ul.errors li {
 
 #project .delete-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/trash.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/trash.gif') no-repeat 50% 50%;
 }
 
 #project .export-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/disk.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/disk.gif') no-repeat 50% 50%;
 }
 
 #project .black-flag-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/flag.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/flag.gif') no-repeat 50% 50%;
 }
 
 #project .chart-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/bargraph.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/bargraph.gif') no-repeat 50% 50%;
 }
 
 #project .camera-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/camera.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/camera.gif') no-repeat 50% 50%;
 }
 
 #project .lock-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/locked.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/locked.gif') no-repeat 50% 50%;
 }
 
 #project .lock-red-icon {
@@ -384,17 +384,17 @@ ul.errors li {
 
 #project .unlock-icon {
   padding: 8px;
-  background: url('/images/simplebits/black/unlocked.gif') no-repeat 50% 50%;  
+  background: url('/images/simplebits/black/unlocked.gif') no-repeat 50% 50%;
 }
 
 #project .facebook-icon {
   padding: 8px;
-  background: url('/images/social/facebook.png') no-repeat 50% 50%;  
+  background: url('/images/social/facebook.png') no-repeat 50% 50%;
 }
 
 #project .twitter-icon {
   padding: 8px;
-  background: url('/images/social/twitter.png') no-repeat 50% 50%;  
+  background: url('/images/social/twitter.png') no-repeat 50% 50%;
 }
 
 #project .benchmark-bar {
@@ -573,12 +573,12 @@ ul.errors li {
 
 .browse_table * .system-name, .browse_table * .overall-score {
   width: 25%;
-} 
+}
 
 .browse_table * .system-information-header {
   border-right-width: 0px;
   width: 75%;
-} 
+}
 
 .browse_table * .overall-score-header {
   border-left-width: 0px;
@@ -600,18 +600,18 @@ ul.errors li {
   font-weight: bold;
 }
 
-/* 
+/*
     Benchmark Table
 */
 
 .benchmark-table {
     border-collapse: collapse;
-    border: #ccc 1px solid;                    
+    border: #ccc 1px solid;
 }
 
 .benchmark-table * th {
     background-color: #fff !important;
-    border-width: 0px 0px 1px 0px !important; 
+    border-width: 0px 0px 1px 0px !important;
     border-bottom: #ccc 1px solid !important;
     font-size: 125%;
 }
@@ -623,15 +623,15 @@ ul.errors li {
 
 .benchmark-table * .benchmark-score {
     border-top: #ccc 1px solid;
-    border-left: #ccc 1px solid;                                        
-    border-bottom: #ccc 1px solid;                    
+    border-left: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;
     width: 15%;
 }
 
 .benchmark-table * .benchmark-graph {
     border-top: #ccc 1px solid;
-    border-right: #ccc 1px solid;                                        
-    border-bottom: #ccc 1px solid;                                        
+    border-right: #ccc 1px solid;
+    border-bottom: #ccc 1px solid;
     width: 50%;
 }
 
@@ -641,7 +641,7 @@ ul.errors li {
   <div class="container body">
 
     <div class="span-18 colborder prepend-top append-bottom" id="body">
-        
+
 <div class="body-header">
 <h2><% $prj->name %></h2>
 <h4><% $prj->description %></h4>
@@ -698,7 +698,7 @@ ul.errors li {
     </tbody>
 </table>
 
-  
+
 <!--
 <h3>System Information</h3>
 
@@ -783,8 +783,8 @@ ul.errors li {
             <th class="benchmark-graph last-child">Acciones</th>
         </tr>
     </thead>
-    <tbody>    
-            
+    <tbody>
+
 % my $cnt = 0;
 % for my $sa ( qw/sctmain sctwww/ ) {
 %    my $nat = 'J2EE';
@@ -821,8 +821,8 @@ ul.errors li {
 
         </tr>
     </thead>
-    <tbody>    
-            
+    <tbody>
+
 % $cnt = 0;
 % for my $job ( @jobs ) {
 %    my $wid = (rand(100) ) + 1;

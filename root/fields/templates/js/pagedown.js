@@ -15,7 +15,7 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
+
     var value = data[ meta.bd_field ] || meta.default_value ;
     var editor = new Baseliner.Pagedown({
         font: meta.font,
@@ -23,10 +23,10 @@ params:
         height: meta.height || 30,
         value: value || ''
     });
-    
+
     var allow = Baseliner.eval_boolean(meta.allowBlank);
     var readonly = Baseliner.eval_boolean(meta.readonly);
-    
+
     return [
         //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         new Ext.Panel({
@@ -50,7 +50,7 @@ params:
                     this.on_change_lab.style.display = 'none';
                 }
                 return is_valid;
-            }             
+            }
         })
     ]
 })

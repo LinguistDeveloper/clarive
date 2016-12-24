@@ -1,11 +1,11 @@
 (function(params) {
     var record = Ext.data.Record.create([ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']);
-    var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
-       autoLoad : true,  
+    var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({
+       autoLoad : true,
        url: '/ci/list',
        baseParams: {},
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
-    }); 
+    });
 
     var searchField = new Baseliner.SearchField({
         store: store_ci, params: {start: 0, limit: 100 }, emptyText: _('<Enter your search string>')
@@ -59,15 +59,15 @@
         if( value == undefined ) return '';
         if( typeof value == 'string' ) return '';
         var ret = '<table>';
-        ret += '<tr>'; 
+        ret += '<tr>';
         var k = 0;
         for( var k in value ) {
             if( value[k]==undefined ) value[k]='';
             ret += '<td style="font-size: 10px;font-weight: bold;padding: 1px 3px 1px 3px;">' + _(k) + '</td>'
             ret += '<td width="80px" style="font-size: 10px; background: #f5f5f5;padding: 1px 3px 1px 3px;"><code>' + value[k] + '</code></td>'
             if( k % 2 ) {
-                ret += '</tr>'; 
-                ret += '<tr>'; 
+                ret += '</tr>';
+                ret += '<tr>';
             }
         }
         ret += '</table>';

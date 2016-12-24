@@ -8,7 +8,7 @@
 
      var store_values = new Ext.data.SimpleStore({
         fields: ['assigned_to', 'name'],
-        data:[ 
+        data:[
             [ 'any', _('Any') ],
             [ 'current', _('Current') ],
         ]
@@ -25,7 +25,7 @@
         editable: false,
         mode: 'local',
         forceSelection: true,
-        triggerAction: 'all', 
+        triggerAction: 'all',
         fieldLabel: _('User assigned to topics'),
         autoLoad: true,
         anchor: '100%',

@@ -16,7 +16,7 @@
             hideLabel: true,
             items: field_body
         });
-        var win = new Ext.Window({ layout: 'fit', 
+        var win = new Ext.Window({ layout: 'fit',
             autoScroll: false,
             title: _('Request'),
             maximizable: true,

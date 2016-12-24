@@ -59,7 +59,7 @@
             sortInfo: {field: 'item', direction: "ASC"},
             groupField: group_field
     });
-    
+
     store.on("load", function(s,rec){
         start = store.getTotalCount(); // ajust for next load
     });
@@ -88,7 +88,7 @@
     var filter_me = function( item, checked ) {
         filter_obj[ item.id ] = checked;
         filter_button_text();
-        Baseliner.cookie.set( filter_key , filter_obj ); 
+        Baseliner.cookie.set( filter_key , filter_obj );
         store.load();
     };
     var filter_menu = new Ext.menu.Menu({
@@ -110,8 +110,8 @@
             var sel = sm.getSelected();
             var action = 'approval'; // approved, rejected, cancelled
             var msg = _("Are you sure you want to approve %1?", sel.data.item );
-            Ext.Msg.confirm('<% _loc('Confirmation') %>',  msg, 
-                function(btn){ 
+            Ext.Msg.confirm('<% _loc('Confirmation') %>',  msg,
+                function(btn){
                     if(btn=='yes') {
                         var conn = new Ext.data.Connection();
                         conn.request({
@@ -119,7 +119,7 @@
                             params: { action: action, item: sel.data.ns },
                             success: function(resp,opt) { grid.getStore().reload(); },
                             failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _("Error during action %1", action) ); }
-                        });    
+                        });
                     }
                     } );
     };
@@ -139,8 +139,8 @@
             if( rec == undefined ) return;
             if( rec.data.release == undefined ) { Baseliner.message(_('Error'), _('%1 is not in a release.', rec.data.item ) ); return; }
             if( rec.data.release == '' ) { Baseliner.message(_('Error'), _('%1 is not in a release.', rec.data.item ) );  return;}
-            Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to remove %1 from the release %2?', rec.data.item, rec.data.release), 
-                function(btn){ 
+            Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to remove %1 from the release %2?', rec.data.item, rec.data.release),
+                function(btn){
                     if(btn=='yes') {
                         var conn = new Ext.data.Connection();
                         conn.request({
@@ -152,7 +152,7 @@
                                 rec.data.release=''; rec.data.id_rel='';
                             },
                             failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', _('Could not remove the item: %1', resp) ); }
-                        });    
+                        });
                     }
                 } );
     };
@@ -166,29 +166,29 @@
             }
             if( rec.data.release != undefined && rec.data.release!='' ) {
                 Baseliner.message(_('Error'), _('%1 is already in a release.', rec.data.item ) );
-                return; 
+                return;
             }
             //TODO check if it's addable
             var rel_combo = new Ext.form.ComboBox({
-                   name: 'id', 
+                   name: 'id',
                    hiddenName: 'id',
                    fieldLabel: _("Releases"),
-                   mode: 'remote', 
+                   mode: 'remote',
                    store: new Baseliner.JsonStore({
-                            root: 'data' , 
+                            root: 'data' ,
                             remoteSort: true,
                             autoLoad: true,
-                            totalProperty:"totalCount", 
+                            totalProperty:"totalCount",
                             baseParams: { all: true, bl: rec.data.bl },
-                            id: 'rownum', 
+                            id: 'rownum',
                             url: '/release/json',
-                            fields: [ 
+                            fields: [
                                 {  name: 'id' },
                                 {  name: 'name' }
                             ]
                         }),
                    valueField: 'id',
-                   displayField:'name', 
+                   displayField:'name',
                    editable: false,
                    forceSelection: true,
                    triggerAction: 'all',
@@ -203,7 +203,7 @@
                         text: _('Add to Release'),
                         type: 'submit',
                         handler: function(){
-                 
+
                             var id_rel_combo = rel_combo.getValue();
                             if( id_rel_combo == undefined || id_rel_combo == '' ) {
                                 return;
@@ -219,7 +219,7 @@
                                         Ext.Msg.alert(_('Error'), _('Could not add the item: %1', resp.msg ) );
                                     }
                                 }
-                            ); 
+                            );
                         }
                     },
                     {
@@ -232,10 +232,10 @@
                 items: [ rel_combo ]
             });
             var win = new Ext.Window({
-                layout: 'fit', 
+                layout: 'fit',
                 autoScroll: true,
                 title: _("Add Item to Release") + " (" + _(rec.data.bl) + ")",
-                height: 150, width: 450, 
+                height: 150, width: 450,
                 items: [ rel_form ]
             });
             win.show();
@@ -248,26 +248,26 @@
     });
     var revision_create = function(){
         var combo_create = new Ext.form.ComboBox({
-               name: 'url', 
+               name: 'url',
                hiddenName: 'url',
                fieldLabel: _("Providers"),
-               mode: 'remote', 
+               mode: 'remote',
                store: new Baseliner.JsonStore({
-                        root: 'data' , 
+                        root: 'data' ,
                         remoteSort: true,
                         autoLoad: true,
-                        totalProperty:"totalCount", 
+                        totalProperty:"totalCount",
                         baseParams: { },
-                        id: 'package', 
+                        id: 'package',
                         url: '/revision/create_providers',
-                        fields: [ 
+                        fields: [
                             {  name: 'url' },
                             {  name: 'package' },
                             {  name: 'name' }
                         ]
                     }),
                valueField: 'url',
-               displayField:'name', 
+               displayField:'name',
                editable: false,
                forceSelection: true,
                triggerAction: 'all',
@@ -278,7 +278,7 @@
             combo_create.setValue(store.getAt(0).get('url'));
         });
         var form_create = new Ext.FormPanel({ xtype:'form',
-                frame: true, 
+                frame: true,
                 items: combo_create,
                 buttons: [{ xtype:'button', text:_('Create...'),
                 handler: function(){
@@ -411,11 +411,11 @@
         var icon = rec.data.icon || 'package.svg';
         return "<img alt='"+ rec.id +"' border=0 src='"+icon+"' /><b>" + value + "</b>" ;
     };
-    
+
     var render_email = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<a href='javascript:Baseliner.show_email({ id_message: "+ rec.data.id_message +", id_req: "+rec.data.id_req+" })' alt='"+ _("View Email") +"'>" + value + "</a>" ;
     };
-    
+
     var jobTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( value!=undefined && value!='' ) {
             var id_job = rec.data.id_job;
@@ -461,7 +461,7 @@
         ]
     });
 
-    /* 
+    /*
     //TODO put the provider buttons on the toolbar
     Baseliner.ajaxEval('/revision/list_providers',{},function(res){
         //for( var i in res.list ) {
@@ -496,15 +496,15 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },    
-            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},    
-            { header: _("Baseline"), width: 120, dataIndex: 'bl', sortable: true },    
-            { header: _("Approval"), width: 120, dataIndex: 'status', sortable: true, renderer: render_email },    
-            { header: _("Type"), width: 120, dataIndex: 'status_type', sortable: true , hidden: is_portlet ? true : false},    
-            { header: _("Application"), width: 120, dataIndex: 'related', sortable: true , hidden: is_portlet ? true : false},    
-            { header: _("Last Job"), width: 130, dataIndex: 'last_job', sortable: true, renderer: jobTpl },    
-            { header: _("Release"), width: 150, dataIndex: 'release', sortable: true, renderer: relTpl },    
-            { id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },    
+            { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },
+            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},
+            { header: _("Baseline"), width: 120, dataIndex: 'bl', sortable: true },
+            { header: _("Approval"), width: 120, dataIndex: 'status', sortable: true, renderer: render_email },
+            { header: _("Type"), width: 120, dataIndex: 'status_type', sortable: true , hidden: is_portlet ? true : false},
+            { header: _("Application"), width: 120, dataIndex: 'related', sortable: true , hidden: is_portlet ? true : false},
+            { header: _("Last Job"), width: 130, dataIndex: 'last_job', sortable: true, renderer: jobTpl },
+            { header: _("Release"), width: 150, dataIndex: 'release', sortable: true, renderer: relTpl },
+            { id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },
             { header: _("Description"), width: 150, dataIndex: 'text', sortable: true, cls: 'nowrapgrid' , hidden: is_portlet ? true : false }
         ],
         bbar: ptool,

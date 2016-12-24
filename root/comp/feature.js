@@ -12,7 +12,7 @@
            this.updateText( msg );
        },
        log: function( msg ) {
-           if( Ext.isObject( msg ) ) 
+           if( Ext.isObject( msg ) )
                msg = Ext.util.JSON.encode( msg );
            this.$log.push( msg );
            this.fireEvent('log', msg );
@@ -35,11 +35,11 @@
         initComponent: function(){
             var self = this;
             Baseliner.ProgressWindow.superclass.initComponent.call( this );
-            this.card = new Ext.Panel({ 
+            this.card = new Ext.Panel({
                 layout:'card', region: 'center',
                 //layoutConfig: { activeItem: 0 },
                 activeItem: 0,
-                tbar: [ 
+                tbar: [
                     { text: _('Upgrades'), pressed:true,allowDepress:false, enableToggle:true, toggleGroup:'progress-btn',
                         handler:function(){ self.card.getLayout().setActiveItem( self.pull_list ) }  },
                     '-',
@@ -48,7 +48,7 @@
                 ]
             });
             this.add( this.card );
-            this.pull_list = new Ext.FormPanel({ 
+            this.pull_list = new Ext.FormPanel({
                 autoScroll: true,
                 bodyStyle: 'padding: 10px 10px 10px 10px',
                 defaults: {
@@ -56,7 +56,7 @@
                     labelStyle: 'font-weight:bold;',
                     labelWidth: 150
                 },
-                frame: false, 
+                frame: false,
                 border: false
             });
             self.card.add( self.pull_list );
@@ -64,16 +64,16 @@
             this.$last_log_id = '';
             this.card.add( this.log );
             this.show();
-        }, 
+        },
         push_progress: function(id, label, text){
             var self = this;
-            var pb = new Baseliner.ProgressBar({ 
+            var pb = new Baseliner.ProgressBar({
                 fieldLabel: _( label ),
                 text: text });
             this.pull_list.add( pb );
             this.pull_list.doLayout();
             pb.on('log', function(msg){
-                if( Ext.isArray( msg ) ) 
+                if( Ext.isArray( msg ) )
                     msg = msg.join("\n");
                 self.log.setValue( self.log.getValue() + "\n"
                     + ( self.$last_log_id === id ? msg : String.format('===========[ {0} ]===========\n{1}', id, msg ) ) );
@@ -82,7 +82,7 @@
             return pb;
         }
     });
-   
+
     Baseliner.FeatureUpgrade = Ext.extend( Ext.Panel, {
         layout: 'border',
         initComponent: function(){
@@ -90,12 +90,12 @@
             Baseliner.FeatureUpgrade.superclass.initComponent.call(this);
             self.store = new Baseliner.JsonStore({
                 autoLoad: true,
-                
-            root: 'data' , 
+
+            root: 'data' ,
             remoteSort: true,
-            totalProperty: "totalCount", 
-            id: 'id', 
-                fields: [ 'feature', 'dir','refs','date','branch','tag','tags','version','versions','fetch_head' ], 
+            totalProperty: "totalCount",
+            id: 'id',
+                fields: [ 'feature', 'dir','refs','date','branch','tag','tags','version','versions','fetch_head' ],
                 url:'/feature/list_repositories'
             });
             self.sm = new Ext.grid.CheckboxSelectionModel();
@@ -114,7 +114,7 @@
                 getCellEditor: function( col, row) {
                     var rec = self.store.getAt( row );
                     var arr = [];
-                    Ext.each(rec.data.versions, function(v){ 
+                    Ext.each(rec.data.versions, function(v){
                         // rename refs/heads/ to branch:
                         var name = v.replace('refs/heads/', 'branch: ');
                         arr.push( [v,name] )
@@ -122,7 +122,7 @@
                     var editor = new Ext.form.ComboBox({
                        typeAhead: true,
                        minChars: 1,
-                       mode: 'local', 
+                       mode: 'local',
                        store: arr,
                        editable: true,
                        //forceSelection: true,
@@ -134,9 +134,9 @@
                 }
             });
             self.list = new Ext.grid.EditorGridPanel({
-                selModel: self.sm, 
+                selModel: self.sm,
                 region:'center',
-                store: self.store, 
+                store: self.store,
                 loadMask: true,
                 autoScroll: true,
                 autoWidth: true,
@@ -146,9 +146,9 @@
                 tbar: [
                     { icon:'/static/images/icons/refresh.svg', handler: function(){ self.store.reload() }, tooltip:_('Reload')  }, '-',
                     { text:_('Download Patches'), icon:'/static/images/icons/local.svg', handler: function(){ self.pull() } }, '-',
-                    { text:_('Checkout'), icon:'/static/images/icons/checkout-blue.svg', handler: function(){ 
+                    { text:_('Checkout'), icon:'/static/images/icons/checkout-blue.svg', handler: function(){
                          if( self.sm.hasSelection() ) {
-                             Baseliner.confirm( _('Selected features will be overwritten. A server restart may be necessary. If any changes are found, they will be stashed and the current version saved to the __rollback__ branch. Ok?'), 
+                             Baseliner.confirm( _('Selected features will be overwritten. A server restart may be necessary. If any changes are found, they will be stashed and the current version saved to the __rollback__ branch. Ok?'),
                                     function(){
                                       self.checkout(true)
                                     }
@@ -191,9 +191,9 @@
                 Ext.each( repos, function(repo){
                     var pb = win_pull.push_progress( repo.feature,
                         String.format('{0}' , repo.feature ),
-                        _('Creating patch...')  ); 
+                        _('Creating patch...')  );
                     pb.log( _('Starting download for %1...', repo.feature ) );
-                    pb.log( repo ); 
+                    pb.log( repo );
                     var k = 0, freq = 100;
                     var pb_update = function(){ pb.updateProgress( ++k/100 ); if( freq>0 && k<=95 ) setTimeout( pb_update, freq ) };
                     pb_update();
@@ -203,7 +203,7 @@
                             sha: repo.fetch_head,
                             branch: repo.branch  // TODO get local repo current branches
                         };
-                    var data_str = String.format('sha: {0}, feature: {1}, branch: {2}', data.sha, data.feature, data.branch ) 
+                    var data_str = String.format('sha: {0}, feature: {1}, branch: {2}', data.sha, data.feature, data.branch )
                     pb.log( data_str );
                     // request file
                     $.support.cors = true;
@@ -216,8 +216,8 @@
                             if( res.success ) {
                                 k = 0;
                                 freq = Math.floor( res.size/100000 );
-                                var size = (res.size/1024).toFixed(2) + ' KB'; 
-                                pb.current( _('Downloading, total %1', size ) ); 
+                                var size = (res.size/1024).toFixed(2) + ' KB';
+                                pb.current( _('Downloading, total %1', size ) );
                                 var pull_id = res.id;
                                 var pull_file = res.file;
                                 // download file
@@ -227,7 +227,7 @@
                                     crossDomain: true,
                                     success: function(res, textStatus, jqXHR) {
                                         k=0;
-                                        pb.current( _('Uploading and importing, total %1', size ) ); 
+                                        pb.current( _('Uploading and importing, total %1', size ) );
                                         // save file to server and fetch
                                         //Baseliner.message( _('Download Patches'), _('Download finished. Uploading...') );
                                         $.ajax({
@@ -235,13 +235,13 @@
                                             url: '/feature/pull',
                                             data: { data: res, feature: repo.feature, id: pull_id, branch: repo.branch },
                                             success: function(res){
-                                                pb.log( res.log ); 
+                                                pb.log( res.log );
                                                 pb.message( _('Upload and Fetch finished ok') );
                                             },
                                             error: function(res, textStatus){
                                                 pb.log( _('status: %1', textStatus ) );
                                                 if( Ext.isObject(res) ) {
-                                                    pb.log( res.log ); 
+                                                    pb.log( res.log );
                                                     pb.error( res.msg );
                                                 } else if( res ) {
                                                     pb.log( res );
@@ -294,10 +294,10 @@
             return String.format('<b>{0}</b>', v );
         }
     });
-    
+
     var features = new Baseliner.FeatureUpgrade();
     var cpan = new Baseliner.CPANDownloader();
-    
+
     var card = new Ext.Panel({
         layout:'card',
         activeItem: 0,
