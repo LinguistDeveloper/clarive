@@ -489,7 +489,7 @@
                     { text:_('CSV'), icon: '/static/images/icons/csv.svg', handler:function(){ ci_import('csv', params.item) } }
                 ]
             },
-	       '->',
+           '->',
             btn_graph
         ],
         viewConfig: {

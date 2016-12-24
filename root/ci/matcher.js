@@ -1,7 +1,7 @@
 (function(params){
     if( ! params.rec ) params.rec = {};
     var data = params.rec;
-	
+    
     var store = new Ext.data.ArrayStore({
         fields: [ 'parse_type' ],
         data : [ ['Path'], ['Source'] ]
@@ -31,7 +31,7 @@
     });
     
     var topics = new Baseliner.TopicGrid({ fieldLabel:_('Topics'), name:'topics', value: params.rec.topics });
-	
+    
     return [
         { xtype:'textfield', fieldLabel:_('Options'), name:'regex_options', value: params.rec.regex_options || 'xmsi', anchor:'100%' },
         { xtype:'textfield', fieldLabel:_('Timeout'), name:'timeout', value: params.rec.timeout || '10', anchor:'100%' },

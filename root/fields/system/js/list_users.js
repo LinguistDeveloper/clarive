@@ -15,28 +15,28 @@ params:
 ---
 */
 (function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
-	
+    var data = params.topic_data;
+    var meta = params.topic_meta;
+    
     
     var single_mode = true;
     var single_mode = meta.single_mode == 'false' || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
-	
+    
     var users = new Array();
-	
-	if(data && eval('data.' + meta.id_field)){
-		var eval_users = eval('data.' + meta.id_field);
-		for(i=0; i<eval_users.length;i++){
-			users.push(eval_users[i].mid);
-		}
-	}else{
-		users = [];
-	}
-	
+    
+    if(data && eval('data.' + meta.id_field)){
+        var eval_users = eval('data.' + meta.id_field);
+        for(i=0; i<eval_users.length;i++){
+            users.push(eval_users[i].mid);
+        }
+    }else{
+        users = [];
+    }
+    
     var user_box_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true,
         baseParams: {projects:[],
-					 roles: meta.roles_filter,
+                     roles: meta.roles_filter,
                      topic_mid: data.topic_mid,
                      limit: 999999,
                     }
@@ -66,8 +66,8 @@ params:
     user_box_store.on('load',function(){
         user_box.setValue( users ) ;
     });
-	
-	return [
-		user_box
+    
+    return [
+        user_box
     ]
 })

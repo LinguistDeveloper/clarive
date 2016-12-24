@@ -22,27 +22,27 @@ params:
 */
 
 (function(params){
-	var meta = params.topic_meta;
-	var data = params.topic_data;
-	var form = params.form.getForm();
-	var topics = new Array();
+    var meta = params.topic_meta;
+    var data = params.topic_data;
+    var form = params.form.getForm();
+    var topics = new Array();
     var ps = parseInt(meta.page_size) || 10;  // for combos, 10 is a much nicer on a combo
-	var id_required = Ext.id()
-	//var lbl_required = 'lbl_' + meta.id_field + '_' + id
-	
-	
+    var id_required = Ext.id()
+    //var lbl_required = 'lbl_' + meta.id_field + '_' + id
+    
+    
 
     if(data && data[ meta.id_field] ){
-		var eval_topics = data[ meta.id_field ];
-		for(i=0; i<eval_topics.length;i++){
-			topics.push(eval_topics[i].mid);
-		}
-	}else{
-		topics = [];
-	}
+        var eval_topics = data[ meta.id_field ];
+        for(i=0; i<eval_topics.length;i++){
+            topics.push(eval_topics[i].mid);
+        }
+    }else{
+        topics = [];
+    }
 
 
-	var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
+    var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
     var display_field = meta.display_field==undefined ? 'title' : meta.display_field;
     var tpl_cfg = meta.tpl_cfg || undefined;
     var hidden =  Baseliner.eval_boolean(!meta.active);
@@ -69,17 +69,17 @@ params:
 
     if( meta.list_type == 'grid' ) {
         // Grid
-		
+        
         var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
         });
-		
-		var readonly = Baseliner.eval_boolean(meta.readonly),
-		
+        
+        var readonly = Baseliner.eval_boolean(meta.readonly),
+        
         topic_box = new Baseliner.TopicGrid({
-			fieldLabel: _(meta.name_field),
-			sm: sm ,
+            fieldLabel: _(meta.name_field),
+            sm: sm ,
             //fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
@@ -90,12 +90,12 @@ params:
             height: meta.height || 250,
             value: data[ meta.id_field ],
             display_field: display_field,
-			enableDragDrop:  Baseliner.eval_boolean(meta.readonly),
-			readOnly:  readonly,
-			hidden: hidden,
-			allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
+            enableDragDrop:  Baseliner.eval_boolean(meta.readonly),
+            readOnly:  readonly,
+            hidden: hidden,
+            allowBlank: readonly ? true : Baseliner.eval_boolean(meta.allowBlank, true)
         });
-		
+        
 
     } else {
         topic_box = new Baseliner.TopicBox({
@@ -109,7 +109,7 @@ params:
             disabled: meta ? meta.readonly : true,
             value: topics,
             singleMode: single_mode,
-			hidden: hidden,
+            hidden: hidden,
             display_field: display_field,
             tpl_cfg: tpl_cfg
         });
@@ -207,8 +207,8 @@ params:
             });
         }
     }
-	var obj = [];
-	obj.push(topic_box);	
-	
-	return obj
+    var obj = [];
+    obj.push(topic_box);    
+    
+    return obj
 })

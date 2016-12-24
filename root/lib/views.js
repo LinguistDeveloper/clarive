@@ -234,7 +234,7 @@ Cla.ui.htmlEditor = function (options){
     var validAPI = Cla.$validateAPI(API, options);
 
     return Cla.ui.form.htmlEditor(validAPI);
-    //return 	new Cla.ui.form.htmlEditor(validAPI);
+    //return     new Cla.ui.form.htmlEditor(validAPI);
 };
 
 /**
@@ -272,7 +272,7 @@ Cla.ui.checkBox = function (options){
     var validAPI = Cla.$validateAPI(API, options);
 
     return Cla.ui.form.checkBox(validAPI);
-    //return 	new Cla.ui.form.checkBox(validAPI);
+    //return     new Cla.ui.form.checkBox(validAPI);
 };
 
 /**

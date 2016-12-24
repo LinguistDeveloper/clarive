@@ -43,8 +43,8 @@
 
 
     ret.push([ 
-    	color_button,
-    	selected_color 
+        color_button,
+        selected_color 
     ]);
     return ret;
 })

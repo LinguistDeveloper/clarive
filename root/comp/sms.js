@@ -151,7 +151,7 @@
                         ?'<span style="color:#ccc;text-decoration:line-through">'+v+'</span>'
                         :'<span style="font-weight:bold">'+v+'</span>'
                 }
-            },	
+            },    
             { header: _('Message'), width: 200, dataIndex: 'text', sortable: true, renderer: render_msg  },
             { header: _('More'), width: 200, hidden: true, dataIndex: 'more', sortable: true },
             { header: _('Expires'), width: 80, dataIndex: 'expires', sortable: true, renderer:function(v,m,row){

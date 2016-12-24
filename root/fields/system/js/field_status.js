@@ -13,14 +13,14 @@ params:
 ---
 */
 (function(params){
-	var meta = params.topic_meta;
-	var data = params.topic_data;
-	
+    var meta = params.topic_meta;
+    var data = params.topic_data;
+    
     var store_category_status = new Baseliner.Topic.StoreCategoryStatus({
         url:'/topic/list_admin_category',
         baseParams: { topic_mid: data.topic_mid}
     });
-	
+    
 //    var combo_status = new Ext.form.ComboBox({
 //        value: data ? data.name_status : '',
 //        mode: 'local',
@@ -36,7 +36,7 @@ params:
 //        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 //        store: store_category_status
 //    });
-	
+    
     var status_box = new Baseliner.model.Status({
         store: store_category_status,
         anchor: data.anchor,
@@ -62,7 +62,7 @@ params:
         }
         // set value
         status_box.setValue( data.name_status ) ;
-    });	
+    });    
     var comp = status_box;
 
     if( meta.readonly  ) {
@@ -75,8 +75,8 @@ params:
         });
         comp = status_cont;
     }
-	return [
-		{ xtype: 'hidden', name: 'status', value: data ? data.id_category_status : -1 },
-		comp
+    return [
+        { xtype: 'hidden', name: 'status', value: data ? data.id_category_status : -1 },
+        comp
     ]
 })

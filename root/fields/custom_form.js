@@ -14,9 +14,9 @@ params:
 ---
 */
 (function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
-	var form = params.form;
+    var data = params.topic_data;
+    var meta = params.topic_meta;
+    var form = params.form;
 
     var file = meta.form_file;
 
@@ -25,7 +25,7 @@ params:
         layout:'form',
         hidden: true
     });
-	
+    
     // optional fieldset configuration
     var fs = {
         defaults: { 
@@ -55,7 +55,7 @@ params:
         if( ! custom_form_container.isVisible() ) custom_form_container.show();
         form.doLayout();
     });
-	
-	return [ custom_form_container ]
+    
+    return [ custom_form_container ]
 })
 

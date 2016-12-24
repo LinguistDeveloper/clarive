@@ -13,7 +13,7 @@
     });
 
     var roles_store = new Ext.data.JsonStore({
-	root: 'data',
+    root: 'data',
         remoteSort: true,
         totalProperty: 'totalCount',
         id: 'id',

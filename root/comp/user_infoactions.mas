@@ -10,7 +10,7 @@
     fields: [ 
         {name: 'action' },
         {name: 'description' },
-        {name: 'bl' }			
+        {name: 'bl' }            
         ]
     });
     
@@ -29,7 +29,7 @@
             sortable: true // columns are not sortable by default           
             },
     columns: [
-            { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },	
+            { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },    
             { header: _('Description'), width: 350, dataIndex: 'description', sortable: false, renderer: render_descriptions },
             { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: false}
         ]

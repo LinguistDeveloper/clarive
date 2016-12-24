@@ -84,7 +84,7 @@
     });
 
     value_combo.on('select', function(combo,rec,ix) {
-    	list_type.setValue(rec.data.value_type);
+        list_type.setValue(rec.data.value_type);
     });
 
 
@@ -109,59 +109,59 @@
 
     type_combo.on('select', function(combo,rec,ix) {
         if(rec.data.type != 'revisions'){
-        	value_combo.show();
+            value_combo.show();
         }
         if(rec.data.type == 'release'){
-        	get_method.setValue('get_release');
-        	set_method.setValue('set_release');
-        	html.setValue('/fields/system/html/field_release.html');
-        	js.setValue('/fields/system/list_release.js');
-        	meta_type.setValue('release');
+            get_method.setValue('get_release');
+            set_method.setValue('set_release');
+            html.setValue('/fields/system/html/field_release.html');
+            js.setValue('/fields/system/list_release.js');
+            meta_type.setValue('release');
         }
         if(rec.data.type == 'projects'){
-        	get_method.setValue('get_projects');
-        	set_method.setValue('set_projects');
-        	html.setValue('/fields/system/html/field_projects.html');
-        	js.setValue('/fields/system/list_projects.js');
+            get_method.setValue('get_projects');
+            set_method.setValue('set_projects');
+            html.setValue('/fields/system/html/field_projects.html');
+            js.setValue('/fields/system/list_projects.js');
         }
         if(rec.data.type == 'users'){
-        	filter_field.show();
-        	get_method.setValue('get_users');
-        	set_method.setValue('set_users');
-        	html.setValue('/fields/system/html/field_users.html');
-        	js.setValue('/fields/system/list_users.js');
-        	meta_type.setValue('user');
+            filter_field.show();
+            get_method.setValue('get_users');
+            set_method.setValue('set_users');
+            html.setValue('/fields/system/html/field_users.html');
+            js.setValue('/fields/system/list_users.js');
+            meta_type.setValue('user');
         }
         if(rec.data.type == 'revisions'){
-        	get_method.setValue('get_revisions');
-        	set_method.setValue('set_revisions');
-        	html.setValue('/fields/system/html/field_revisions.html');
-        	js.setValue('/fields/system/list_revisions.js');
+            get_method.setValue('get_revisions');
+            set_method.setValue('set_revisions');
+            html.setValue('/fields/system/html/field_revisions.html');
+            js.setValue('/fields/system/list_revisions.js');
         }
         if(rec.data.type == 'topics'){
-        	get_method.setValue('get_topics');
-        	set_method.setValue('set_topics');
-        	html.setValue('/fields/system/html/field_topics.html');
-        	js.setValue('/fields/system/list_topics.js');
+            get_method.setValue('get_topics');
+            set_method.setValue('set_topics');
+            html.setValue('/fields/system/html/field_topics.html');
+            js.setValue('/fields/system/list_topics.js');
         }
         if(rec.data.type == 'cis'){
-        	get_method.setValue('get_cis');
-        	set_method.setValue('set_cis');
-        	html.setValue('/fields/system/html/field_cis.html');
-        	js.setValue('/fields/system/list_cis.js');
-        	meta_type.setValue('ci');
+            get_method.setValue('get_cis');
+            set_method.setValue('set_cis');
+            html.setValue('/fields/system/html/field_cis.html');
+            js.setValue('/fields/system/list_cis.js');
+            meta_type.setValue('ci');
         }
         if(rec.data.type == 'tasks'){
-        	
+            
         }else{
-        	relation.setValue('system');
+            relation.setValue('system');
         }
     });
 
     ret.push([ 
-    	type_combo,
-    	value_combo,
-    	filter_field
+        type_combo,
+        value_combo,
+        filter_field
     ]);
     return ret;
 })

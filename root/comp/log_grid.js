@@ -591,7 +591,7 @@
             items: [ new Baseliner.MonoTextArea({ value: msg, style:'font-family: Consolas, Courier New, Courier; color:'+ ( lev=='error' ? '#d23' : lev=='warn' ? '#997A00' : '#000' ) }) ]
         });
         win.show();
-    });		
+    });        
 
     //Scroll to bottom when the store reloads
     store.on('load', function(){

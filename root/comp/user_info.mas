@@ -13,7 +13,7 @@
         {name: 'id_role'},
         {name: 'role' },
         {name: 'description' },
-        {name: 'projects' }			
+        {name: 'projects' }            
         ]
     });
   
@@ -25,7 +25,7 @@
     fields: [ 
         {name: 'action' },
         {name: 'description' },
-        {name: 'bl' }	
+        {name: 'bl' }    
         ]
     });
     
@@ -72,7 +72,7 @@
     columns: [
         { hidden: true, dataIndex:'id_role' }, 
         //{ header: _('Role'), width: 120, dataIndex: 'role', sortable: true, renderer: render_rol_field },
-        { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },	    
+        { header: _('Role'), width: 150, dataIndex: 'role', sortable: true },        
         { header: _('Description'), width: 350, dataIndex: 'description', sortable: true },
         { header: _('Scope'), width: 100, dataIndex: 'projects', sortable: false, renderer: render_projects }
     ],
@@ -86,7 +86,7 @@
     store_actions_user.load({ params: {username: username, id_role: row.get('id_role')} });
     btn_watch_all_actions.enable();
     grid_actions_user.setTitle(title_action_grid + ' ( ' + row.get('role') + ' )');
-    });		
+    });        
  
     var btn_watch_all_actions = new Ext.Toolbar.Button({
             text: _('Watch all actions'),
@@ -113,7 +113,7 @@
     selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
     loadMask: true,
     columns: [
-        { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },	
+        { header: _('Action'), width: 150, dataIndex: 'action', sortable: false },    
         { header: _('Description'), width: 350, dataIndex: 'description', sortable: false, renderer: render_descriptions },
         { header: _('Baseline'), width: 100, dataIndex: 'bl', sortable: false}
     ],
@@ -138,7 +138,7 @@
     var form = new Ext.FormPanel({
     frame: true,
             items   : [
-% if ($c->stash->{swAsistentePermisos} != 1){ 			
+% if ($c->stash->{swAsistentePermisos} != 1){             
             {
             // column layout with 2 columns
             layout:'column'
@@ -183,9 +183,9 @@
                             ]
                         }
                     ]
-                    },					
+                    },                    
                     ///////////////////////////////////
-                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true},					
+                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', value: '<% $c->stash->{realname} %>', xtype: 'textfield', readOnly: true},                    
                     {
                     // column layout with 2 columns
                     layout:'column'
@@ -239,12 +239,12 @@
                 }
             ]
             },
-            blank_image	
+            blank_image    
             ,
 %}
             grid_roles_projects_user
             ,
-            blank_image	
+            blank_image    
             ,
             grid_actions_user
         ]
@@ -255,7 +255,7 @@
         title: username,
         autoHeight: true,
         width: 730,
-        closeAction: 'close',	    
+        closeAction: 'close',        
         items: form
     });
     
@@ -264,7 +264,7 @@
 
     
     if(swAsistentePermisos != 1){
-    return win;	
+    return win;    
     }
     else{
     return form;

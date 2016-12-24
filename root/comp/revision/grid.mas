@@ -119,7 +119,7 @@
                             params: { action: action, item: sel.data.ns },
                             success: function(resp,opt) { grid.getStore().reload(); },
                             failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _("Error during action %1", action) ); }
-                        });	
+                        });    
                     }
                     } );
     };
@@ -152,7 +152,7 @@
                                 rec.data.release=''; rec.data.id_rel='';
                             },
                             failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', _('Could not remove the item: %1', resp) ); }
-                        });	
+                        });    
                     }
                 } );
     };
@@ -496,15 +496,15 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },	
-            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},	
-            { header: _("Baseline"), width: 120, dataIndex: 'bl', sortable: true },	
-            { header: _("Approval"), width: 120, dataIndex: 'status', sortable: true, renderer: render_email },	
-            { header: _("Type"), width: 120, dataIndex: 'status_type', sortable: true , hidden: is_portlet ? true : false},	
-            { header: _("Application"), width: 120, dataIndex: 'related', sortable: true , hidden: is_portlet ? true : false},	
-            { header: _("Last Job"), width: 130, dataIndex: 'last_job', sortable: true, renderer: jobTpl },	
-            { header: _("Release"), width: 150, dataIndex: 'release', sortable: true, renderer: relTpl },	
-            { id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },	
+            { header: _("Item"), width: 250, dataIndex: 'item', sortable: true, renderer: Baseliner.renderItem  },    
+            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true , hidden: is_portlet ? true : false},    
+            { header: _("Baseline"), width: 120, dataIndex: 'bl', sortable: true },    
+            { header: _("Approval"), width: 120, dataIndex: 'status', sortable: true, renderer: render_email },    
+            { header: _("Type"), width: 120, dataIndex: 'status_type', sortable: true , hidden: is_portlet ? true : false},    
+            { header: _("Application"), width: 120, dataIndex: 'related', sortable: true , hidden: is_portlet ? true : false},    
+            { header: _("Last Job"), width: 130, dataIndex: 'last_job', sortable: true, renderer: jobTpl },    
+            { header: _("Release"), width: 150, dataIndex: 'release', sortable: true, renderer: relTpl },    
+            { id: 'icon', header: _("Icon"), width: 120, dataIndex: 'icon', hidden: true, sortable: false },    
             { header: _("Description"), width: 150, dataIndex: 'text', sortable: true, cls: 'nowrapgrid' , hidden: is_portlet ? true : false }
         ],
         bbar: ptool,

@@ -67,10 +67,10 @@
         }, 
         push_progress: function(id, label, text){
             var self = this;
-	        var pb = new Baseliner.ProgressBar({ 
-            	fieldLabel: _( label ),
+            var pb = new Baseliner.ProgressBar({ 
+                fieldLabel: _( label ),
                 text: text });
-			this.pull_list.add( pb );
+            this.pull_list.add( pb );
             this.pull_list.doLayout();
             pb.on('log', function(msg){
                 if( Ext.isArray( msg ) ) 

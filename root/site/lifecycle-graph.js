@@ -301,11 +301,11 @@ var menu_role = new Ext.Button({
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
-        	var i = 0;
-        	var j = 0;
-        	var k = 0;
-        	var z = 0;
-        	var equal = 0;
+            var i = 0;
+            var j = 0;
+            var k = 0;
+            var z = 0;
+            var equal = 0;
 
             //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
@@ -339,23 +339,23 @@ var menu_role = new Ext.Button({
                  }
             }
 
-			//Order data for final type
+            //Order data for final type
             for(i=0; i<res.data.length-1; i++){
-            	k = 0;
-            	while (k < res.data[i].statuses_to.length){
-	                 for(j=0;j<res.data.length-1;j++){
-	                     var final_type = res.data[i].statuses_to_type[k];
-	                     var final_type2 = res.data[j+1].status_type;
-	                      if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
-	                            //save the max number in aux
-	                           aux=res.data[j];
-	                            //save the min number in the correct position
-	                            res.data[j]=res.data[j+1];
-	                            //save the aux in the min position (change max with min)
-	                            res.data[j+1]=aux;         
-	                      }         
-	                 }
-	            k++;     
+                k = 0;
+                while (k < res.data[i].statuses_to.length){
+                     for(j=0;j<res.data.length-1;j++){
+                         var final_type = res.data[i].statuses_to_type[k];
+                         var final_type2 = res.data[j+1].status_type;
+                          if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
+                                //save the max number in aux
+                               aux=res.data[j];
+                                //save the min number in the correct position
+                                res.data[j]=res.data[j+1];
+                                //save the aux in the min position (change max with min)
+                                res.data[j+1]=aux;         
+                          }         
+                     }
+                k++;     
                 }
             }
 
@@ -602,12 +602,12 @@ var menu_role = new Ext.Button({
         
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
-        	var i = 0; 
-        	var j = 0;
-        	var k = 0;
-        	var z = 0;
-        	var equal = 0;
-        	
+            var i = 0; 
+            var j = 0;
+            var k = 0;
+            var z = 0;
+            var equal = 0;
+            
             //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
@@ -640,7 +640,7 @@ var menu_role = new Ext.Button({
                  }
             }
 
-			//Order data for final type
+            //Order data for final type
             for(i=0;i<res.data.length-1;i++){
               k = 0;
               while (k < res.data[i].statuses_to.length){

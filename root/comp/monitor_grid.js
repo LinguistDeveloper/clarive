@@ -1457,7 +1457,7 @@
            { type: 'date', dataIndex: 'maxstarttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
            { type: 'date', dataIndex: 'schedtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') }
         ]
-	});
+    });
 
     var tbar = new Ext.Toolbar({
         items: is_portlet ? [] : [

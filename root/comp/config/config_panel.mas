@@ -4,7 +4,7 @@
                  url      : '<% $c->stash->{url_submit} %>',
                  width    : <% $c->stash->{width} || 350 %>,
                  autoScroll: true,
-                 items	  : []
+                 items      : []
              }
         );
 % if ( ref $c->stash->{config} ) {

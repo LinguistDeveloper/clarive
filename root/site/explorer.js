@@ -735,8 +735,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             listeners: Baseliner.gen_btn_listener()
         });        
 
-	var button_collapseall = new Ext.Button({
-	    cls: 'x-btn-icon',
+    var button_collapseall = new Ext.Button({
+        cls: 'x-btn-icon',
             icon: '/static/images/icons/collapseall.svg',
             handler: function(){
                 if( self.$tree_releases ) self.$tree_releases.collapseAll();

@@ -169,7 +169,7 @@ Ext.override(Ext.form.HtmlEditor, {
             if(rec.get('swreaded') == '1'){
                 return value;
             }else{
-                return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;				
+                return "<div style='font-weight:bold;font-size: 12px;'>" + value + "</div>" ;                
             }
         };
 
@@ -214,16 +214,16 @@ Ext.override(Ext.form.HtmlEditor, {
             loadMask: true,
             columns: [
                 check_sm_events,
-                { header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
-                { header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
-                { header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
-                { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },	
-                { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
+                { header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },    
+                { header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },    
+                { header: _('From'), width: 200, dataIndex: 'sender', sortable: true },    
+                { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },    
+                { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },    
                 { header: _('Message'), width: 300, dataIndex: 'body', sortable: true, hidden: true },
                 { header: _('Created'), width: 150, dataIndex: 'created', sortable: true },
-                { header: _('Scheduled'), width: 150, dataIndex: 'schedule_time', sortable: true },	
+                { header: _('Scheduled'), width: 150, dataIndex: 'schedule_time', sortable: true },    
                 { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
-                { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }	
+                { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }    
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -243,7 +243,7 @@ Ext.override(Ext.form.HtmlEditor, {
                                 Ext.Msg.alert('Error', _('Select only one row'));    
                             }
                         } else {
-                            Ext.Msg.alert('Error', _('Select one row'));	
+                            Ext.Msg.alert('Error', _('Select one row'));    
                         };
                     }
                 }),
@@ -325,7 +325,7 @@ Ext.override(Ext.form.HtmlEditor, {
            message_view( row.get('id'), row.get('id_message') );
            // var cell = grid.getView().getCell(rowIndex,3);
            // if(row.get('swreaded') == '0'){
-           //     Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 3px">' + row.get('subject') + '</div>', false);				
+           //     Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 3px">' + row.get('subject') + '</div>', false);                
            // }
     });
     

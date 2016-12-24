@@ -64,7 +64,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
         my ($year, $month, $day) = ($date->year,$date->month,$date->day);
         my $msg = _loc( 'new slot') . "<br>$day/$month/$year";
         print qq{ <TD width='100'> };
-        print qq{	<a href="javascript: Baseliner.createRange('$panel','$id_cal','0','$dd','$day/$month/$year')" class="x-link-button" style="font-size: 10px;">$msg</a>};		
+        print qq{    <a href="javascript: Baseliner.createRange('$panel','$id_cal','0','$dd','$day/$month/$year')" class="x-link-button" style="font-size: 10px;">$msg</a>};        
         print qq{ </TD>};
     }
 </%perl>

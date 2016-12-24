@@ -15,7 +15,7 @@
     Baseliner.ajaxEval('/topic/list_category', {cmb:'category'}, function(res){ 
         var data = []; 
         res.data.forEach(function(elem){
-        	data.push([ elem.category, elem.category_name]);
+            data.push([ elem.category, elem.category_name]);
         });
         store_category.loadData(data);
     } );
@@ -36,7 +36,7 @@
         allowBlank: true,
         listeners:{
             'select': function(cmd, rec, idx){
-            	selected_category.setValue(rec.data.category_name);   
+                selected_category.setValue(rec.data.category_name);   
             }
         }
     });

@@ -8,7 +8,7 @@
      var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({
        autoLoad : true,
        url: '/event/log',
-	   //baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
+       //baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, Record )
     });
 

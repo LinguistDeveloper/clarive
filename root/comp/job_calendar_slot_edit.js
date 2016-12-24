@@ -126,7 +126,7 @@ for(my $hh=0; $hh<=24; $hh++) {
         frame: true,
         url: '/job/calendar_submit', 
         buttons: [
-%if($c->stash->{create}){		
+%if($c->stash->{create}){        
             {  icon:'/static/images/icons/slot_green.svg', text: _('Create Active Slot'), handler: function(){ modify_window('A') } }
             ,{ icon:'/static/images/icons/slot_red.svg', text: _('Create Inactive Slot'), handler: function(){ modify_window('AD') } }
 %} else {
@@ -140,7 +140,7 @@ for(my $hh=0; $hh<=24; $hh++) {
             ,{ icon:'/static/images/icons/stop.svg', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
 %   } else {
             ,{ icon:'/static/images/icons/start.svg', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
-% 	}
+%     }
 % }
             ,{ icon:'/static/images/icons/close.svg',  text: _('Close'), handler: function(){ win.close(); } }
         ],
@@ -160,7 +160,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                        store: ven_dia_store, 
                        valueField: 'value',
                        displayField:'name', 
-                       value: '<% $dia %>',					   
+                       value: '<% $dia %>',                       
                        allowBlank: false,
                        width: 150 
             },
@@ -220,7 +220,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                        value: slot_date,
                        displayField:'date', 
                        width: 150 
-           }		   
+           }           
         ]
     });
     var win = new Ext.Window({

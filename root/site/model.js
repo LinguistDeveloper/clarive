@@ -2468,7 +2468,7 @@ Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
         if (cb) {
             //c3++;
             //c3 = c3 > 1 ? -1 : c3;
-			c3 == 0 ? c3 = 1 : c3 == 1 ? c3 = -1 : c3 = 0;
+            c3 == 0 ? c3 = 1 : c3 == 1 ? c3 = -1 : c3 = 0;
             cb.checked = ( c3 == 0 ? false : true );
             cb.className = 'styledCheckboxWrap' + ( c3 == 0 ? '' : ( c3 == -1 ? ' wrapPartial' : ' wrapChecked') );
             this.onCheckChange();

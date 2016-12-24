@@ -108,7 +108,7 @@
                                     failure: function(resp,opt) {
                                         Ext.Msg.alert('Error', 'Could not delete the item');
                                     }
-                                });	
+                                });    
                             }
                         } );
                 }
@@ -144,10 +144,10 @@
         var win = new Ext.Window( win_data );
         win.show();
         */
-    });		
+    });        
 
     Baseliner.templateLoader.getTemplate('', '/templates/log.tpl', function(tpl) {
-        grid.tpl = tpl;	
+        grid.tpl = tpl;    
     });
 
     Ext.getCmp('main-panel').setActiveTab( Ext.getCmp('main-panel').add(grid) ) ;

@@ -213,10 +213,10 @@ params:
     grid_tasks.on('afteredit', function(){
         refresh_field();
     });
-	
-	grid_tasks.on('rowclick', function(grid, rowIndex, e) {
-		btn_delete_tasks.enable();
-	});		
+    
+    grid_tasks.on('rowclick', function(grid, rowIndex, e) {
+        btn_delete_tasks.enable();
+    });        
     
     var grid_data = data[ meta.id_field ];
     grid_data = Ext.util.JSON.decode( grid_data );

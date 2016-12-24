@@ -11,8 +11,8 @@ var resolve_config = function(rec) {
         config_name += rec.get('config_label')==null
             ? rec.get('key') : rec.get('config_label') ;
         if( rec.get('config_type') == 'password' ) {
-            input_type = 'password';	
-            xtype = 'textfield';	
+            input_type = 'password';    
+            xtype = 'textfield';    
         }
     }
     var form = new Ext.form.FormPanel({

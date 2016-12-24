@@ -26,7 +26,7 @@ function _(string) {
         var re = new RegExp( '%' + i );
         string = string.replace( re, arguments[i] );
     }
-    return string;	
+    return string;    
 }  
 
 // alias to translation
@@ -39,5 +39,5 @@ function _loc(string) {
         var re = new RegExp( '%' + i );
         string = string.replace( re, arguments[i] );
     }
-    return string;	
+    return string;    
 }  

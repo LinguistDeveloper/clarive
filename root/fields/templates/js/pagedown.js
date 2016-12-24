@@ -44,12 +44,12 @@ params:
                 return editor.getValue();
             },
             is_valid : function(){
-				var is_valid = editor.getValue() != '' ? true : false;
-				if (is_valid && this.on_change_lab){
-					this.getEl().applyStyles('border: none; margin_bottom: 0px');
-					this.on_change_lab.style.display = 'none';
-				}
-				return is_valid;
+                var is_valid = editor.getValue() != '' ? true : false;
+                if (is_valid && this.on_change_lab){
+                    this.getEl().applyStyles('border: none; margin_bottom: 0px');
+                    this.on_change_lab.style.display = 'none';
+                }
+                return is_valid;
             }             
         })
     ]

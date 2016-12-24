@@ -30,7 +30,7 @@
             role: 'Baseliner::Role::HasAgent',
             fieldLabel: _('Server'),
             singleMode: false,
-	    with_vars: 1,
+        with_vars: 1,
             value: data.server,
             force_set_value: true
         }),

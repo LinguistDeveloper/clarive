@@ -14,8 +14,8 @@ params:
 ---
 */
 (function(params){
-	var meta = params.topic_meta;
-	var data = params.topic_data;
+    var meta = params.topic_meta;
+    var data = params.topic_data;
     
     /*
     Baseliner.TopicGridField = Ext.extend( Baseliner.CIGrid, {

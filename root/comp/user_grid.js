@@ -909,7 +909,7 @@
                 
                 );                
             } else {
-                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');	
+                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
             };
         }
     });    

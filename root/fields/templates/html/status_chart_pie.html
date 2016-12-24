@@ -41,13 +41,13 @@
 </%perl>
 
 % if(@filter_topics_by_status && !$meta->{hidden}){
-	<div id='boot' style="clear:left;" >
-		<b><%$meta->{name_field}%></b><br>
-		<div id="<%$graph_id%>" 
-			style="width: 150px; height: 150px; float: left; " 
-			onmouseout="document.body.style.cursor='default';"></div>
-		<div id="<%$graph_id%>legend" ></div>
-	</div>
+    <div id='boot' style="clear:left;" >
+        <b><%$meta->{name_field}%></b><br>
+        <div id="<%$graph_id%>" 
+            style="width: 150px; height: 150px; float: left; " 
+            onmouseout="document.body.style.cursor='default';"></div>
+        <div id="<%$graph_id%>legend" ></div>
+    </div>
     <div style="clear:left;" ></div>
 
 

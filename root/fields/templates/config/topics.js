@@ -5,8 +5,8 @@
     ret.push(value_type);
 
     ret.push([ 
-    	{ xtype:'numberfield', name:'page_size', fieldLabel: _('Page size'), value: data.page_size },
-    	{ xtype:'textfield', name:'parent_field', fieldLabel: _('Parent field'), value: data.parent_field }
+        { xtype:'numberfield', name:'page_size', fieldLabel: _('Page size'), value: data.page_size },
+        { xtype:'textfield', name:'parent_field', fieldLabel: _('Parent field'), value: data.parent_field }
     ]);
     return ret;
 })

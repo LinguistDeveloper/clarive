@@ -2710,50 +2710,50 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var self = this;
         var form2 = this.getForm();
         var is_valid = form2.isValid();
-		var first_novalid_top = -1;
-		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = 0;
-		this.cascade(function(obj){
-			var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
-			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
-			//if( obj.name && !obj.allowBlank && obj.is_valid ) {
-			if( obj.name && !obj.allowBlank ) {
-				if (obj.is_valid) {
-					if( !obj.is_valid() ) {
-						is_valid = false;
-						var id_objHTML = obj.getEl().dom.id;
-						var objHTML = $('#' + id_objHTML);
-						var offset = objHTML.offset();
-						if(first_novalid_top == -1) first_novalid_top = offset.top - obj.getEl().dom.offsetHeight;
-						obj.getEl().applyStyles(sty);
-						if( !obj.on_change_lab ) {
-							var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
-							obj.on_change_lab = lab;
-							obj.on('change', function(){
-								if( obj.is_valid() ) {
-									obj.getEl().applyStyles('border: none; margin_bottom: 0px');
-									obj.on_change_lab.style.display = 'none';
-								} else {
-									obj.getEl().applyStyles(sty);
-									obj.on_change_lab.style.display = 'block';
-									
-								}
-							});
-						}
-					}
-				}
-				else{
-					if(obj.validate && typeof obj.validate == 'function'){
-						if(!obj.validate()){
-							var id_objHTML = obj.getEl().dom.id;
-							var objHTML = $('#' + id_objHTML);
-							var offset = objHTML.offset();
-							if(first_novalid_top == -1) first_novalid_top = offset.top - 125;
-						}
-					}
-				}
-			}
-		});
-		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_top;	
+        var first_novalid_top = -1;
+        Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = 0;
+        this.cascade(function(obj){
+            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+            //console.dir(obj.name, obj.allowBlank, obj.is_valid);
+            //if( obj.name && !obj.allowBlank && obj.is_valid ) {
+            if( obj.name && !obj.allowBlank ) {
+                if (obj.is_valid) {
+                    if( !obj.is_valid() ) {
+                        is_valid = false;
+                        var id_objHTML = obj.getEl().dom.id;
+                        var objHTML = $('#' + id_objHTML);
+                        var offset = objHTML.offset();
+                        if(first_novalid_top == -1) first_novalid_top = offset.top - obj.getEl().dom.offsetHeight;
+                        obj.getEl().applyStyles(sty);
+                        if( !obj.on_change_lab ) {
+                            var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
+                            obj.on_change_lab = lab;
+                            obj.on('change', function(){
+                                if( obj.is_valid() ) {
+                                    obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+                                    obj.on_change_lab.style.display = 'none';
+                                } else {
+                                    obj.getEl().applyStyles(sty);
+                                    obj.on_change_lab.style.display = 'block';
+                                    
+                                }
+                            });
+                        }
+                    }
+                }
+                else{
+                    if(obj.validate && typeof obj.validate == 'function'){
+                        if(!obj.validate()){
+                            var id_objHTML = obj.getEl().dom.id;
+                            var objHTML = $('#' + id_objHTML);
+                            var offset = objHTML.offset();
+                            if(first_novalid_top == -1) first_novalid_top = offset.top - 125;
+                        }
+                    }
+                }
+            }
+        });
+        Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_top;    
         return is_valid;
     },
     getValues : function(a,b,c){
@@ -3604,7 +3604,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             reader: reader,
             data: self.records 
         });
-		
+        
         self.store.on('add', function(){ self.fireEvent( 'change', self ) });
         self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
             
@@ -3649,7 +3649,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         }
         
         self.columns = cols;
-		self.fields = fields;
+        self.fields = fields;
         self.ddGroup = 'grid_editor_' + Ext.id();
         self.tbar = [
             button_add,
@@ -3723,7 +3723,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var arr = [];
         self.store.each( function(r) {
-			var res = r.data[self.fields[0].name];
+            var res = r.data[self.fields[0].name];
             if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') {
                 var arr2 = [];
                 Ext.iterate( r.data, function(k,v){
@@ -3739,7 +3739,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var arr = [];
         self.store.each( function(r) {
             var res = r.data[self.fields[0].name];
-			if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') arr.push( r.data );
+            if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') arr.push( r.data );
         });
         return arr;
     }, 
@@ -3747,7 +3747,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var cont = 0;
         self.store.each( function(r) {
-			var res = r.data[self.fields[0].name];
+            var res = r.data[self.fields[0].name];
             if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') cont++;
         });
         return cont > 0 ;
@@ -3871,9 +3871,9 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
         if ( c.fieldLabel != undefined ) {
-		    //c.fieldLabel = "(SF: "+ c.system_force + ", LA: " + c.labelAlign + ", RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
+            //c.fieldLabel = "(SF: "+ c.system_force + ", LA: " + c.labelAlign + ", RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
             //if ( c.labelAlign != undefined && c.labelAlign == 'top') {
-			if ( c.origin == 'custom') {
+            if ( c.origin == 'custom') {
                 c.labelSeparator = '';
                 var readonly = c.readOnly !=undefined ? c.readOnly:true;
                 readonly = readonly || c.disabled;

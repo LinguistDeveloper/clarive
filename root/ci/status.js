@@ -5,10 +5,10 @@
         fieldLabel:_('Environments'), value: params.rec.bls });
     var bind_releases = params.rec.bind_releases == undefined ? false : params.rec.bind_releases;
 
-	var ci_update = params.rec.ci_update == undefined ? false : params.rec.ci_update;
-	var frozen = params.rec.frozen == undefined ? false : params.rec.frozen;
+    var ci_update = params.rec.ci_update == undefined ? false : params.rec.ci_update;
+    var frozen = params.rec.frozen == undefined ? false : params.rec.frozen;
     var readonly = params.rec.readonly == undefined ? false : params.rec.readonly;
-	var view_in_tree = params.rec.view_in_tree == undefined ? false : params.rec.view_in_tree;
+    var view_in_tree = params.rec.view_in_tree == undefined ? false : params.rec.view_in_tree;
 
     return [
         bls,
