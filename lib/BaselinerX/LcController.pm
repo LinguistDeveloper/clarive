@@ -8,6 +8,7 @@ require Girl;
 use BaselinerX::Type::Action;
 use Baseliner::Model::Topic;
 use Baseliner::Model::Favorites;
+use Baseliner::Model::PromotesAndDemotes;
 use Baseliner::Model::Permissions;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
@@ -691,7 +692,7 @@ sub changeset : Local {
             my ( $deployable, $promotable, $demotable, $menu );
             my %category_data;
             if ( ($topic->{_workflow} && $topic->{_workflow}->{$p->{id_status}}) || !$category_data{$topic_row->{id_category}}) {
-                ( $deployable, $promotable, $demotable, $menu ) = $self->changeset_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
+                ( $deployable, $promotable, $demotable, $menu ) = $self->changeset_menu( username => $c->username, topic => $topic, bl_state => $bl, state_name => $state_name );
                 $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
             } else {
                 $deployable = $category_data{$topic_row->{id_category}}{deployable};
@@ -750,7 +751,7 @@ sub changeset : Local {
                     $menu = $rel_data->{$mid}{menu};
                 } else {
                     ( $deployable, $promotable, $demotable, $menu ) = $self->changeset_menu(
-                        $c,
+                        username => $c->username,
                         topic      => $rel,
                         bl_state   => $bl,
                         state_name => $state_name,
@@ -815,260 +816,6 @@ sub changeset : Local {
     $c->forward( 'View::JSON' );
 }
 
-sub status_list {
-    my $self = shift;
-    my (%params) = @_;
-
-    my $topic    = $params{topic}    || _fail 'topic required';
-    my $username = $params{username} || _fail 'username required';
-    my $dir      = $params{dir}      || _fail 'dir required';
-    my $status   = $params{status}   || $topic->{category_status}->{id};
-    my %statuses = $params{statuses} && ref $params{statuses} eq 'HASH' ? %{ $params{statuses} } : ci->status->statuses;
-
-    my @user_roles = Baseliner::Model::Permissions->new->user_roles_ids( $username, topics => $topic->{mid} );
-
-    my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow(
-        $username,
-        categories  => [ $topic->{category}->{id} ],
-        status_from => $status,
-        topic_mid   => $topic->{mid}
-    );
-
-    my @workflow = Baseliner::Model::Topic->new->get_category_workflow(
-        id_category => $topic->{category}->{id},
-        username    => $username
-    );
-
-    my %seen;
-
-    my @available_statuses;
-    foreach my $workflow (@workflow) {
-        next unless $workflow->{job_type} && $workflow->{job_type} eq $dir;
-        next unless grep { $workflow->{id_role} eq $_ } @user_roles;
-
-        next unless $workflow->{id_status_from} eq $status;
-
-        next unless grep { $workflow->{id_status_to} eq $_ } @user_workflow;
-
-        my $transition = join ',', ( map { $_ // '' } $workflow->{id_status_from}, $workflow->{id_status_to} );
-        next if $seen{$transition}++;
-
-        push @available_statuses, $statuses{ $workflow->{id_status_to} };
-    }
-
-    return sort { $a->{seq} <=> $b->{seq} } @available_statuses;
-}
-
-sub promotes_and_demotes {
-    my ( $self, %p ) = @_;
-
-    my ( $username, $topic, $id_status_from, $id_project, $job_mode ) = @p{ qw/username topic id_status_from id_project job_mode/ };
-
-    my @topics = ($topic);
-
-    if ( $topic->{category}->{is_release} ) {
-        my $ci = ci->new( $topic->{mid} );
-
-        my @changesets_mids = map { $_->{mid} } $ci->children(
-            mids_only => 1,
-            rel_type  => 'topic_topic',
-            where     => { collection => 'topic', 'category.is_changeset' => '1' },
-            depth     => 1
-        );
-        my @changesets = mdb->topic->find( { mid => mdb->in(@changesets_mids) }, { _txt => 0 } )->all;
-        my %changesets_by_status = map { $_->{id_category_status} => $_ } @changesets;
-
-        my ( $all_statics, $all_promotable, $all_demotable ) = ( {}, {}, {} );
-        my ( $all_menu_s, $all_menu_p, $all_menu_d ) = ( [], [], [] );
-
-        @topics = values %changesets_by_status;
-    }
-
-    my ( $all_statics, $all_promotable, $all_demotable ) = ( {}, {}, {} );
-    my ( $all_menu_s, $all_menu_p, $all_menu_d ) = ( [], [], [] );
-    my @all_transitions;
-
-    foreach my $topic ( @topics ) {
-        my ($maps, $transitions, $menus) = $self->_promotes_and_demotes(
-            username       => $username,
-            topic          => $topic,
-            id_status_from => $id_status_from,
-            id_project     => $id_project
-        );
-
-        my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = (@$maps, @$menus);
-
-        $all_statics    = { %$all_statics,    %$statics };
-        $all_promotable = { %$all_promotable, %$promotable };
-        $all_demotable  = { %$all_demotable,  %$demotable };
-
-        push @$all_menu_s, @$menu_s if $menu_s;
-        push @$all_menu_p, @$menu_p if $menu_p;
-        push @$all_menu_d, @$menu_d if $menu_d;
-
-        push @all_transitions, @$transitions;
-    }
-
-    if ($job_mode) {
-        return @all_transitions;
-    }
-    else {
-        return ( $all_statics, $all_promotable, $all_demotable, $all_menu_s, $all_menu_p, $all_menu_d );
-    }
-}
-
-sub _promotes_and_demotes {
-    my ($self, %p ) = @_;
-
-    my ( $username, $topic, $id_status_from, $id_project) = @p{ qw/username topic id_status_from id_project/ };
-
-    $id_status_from //= $topic->{category_status}{id} // $topic->{id_category_status};
-    my %statuses = ci->status->statuses;
-
-    _fail _loc('Missing topic parameter') unless $topic;
-
-    #Personalized _workflow!
-    if ( $topic->{_workflow} && $topic->{_workflow}->{$id_status_from} ) {
-        my @_workflow;
-        my @user_workflow = _unique map { $_->{id_status_to} } Baseliner::Model::Topic->new->user_workflow($username);
-        use Array::Utils qw(:all);
-
-        @_workflow = map { _array( values $_ ) } $topic->{_workflow};
-
-        my %final = map { $_ => 1 } intersect( @_workflow, @user_workflow );
-
-        my @final_key = keys %final;
-        map { my $st = $_; delete $statuses{$st} if !( $st ~~ @final_key ); } keys %statuses;
-    }
-
-    #end Personalized _workflow!
-
-    my %bls = map { $$_{mid} => { bl => ( $$_{moniker} || $$_{bl} ), seq => $_->{seq} } } ci->bl->find->all;
-
-    my ($cs_project) = ci->new( $topic->{mid} )->projects;
-    my @project_bls = map { $_->{bl} } _array $cs_project->bls if $cs_project;
-
-    my @maps;
-    my @transitions;
-
-    for my $job_type (qw/static promote demote/) {
-        my ( $map, $transitions ) = $self->_build_transition(
-            type           => $job_type,
-            topic          => $topic,
-            username       => $username,
-            id_status_from => $id_status_from,
-            bls            => \%bls,
-            statuses       => \%statuses,
-            project_bls    => \@project_bls,
-        );
-
-        push @maps, $map;
-
-        push @transitions, [
-            map {
-                { %$_, id_project => $id_project }
-            } @$transitions
-        ];
-    }
-
-    my $icons = {
-        static  => '/static/images/icons/arrow_right.svg',
-        promote => '/static/images/icons/arrow_down_short.svg',
-        demote  => '/static/images/icons/arrow_up_short.svg',
-    };
-
-    my @menus;
-    foreach my $transition (@transitions) {
-        push @menus, [
-            map {
-                {
-                    text => $_->{text},
-                    eval => {
-                        id         => $_->{id},
-                        job_type   => $_->{job_type},
-                        id_project => $id_project,
-                        url        => '/comp/lifecycle/deploy.js',
-
-                    },
-                    id_status_from => $_->{id_status_from},
-                    icon           => $icons->{ $_->{job_type} }
-                }
-            } @$transition
-        ];
-    }
-
-    return ( \@maps, [ map { @$_ } @transitions ], \@menus );
-}
-
-sub _build_transition {
-    my $self = shift;
-    my (%params) = @_;
-
-    my $type           = $params{type};
-    my $topic          = $params{topic};
-    my $username       = $params{username};
-    my $id_status_from = $params{id_status_from};
-    my $statuses       = $params{statuses};
-    my $bls            = $params{bls};
-    my $project_bls    = $params{project_bls};
-    my $id_project     = $params{id_project};
-
-    my @statuses = $self->status_list(
-        dir      => $type,
-        topic    => $topic,
-        username => $username,
-        status   => $id_status_from,
-        statuses => $statuses
-    );
-
-    my $map         = {};
-    my $transitions = [];
-
-    for my $status (@statuses) {
-        my @bls;
-
-        my $bl_to;
-        if ($type eq 'demote') {
-            @bls = _array $statuses->{$id_status_from}{bls};
-            ($bl_to) = _array $statuses->{ $status->{id_status} }{bls};
-            $bl_to = $bls->{$bl_to}->{bl};
-        }
-        else {
-            @bls = _array $status->{bls};
-        }
-
-        for my $bl ( map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } map { $bls->{$_} } @bls ) {
-            if ( !@$project_bls || $bl ~~ @$project_bls ) {
-                my $id = substr($type, 0, 1) . $bl . $status->{id_status};
-
-                $map->{$id} = \1;
-
-                my $text = {
-                    static  => _loc( 'Deploy to %1 (%2)',      _loc( $status->{name} ), $bl ),
-                    promote => _loc( 'Promote to %1 (%2)',     _loc( $status->{name} ), $bl ),
-                    demote  => _loc( 'Demote to %1 (from %2)', _loc( $status->{name} ), $bl ),
-                };
-
-                push @$transitions,
-                  {
-                    id             => $id,
-                    bl_to          => $bl_to // $bl,
-                    job_type       => $type,
-                    job_bl         => $bl,
-                    id_project     => $id_project,
-                    is_release     => $topic->{category}->{is_release},
-                    status_to      => $status->{id_status},
-                    status_to_name => _loc( $status->{name} ),
-                    id_status_from => $id_status_from,
-                    text           => $text->{$type}
-                  };
-            }
-        }
-    }
-
-    return ($map, $transitions);
-}
-
 sub job_transitions : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
@@ -1093,12 +840,11 @@ sub job_transitions : Local {
         my @topic_transitions_keys;
 
         try {
-            @topic_transitions = $self->promotes_and_demotes(
+            @topic_transitions = Baseliner::Model::PromotesAndDemotes->new->promotes_and_demotes(
                 topic          => $topic,
                 username       => $username,
                 id_status_from => $id_status_from,
-                id_project     => $id_project,
-                job_mode       => 1
+                id_project     => $id_project
             );
             @topic_transitions_keys = map {$_->{id}} @topic_transitions;
         } catch {
@@ -1119,23 +865,13 @@ sub job_transitions : Local {
 }
 
 sub changeset_menu {
-    my ($self, $c, %p ) = @_;
-    my ( $topic, $bl_state, $state_name, $id_status_from, $id_project, $categories ) = @p{ qw/topic bl_state state_name id_status_from id_project categories/ };
+    my ($self, %p ) = @_;
+    my ( $topic, $username, $bl_state, $state_name, $id_status_from, $id_project, $categories ) = @p{ qw/topic username bl_state state_name id_status_from id_project categories/ };
 
-    my $username = $c->username;
+    my ( $statics, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) =
+      Baseliner::Model::PromotesAndDemotes->new->promotes_and_demotes_menu(%p);
 
-    my @menu = $self->menu_related();
-
-    my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
-        username       => $username,
-        topic          => $topic,
-        id_project     => $id_project,
-        id_status_from => $id_status_from
-    );
-
-    push @menu, @$menu_s, @$menu_p, @$menu_d;
-
-    return ( $deployable, $promotable, $demotable, \@menu );
+    return ( $statics, $promotable, $demotable, [ $self->menu_related, _array $menu_s, _array $menu_p, _array $menu_d ] );
 }
 
 sub repository : Local {

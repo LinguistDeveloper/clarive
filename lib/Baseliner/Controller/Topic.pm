@@ -5,6 +5,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Model::PromotesAndDemotes;
 use Baseliner::Model::Permissions;
 use Baseliner::Model::Topic;
 use Baseliner::Model::Label;
@@ -465,8 +466,8 @@ sub get_menu_deploy : Private {
 
     if ( $category->{is_release} || !$status->{bind_releases} ) {
         my ($id_project) = map { $_->{mid} } $topic_ci->projects;
-        my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) =
-          BaselinerX::LcController->promotes_and_demotes(
+        my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d) =
+          Baseliner::Model::PromotesAndDemotes->new->promotes_and_demotes_menu(
             topic      => $topic_doc,
             username   => $username,
             id_project => $id_project
@@ -475,7 +476,7 @@ sub get_menu_deploy : Private {
             deployable => $deployable,
             promotable => $promotable,
             demotable  => $demotable,
-            menu       => [ _array $menu_s, _array $menu_p, _array $menu_d]
+            menu       => [ _array $menu_s, _array $menu_p, _array $menu_d ]
         };
     }
     else {
