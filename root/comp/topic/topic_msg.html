@@ -282,7 +282,7 @@ if (imagen.width()>600) { captura.show(); }
             </div> <!-- timeline tab -->
 
             <script>
-                (function(){   // protect scope
+                require(['bootstrap'], function() {
                     var build_topic_tabs = function(topic_mid, ii, target_id){
                         if( target_id == "tab-timeline"+ii && topic_mid != '' ) {
                             Baseliner.timeline({
@@ -342,7 +342,7 @@ if (imagen.width()>600) { captura.show(); }
                     $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (ev) {
                         build_topic_tabs('<% $topic_mid %>', '<% $ii %>', ev.target.id );
                     }); // on shown
-               })()
+               });
             </script>
         </div> <!-- tab content -->
     </div> <!-- lower grid -->
