@@ -2928,6 +2928,22 @@ msgstr ""
 msgid "Root action - can do anything"
 msgstr ""
 
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Missing topic parameter"
+msgstr ""
+
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Deploy to %1 (%2)"
+msgstr ""
+
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Promote to %1 (%2)"
+msgstr ""
+
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Demote to %1 (from %2)"
+msgstr ""
+
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
 msgstr ""
@@ -5768,22 +5784,6 @@ msgstr ""
 
 #: lib/BaselinerX/LcController.pm
 msgid "Error loading changes for provider %1: %2"
-msgstr ""
-
-#: lib/BaselinerX/LcController.pm
-msgid "Missing topic parameter"
-msgstr ""
-
-#: lib/BaselinerX/LcController.pm
-msgid "Deploy to %1 (%2)"
-msgstr ""
-
-#: lib/BaselinerX/LcController.pm
-msgid "Promote to %1 (%2)"
-msgstr ""
-
-#: lib/BaselinerX/LcController.pm
-msgid "Demote to %1 (from %2)"
 msgstr ""
 
 #: lib/BaselinerX/LcController.pm

@@ -2962,6 +2962,22 @@ msgstr "No se ha podido encontrar la plantilla para %1"
 msgid "Root action - can do anything"
 msgstr "Acción root - puede hacer cualquier cosa"
 
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Missing topic parameter"
+msgstr "Falta parámetro tópico"
+
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Deploy to %1 (%2)"
+msgstr "Distribuir a %1 (%2)"
+
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Promote to %1 (%2)"
+msgstr "Promover a %1 (%2)"
+
+#: lib/Baseliner/Model/PromotesAndDemotes.pm
+msgid "Demote to %1 (from %2)"
+msgstr "Devolver a %1 (desde %2)"
+
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule failed"
 msgstr "Regla Inválida"
@@ -5850,22 +5866,6 @@ msgstr "Error detectado: %1"
 #: lib/BaselinerX/LcController.pm
 msgid "Error loading changes for provider %1: %2"
 msgstr "Error cargando cambios para el proveedor %1: %2"
-
-#: lib/BaselinerX/LcController.pm
-msgid "Missing topic parameter"
-msgstr "Falta parámetro tópico"
-
-#: lib/BaselinerX/LcController.pm
-msgid "Deploy to %1 (%2)"
-msgstr "Distribuir a %1 (%2)"
-
-#: lib/BaselinerX/LcController.pm
-msgid "Promote to %1 (%2)"
-msgstr "Promover a %1 (%2)"
-
-#: lib/BaselinerX/LcController.pm
-msgid "Demote to %1 (from %2)"
-msgstr "Devolver a %1 (desde %2)"
 
 #: lib/BaselinerX/LcController.pm
 msgid "Favorite added ok"
