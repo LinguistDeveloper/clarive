@@ -11,7 +11,7 @@
     }
     var temp_id;
     var code_section = {};
-    var panel = new Ext.Panel({ 
+    var panel = new Ext.Panel({
         frame: false,
         layout:'fit',
         html:'',
@@ -20,7 +20,7 @@
         border: false
     });
 
-    var panel2 = new Ext.Panel({ 
+    var panel2 = new Ext.Panel({
         frame: false,
         layout:'fit',
         region: 'south',
@@ -29,7 +29,7 @@
         border: false
     });
 
-    var parent_panel = new Ext.Panel({ 
+    var parent_panel = new Ext.Panel({
         frame: false,
         layout: 'border',
         tbar: [ ],
@@ -94,7 +94,7 @@
             params_view_diff.commit = params_view_diff.sha;
             params_view_diff.controller = controller;
             Baseliner.ajaxEval('/comp/view_commits_history.js', params_view_diff, function(comp){
-                panel2.add(comp); 
+                panel2.add(comp);
                 panel2.show();
             });
              Baseliner.ajax_json('/'+controller+'/view_diff', params_view_diff, function(res_diff_tag){
@@ -109,7 +109,7 @@
         var tagsStore = new Baseliner.JsonStore({
             autoLoad: true,
             remoteSort: true,
-            totalProperty:"totalCount", 
+            totalProperty:"totalCount",
             baseParams: params_get_tags,
             id: 'id',
             url: '/'+controller+'/get_tags',
@@ -128,7 +128,7 @@
     var generate_diff = function(res){
         var get_section_ids = function(){
             for(var i=0; i < res.changes.length; i++) {
-                temp_id = Ext.id(); 
+                temp_id = Ext.id();
                 code_section[res.changes[i].path] = temp_id;
             }
         };
@@ -136,7 +136,7 @@
         get_section_ids();
         var children = [];
         var goto_link = function(n){
-            var elem = document.getElementById(n.val); 
+            var elem = document.getElementById(n.val);
             elem.scrollIntoView(true);
             Baseliner.scroll_top_into_view();
         }
@@ -149,7 +149,7 @@
         if(controller == 'gittree' && file_diff == ''){
             parent_panel.getTopToolbar().add(get_combo_tags());
         }
-        
+
         parent_panel.doLayout();
         panel.doLayout();
 
@@ -191,13 +191,13 @@
                                                     repo   = repo + '/' + branch;
                                                 }
                                            %]
-                                           <a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
-                                                                               '/comp/view_file.js', 
+                                           <a class="btn btn-mini" onclick="Baseliner.add_tabcomp(
+                                                                               '/comp/view_file.js',
                                                                                '[%= branch %]:[[%= rev_num %]] [%= changes[i].path %]',
-                                                                               {   repo_dir:'[%= repo %]', 
+                                                                               {   repo_dir:'[%= repo %]',
                                                                                    file:'[%= changes[i].path %]',
-                                                                                   repo_mid:'[%= repo_mid %]', 
-                                                                                   branch:'[%= branch %]', 
+                                                                                   repo_mid:'[%= repo_mid %]',
+                                                                                   branch:'[%= branch %]',
                                                                                    rev_num:'[%= rev_num %]',
                                                                                    revid: '[%= changes[i].revid %]',
                                                                                    first_level: '[%= first_level %]',

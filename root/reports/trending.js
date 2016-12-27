@@ -36,7 +36,7 @@
     var users_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true
     });
-    
+
     var users = new Baseliner.model.Users({
         fieldLabel: 'Usuario',
         name: 'users',

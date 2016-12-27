@@ -1,7 +1,7 @@
 (function(params){
     var data = params.data || {};
-    var job_type = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Job Type'), name:'job_type', value: data.job_type || 'static', 
+    var job_type = new Baseliner.ComboDouble({
+        fieldLabel: _('Job Type'), name:'job_type', value: data.job_type || 'static',
         data: [ ['static',_('Static')], ['promote',_('Promote')], ['demote',_('Demote')] ]
     });
     var combo_bl = Baseliner.combo_baseline({ value: data.bl });
@@ -14,7 +14,7 @@
         fieldLabel: _('Job Pipeline'),
         name: 'id_rule',
         displayField:'rule_name',
-        hiddenName:'id_rule', 
+        hiddenName:'id_rule',
         valueField: 'id',
         store: store_pipeline,
         mode: 'remote',
@@ -25,12 +25,12 @@
         lazyRender: true,
         value: data.id_rule
     });
-    
-    var job_stash = new Baseliner.DataEditor({ 
-           name:'job_stash', title: _('Job Stash'), 
+
+    var job_stash = new Baseliner.DataEditor({
+           name:'job_stash', title: _('Job Stash'),
            height: 400,
            hide_save: true, hide_cancel: true,
-           data: data.job_stash || {} 
+           data: data.job_stash || {}
     });
 
     return [

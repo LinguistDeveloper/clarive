@@ -89,7 +89,7 @@ Cla.topic_grid = function(params){
     }
     base_params.statuses = status_id;
 
-	var store_config;
+    var store_config;
     if( id_report ) {
         base_params.id_report = params.id_report;
         base_params.id_category_report = category_id;
@@ -117,17 +117,17 @@ Cla.topic_grid = function(params){
             // }
         };
     } else{
-		store_config = {
-			baseParams: base_params,
-			remoteSort: true,
-			listeners: {
-				'beforeload': function( obj, opt ) {
-					if( opt !== undefined && opt.params !== undefined )
-						filter_current = Baseliner.merge( filter_current, opt.params );
-				}
-			}
-		};
-	}
+        store_config = {
+            baseParams: base_params,
+            remoteSort: true,
+            listeners: {
+                'beforeload': function( obj, opt ) {
+                    if( opt !== undefined && opt.params !== undefined )
+                        filter_current = Baseliner.merge( filter_current, opt.params );
+                }
+            }
+        };
+    }
 
     if( fields ) {
         //console.log('Add fields');
@@ -1289,7 +1289,7 @@ Cla.topic_grid = function(params){
     var columns = [];
     var col_map = {
         //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
-		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name, hidden: report_type != 'topics'?true:false },
+        topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name, hidden: report_type != 'topics'?true:false },
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
         label : { header: _('Labels'), sortable: true, dataIndex: 'labels', hidden: true, width: 80, renderer: labelsRenderer },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
@@ -1452,7 +1452,7 @@ Cla.topic_grid = function(params){
         filters: fields_filter
     });
 
- 
+
     var grid_topics = new Ext.grid.GridPanel({
         cls: 'ui-topics-grid',
         region: 'center',
@@ -1538,7 +1538,7 @@ Cla.topic_grid = function(params){
     });
     // determine if too narrow
     //var ixi = grid_topics.getColumnModel().findColumnIndex('topic_name');
-	var ixi = grid_topics.getColumnModel().findColumnIndex('topic_mid');
+    var ixi = grid_topics.getColumnModel().findColumnIndex('topic_mid');
     if( ixi ) {
         topic_name_too_narrow = grid_topics.getColumnModel().getColumnWidth(ixi) < 80;
     }

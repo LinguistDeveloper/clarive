@@ -12,7 +12,7 @@
 </%perl>
 
     var store=new Baseliner.JsonStore({
-        root: '<% $root %>' , 
+        root: '<% $root %>' ,
         remoteSort: <% js_dumper \$remoteSort %>,
         totalProperty: '<% $totalProperty %>',
         id: '<% $id %>',

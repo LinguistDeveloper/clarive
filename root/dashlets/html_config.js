@@ -110,7 +110,7 @@
               <input type="checkbox" value="">
               Option one is this and that—be sure to include why it's great
             </label>
-             
+
             <label class="radio">
               <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
               Option one is this and that—be sure to include why it's great
@@ -139,7 +139,7 @@
               <option>4</option>
               <option>5</option>
             </select>
-             
+
             <select multiple="multiple">
               <option>1</option>
               <option>2</option>
@@ -185,34 +185,34 @@
             */}
         ],
         extjs1 : [ null, function(){/*
-                var panel = new Ext.FormPanel({ 
-                    tbar:['Save'], 
+                var panel = new Ext.FormPanel({
+                    tbar:['Save'],
                     items:[
                         {xtype:'textfield',fieldLabel:'Fill'}
-                    ], 
-                    height: 300 
+                    ],
+                    height: 300
                 });
                 return panel;
         */}]
     };
 
-    var snippets = new Cla.ComboDouble({ 
+    var snippets = new Cla.ComboDouble({
         fieldLabel:_('Sample Snippets'),
         data:[
             [ 'add', _('[select a sample snippet to add/replace in the code]') ],
             [ 'base', _('Base HTML') ],
             [ 'table1', _('Striped Table') ],
             [ 'dyn_table', _('Dynamic Table') ],
-            [ 'form1', _('Basic Form with JS event click') ], 
+            [ 'form1', _('Basic Form with JS event click') ],
             [ 'form_inline', _('Inline Form') ],
             [ 'select1', _('Select') ],
             [ 'action_selection', _('Input and Select Action') ],
             [ 'checkboxes', _('Checkboxes') ],
             [ 'checkboxes_inline', _('Inline Checkboxes') ],
-            [ 'extjs1', _('ExtJS Panel') ] 
+            [ 'extjs1', _('ExtJS Panel') ]
     ]});
     snippets.on('select',function(ev,sel){
-        var curr = sel.data.item; 
+        var curr = sel.data.item;
         if( curr == 'add' ) return;
         var snip = Cla.HTMLSnippets[ curr ], snip_js;
         if( Ext.isArray(snip) ) {
@@ -228,15 +228,15 @@
                 html_code.setValue(snip);
                 js_code.setValue(snip_js);
             },function(){
-                html_code.setValue( html_code.getValue() + "\n" + snip );    
-                js_code.setValue( js_code.getValue() + "\n" + snip_js );    
+                html_code.setValue( html_code.getValue() + "\n" + snip );
+                js_code.setValue( js_code.getValue() + "\n" + snip_js );
             });
         } else {
             html_code.setValue(snip);
             js_code.setValue(snip_js);
         }
     });
-    
+
     var html_code = new Cla.AceEditor({
         title: _('HTML Code'), mode:'html', fieldLabel:_('HTML Code'), anchor:'100%', height: 400, name:'html_code', value: params.data.html_code
     });

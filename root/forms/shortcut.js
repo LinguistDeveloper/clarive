@@ -1,17 +1,17 @@
 (function(params){
     var data = params.data || {};
-    var stash_data = new Baseliner.DataEditor({ 
-        name:'stash_data', 
+    var stash_data = new Baseliner.DataEditor({
+        name:'stash_data',
         hide_save: true, hide_cancel: true,
         title: _('Stash Data'),
-        data: data.stash_data || {} 
+        data: data.stash_data || {}
     });
 
     var tabpanel = new Ext.TabPanel({ activeTab: 0, height: 500, fieldLabel: _('Stash Data'), plugins: [ new Ext.ux.panel.DraggableTabs()],  items: [ stash_data] });
     tabpanel.on('afterrender', function(){
          //tabpanel.hideTabStripItem( stash_data );
     });
-    
+
     var source_key = params.data.source_key;
     var config_data = new Ext.form.Hidden({
         name: 'config_data',
@@ -29,13 +29,13 @@
                             var fd = form.getValues();
                             for( var k in fd ) {
                                 // TODO missing correct identification of modified fields
-                                if( fd[k] === undefined || ( Ext.isFunction(fd[k].isDirty) && !fd[k].isDirty() ) ) 
+                                if( fd[k] === undefined || ( Ext.isFunction(fd[k].isDirty) && !fd[k].isDirty() ) )
                                     delete fd[k];
                             }
                             config_data.fd = fd;
                             win.close();
                         };
-                        var form = new Baseliner.FormPanel({ 
+                        var form = new Baseliner.FormPanel({
                             title: _('Config'),
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
                             labelWidth: 150,
@@ -63,19 +63,19 @@
                 Baseliner.error( _('Error'), res.msg );
             }
         });
-    };    
-    
+    };
+
         //if( source_key && source_key!='statement.shortcut' ) config_window(source_key);
-    var btn_config = new Ext.Button({ hidden: (!source_key || source_key=='statement.shortcut'), 
+    var btn_config = new Ext.Button({ hidden: (!source_key || source_key=='statement.shortcut'),
         icon: IC('edit'),
         fieldLabel:_('Config Data'), width: 150, text:_('Open Config Window'), handler: function(){
         config_window(source_key);
     } });
-    
-    return [ 
-        { xtype:'textfield', fieldLabel: _('Shortcut ID'), name: 'call_shortcut', 
+
+    return [
+        { xtype:'textfield', fieldLabel: _('Shortcut ID'), name: 'call_shortcut',
             readOnly: true,
-            value: params.data.call_shortcut || Baseliner.name_to_id(Math.floor(1000*Math.random())+'_'+new Date().format('Ymdhis')) 
+            value: params.data.call_shortcut || Baseliner.name_to_id(Math.floor(1000*Math.random())+'_'+new Date().format('Ymdhis'))
         },
         { xtype:'textfield', fieldLabel: _('Source Key'), name: 'source_key', readOnly: true, value: params.data.source_key || '' },
         btn_config,

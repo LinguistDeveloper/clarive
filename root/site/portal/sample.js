@@ -2,7 +2,7 @@
  * Ext JS Library 2.3.0
  * Copyright(c) 2006-2009, Ext JS, LLC.
  * licensing@extjs.com
- * 
+ *
  * http://extjs.com/license
  */
 
@@ -101,15 +101,15 @@ Ext.onReady(function(){
                     html: portlet_content
                 }]
             }]
-            
+
             /*
              * Uncomment this block to test handling of the drop event. You could use this
-             * to save portlet position state for example. The event arg e is the custom 
+             * to save portlet position state for example. The event arg e is the custom
              * event defined in Ext.ux.Portal.DropZone.
              */
 //            ,listeners: {
 //                'drop': function(e){
-//                    Ext.Msg.alert('Portlet Dropped', e.panel.title + '<br />Column: ' + 
+//                    Ext.Msg.alert('Portlet Dropped', e.panel.title + '<br />Column: ' +
 //                        e.columnIndex + '<br />Position: ' + e.position);
 //                }
 //            }

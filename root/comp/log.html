@@ -16,16 +16,16 @@
         $p{debug} //=  $debug;
         $p{sort} //= $sort;
         $p{job_exec} ||= $job_exec;
-        delete $p{job_exec} if $p{job_exec} < 0 ;  
-        return "/job/log/html/${job_key}?" . join '&', 
-            map { $_ . '=' . $p{$_} } 
-            sort keys %p 
+        delete $p{job_exec} if $p{job_exec} < 0 ;
+        return "/job/log/html/${job_key}?" . join '&',
+            map { $_ . '=' . $p{$_} }
+            sort keys %p
     };
 </%perl>
 
 <head>
     <& '/site/nocache.html' &>
-   <title><% $title %></title> 
+   <title><% $title %></title>
    <style>
        <& /static/geek.css &>
    </style>
@@ -86,13 +86,13 @@
 % }
 % if( $job_exec_total > 1 ) {
 |
-Exec: 
+Exec:
 <select id="exec" onchange='window.location = "<% $url_build->( job_exec=>-1 ) %>&job_exec=" + this.value '>
 %    for my $ex ( 1..$job_exec_total ) {
         <option value="<% $ex %>" <% $ex eq $job_exec ? 'selected' : '' %>><% $ex %></option>
 %    }
 </select>
-% } 
+% }
 </div>
 
 <div id="log-html">

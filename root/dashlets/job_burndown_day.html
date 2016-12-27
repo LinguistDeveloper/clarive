@@ -21,7 +21,7 @@ html: /dashlets/job_burndown_day.html
     }
 </style>
 
-	<div id="job_burndown_day" style="clear:left;" >
+    <div id="job_burndown_day" style="clear:left;" >
     <h2><%$title%></h2>
     <div align="right">
         <img src="/static/images/icons/wrench.svg" onclick="e = document.getElementById('job_burndown_day_setup_graph_title_<% $graph_id %>'); if (e.style.display == 'block') { e.style.display = 'none' } else { e.style.display = 'block' }"/>
@@ -43,10 +43,10 @@ html: /dashlets/job_burndown_day.html
         <input type="radio" name="job_burndown_group_graph_title_<% $graph_id %>" value="year" onclick="reload_jobs_<% $graph_id %>( '1Y');" checked>  Year
 
     </div>
-		<div id="<%$graph_id%>" 
-			style="width:500px;height:250px;float: left;" 
-			onmouseout="document.body.style.cursor='default';"></div>
-	</div>
+        <div id="<%$graph_id%>"
+            style="width:500px;height:250px;float: left;"
+            onmouseout="document.body.style.cursor='default';"></div>
+    </div>
 
 
 <script type="text/javascript">

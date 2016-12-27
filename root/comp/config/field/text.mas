@@ -1,7 +1,7 @@
 <%args>
-    $row 
+    $row
 </%args>
                     xtype: 'textfield',
-% if($row->{vtype}) {					
+% if($row->{vtype}) {
                     vtype: "<% $row->{vtype} %>",
-% }					  
+% }

@@ -9,49 +9,49 @@
 
     var common = params.common_options || Cla.dashlet_common(params);
 
-    var days_from = new Ext.ux.form.SpinnerField({ 
-        value: data.days_from, 
+    var days_from = new Ext.ux.form.SpinnerField({
+        value: data.days_from,
         anchor: '100%',
         name: "days_from",
         fieldLabel: _("Shift in days from today to start timeline. 0 or blank means one day")
     });
 
-    var days_until = new Ext.ux.form.SpinnerField({ 
-        value: data.days_until, 
+    var days_until = new Ext.ux.form.SpinnerField({
+        value: data.days_until,
         anchor: '100%',
         name: "days_until",
         fieldLabel: _("Shift in days from today to end timeline. 0 or blank means today")
     });
 
-    var days_from_max = new Ext.ux.form.SpinnerField({ 
-        value: data.days_from_max, 
+    var days_from_max = new Ext.ux.form.SpinnerField({
+        value: data.days_from_max,
         anchor: '100%',
         name: "days_from_max",
         fieldLabel: _("Shift in days from today to start timeline. 0 or blank means one day")
     });
 
-    var days_until_max = new Ext.ux.form.SpinnerField({ 
-        value: data.days_until_max, 
+    var days_until_max = new Ext.ux.form.SpinnerField({
+        value: data.days_until_max,
         anchor: '100%',
         name: "days_until_max",
         fieldLabel: _("Shift in days from today to end timeline. 0 or blank means today")
     });
 
-    var green = new Ext.ux.form.SpinnerField({ 
+    var green = new Ext.ux.form.SpinnerField({
         value: data.green,
         anchor: '100%',
         name: "green",
         fieldLabel: _("Switch to YELLOW when value reaches")
     });
 
-    var yellow = new Ext.ux.form.SpinnerField({ 
-        value: data.yellow, 
+    var yellow = new Ext.ux.form.SpinnerField({
+        value: data.yellow,
         anchor: '100%',
         name: "yellow",
         fieldLabel: _("Switch away from YELLOW when the value reaches")
     });
 
-    var start = new Ext.form.TextField({ 
+    var start = new Ext.form.TextField({
         value: data.start || 0,
         allowBlank: false,
         anchor: '100%',
@@ -60,8 +60,8 @@
         emptyText: 'Default = 0 (see reverse)'
     });
 
-    var end = new Ext.form.TextField({ 
-        value: data.end, 
+    var end = new Ext.form.TextField({
+        value: data.end,
         anchor: '100%',
         name: "end",
         fieldLabel: _("END value for gauge. Blank defaults to 100"),
@@ -78,13 +78,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                     green,
@@ -106,8 +106,8 @@
                     }
               ]
             },
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                     start,
@@ -118,7 +118,7 @@
                         ['max', _('Maximum')],
                         ['count', _('Count')],
                         ['sum', _('Total sum')]
-                      ] 
+                      ]
                     }),
                     {
                         xtype: 'checkbox',
@@ -141,13 +141,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                 ccategory,
@@ -156,8 +156,8 @@
                 { xtype:'textfield', vtype: 'json', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition, anchor: '100%' }
               ]
             },
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                 days_from,
@@ -175,9 +175,9 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
             {
@@ -186,8 +186,8 @@
                 name: 'max_selection',
                 checked: data.max_selection=='on'?true:false
             },
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                 ccategory_max,
@@ -196,8 +196,8 @@
                 { xtype:'textfield', vtype: 'json', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition_max', value: data.condition_max, anchor: '100%' }
               ]
             },
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                 days_from_max,
@@ -215,13 +215,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 5px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                 { xtype:'textfield', anchor: '100%', fieldLabel: _('Date field in topics to use as start'), name: 'date_field_start', value: data.date_field_start },
@@ -231,7 +231,7 @@
                     ['hour', _('Hours')],
                     ['day', _('Days')],
                     ['month', _('Months')]
-                  ] 
+                  ]
                 }),
                 {
                     xtype: 'checkbox',
@@ -242,8 +242,8 @@
                 }
               ]
             },
-            { layout:'form', 
-              columnWidth: .50, 
+            { layout:'form',
+              columnWidth: .50,
               bodyStyle: 'background:transparent;',
               items: [
                 { xtype:'textfield', anchor: '100%',fieldLabel: _('Numeric field in topics to use as data (leave dates blank)'), name: 'numeric_field', value: data.numeric_field },
@@ -253,7 +253,7 @@
                     ['hour', _('Hours')],
                     ['day', _('Days')],
                     ['number',_('Number')]
-                  ] 
+                  ]
                 })
               ]
             }

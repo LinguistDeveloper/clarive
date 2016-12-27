@@ -2,7 +2,7 @@
     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
     var code = new Ext.form.TextArea({
         name: 'code',
-	    style: style_cons
+        style: style_cons
     });
 
     Baseliner.ajaxEval( '/lifecycle/view_file', params, function(res) {
@@ -26,7 +26,7 @@
                 { xtype:'button', text:_('Save'), icon: '/static/images/icons/save.svg', cls: 'x-btn-text-icon',
                     handler: checkin }
             ],
-            items 	 : [ code ]
+            items      : [ code ]
         }
     );
     return form;

@@ -9,17 +9,17 @@ html: /dashlets/job_stats_by_env.html
 
 <div id="principal" style="clear:left;" >
     <h2><% _loc('Job Stats (All)') %></h2><br>
-		<div id="<%$graph_id%>" 
-			style="width: 95%; height: 100%; float: left; " 
-			onmouseout="document.body.style.cursor='default';"></div>
+        <div id="<%$graph_id%>"
+            style="width: 95%; height: 100%; float: left; "
+            onmouseout="document.body.style.cursor='default';"></div>
 </div>
 
 <script type="text/javascript">
- 
+
     function gd(year, month, day) {
         return new Date(year, month, day).getTime();
     }
- 
+
     $(function () {
         var id = "#<% $graph_id %>";
         var data = [];
@@ -52,7 +52,7 @@ html: /dashlets/job_stats_by_env.html
                [% } %]
                </table>
             */}.tmpl(res);
-            
+
             $(id).html( html );
 
         });

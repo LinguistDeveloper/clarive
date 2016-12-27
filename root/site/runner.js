@@ -1,8 +1,8 @@
 Ext.ns('Baseliner');
 
 Baseliner.getMessages = function() {
-    
-    var fields = [ 
+
+    var fields = [
             {  name: 'id' },
             {  name: 'id_message' },
             {  name: 'subject' },
@@ -17,14 +17,14 @@ Baseliner.getMessages = function() {
     ];
 
     var store=new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/message/im_json',
         fields: fields
     });
-    
+
     store.on('load', function(obj, rec, options ) {
         try {
             store.each( function(rec) {

@@ -5,7 +5,7 @@
                 frame    : true,
                 title    : '<% $c->stash->{title} %>',
                 width    : <% $c->stash->{width} || 350 %>,
-                items 	 : <% js_dumper(  $c->stash->{data} ) %>
+                items      : <% js_dumper(  $c->stash->{data} ) %>
             }
           );
 

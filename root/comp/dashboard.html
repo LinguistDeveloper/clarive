@@ -6,37 +6,37 @@
 
 <style>
 #container2 {
-	clear:left;
-	float:left;
-	width:100%;
-	overflow:hidden;
+    clear:left;
+    float:left;
+    width:100%;
+    overflow:hidden;
 }
 #container1 {
-	float:left;
-	width:100%;
-	position:relative;
-	right:50%;
+    float:left;
+    width:100%;
+    position:relative;
+    right:50%;
 }
 
 #col1 {
     padding: 10px 10px 10px 10px;
-	float:left;
-	width:49%;
-	position:relative;
-	left:50%;
+    float:left;
+    width:49%;
+    position:relative;
+    left:50%;
 
 }
 #col2 {
-	float:left;
-	width:49%;
-	position:relative;
-	left:51%;
+    float:left;
+    width:49%;
+    position:relative;
+    left:51%;
 }
 </style>
 
 
 <div id="boot" style="width:100%;">
-    
+
 % if($dashboards){
 % if(scalar @{$dashboards} > 0){
             <div class="btn-group" style="float:right;margin-right:10px;">
@@ -49,41 +49,41 @@
             </div>
 %}
 %}
-    
+
 
 %if($c->stash->{is_columns}){
 <table width="100%">
     <tr>
         <td width="50%" style="padding: 0 5px 0 5px">
-% if($dashlets){        
+% if($dashlets){
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashlets ) {
 % if ($dash->{order} % 2 != 0){
     <& $dash->{html} &>
 % }}
-        </td> 
+        </td>
         <td >&nbsp;<td>
         <td width="50%" style="padding: 0 5px 0 5px">
-            
+
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashlets ) {
 % if ($dash->{order} % 2 == 0){
     <& $dash->{html} &>
-% }}            
-        </td> 
+% }}
+        </td>
 %}
     </tr>
 </table>
 %}else{
 
-        
+
 % if($dashlets){
 <div style='padding: 10px;'>
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashlets ) {
 
     <& $dash->{html} &>
 % }
-</div>         
+</div>
 %}
 
 %}
-    
+
 </div>

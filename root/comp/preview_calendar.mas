@@ -1,9 +1,9 @@
 <%init>
-    
+
 my $grid = $c->stash->{grid};
 my $panel = $c->stash->{panel};
 my $id_cal = $c->stash->{id_cal};
-my $loc = DateTime::Locale->load("es_ES"); 
+my $loc = DateTime::Locale->load("es_ES");
 my $day_wide = $loc->day_format_wide;
 
 </%init>
@@ -58,14 +58,14 @@ my $day_wide = $loc->day_format_wide;
             print qq{<TD width="$width" align=center>
                         <TABLE width="$width" celspacing="0" celpadding="0">
                             };
-            my @ventanas = @{$grid->{$dd}};	
+            my @ventanas = @{$grid->{$dd}};
             if(@ventanas>0){
                 my $lastTime = '';
                 foreach my $ventana(@ventanas){
                     my $fecha = $ventana->{start_date}->day() . "/" . $ventana->{start_date}->month() . "/" . $ventana->{start_date}->year() if($ventana->{start_date});
                     my $start_time = $ventana->{start_time};
                     my $end_time   = $ventana->{end_time};
-                    my $currentTime = $start_time . " - " . $end_time;					
+                    my $currentTime = $start_time . " - " . $end_time;
                     if($lastTime ne $currentTime){
                         $start_time =~ s/://g;
                         $end_time =~ s/://g;
@@ -73,31 +73,31 @@ my $day_wide = $loc->day_format_wide;
                         my $porcentualHeight = ($diff);
                         $tipo = $ventana->{type};
                         $has_date{$ventana->{day}} = $ventana->{start_date} if ($ventana->{start_date});
-                        
+
                         #my $clase_final = ($ventana->{active} ) ? $clase{$tipo} : $clase{$tipo} .'Des';
                         my $clase_final = ($tipo eq 'X' ) ? 'urgente' : ( $ventana->{active} ? 'normal' : 'urgente');
                         print qq{<TR><TD style='cursor:hand' height='$porcentualHeight'};
                         print " onmouseover='javascript:this.className=\"" . $clase_final . "Hover\";'";
-                        print " onmouseout='javascript:this.className=\"$clase_final\";'"; 
-                        print "	align=center CLASS='$clase_final'>";
-                        print qq{ $ventana->{start_time} - $ventana->{end_time}</TD></TR>}	
+                        print " onmouseout='javascript:this.className=\"$clase_final\";'";
+                        print "    align=center CLASS='$clase_final'>";
+                        print qq{ $ventana->{start_time} - $ventana->{end_time}</TD></TR>}
                     }
-                    $lastTime = $currentTime;				
+                    $lastTime = $currentTime;
                 }
             }else{
                 print qq{<TR><TD style='cursor:hand' height='$height'};
-                print qq{   onmouseover='javascript:this.className="$clase{$tipo}Hover";' 
-                            onmouseout='javascript:this.className="$clase{$tipo}";' 
+                print qq{   onmouseover='javascript:this.className="$clase{$tipo}Hover";'
+                            onmouseout='javascript:this.className="$clase{$tipo}";'
                             align=center CLASS='$clase{$tipo}' >};
                 print qq{ 00:00 - 24:00 </TD></TR>}
             }
-            print qq{		</TR>
+            print qq{        </TR>
                         </TABLE>
                     </TD>};
 
         }
-        
-        
+
+
 </%perl>
         </TR>
     </TABLE>

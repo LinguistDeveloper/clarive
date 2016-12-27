@@ -3,56 +3,56 @@ Ext.namespace("POD");
 
 POD.addTab = function (title, url, section,module) {
     if(Ext.getCmp("tab-"+title)) {
-	    Ext.getCmp("tab-"+title).show();
-	    return Ext.getCmp("tab-"+title);
+        Ext.getCmp("tab-"+title).show();
+        return Ext.getCmp("tab-"+title);
     }
     POD.clearTOC();
     var tab = POD.tabs.add({
-	    title: title, 
-	    id: "tab-" + title,
-	    closable: true,
-	    closeAction: "hide",
-	    autoLoad: {url : url,
-	    loadScripts: true,
-	    callback : function() {POD.scrollToSection(tab, section,module);}},
-	    autoScroll: true
-	    }
+        title: title,
+        id: "tab-" + title,
+        closable: true,
+        closeAction: "hide",
+        autoLoad: {url : url,
+        loadScripts: true,
+        callback : function() {POD.scrollToSection(tab, section,module);}},
+        autoScroll: true
+        }
     );
     tab.show();
     return tab;
-    
+
 }
 
 POD.proxyLink = function(link) {
     var re = new RegExp("^" + Ext.escapeRe("http://localhost:3000/pod"));
     if(!re.test(link.href)) return true;
     var module = link.href.replace(new RegExp(Ext.escapeRe("http://localhost:3000/pod/module/")), "");
-    
-	    var parts = module.split(/#/);
-	    section = unescape(parts[1]);
-	    module = parts[0];
-	    if(re.test(module)) {
-		    module = POD.tabs.getActiveTab().getId().replace(/tab-/, "");
-	    }
+
+        var parts = module.split(/#/);
+        section = unescape(parts[1]);
+        module = parts[0];
+        if(re.test(module)) {
+            module = POD.tabs.getActiveTab().getId().replace(/tab-/, "");
+        }
     var tab = POD.addTab(module, link.href, section, module);
     POD.scrollToSection(tab, section, module);
     return false;
-    
+
 }
 
 POD.scrollToSection = function(tab, section, module){
     var el = document.getElementById("section-"+module+"-"+section);
     if(el){
-	    var top = (Ext.fly(el).getOffsetsTo(tab.body)[1]) + tab.body.dom.scrollTop;
-	    tab.body.scrollTo('top', top, {duration:.5});
+        var top = (Ext.fly(el).getOffsetsTo(tab.body)[1]) + tab.body.dom.scrollTop;
+        tab.body.scrollTo('top', top, {duration:.5});
     }
 }
 
 POD.reloadTree = function(e) {
     if(!e.target.value) {
-	    POD.tree.getLoader().dataUrl = 'http://localhost:3000/pod/modules';
-	    POD.tree.getLoader().load(POD.tree.root);
-	    return;
+        POD.tree.getLoader().dataUrl = 'http://localhost:3000/pod/modules';
+        POD.tree.getLoader().load(POD.tree.root);
+        return;
     }
     POD.tree.getLoader().dataUrl = 'http://localhost:3000/pod/modules/'+e.target.value;
     POD.tree.getLoader().load(POD.tree.root);
@@ -72,8 +72,8 @@ listeners:  {
 loader: new Ext.tree.TreeLoader({
     dataUrl:'http://localhost:3000/pod/modules',
     autoLoad: false,
-    listeners: { 
-        'beforeload' : function() { POD.tree.getEl().mask('Modules are being loaded') }, 
+    listeners: {
+        'beforeload' : function() { POD.tree.getEl().mask('Modules are being loaded') },
         'load' : function() { POD.tree.getEl().unmask() }
     }
 
@@ -82,18 +82,18 @@ tbar: [new Ext.form.TextField({
     width: 130,
     emptyText:'Find a Class',
     listeners:{
-	    render: function(f){
-		    f.el.on('keydown', POD.reloadTree, f, {buffer: 350});
-	    }
+        render: function(f){
+            f.el.on('keydown', POD.reloadTree, f, {buffer: 350});
+        }
     }
 }), ' ', ' ',{
         handler: function (){POD.tree.expandAll()},
         tooltip: 'Expand all nodes',
         iconCls:"icon-expand-all"},
        {
- 	        handler: function (){POD.tree.collapseAll()},
- 	        tooltip: 'Collapse all nodes',
- 	        iconCls:"icon-collapse-all"}
+             handler: function (){POD.tree.collapseAll()},
+             tooltip: 'Collapse all nodes',
+             iconCls:"icon-collapse-all"}
  ]
 }) ;
 
@@ -120,7 +120,7 @@ POD.TOC = new Ext.tree.TreePanel({
     split: true,
     region: "north",
 listeners:  {
-    "click" : function(node) { 
+    "click" : function(node) {
       var module = POD.tabs.getActiveTab().getId().replace(/tab-/,"");
       // alert(node.text + module);
       POD.scrollToSection(POD.tabs.getActiveTab(), node.text, module);
@@ -133,10 +133,10 @@ POD.TOC.setRootNode(new Ext.tree.AsyncTreeNode({
 
 POD.populateTOC = function (nodes, root) {
     for(var i = 0; i < nodes.length; i++) {
-	    var n = POD.TOC.getLoader().createNode(nodes[i]);
-	    if (n) {
-		    root.appendChild(n);
-	    }
+        var n = POD.TOC.getLoader().createNode(nodes[i]);
+        if (n) {
+            root.appendChild(n);
+        }
     }
 }
 
@@ -146,14 +146,14 @@ POD.leftColumn = new Ext.Panel({
     split: true,
     width: 200,
     items: [POD.tree, POD.TOC]
-    
+
 });
 
 POD.TOCs = {};
 
 POD.clearTOC = function() {
     while (POD.TOC.root.firstChild) {
-	    POD.TOC.root.removeChild(POD.TOC.root.firstChild);
+        POD.TOC.root.removeChild(POD.TOC.root.firstChild);
     }
 }
 
@@ -166,37 +166,37 @@ POD.setTOC = function (nodes) {
 
 POD.searchStore = new Ext.data.Store( {
     proxy :new Ext.data.HttpProxy( {
-	    method :'POST',
-	    url :'http://localhost:3000/pod/search'
+        method :'POST',
+        url :'http://localhost:3000/pod/search'
     }),
     reader :new Ext.data.JsonReader( {
-	    root :'module',
-	    totalProperty :'matches'
+        root :'module',
+        totalProperty :'matches'
     }, [ {
-	    name :'link',
-	    mapping :'link'
+        name :'link',
+        mapping :'link'
     }, {
-	    name :'name',
-	    mapping :'name'
+        name :'name',
+        mapping :'name'
     }, {
-	    name :'released',
-	    mapping :'released'
+        name :'released',
+        mapping :'released'
     }, {
-	    name :'version',
-	    mapping :'version'
+        name :'version',
+        mapping :'version'
     }, {
-	    name :'description',
-	    mapping :'description'
+        name :'description',
+        mapping :'description'
     }, {
-	    name :'author',
-	    mapping :'author'
+        name :'author',
+        mapping :'author'
     } ])
 });
 
 var resultTpl = new Ext.XTemplate(
-	    '<tpl for="."><div class="search-item">',
-	    '<span>{released}',
-	    '</span><h3>{name}</h3> (Version {version})<br>{description}</div></tpl>');
+        '<tpl for="."><div class="search-item">',
+        '<span>{released}',
+        '</span><h3>{name}</h3> (Version {version})<br>{description}</div></tpl>');
 
 
 var Memoria = {};
@@ -204,18 +204,18 @@ Memoria.Search = {};
 Memoria.Search.InstantAdd = new (function(){
 this.init = function(combo) {
     this.combo = combo;
-    var add = new Ext.Layer({cls: "x-combo-list", html: "test1234", zindex: "100"});	
+    var add = new Ext.Layer({cls: "x-combo-list", html: "test1234", zindex: "100"});
     var lw = combo.listWidth || Math.max(combo.wrap.getWidth(), combo.minListWidth);
     add.setWidth(lw);
     add.alignTo(combo.wrap, combo.listAlign);
     this.content = add.createChild({cls:'search-item'});
     this.add = add;
     new Ext.KeyNav(combo.el, {
-	    "esc": function() { Memoria.Search.InstantAdd.hide() },
-	    "enter": function() {
-		    Memoria.Search.InstantAdd.hide();
-		    Memoria.Clients.add(stringToName(Memoria.Search.InstantAdd.combo.getValue()));
-	    }
+        "esc": function() { Memoria.Search.InstantAdd.hide() },
+        "enter": function() {
+            Memoria.Search.InstantAdd.hide();
+            Memoria.Clients.add(stringToName(Memoria.Search.InstantAdd.combo.getValue()));
+        }
     })
     combo.el.on("keydown", this.hide , this);
     this.tpl = new Ext.XTemplate('<h3 style="text-align: center">Sorry. Couldn\'t find anything.</h3>');
@@ -233,73 +233,73 @@ this.hide = function () {
 })();
 
 
-POD.tabs = 
+POD.tabs =
     new Ext.TabPanel({
         region:'center',
         activeTab:0,
-        plugins: [ new Ext.ux.panel.DraggableTabs()], 
+        plugins: [ new Ext.ux.panel.DraggableTabs()],
         autoScroll: true,
         margins: "5 5 5 5",
         enableTabScroll: true,
         listeners: {"tabchange": function(panel, tab) {
-    	    if(POD.TOCs[tab.getId()])
-    		    POD.setTOC(POD.TOCs[tab.getId()]);
-    	    if(tab.getId() == "search-box")
-    		    POD.clearTOC();
+            if(POD.TOCs[tab.getId()])
+                POD.setTOC(POD.TOCs[tab.getId()]);
+            if(tab.getId() == "search-box")
+                POD.clearTOC();
         }},
         tools: [{id: "print", handler: function() { window.open("http://localhost:3000/pod/module/"+tabs.getActiveTab().id.replace(/tab-/,"")); }},
                 {id: "close",handler: function (){ tabs.items.each(function(el){if(new RegExp("tab-").test(el.id)) tabs.remove(el)}) }}],
         items: [{
-		    layout :'form',
+            layout :'form',
             title : "Home",
             id : "search-box",
-		    frame :false,
-		    border :false,
-			    html :"<div style=\"width:500px; margin:50px\" class='x-box-blue' id='move-me'> "
-					    + "<div class=\"x-box-tl\"><div class=\"x-box-tr\"><div class=\"x-box-tc\"></div></div></div> "
-					    + "<div class=\"x-box-ml\"><div class=\"x-box-mr\"><div class=\"x-box-mc\"> "
-					    + "<h3 style=\"margin-bottom:5px;\">Search the CPAN</h3> "
-					    + " <input type=\"text\" name=\"search\" id=\"search\" class=\"x-form-text\" style='font-size: 20px; height: 31px'/>"
-					    + " <div style=\"padding-top:4px;\">Type at least three characters</div>"
-					    + " </div></div></div>"
-					    + " <div class=\"x-box-bl\"><div class=\"x-box-br\"><div class=\"x-box-bc\"></div></div></div>"
-					    + "</div>"
-		    }]
+            frame :false,
+            border :false,
+                html :"<div style=\"width:500px; margin:50px\" class='x-box-blue' id='move-me'> "
+                        + "<div class=\"x-box-tl\"><div class=\"x-box-tr\"><div class=\"x-box-tc\"></div></div></div> "
+                        + "<div class=\"x-box-ml\"><div class=\"x-box-mr\"><div class=\"x-box-mc\"> "
+                        + "<h3 style=\"margin-bottom:5px;\">Search the CPAN</h3> "
+                        + " <input type=\"text\" name=\"search\" id=\"search\" class=\"x-form-text\" style='font-size: 20px; height: 31px'/>"
+                        + " <div style=\"padding-top:4px;\">Type at least three characters</div>"
+                        + " </div></div></div>"
+                        + " <div class=\"x-box-bl\"><div class=\"x-box-br\"><div class=\"x-box-bc\"></div></div></div>"
+                        + "</div>"
+            }]
     });
 
     Ext.Updater.defaults.loadScripts = true;
-    
-    
+
+
     var viewport = new Ext.Viewport({
         layout:'border',
         items:[POD.tabs, POD.leftColumn
          ]
     });
-    
 
 
-    
+
+
 //    var search = new Ext.form.ComboBox( {
-//    	store :POD.searchStore,
-//    	typeAhead :false,
-//    	minChars :3,
-//    	queryParam :'value',
-//    	emptyText: "Search the CPAN for modules",
-//    	loadingText :'Searching ...',
-//    	width :470,
-//    	pageSize :50,
-//    	hideTrigger :true,
-//    	tpl :resultTpl,
-//    	applyTo :Ext.getDom('search'),
-//    	itemSelector :'div.search-item',
-//    	
+//        store :POD.searchStore,
+//        typeAhead :false,
+//        minChars :3,
+//        queryParam :'value',
+//        emptyText: "Search the CPAN for modules",
+//        loadingText :'Searching ...',
+//        width :470,
+//        pageSize :50,
+//        hideTrigger :true,
+//        tpl :resultTpl,
+//        applyTo :Ext.getDom('search'),
+//        itemSelector :'div.search-item',
+//
 //        listeners: {"render": function(combo) { Memoria.Search.InstantAdd.init(combo) },
-//    				"collapse": function() { Memoria.Search.InstantAdd.show() },
-//    				"select": function(combo, record) { 
-//    					POD.addTab(record.get("name"), "http://localhost:3000/pod/module/"+record.get("name"));
-//    					  Memoria.Search.InstantAdd.hide();
-//    					}, "blur": function(){Memoria.Search.InstantAdd.hide();} }
-//    
+//                    "collapse": function() { Memoria.Search.InstantAdd.show() },
+//                    "select": function(combo, record) {
+//                        POD.addTab(record.get("name"), "http://localhost:3000/pod/module/"+record.get("name"));
+//                          Memoria.Search.InstantAdd.hide();
+//                        }, "blur": function(){Memoria.Search.InstantAdd.hide();} }
+//
 //
 //    });
     //Ext.getDom('search').focus(100, true);

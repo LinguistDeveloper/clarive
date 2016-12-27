@@ -2,41 +2,41 @@
  * Ext JS Library 2.3.0
  * Copyright(c) 2006-2009, Ext JS, LLC.
  * licensing@extjs.com
- * 
+ *
  * http://extjs.com/license
  */
 
 p {
-	margin-bottom:15px;
+    margin-bottom:15px;
 }
 h1 {
-	font-size:large;
-	margin-bottom:20px;
+    font-size:large;
+    margin-bottom:20px;
 }
 h2 {
-	font-size:14px;
+    font-size:14px;
     color:#333;
     font-weight:bold;
     margin:10px 0;
 }
 .example-info{
-	width:150px;
-	border:1px solid #c3daf9;
-	border-top:1px solid #DCEAFB;
-	border-left:1px solid #DCEAFB;
-	background:#ecf5fe url( info-bg.gif ) repeat-x;
-	font-size:10px;
-	padding:8px;
+    width:150px;
+    border:1px solid #c3daf9;
+    border-top:1px solid #DCEAFB;
+    border-left:1px solid #DCEAFB;
+    background:#ecf5fe url( info-bg.gif ) repeat-x;
+    font-size:10px;
+    padding:8px;
 }
 pre.code{
-	background: #F8F8F8;
-	border: 1px solid #e8e8e8;
-	padding:10px;
-	margin:10px;
-	margin-left:0px;
-	border-left:5px solid #e8e8e8;
-	font-size: 12px !important;
-	line-height:14px !important;
+    background: #F8F8F8;
+    border: 1px solid #e8e8e8;
+    padding:10px;
+    margin:10px;
+    margin-left:0px;
+    border-left:5px solid #e8e8e8;
+    font-size: 12px !important;
+    line-height:14px !important;
 }
 .msg .x-box-mc {
     font-size:14px;
@@ -58,8 +58,8 @@ pre.code{
     display: url( /static/ext/examples/shared/icons/fam/folder_wrench.png );
     visibility: hidden;
 
-	}
-	 
+    }
+
 .dd-arrow-down {
   background-image:url(/static/images/icons/arrow_down_black.svg );
   display: block;
@@ -72,18 +72,18 @@ pre.code{
   left: 0;
 }
 .x-dd-drag-ghost{
-	color:black;
-	font:normal 11px arial,helvetica,sans-serif;
-	-moz-opacity:0.85;
-	opacity:.85;filter:alpha(opacity=85);
-	border-top:1px solid #ddd;
-	border-left:1px solid #ddd;
-	border-right:1px solid #bbb;
-	border-bottom:1px solid #bbb;
-	padding:3px;padding-left:20px;
-	background-color:white;
-	background-repeat:no-repeat !important;
-	white-space:nowrap;
+    color:black;
+    font:normal 11px arial,helvetica,sans-serif;
+    -moz-opacity:0.85;
+    opacity:.85;filter:alpha(opacity=85);
+    border-top:1px solid #ddd;
+    border-left:1px solid #ddd;
+    border-right:1px solid #bbb;
+    border-bottom:1px solid #bbb;
+    padding:3px;padding-left:20px;
+    background-color:white;
+    background-repeat:no-repeat !important;
+    white-space:nowrap;
     list-style: none outside none;}
 
 

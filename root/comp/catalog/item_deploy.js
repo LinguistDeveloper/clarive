@@ -6,15 +6,15 @@
         var role = ( c.role == undefined ? 'CI' : c.role );
         var ci_store = new Baseliner.store.CI({ baseParams: { role:role } });
         var cis = new Baseliner.model.CISelect(Ext.apply({
-            store: ci_store, 
-            singleMode: true, 
-            fieldLabel:_('CI'), 
-            name:'ci', 
-            hiddenName:'ci', 
-            allowBlank:false }, c)); 
+            store: ci_store,
+            singleMode: true,
+            fieldLabel:_('CI'),
+            name:'ci',
+            hiddenName:'ci',
+            allowBlank:false }, c));
         ci_store.on('load',function(){
             if( c.value != undefined )  {
-               cis.setValue( c.value ) ;            
+               cis.setValue( c.value ) ;
             }
         });
         return cis;
@@ -27,7 +27,7 @@
         //title:_('Scripts Multi'), label:_('Scripts Multi'), value: params.scripts_multi, default_value: 'ssh_script://user@host:port/path/new_script.sh'});
 
     var include = Baseliner.array_field({ name:'include',
-        title:_('Include'), label:_('Include'), description: _('Element pattern regex to include'), 
+        title:_('Include'), label:_('Include'), description: _('Element pattern regex to include'),
             value: params.include, default_value: '\\.js$'});
 
     var exclude = Baseliner.array_field({ name:'exclude',
@@ -48,7 +48,7 @@
 
     //var deployments = Baseliner.array_field({ name:'deployments', description: _('List of nodes to deploy to'),
         //title:_('Deployments'), label:_('Deployments'), value: params.deployments, default_value: 'new_deployment'});
-    
+
     var tabs = new Ext.TabPanel({ width: '705', height: '200',
                 items: [ include.grid, exclude.grid ] });
 
@@ -105,9 +105,9 @@
             {
                 type: 'Submit',
                 name: 'Sb'
-            }] 
-    }); //form      
-        
+            }]
+    }); //form
+
     var panel = new Ext.Panel({
         //width: 800,
         height: '100%',

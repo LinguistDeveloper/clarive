@@ -2,9 +2,9 @@
     //alert( JSON.stringify( params ) );
     var ps = 20;
     var store_ci = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         url: '/ci/grid',
         baseParams: Ext.apply({ start:0, limit: ps}, params),
         fields: [ 'mid','_id','_parent','_is_leaf','type', 'item','class','versionid','ts','tags','data','properties','icon','collection']
@@ -64,15 +64,15 @@
         if( value == undefined ) return '';
         if( typeof value == 'string' ) return '';
         var ret = '<table>';
-        ret += '<tr>'; 
+        ret += '<tr>';
         var k = 0;
         for( var k in value ) {
             if( value[k]==undefined ) value[k]='';
             ret += '<td style="font-size: 10px;font-weight: bold;padding: 1px 3px 1px 3px;">' + _(k) + '</td>'
             ret += '<td width="80px" style="font-size: 10px; background: #f5f5f5;padding: 1px 3px 1px 3px;"><code>' + value[k] + '</code></td>'
             if( k % 2 ) {
-                ret += '</tr>'; 
-                ret += '<tr>'; 
+                ret += '</tr>';
+                ret += '<tr>';
             }
         }
         ret += '</table>';
@@ -113,7 +113,7 @@
         ]
     });
     if( Baseliner.explorer ) {
-        var click_foo = function(n, ev){ 
+        var click_foo = function(n, ev){
             if( ! grid.isVisible() ) return;
             var data = n.attributes.data;
             if( data.class == undefined ) return;

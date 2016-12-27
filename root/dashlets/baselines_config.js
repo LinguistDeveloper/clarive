@@ -1,8 +1,8 @@
 (function(params){
     var common = params.common_options || Cla.dashlet_common(params);
     var data = params.data;
-    var days = new Ext.ux.form.SpinnerField({ 
-        value: data.days, 
+    var days = new Ext.ux.form.SpinnerField({
+        value: data.days,
         name: "days",
         fieldLabel: _("Number of days before today to list jobs"),
         anchor:'100%'
@@ -18,13 +18,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: 1, 
+            { layout:'form',
+              columnWidth: 1,
               bodyStyle: 'background:transparent;',
             items: [
                 Baseliner.ci_box({

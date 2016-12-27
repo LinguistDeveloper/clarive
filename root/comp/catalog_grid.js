@@ -7,21 +7,21 @@
             remoteSort: true,
             totalProperty:'totalCount',
             id: 'id'
-        },[ 
-            { name: 'pkg' },   
-            { name: 'url' },   
-            { name: 'url_save' },   
-            { name: 'icon' },   
-            { name: 'project' },   
-            { name: 'id' },   
-            { name: 'ns' },   
-            { name: 'bl' },   
-            { name: 'name' },   
-            { name: 'active' },   
-            { name: 'description' },   
-            { name: 'type' },   
-            { name: 'for' },   
-            { name: 'mapping' },   
+        },[
+            { name: 'pkg' },
+            { name: 'url' },
+            { name: 'url_save' },
+            { name: 'icon' },
+            { name: 'project' },
+            { name: 'id' },
+            { name: 'ns' },
+            { name: 'bl' },
+            { name: 'name' },
+            { name: 'active' },
+            { name: 'description' },
+            { name: 'type' },
+            { name: 'for' },
+            { name: 'mapping' },
             { name: 'row' }
         ]
     );
@@ -60,10 +60,10 @@
         var ret = '<table>';
         for( var k in value ) {
             if( value[k]==undefined ) value[k]='';
-            ret += '<tr>'; 
+            ret += '<tr>';
             ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(k) + '</td>'
             ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + value[k] + '</code></td>'
-            ret += '</tr>'; 
+            ret += '</tr>';
         }
         ret += '</table>';
         return ret;
@@ -88,10 +88,10 @@
         var ret = '<table>';
         for( var k in value ) {
             if( value[k]==undefined ) value[k]='';
-            ret += '<tr>'; 
+            ret += '<tr>';
             ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(k) + '</td>'
             ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + value[k] + '</code></td>'
-            ret += '</tr>'; 
+            ret += '</tr>';
         }
         ret += '</table>';
         return ret;
@@ -108,42 +108,42 @@
             menu_add.add({ text: _(rec.data.name), icon: rec.data.icon, url: rec.data.url, handler: function(m){
                 Baseliner.add_wincomp( m.url, _(m.text), { }, { event:'close', func: close_event } );
             } });
-           
+
         });
     });
     store_types.load();
     var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/new.svg', cls: 'x-btn-text-icon' });
     var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete.svg', function(){
         var sel = sm.getSelected();
-        if( sel == undefined ) return ; 
+        if( sel == undefined ) return ;
         var row = sel.data;
         row.confirm = _('Are you sure you want to delete %1 from catalog?', '<b>' + row.name + '</b>' );
-        Baseliner.ajaxEval( '/catalog/delete', row, 
+        Baseliner.ajaxEval( '/catalog/delete', row,
             function(res) {
                 store.load();
             }
         );
-    } ); 
+    } );
     var edit_action = function(){
         var sel = sm.getSelected();
-        if( sel == undefined ) return ; 
+        if( sel == undefined ) return ;
         if( sel.data.row['id'] == undefined ) sel.data.row['id'] = sel.data.id;
         // TODO get a fresh row to edit
         if( sel.data.row.active == undefined ) sel.data.row.active = true;
         Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
     } ;
-    var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.svg', edit_action ); 
+    var button_edit = Baseliner.button(_('Modify'), '/static/images/icons/write.svg', edit_action );
     var button_clone = Baseliner.button(_('Clone'), '/static/images/icons/copy.svg', function(){
         var sel = sm.getSelected();
-        if( sel == undefined ) return ; 
+        if( sel == undefined ) return ;
         if( sel.data.row['id'] != undefined ) sel.data.row['id'] = '';
         Baseliner.add_wincomp( sel.data.url, _(sel.data.name), sel.data.row, { event:'close', func: close_event } );
-    } ); 
+    } );
 
     // YAML editor
     var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml.svg', function(){
         var sel = sm.getSelected();
-        if( sel == undefined ) return ; 
+        if( sel == undefined ) return ;
         var sel_save_url = sel.data.url_save;
         Baseliner.ajaxEval( '/to_yaml', sel.data.row, function(res) {
             var ta = new Ext.form.TextArea({
@@ -154,7 +154,7 @@
             });
             var win = new Ext.Window({
                 title: _("YAML"),
-                tbar: [ 
+                tbar: [
                     { xtype:'button', text: _('Save'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/write.svg',
                         handler: function(){
                             // convert the yaml text to a json object
@@ -183,7 +183,7 @@
             });
             win.show();
         });
-    } ); 
+    } );
     var button_by_project = new Ext.Button({
        text: _('Project'),
        icon: '/static/images/icons/project.svg',
@@ -193,7 +193,7 @@
        enableToggle: true,
        toggleHandler: function() {
            store.groupBy('project');
-       } 
+       }
     });
     var button_by_type = new Ext.Button({
        text: _('Type'),
@@ -204,7 +204,7 @@
        toggleGroup: 'grouping',
        toggleHandler: function() {
            store.groupBy('type');
-       } 
+       }
     });
 
     var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
@@ -237,24 +237,24 @@
         viewConfig: {
             forceFit: true
         },
-        tbar: [ 
+        tbar: [
             button_expand,
             _('Search') + ': ', ' ', searchField,
             Baseliner.img_button( '/static/images/icons/refresh.svg', function(){ store.load() } ),
             button_add, button_del, button_edit, button_clone, button_raw,
-            '->', _('Grouping') + ':', button_by_type, button_by_project 
+            '->', _('Grouping') + ':', button_by_type, button_by_project
         ],
         columns: [
-            { hidden: false, width: 30, dataIndex: 'icon', sortable: false, renderer: render_icon  },   
-            { header: _('Name'), width: 120, dataIndex: 'name', sortable: true, renderer: render_name },   
-            { header: _('Project'), width: 80, dataIndex: 'project', sortable: true, renderer: Baseliner.render_ns },   
-            { header: _('Environment'), width: 60, dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },   
-            { header: _('For'), width: 200, dataIndex: 'for', sortable: true, renderer: render_for },   
+            { hidden: false, width: 30, dataIndex: 'icon', sortable: false, renderer: render_icon  },
+            { header: _('Name'), width: 120, dataIndex: 'name', sortable: true, renderer: render_name },
+            { header: _('Project'), width: 80, dataIndex: 'project', sortable: true, renderer: Baseliner.render_ns },
+            { header: _('Environment'), width: 60, dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },
+            { header: _('For'), width: 200, dataIndex: 'for', sortable: true, renderer: render_for },
             { header: _('Mapping'), width: 200, dataIndex: 'mapping', sortable: true, renderer: render_mapping },
-            { header: _('Type'), hidden: true, width: 120, dataIndex: 'type', sortable: true },   
-            { header: _('Catalog'), hidden: true, width: 120, dataIndex: 'catalog_name', sortable: true },   
-            { header: _('ID'), hidden: true, width: 120, dataIndex: 'id', sortable: true },   
-            { header: _('Description'), width: 120, dataIndex: 'description', sortable: true, renderer: Baseliner.columnWrap },   
+            { header: _('Type'), hidden: true, width: 120, dataIndex: 'type', sortable: true },
+            { header: _('Catalog'), hidden: true, width: 120, dataIndex: 'catalog_name', sortable: true },
+            { header: _('ID'), hidden: true, width: 120, dataIndex: 'id', sortable: true },
+            { header: _('Description'), width: 120, dataIndex: 'description', sortable: true, renderer: Baseliner.columnWrap },
             { header: _('Package'), hidden: true, width: 120, dataIndex: 'pkg', sortable: true }
         ]
     });

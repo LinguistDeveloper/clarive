@@ -5,10 +5,10 @@
         fieldLabel:_('Environments'), value: params.rec.bls });
     var bind_releases = params.rec.bind_releases == undefined ? false : params.rec.bind_releases;
 
-	var ci_update = params.rec.ci_update == undefined ? false : params.rec.ci_update;
-	var frozen = params.rec.frozen == undefined ? false : params.rec.frozen;
+    var ci_update = params.rec.ci_update == undefined ? false : params.rec.ci_update;
+    var frozen = params.rec.frozen == undefined ? false : params.rec.frozen;
     var readonly = params.rec.readonly == undefined ? false : params.rec.readonly;
-	var view_in_tree = params.rec.view_in_tree == undefined ? false : params.rec.view_in_tree;
+    var view_in_tree = params.rec.view_in_tree == undefined ? false : params.rec.view_in_tree;
 
     return [
         bls,
@@ -37,7 +37,7 @@
         { xtype:'textfield', name: 'color', fieldLabel:_('Color'), anchor:'100%', value: params.rec.color||'' },
         //{ xtype:'textfield', name: 'max_inactivity_time', fieldLabel:_('Max inactivity time'), anchor:'20%', value: params.rec.max_inactivity_time||'0H' },
         //{ xtype:'textfield', name: 'max_time_in_status', fieldLabel:_('Max time in status'), anchor:'20%', value: params.rec.max_time_in_status||'0H' },
-        { xtype:'textfield', name: 'status_icon', fieldLabel:_('Icon Path'), anchor:'100%', 
+        { xtype:'textfield', name: 'status_icon', fieldLabel:_('Icon Path'), anchor:'100%',
             value: params.rec.status_icon||'' }
     ]
 })

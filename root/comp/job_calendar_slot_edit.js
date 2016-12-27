@@ -63,7 +63,7 @@ for(my $hh=0; $hh<=24; $hh++) {
         var ini = fstart.substring(0,2) + fstart.substring(3,5);
         var fin = fend.substring(0,2) + fend.substring(3,5);
         if( ini >= fin ) {
-            Baseliner.error(_("Error"), _('End time is equal or earlier than the start time ( %1 <= %2 )', fend, fstart) ); 
+            Baseliner.error(_("Error"), _('End time is equal or earlier than the start time ( %1 <= %2 )', fend, fstart) );
             return false;
         }
         /* if( cmd=="B" && form.findField('ven_tipo').getValue()=="X" ) {
@@ -80,7 +80,7 @@ for(my $hh=0; $hh<=24; $hh++) {
                 //Ext.Msg.alert("Success", action.result.msg);
                 var pan = Ext.get('<% $panel %>');
                 var upd = pan.getUpdater();
-                upd.update( { 
+                upd.update( {
                     url: '/job/calendar_slots', params: { id_cal: id_cal, panel: '<% $panel %>'  }, scripts: true ,
                     callback: function(el,success,res,opt){
                         // Eric -- Esto peta y no parece muy importante. No encuentra el método .setTitle
@@ -97,36 +97,36 @@ for(my $hh=0; $hh<=24; $hh++) {
             }
         });
     }
-    var ven_dia_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
+    var ven_dia_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
        data : <% js_dumper( [ @ven_dia ] ) %>
-    }); 
+    });
     var tpl_type = new Ext.XTemplate(
         '<tpl for=".">',
             '<div class="search-item combo_type_job"><table><tr><td class="slot_{value}" width="20" height="20">&nbsp</td><td style="font-size:13px">{name}</td></tr></table></div>',
         '</tpl>'
     );
     var ven_tipo_store = new Ext.data.SimpleStore({
-       fields: ['value', 'name'], 
+       fields: ['value', 'name'],
        data : <% js_dumper( [ ['N', _loc('Normal') ],[ 'U', _loc('Urgent Only') ] ,[ 'X', _loc('No Job') ] ] ) %>
-    }); 
-    var ven_ini_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
+    });
+    var ven_ini_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
        data : <% js_dumper( [ @ven_ini ] ) %>
-    }); 
-    var ven_fin_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
+    });
+    var ven_fin_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
        data : <% js_dumper( [ @ven_fin ] ) %>
-    }); 
-    
+    });
+
 % if ( $c->stash->{not_found} ) {
      //   Ext.get("calform").createChild({tag: 'h2', html: 'Ventana con ID=<% $id %> no existe.'});
 % } else {
     var fpanel = new Ext.FormPanel({
         frame: true,
-        url: '/job/calendar_submit', 
+        url: '/job/calendar_submit',
         buttons: [
-%if($c->stash->{create}){		
+%if($c->stash->{create}){
             {  icon:'/static/images/icons/slot_green.svg', text: _('Create Active Slot'), handler: function(){ modify_window('A') } }
             ,{ icon:'/static/images/icons/slot_red.svg', text: _('Create Inactive Slot'), handler: function(){ modify_window('AD') } }
 %} else {
@@ -134,13 +134,13 @@ for(my $hh=0; $hh<=24; $hh++) {
             ,{  icon:'/static/images/icons/add.svg', text: _('Overwrite'), handler: function(){ modify_window('A', true) } }
 
 %}
-% unless( $c->stash->{create} ) { #las ventanas cerradas no se borran 
+% unless( $c->stash->{create} ) { #las ventanas cerradas no se borran
             ,{  icon:'/static/images/icons/delete.svg', text: _('Delete'), handler: function(){ modify_window('B') } }
 %   if( $activa ) {
             ,{ icon:'/static/images/icons/stop.svg', text: _('Disable (No Job)'), handler: function(){  modify_window('C0')   } }
 %   } else {
             ,{ icon:'/static/images/icons/start.svg', text: _('Activate Slot'), handler: function(){  modify_window('C1')   } }
-% 	}
+%     }
 % }
             ,{ icon:'/static/images/icons/close.svg',  text: _('Close'), handler: function(){ win.close(); } }
         ],
@@ -148,86 +148,86 @@ for(my $hh=0; $hh<=24; $hh++) {
             {  xtype: 'hidden', name: 'id', value: '<% $id %>' },
             {  xtype: 'hidden', name: 'id_cal', value: id_cal },
             {  xtype: 'hidden', name: 'cmd' },
-            {  xtype: 'combo', 
-                       name: 'ven_dia', 
+            {  xtype: 'combo',
+                       name: 'ven_dia',
                        hiddenName: 'ven_dia',
                        fieldLabel: 'Dia',
-                       mode: 'local', 
+                       mode: 'local',
                        editable: false,
                        //disabled: true,
                        forceSelection: true,
                        triggerAction: 'all',
-                       store: ven_dia_store, 
+                       store: ven_dia_store,
                        valueField: 'value',
-                       displayField:'name', 
-                       value: '<% $dia %>',					   
+                       displayField:'name',
+                       value: '<% $dia %>',
                        allowBlank: false,
-                       width: 150 
+                       width: 150
             },
-            {  xtype: 'combo', 
-                       name: 'ven_tipo', 
+            {  xtype: 'combo',
+                       name: 'ven_tipo',
                        hiddenName: 'ven_tipo',
-                       fieldLabel: _loc('Type'), 
+                       fieldLabel: _loc('Type'),
                        mode: 'local',
                        editable: false,
                        forceSelection: true,
                        triggerAction: 'all',
-                       store: ven_tipo_store, 
+                       store: ven_tipo_store,
                        tpl: tpl_type,
                        itemSelector: 'div.search-item',
                        valueField: 'value',
-                       displayField:'name', 
+                       displayField:'name',
                        value: '<% $tipo %>',
                        allowBlank: false,
-                       width: 150 
+                       width: 150
             },
-            {  xtype: 'combo', 
-                       name: 'ven_ini', 
+            {  xtype: 'combo',
+                       name: 'ven_ini',
                        hiddenName: 'ven_ini',
-                       fieldLabel: _loc('Starts at'), 
-                       mode: 'local', 
+                       fieldLabel: _loc('Starts at'),
+                       mode: 'local',
                        editable: false,
                        forceSelection: true,
                        triggerAction: 'all',
-                       store: ven_ini_store, 
+                       store: ven_ini_store,
                        valueField: 'value',
-                       displayField:'name', 
+                       displayField:'name',
                        value: '<% $inicio %>',
                        allowBlank: false,
-                       width: 150 
+                       width: 150
             },
-            {  xtype: 'combo', 
-                       name: 'ven_fin', 
+            {  xtype: 'combo',
+                       name: 'ven_fin',
                        hiddenName: 'ven_fin',
-                       fieldLabel: _loc('Ends at'), 
-                       mode: 'local', 
+                       fieldLabel: _loc('Ends at'),
+                       mode: 'local',
                        editable: false,
                        forceSelection: true,
                        triggerAction: 'all',
-                       store: ven_fin_store, 
+                       store: ven_fin_store,
                        valueField: 'value',
-                       displayField:'name', 
+                       displayField:'name',
                        value: '<% $fin %>',
                        allowBlank: false,
-                       width: 150 
+                       width: 150
            },
-            {  xtype: 'textfield', 
-                       name: 'date', 
-                       fieldLabel: _loc('Date'), 
+            {  xtype: 'textfield',
+                       name: 'date',
+                       fieldLabel: _loc('Date'),
                        readOnly: true,
                        style: { 'color' : '#ccc' },
                        hidden: <% length $date ? 'false' : 'true' %>,
                        value: slot_date,
-                       displayField:'date', 
-                       width: 150 
-           }		   
+                       displayField:'date',
+                       width: 150
+           }
         ]
     });
     var win = new Ext.Window({
         layout: 'fit',
         cls: 'edit_job_window',
         height: 273, width: 600,
-        title: slot_date ? _('Edit Job Slot for %1', slot_date) : _('Edit Job Slot'), 
+        title: slot_date ? _('Edit Job Slot for %1', slot_date) : _('Edit Job Slot'),
         items: fpanel
     });
     return win;

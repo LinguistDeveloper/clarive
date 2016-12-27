@@ -1,11 +1,11 @@
 (function(){
     var store=new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'rownum', 
+        totalProperty:"totalCount",
+        id: 'rownum',
         url: '/feature/list',
-        fields: [ 
+        fields: [
             {  name: 'id' },
             {  name: 'name' },
             {  name: 'description' },
@@ -56,11 +56,11 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { width: 40, sortable: false, renderer: render_plugin },	
-            { header: '<% _loc('Feature') %>', width: 200, dataIndex: 'name', sortable: true, renderer: render_name },	
-            { header: '<% _loc('Description') %>', width: 200, dataIndex: 'description', sortable: true },	
-            { header: '<% _loc('Version') %>', width: 100, dataIndex: 'version', sortable: true },	
-            { header: '<% _loc('Path') %>', width: 350, dataIndex: 'path', sortable: true }	
+            { width: 40, sortable: false, renderer: render_plugin },
+            { header: '<% _loc('Feature') %>', width: 200, dataIndex: 'name', sortable: true, renderer: render_name },
+            { header: '<% _loc('Description') %>', width: 200, dataIndex: 'description', sortable: true },
+            { header: '<% _loc('Version') %>', width: 100, dataIndex: 'version', sortable: true },
+            { header: '<% _loc('Path') %>', width: 350, dataIndex: 'path', sortable: true }
         ],
         autoSizeColumns: true,
         deferredRender:true,
@@ -79,7 +79,7 @@
                     } else {
                         Baseliner.addNewTab('/feature/new' , '<% _loc('New Feature') %>' );
                     };
-                    
+
                 }
             },
             new Ext.Toolbar.Button({
@@ -93,13 +93,13 @@
                         var sel = sm.getSelected();
                         Baseliner.addNewTab('/feature/details?id=' + sel.data.id , sel.data.name);
                     } else {
-                        Ext.Msg.alert('Error', 'Falta seleccionar una fila');	
+                        Ext.Msg.alert('Error', 'Falta seleccionar una fila');
                     };
-                    
+
                 }
             }),
             {
-                text: '<% _loc('Search for updates') %>', 
+                text: '<% _loc('Search for updates') %>',
                 icon:'/static/images/icons/update.svg',
                 cls: 'x-btn-text-icon'
             },
@@ -110,8 +110,8 @@
                 handler: function() {
                     var sm = grid.getSelectionModel();
                     var sel = sm.getSelected();
-                    Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to turn off the feature') %> ' + sel.data.name + '?', 
-                        function(btn){ 
+                    Ext.Msg.confirm('<% _loc('Confirmation') %>', '<% _loc('Are you sure you want to turn off the feature') %> ' + sel.data.name + '?',
+                        function(btn){
                             if(btn=='yes') {
                                 var conn = new Ext.data.Connection();
                                 conn.request({
@@ -119,7 +119,7 @@
                                     params: { action: 'delete', id_rel: sel.data.id },
                                     success: function(resp,opt) { grid.getStore().remove(sel); },
                                     failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the feature.') %>'); }
-                                });	
+                                });
                             }
                         } );
                 }

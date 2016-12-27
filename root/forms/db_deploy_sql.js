@@ -1,6 +1,6 @@
 (function(params){
     var transactional = new Baseliner.CBox({ name: 'transactional', checked: params.data.transactional, fieldLabel: _("Transactional") });
-    
+
     var split_mode = new Baseliner.ComboSingle({ fieldLabel: _('Split Mode'), name:'split_mode', value: params.data.split_mode || 'auto', data: [
             'auto',
             'manual',
@@ -9,7 +9,7 @@
     split_mode.on('select', function(){
         if( split_mode.getValue() == 'manual' )
             split.show();
-        else 
+        else
             split.hide();
     });
     var split = new Ext.form.TextField({ anchor:'100%', fieldLabel: _('Split'), hidden: true, name:'split', value: params.data.split || ';' });
@@ -41,33 +41,33 @@
             'ignore'
         ]}),
         { xtype:'tabpanel', fieldLabel: _('Filters'), height: 200, activeTab:0, items:[
-            new Baseliner.ArrayGrid({ 
-                title:_('Include Paths'), 
-                name: 'include_path', 
+            new Baseliner.ArrayGrid({
+                title:_('Include Paths'),
+                name: 'include_path',
                 value: params.data.include_path,
-                description:_('Include Path Regex'), 
-                default_value:'.*' 
-            }), 
-            new Baseliner.ArrayGrid({ 
-                title:_('Exclude Path'), 
-                name: 'exclude_path', 
-                value: params.data.exclude_path,
-                description:_('Exclude Path Regex'), 
-                default_value:'.*' 
+                description:_('Include Path Regex'),
+                default_value:'.*'
             }),
-            new Baseliner.ArrayGrid({ 
-                title:_('Include Content'), 
-                name: 'include_content', 
+            new Baseliner.ArrayGrid({
+                title:_('Exclude Path'),
+                name: 'exclude_path',
+                value: params.data.exclude_path,
+                description:_('Exclude Path Regex'),
+                default_value:'.*'
+            }),
+            new Baseliner.ArrayGrid({
+                title:_('Include Content'),
+                name: 'include_content',
                 value: params.data.include_content,
-                description:_('Include Content Regex'), 
-                default_value:'.*' 
-            }), 
-            new Baseliner.ArrayGrid({ 
-                title:_('Exclude Content'), 
-                name: 'exclude_content', 
+                description:_('Include Content Regex'),
+                default_value:'.*'
+            }),
+            new Baseliner.ArrayGrid({
+                title:_('Exclude Content'),
+                name: 'exclude_content',
                 value: params.data.exclude_content,
-                description:_('Exclude Content Regex'), 
-                default_value:'.*' 
+                description:_('Exclude Content Regex'),
+                default_value:'.*'
             })
         ]}
     ]

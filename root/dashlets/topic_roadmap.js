@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
 
     var id = params.id_div;
 

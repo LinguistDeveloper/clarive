@@ -28,7 +28,7 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
             Ext.apply(this, config);
         }
     },
-        
+
     init: function(tp) {
         if ((tp instanceof Ext.TabPanel) === false)
             return;
@@ -38,12 +38,12 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
         tp.arrowOffsetY = this.arrowOffsetY;
 
         tp.addEvents('reorder');
-            
+
         // TODO: check if ddGroupId can be left as a property of this plugin rather than on the TabPanel
         if (!tp.ddGroupId) {
             tp.ddGroupId = 'dd-tabpanel-group-' + tp.getId();
         }
-            
+
         // New Event fired after drop tab. Is there a cleaner way to do this?
         tp.reorder = this.reorder;
         tp.oldinitTab = tp.initTab;
@@ -73,7 +73,7 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
     reorder: function(tab) {
         this.fireEvent('reorder', this, tab);
     },
-            
+
     // Declare the tab panel as a drop target
     /** @private */
     afterRender: function () {
@@ -145,7 +145,7 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
             , enableTabDrag: function () {
                 this.allowDrag = true;
                 return this.ds.unlock();
-            }   
+            }
             // Method to disable dragging
             , disableTabDrag: function () {
                 this.allowDrag = false;
@@ -153,7 +153,7 @@ Ext.ux.panel.DraggableTabs = Ext.extend(Object, {
             }
         });
 
-       
+
         //disable dragging in tab1:
       // if( this.block_first_tab &&  index == 0){
      if( index == 0 ){
@@ -339,22 +339,22 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
         var dragLeft=true;
 
 //blocking drag&drop for dashboard tab:
-        for(var i = this.block_first_tab?1:0; i < tabs.length; i++){            
+        for(var i = this.block_first_tab?1:0; i < tabs.length; i++){
             var tab = tabs.itemAt(i);
 
             if( dd.dropEl.id==tab.id ){
                 dragLeft=false;
             }
-            
+
             // Is this tab target of the drop operation?
             var tabEl = tab.ds.dropElHeader;
             // Getting the absolute X coordinate of the tab
             var tabLeft = tabEl.getX();
             // Get the middle of the tab
             var tabMiddle = tabLeft + tabEl.dom.clientWidth / 2;
-            
+
             var tabRight = tabLeft + tabEl.dom.clientWidth*1.5;
-            
+
             if( dragLeft ){
                 if(eventPosX <= tabMiddle){
                     break;
@@ -365,7 +365,7 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
                 }
             }
         }
-        
+
         //reset positions just in case new tabs were added
         tabs.each(function(tab, index){
 //            alert(tab.title);
@@ -376,20 +376,20 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
 //        dd.proxy.hide();
         if( i+1==last ){
             dd.el.dom.parentNode.insertBefore(dd.el.dom, dd.el.dom.parentNode.childNodes[i].nextSibling);
-            
+
             dd.dropEl.position=(last*2)+1;
         }else{
             if( dragLeft ){
                 dd.el.dom.parentNode.insertBefore(dd.el.dom, dd.el.dom.parentNode.childNodes[i]);
-            
+
                 dd.dropEl.position=((i)*2)+1;
             }else{
                 dd.el.dom.parentNode.insertBefore(dd.el.dom, dd.el.dom.parentNode.childNodes[i+1]);
-            
+
                 dd.dropEl.position=((i+1)*2)+1;
             }
         }
-        
+
         // Sort tabs by their actual position
         tabs.sort('ASC', function(a, b){
             return a.position - b.position;
@@ -398,7 +398,7 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
         tabs.each(function(tab, index){
             tab.position = (index + 1) * 2;
         });
-        
+
         //var dropEl = dd.dropEl.ownerCt.remove(dd.dropEl, false);
         //this.tabpanel.insert(i, dropEl);
         //this.tabpanel.activate(dropEl);

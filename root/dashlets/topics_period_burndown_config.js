@@ -75,7 +75,7 @@
                                 days_after_format_date.show();
                                 days_before.setValue('');
                                 days_after.setValue('');
-                                
+
 
                             }else if (checked.id == 'numberselection'){
                                 days_before_format_date.hide();
@@ -94,7 +94,7 @@
               }
           ]
         });
-    
+
 
 
     var ccategory = new Baseliner.CategoryBox({ name: 'categories', fieldLabel: _('Select topics in categories'), value: data.categories || ''  });
@@ -102,7 +102,7 @@
         ['today', _('Today')],
         ['yesterday', _('Yesterday')],
         ['date', _('Date')]
-      ] 
+      ]
     });
 
     var common = params.common_options || Cla.dashlet_common(params);
@@ -117,13 +117,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: .5, 
+            { layout:'form',
+              columnWidth: .5,
               bodyStyle: 'background:transparent;',
               items: [
                 { xtype:'textfield', anchor:'100%',allowBlank: true, fieldLabel: _('Date field with scheduled start date'), name: 'date_field', value: data.date_field },
@@ -131,9 +131,9 @@
                     ['area', _('Area')],
                     ['stack-area-step', _('Area step')],
                     ['line', _('Line')],
-                    ['bar', _('Bar')], 
+                    ['bar', _('Bar')],
                     ['scatter', _('Scatter')]
-                  ] 
+                  ]
                 }),
                 new Baseliner.ComboDouble({ fieldLabel: _('Data grouped by'), name:'group', value: data.group, data: [
                     ['day', _('Day')],
@@ -141,12 +141,12 @@
                     ['month', _('Month')],
                     ['quarter', _('Quarter')],
                     ['year', _('Year')]
-                  ] 
+                  ]
                 })
               ]
             },
-            { layout:'form', 
-              columnWidth: .5, 
+            { layout:'form',
+              columnWidth: .5,
               bodyStyle: 'background:transparent;',
               items: [
                 selector,
@@ -167,13 +167,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: 1, 
+            { layout:'form',
+              columnWidth: 1,
               bodyStyle: 'background:transparent;',
               items: [
                 ccategory

@@ -15,10 +15,10 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
+
     var value = data[ meta.bd_field ] || meta.default_value || '';
     var options = meta[ 'options' ];
-    
+
     var pills = new Baseliner.Pills({
         fieldLabel: _(meta.name_field),
         name: meta.id_field,

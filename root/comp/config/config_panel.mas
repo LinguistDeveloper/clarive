@@ -4,7 +4,7 @@
                  url      : '<% $c->stash->{url_submit} %>',
                  width    : <% $c->stash->{width} || 350 %>,
                  autoScroll: true,
-                 items	  : []
+                 items      : []
              }
         );
 % if ( ref $c->stash->{config} ) {
@@ -15,11 +15,11 @@
       });
 %   }
       var tb = new Ext.Toolbar({
-             items: [ 
+             items: [
               '->',
              { xtype:'button', text: '<% _loc('Save') %>', handler: function(){ Baseliner.formSubmit(form.getForm())} },
              { xtype:'button', text: '<% _loc( 'Reset') %>', handler: function() { form.getForm().reset() }  }
-             ] 
+             ]
       });
 % } else {
       form.getForm().load({
@@ -27,17 +27,17 @@
       });
       var tb = new Ext.Toolbar({
              id: 'formtb',
-             items: [ 
+             items: [
              '<% $c->stash->{title} %>',
               '->',
              { xtype:'button', text: '<% _loc('Save') %>', handler: function(){ Baseliner.formSubmit(form.getForm())} },
              { xtype:'button', text: '<% _loc( 'Reset') %>', handler: function() { form.getForm().reset() }  }
-             ] 
+             ]
       });
 % }
-      
+
       var panel = new Ext.Panel({
-             layout: 'fit' , border: 0 , tbar: tb, items: [ form  ] 
+             layout: 'fit' , border: 0 , tbar: tb, items: [ form  ]
       });
       return panel;
 })();

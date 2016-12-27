@@ -14,16 +14,16 @@ params:
     var color = meta.color ? meta.color: '#99CCFF';
     var size = meta.size ? meta.size: '12px';
     var font = meta.font ? meta.font : '"Helvetica Neue", Helvetica, Arial, sans-serif';
-    
+
     var separator = new Ext.Component({
         name: meta.id_field,
         hidden: Baseliner.eval_boolean(!meta.active),
         html: String.format(
-            "<div style='font-family: {3}; color: {1}; margin: 4px 0px 8px 0px; border-bottom: 2px solid {1}; font-size: {2}; font-weight: bold'>{0}</div>", 
+            "<div style='font-family: {3}; color: {1}; margin: 4px 0px 8px 0px; border-bottom: 2px solid {1}; font-size: {2}; font-weight: bold'>{0}</div>",
             _(meta.name_field), color, size, font ),
         readOnly: false
 
     });
-    
+
     return separator
 })

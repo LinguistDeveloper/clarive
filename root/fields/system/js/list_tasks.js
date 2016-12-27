@@ -3,17 +3,17 @@ name: Tasks
 params:
     html: '/fields/system/html/field_tasks.html'
     js: '/fields/system/js/list_tasks.js'
-    type: 'listbox'    
+    type: 'listbox'
     field_order: 101
     section: 'details'
     filter: 'none'
-    single_mode: 'false'    
+    single_mode: 'false'
 ---
 */
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
+
     var add_tasks = function (){
         var store_topics = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.filter ? meta.filter : ''} });
 
@@ -26,30 +26,30 @@ params:
             store: store_topics,
             singleMode: meta.single_mode
         });
-        
+
         cb_topics.on('additem', function(combo, value, record) {
             names_topics[value] = [record.data.name, record.data.title, record.data.color];
         });
-                                    
+
         var add_topics = function (){
             if (cb_topics.getValue() != ''){
                 var id, d, r;
                 var topics = cb_topics.getValue().split(',');
-                
+
                 Ext.each(topics, function(topic){
                     id = store_tasks.getCount() + 1;
                     d = { id: id, mid: topic, id_task: topic, task: names_topics[topic][0], description: names_topics[topic][1], color:names_topics[topic][2]};
                     r = new store_tasks.recordType( d, id );
-                    store_tasks.add( r );                               
+                    store_tasks.add( r );
                 });
-                
+
                 store_tasks.commitChanges();
                 refresh_field();
                 win_tasks.close();
             }
             delete names_topics;
         };
-        
+
         var form_tasks = new Ext.FormPanel({
             frame: true,
             padding: 15,
@@ -65,9 +65,9 @@ params:
                 {  text: _('Accept') , handler: function(){  add_topics(); } }
             ]
         });
-        
+
         title = _('Create tasks');
-        
+
         win_tasks = new Ext.Window({
             title: _(title),
             autoHeight: true,
@@ -76,11 +76,11 @@ params:
             modal: true,
             items: form_tasks
         });
-        
-        win_tasks.show();           
+
+        win_tasks.show();
     }
 
-    
+
 
     var btn_add_tasks = new Baseliner.Grid.Buttons.Add({
         handler: function() {
@@ -96,15 +96,15 @@ params:
               grid_tasks.getStore().remove(sel);
               btn_delete_tasks.disable();
             } else {
-              Baseliner.message( _('ERROR'), _('Select at least one row'));    
-            };                
+              Baseliner.message( _('ERROR'), _('Select at least one row'));
+            };
         }
     });
-    
+
     var store_tasks = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        id: 'id', 
+        id: 'id',
         fields: [
             {
                 name: 'mid',
@@ -114,7 +114,7 @@ params:
                 name: 'status',
                 name: 'observation'
             }
-        ]                                                          
+        ]
     });
     var field = new Ext.form.TextField({ hidden: true, name: meta.id_field });
     var refresh_field = function(){
@@ -124,11 +124,11 @@ params:
         });
         field.setValue( Ext.util.JSON.encode( data ) );
     };
-    
+
     var render_topic_name = function(value, metadata, rec, rowIndex, colIndex, store) {
         var d = rec.data;
         return Baseliner.topic_name({
-            mid: d.mid, 
+            mid: d.mid,
             mini: true,
             size: '9',
             category_name: value,
@@ -138,7 +138,7 @@ params:
             is_release: d.is_release
         });
     };
-    
+
     var show_status = function(value,metadata,rec,rowIndex,colIndex,store) {
         var cad;
         if(!value){
@@ -149,13 +149,13 @@ params:
         }
         return cad;
     };
-        
+
     var status = new Ext.data.SimpleStore({ fields:['status', 'name'],
         data: [['OK',_('OK')], ['?',_('PENDING')], ['KO',_('ERROR')]] });
-    
+
     var time_tpl = new Ext.XTemplate(
         '<tpl for=".">',
-        '<div class="search-item">', 
+        '<div class="search-item">',
         '<table><tr><td><img src="/static/images/icons/{[ values.status=="OK" ? "drop-yes.svg" : values.status=="KO" ? "close.svg" : "help.svg" ]}"/></td>',
         '<td><span><b>{name}</span></b></td></tr></table></div>',
         '</tpl>'
@@ -175,7 +175,7 @@ params:
         tbar: [
             btn_add_tasks,
             btn_delete_tasks
-        ],          
+        ],
         columns: [
             { width: 80, dataIndex: 'task', renderer: render_topic_name},
             { width: 200, dataIndex: 'description' },
@@ -185,9 +185,9 @@ params:
                 width: 50,
                 editor: new Ext.form.ComboBox({
                     //value: true, //hiddenName:'status',
-                    typeAhead: true, 
-                    valueField: 'status', 
-                    displayField: 'name', 
+                    typeAhead: true,
+                    valueField: 'status',
+                    displayField: 'name',
                     tpl: time_tpl,
                     itemSelector: 'div.search-item',
                     mode: 'local', store: status,
@@ -206,18 +206,18 @@ params:
                     //fieldLabel: _('Description'),
                     emptyText: _('Observation')
                 })
-            }           
+            }
         ]
-    }); 
-    
+    });
+
     grid_tasks.on('afteredit', function(){
         refresh_field();
     });
-	
-	grid_tasks.on('rowclick', function(grid, rowIndex, e) {
-		btn_delete_tasks.enable();
-	});		
-    
+
+    grid_tasks.on('rowclick', function(grid, rowIndex, e) {
+        btn_delete_tasks.enable();
+    });
+
     var grid_data = data[ meta.id_field ];
     grid_data = Ext.util.JSON.decode( grid_data );
     if( Ext.isArray( grid_data ) ) {
@@ -228,7 +228,7 @@ params:
             refresh_field();
         });
     }
-    
+
     return [
         {
           xtype: 'box',
@@ -238,8 +238,8 @@ params:
         {
           xtype: 'box',
           autoEl: {cn: '<br>'},
-          hidden: Baseliner.eval_boolean(meta.hidden)        
-        },          
+          hidden: Baseliner.eval_boolean(meta.hidden)
+        },
         grid_tasks,
         field
     ]

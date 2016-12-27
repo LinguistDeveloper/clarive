@@ -1,5 +1,5 @@
 <%args>
-    $row 
+    $row
 </%args>
 %my $uid = $row->{id} . rand(10000);
 %$uid=~s/\.//g;
@@ -10,7 +10,7 @@
         store: new Baseliner.JsonStore({
             url: '<% $row->{json_url} %>',
             root:'data',
-            fields: [ 
+            fields: [
                 {  name: '<% $uid %>' }
             ]
         }),
@@ -23,8 +23,8 @@
            })
         }]),
         sm: (function(){
-            var rsm = new Ext.grid.RowSelectionModel({singleSelect:true}); 
-            rsm.addListener('rowselect', 
+            var rsm = new Ext.grid.RowSelectionModel({singleSelect:true});
+            rsm.addListener('rowselect',
                 function (){
                      var __record = rsm.getSelected();
                      return __record;
@@ -36,7 +36,7 @@
         title:'<% $row->{title} %>',
         frame:true
 %if (!$row->{readOnly}==1){
-        ,clicksToEdit:1,			
+        ,clicksToEdit:1,
         tbar: [{
             text: '<% $row->{newLabel} %>',
             icon: '/static/images/icons/add-green.svg',
@@ -45,25 +45,25 @@
                 var ___record = Ext.data.Record.create([
                        {name: '<% $uid %>', type: 'string'}
                   ]);
-                                        
+
                 var p = new ___record({
                     '<% $uid %>': '<% $row->{newLabel} %>'
                 });
-                
+
                 var __grid = Ext.getCmp('<% $uid %>');
                 //__grid.stopEditing();
                 if(__grid.getStore() == null){
                     __grid.setStore(new Baseliner.JsonStore({
                         url: '<% $row->{json_url} %>',
                         root:'data',
-                        fields: [ 
+                        fields: [
                             {  name: '<% $uid %>' }
                         ]
                     }));
                 }
                 __grid.getStore().add(p);
                 //__grid.startEditing(0, 0);
-                
+
                 var _parseValues = function(__frm) {
                                     var __myStore = __grid.getStore();
                                     var __vals = "";
@@ -71,9 +71,9 @@
                                         __vals = __vals + __myStore.getAt(i).data.<% $uid %> + ";";
                                     }
                                     __frm.findById('hidden_list<% $uid %>').setValue(__vals);
-                                    
+
                                 };
-                var __parentForm = __grid.findParentByType('form');                
+                var __parentForm = __grid.findParentByType('form');
                 __parentForm.addListener('beforeaction',  function(){_parseValues(__parentForm);});
                 __grid.getStore().addListener('create', function(){_parseValues(__parentForm);});
                 __grid.getStore().addListener('remove', function(){_parseValues(__parentForm);});
@@ -83,12 +83,12 @@
             text: '<% $row->{delLabel} %>',
             icon: '/static/images/icons/del_all.svg',
             cls: 'x-btn-text-icon',
-            handler : function(e){     
-                var __grid = Ext.getCmp('<% $uid %>');			            
+            handler : function(e){
+                var __grid = Ext.getCmp('<% $uid %>');
                 var __selectedRecord = __grid.getSelectionModel().getSelected();
                 if(__selectedRecord!=null){
                     __grid.getStore().remove(__selectedRecord);
-                }          
+                }
 
                 var _parseValues = function(__frm) {
                                     var __myStore = __grid.getStore();
@@ -97,31 +97,31 @@
                                         __vals = __vals + __myStore.getAt(i).data.<% $uid %> + ";";
                                     }
                                     __frm.findById('hidden_list<% $uid %>').setValue(__vals);
-                                    
+
                                 };
-                var __parentForm = __grid.findParentByType('form');                
+                var __parentForm = __grid.findParentByType('form');
                 __parentForm.addListener('beforeaction',  function(){_parseValues(__parentForm);});
                 __grid.getStore().addListener('create', function(){_parseValues(__parentForm);});
                 __grid.getStore().addListener('remove', function(){_parseValues(__parentForm);});
-                __grid.getStore().addListener('update', function(){_parseValues(__parentForm);});						 
-                
+                __grid.getStore().addListener('update', function(){_parseValues(__parentForm);});
+
             }
         }]
-%}		
+%}
     },{
-        xtype: "hidden",	
-        id: 'hidden_list<% $uid %>',		
-        listeners: {change:{fn:function(e,newVal,oldVal){		
+        xtype: "hidden",
+        id: 'hidden_list<% $uid %>',
+        listeners: {change:{fn:function(e,newVal,oldVal){
                 var __record = Ext.data.Record.create([
                        {name: <% $uid %>, type: 'string'}
                   ]);
                   var __mstore = e.findParentByType('form').findById('<% $uid %>').store;
-                  __mstore.removeAll();						      
+                  __mstore.removeAll();
                   var valores = newVal.split(';');
                   for(var x=0;x < valores.length;x++)
                     if(valores[x] != '') __mstore.insert(x,new __record({<% $uid %> : valores[x]}));
                 }
             }
         },
-                        
+
 

@@ -1,9 +1,9 @@
 (function(params){
     var data = params.data || {};
-    var fail_mode = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Fail Mode'), name:'fail_mode', value: data.fail_mode || 'skip', 
+    var fail_mode = new Baseliner.ComboDouble({
+        fieldLabel: _('Fail Mode'), name:'fail_mode', value: data.fail_mode || 'skip',
         data: [
-          ['skip',_('Skip if no matches')], 
+          ['skip',_('Skip if no matches')],
           ['warn',_('Warning if no match')],
           ['fail',_('Fail if no match')]
         ]

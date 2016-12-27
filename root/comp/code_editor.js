@@ -31,18 +31,18 @@
         });
 
         var btn_parms_save = new Ext.Button({
-            icon: IC('save'), text: _('Save'), handler: function(){ 
+            icon: IC('save'), text: _('Save'), handler: function(){
                 console.log( parms.get_save_data() );
             }
         });
-    
-        var win = new Baseliner.Window({ 
+
+        var win = new Baseliner.Window({
             layout: 'fit',
             width: 800, height: 400,
-            tbar: [ 
+            tbar: [
                 '->',
                 { text:_('Close'), icon: IC('close'), handler:function(){ win.close() } },
-                btn_parms_save 
+                btn_parms_save
             ],
             items: [ parms ]
         });
@@ -58,11 +58,11 @@
         icon: IC('properties'), text: _('Parameters'), handler: function(){ parms_edit() }
     });
 
-    var panel = new Ext.Panel({ 
-        layout: 'fit', 
+    var panel = new Ext.Panel({
+        layout: 'fit',
         tab_icon: IC('loading.gif'),
         disabled: true,
-        tbar: [ 
+        tbar: [
             opts.filename,
             '-',
             btn_save,

@@ -25,7 +25,7 @@ Ext.ux.Portal = Ext.extend(Ext.Panel, {
         Ext.ux.Portal.superclass.initEvents.call(this);
         this.dd = new Ext.ux.Portal.DropZone(this, this.dropConfig);
     },
-    
+
     beforeDestroy : function() {
         if(this.dd){
             this.dd.unreg();
@@ -37,14 +37,14 @@ Ext.ux.Portal = Ext.extend(Ext.Panel, {
 Ext.reg('portal', Ext.ux.Portal);
 
 Ext.ux.Portal.DropZone = Ext.extend(Baseliner.DropTarget, {
-    
+
     constructor : function(portal, cfg){
         this.portal = portal;
         Ext.dd.ScrollManager.register(portal.body);
         Ext.ux.Portal.DropZone.superclass.constructor.call(this, portal.bwrap.dom, cfg);
         portal.body.ddScrollConfig = this.ddScrollConfig;
     },
-    
+
     ddScrollConfig : {
         vthresh: 50,
         hthresh: -1,
@@ -155,8 +155,8 @@ Ext.ux.Portal.DropZone = Ext.extend(Baseliner.DropTarget, {
         if(!this.lastPos){
             return;
         }
-        var c = this.lastPos.c, 
-            col = this.lastPos.col, 
+        var c = this.lastPos.c,
+            col = this.lastPos.col,
             pos = this.lastPos.p,
             panel = dd.panel,
             dropEvent = this.createEvent(dd, e, data, col, c,
@@ -167,13 +167,13 @@ Ext.ux.Portal.DropZone = Ext.extend(Baseliner.DropTarget, {
 
             dd.proxy.getProxy().remove();
             panel.el.dom.parentNode.removeChild(dd.panel.el.dom);
-            
+
             if(pos !== false){
                 c.insert(pos, panel);
             }else{
                 c.add(panel);
             }
-            
+
             c.doLayout();
 
             this.portal.fireEvent('drop', dropEvent);

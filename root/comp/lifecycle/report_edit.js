@@ -9,16 +9,16 @@
     var ds_fields = [];
     var title = is_new ? _('New Search') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
-    
 
-    
+
+
     var tree_all_loader = new Baseliner.TreeLoader({
         dataUrl: '/ci/report/all_fields'
         //baseParams: { id_rule: id_rule },
         //requestMethod:'GET',
         //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
     });
-    
+
     var tree_all = new Ext.tree.TreePanel({
         dataUrl: '/ci/report/all_fields',
         flex: 1,
@@ -33,33 +33,33 @@
         ddScroll: true,
         //loader: tree_all_loader,
         //listeners: { beforenodedrop: { fn: drop_handler }, contextmenu: menu_click },
-        root: { text: 'xx', name: 'xx', draggable: false, id: 'root' }, 
+        root: { text: 'xx', name: 'xx', draggable: false, id: 'root' },
         rootVisible: false
     });
-    
+
     tree_all.getLoader().on("beforeload", function(treeLoader, node) {
         var baseParams = {};
         if (node.attributes.data && node.attributes.data.id_category) baseParams.id_category = node.attributes.data.id_category;
         if (node.attributes.data && node.attributes.data.name_category) baseParams.name_category = node.attributes.data.name_category;
         treeLoader.baseParams = baseParams ;
         Baseliner.showLoadingMask(selector.getEl());
-    });      
+    });
     tree_all.getLoader().on("load", function(treeLoader, node) {
         Baseliner.hideLoadingMask(selector.getEl());
-    });      
+    });
 
     var tree_selected_loader = new Baseliner.TreeLoader({
         dataUrl: '/ci/'+report_mid+'/field_tree',
         baseParams: { id_report: data.id }
     });
-    
+
     var tree_selected_is_loaded = false;
     tree_selected_loader.on('load',function(){
         tree_selected_is_loaded = true;
-        if( ! tree_selected.root.hasChildNodes() ) 
+        if( ! tree_selected.root.hasChildNodes() )
             initialize_folders();
     });
-    
+
     var sort_direction = function(dir, node){
         var attr = node.attributes;
         attr.sort_direction = dir;
@@ -67,7 +67,7 @@
         attr.icon = '/static/images/icons/arrow-'+icon+'.svg';
         node.setIcon( attr.icon );
     }
-    
+
     var edit_value = function(node) {
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
@@ -332,7 +332,7 @@
         }
 
         return true;
-    }    
+    }
 
     // selected fields editor
     var edit_select = function(node){
@@ -342,39 +342,39 @@
         var data_key = new Ext.form.TextField({ name:'data_key', fieldLabel: _('Data Key'), value: attr.data_key||attr.id_field, hidden: attr.meta_type!='custom_data' });
         var gridlet = { xtype:'textfield', name:'gridlet', fieldLabel: _('Gridlet'), value: attr.gridlet||'' };
         var meta_type = new Baseliner.ComboDouble({
-            value: attr.meta_type || '', 
+            value: attr.meta_type || '',
             name: 'meta_type',
             fieldLabel: _('Meta Type'), data: [
-             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')], 
+             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')],
                 ['date',_('Date')], ['bool', _('Boolean')],
-                ['calendar',_('Calendar')], ['project',_('Project')], 
+                ['calendar',_('Calendar')], ['project',_('Project')],
                 ['release',_('Release')], ['revision',_('Revision')], ['user',_('Usuario')]
         ]});
-        meta_type.on('change', function(){  
+        meta_type.on('change', function(){
             var mt=meta_type.get_save_data();
             mt =='custom_data' ? data_key.show() : date_key.hide();
         });
 
-        
+
         form_value.save_and_remove();
 
         var fields = [header, width, gridlet, meta_type, data_key];
         if ( attr.collection && attr.collection != ''){
             var ci_columns_store = new Baseliner.JsonStore({
-                root: 'data' , 
+                root: 'data' ,
                 remoteSort: true,
                 autoLoad: true,
-                totalProperty:"totalCount", 
+                totalProperty:"totalCount",
                 baseParams: {collection: attr.collection, collection_extends: attr.collection_extends ? attr.collection_extends : undefined},
-                id: 'ci_columns', 
+                id: 'ci_columns',
                 url: '/report/get_ci_columns',
-                fields: ['name'] 
+                fields: ['name']
             });
 
             ci_columns_store.on("load", function() {
                 ci_columns.setValue(attr.ci_columns);
-            });            
-            
+            });
+
             var ci_columns = new Ext.ux.form.SuperBoxSelect({
                 mode: 'local',
                 fieldLabel: _('Columns'),
@@ -389,7 +389,7 @@
         }
 
         var sfields = form_value.add(fields);
-        
+
         var set_select = function(){
             var sflag = true;
             Ext.each(sfields,function(sf){
@@ -411,25 +411,25 @@
         form_value.doLayout();
         form_value.set_select = function(){ set_select() };
     };
-    
+
     var edit_categories = function(node){
         var parent = node.parentNode;
         var attr = node.attributes;
         var table = { xtype:'textfield', name:'table', fieldLabel: _('Table'), value: attr.data.table||node.text };
         var alias = { xtype:'textfield', name:'alias', fieldLabel: _('Alias'), value: attr.data.alias||node.text };
-        
+
         var options = [table, alias];
-        
+
         if(parent.attributes.type != 'categories'){
             var relation = new Baseliner.ComboDouble({
-                value: attr.data.relation || '', 
+                value: attr.data.relation || '',
                 name: 'relation',
                 fieldLabel: _('Relation') +' (' + parent.text + ')',
                 data: parent.attributes.data.fields
-            });            
+            });
             options.push(relation);
         }
-        
+
         var set_select = function(){
             var vals = form_value.getValues();
             if (!vals) {
@@ -452,25 +452,25 @@
                     }
                 }
             } else {
-                query[node.attributes.data.id_category].id_category = [node.attributes.data.id_category], 
+                query[node.attributes.data.id_category].id_category = [node.attributes.data.id_category],
                 query[node.attributes.data.id_category].name_category = [node.attributes.data.name_category]
-                //query[node.attributes.data.id_category].relation = [node.attributes.data.relation], 
+                //query[node.attributes.data.id_category].relation = [node.attributes.data.relation],
             }
             nodeCategories.attributes.query = query;
         };
-        
+
         form_value.save_and_remove();
-        
+
         form_value.add(options);
         form_value.items.each(function(fi){
             fi.on('select', function(){ set_select(); });
         });
         form_value.setTitle( String.format('{0}', node.text) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
-        form_value.doLayout();        
+        form_value.doLayout();
     }
-    
-    
+
+
     var node_properties = function(n){
         var attr = n.attributes;
         // XXX max stack size error ?
@@ -484,17 +484,17 @@
         var type = node.attributes.type;
         if( type =='categories_field' )
             its.push({ text: _('Edit'), handler: function(item){ edit_categories(node) }, icon:'/static/images/icons/edit.svg' });
-        if( type =='select_field' ) 
+        if( type =='select_field' )
             its.push({ text: _('Edit'), handler: function(item){ edit_select(node) }, icon:'/static/images/icons/edit.svg' });
-        if( type =='value' ) 
+        if( type =='value' )
             its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.svg' });
         if( type =='sort_field' ) {
             its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.svg' });
             its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.svg' });
         }
         if( !/^(categories|select|sort|where)$/.test(type) )
-            its.push({  text: _('Delete'), 
-                        handler: function(item){ 
+            its.push({  text: _('Delete'),
+                        handler: function(item){
                             var root = tree_selected.getRootNode();
                             var nodeCategories = root.firstChild;
                             if((node.parentNode.text == _('Categories'))){
@@ -514,10 +514,10 @@
                                 }
                             }
                             node.remove();
-                        }, 
+                        },
                         icon:'/static/images/icons/delete.svg' });
             var stmts_menu = new Ext.menu.Menu({
-            items: its 
+            items: its
         });
         if(its && its.length > 0 ){
             stmts_menu.showAt(event.xy);
@@ -536,30 +536,30 @@
         ddScroll: true,
         loader: tree_selected_loader,
         listeners: { contextmenu: tree_menu_click, click: function(n){
-                if(n.attributes.type=='value') edit_value(n); 
+                if(n.attributes.type=='value') edit_value(n);
                 else if( n.attributes.type=='select_field') edit_select(n);
                 else if( n.attributes.type == 'categories_field' ) edit_categories(n);
-            } 
+            }
         },
-        root: { text: '', expanded: true, draggable: false }, 
+        root: { text: '', expanded: true, draggable: false },
         rootVisible: false
     });
-    
+
     tree_selected.on('beforenodedrop',function(ev){
         var flag = true;
         var target = ev.target;
         var ttype = target.attributes.type; // || target.attributes.where_field ? 'where_field' : target.attributes.category ? 'select_field' : null;
         //Baseliner.message( 'Target Type', ttype );
-        if( ttype!='select_field' && ev.point!='append' ) { 
-            //alert('yikes!' + [ttype,ev.point].join(',') ); 
-            return false; 
+        if( ttype!='select_field' && ev.point!='append' ) {
+            //alert('yikes!' + [ttype,ev.point].join(',') );
+            return false;
         }
         Ext.each( ev.dropNode, function(n){
             var type = n.attributes.type;
             //Baseliner.message( 'Type', type );
             if( !type=='where_field' && ev.point=='append' ) {
-                flag = false; //alert('no no'); 
-                return; 
+                flag = false; //alert('no no');
+                return;
             }
 
             if( ttype=='select' || ttype=='select_field' ) {
@@ -567,11 +567,11 @@
                 n.expanded = true;
                 if( n.attributes.category ) {
                     if (n.attributes.text.search(':') == '-1'){
-                        n.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );    
+                        n.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );
                     }else{
                         n.setText( n.attributes.text );
                     }
-                    
+
                 }
             } else {
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
@@ -605,7 +605,7 @@
                             id = target.attributes.data.id_category
 
                             var datos = {
-                                id_category : [copy.attributes.data.id_category], 
+                                id_category : [copy.attributes.data.id_category],
                                 name_category: [copy.attributes.data.name_category],
                                 relation: [copy.attributes.data.relation]
                             };
@@ -617,7 +617,7 @@
                         } else if(target.getDepth()+1-2 == 0){
                             var id = ev.dropNode.attributes.data.id_category
                             query[id] = {
-                                id_category : [copy.attributes.data.id_category], 
+                                id_category : [copy.attributes.data.id_category],
                                 name_category: [copy.attributes.data.name_category],
                                 relation: []
                             };
@@ -625,7 +625,7 @@
                             flag = false;
                         }
                     }
-                    nodeCategories.attributes.query = query;                    
+                    nodeCategories.attributes.query = query;
                     copy.leaf = false;
                 }
                 else {
@@ -633,7 +633,7 @@
                     //    copy.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );
                     //}else{
                         copy.setText( String.format('{0}', n.attributes.text ) );
-                    //}                        
+                    //}
                     var meta_type = n.attributes.meta_type ? n.attributes.meta_type : 'string' ;
                     switch (meta_type){
                         case 'string':
@@ -653,7 +653,7 @@
                         ,where: meta_type
                         ,field: meta_type
                         ,value: 'default'
-                    });                         
+                    });
 
                 }
                 ev.dropNode = copy;
@@ -748,26 +748,26 @@
             userandroles
         ]
     });
-    
+
     var initialize_folders = function(){
-        tree_selected.root.appendChild([ 
+        tree_selected.root.appendChild([
             { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder_database.svg' },
             { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder_explore.svg' },
             { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder_find.svg' },
             { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.svg' }
         ]);
     };
-    var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.svg', handler: function(){ 
+    var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.svg', handler: function(){
         tree_all.getLoader().load( tree_all.root );
         tree_all.root.expand();
     }});
-    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', handler: function(){ 
+    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe_cache.svg', handler: function(){
         var n;
         while (n = tree_selected.root.childNodes[0])
             tree_selected.root.removeChild(n);
         initialize_folders();
     } });
-    
+
     var form_value = new Baseliner.FormPanel({
         region:'south',
         labelAlign: 'right',
@@ -791,13 +791,13 @@
     var seltab = new Ext.Panel({ layout:'border', items:[ form_value, selector ], title: _('Query') });
     //var sql = new Cla.AceEditor({ title: _('SQL'), value: lc_node.attributes.sql });
     var height_window = $(window).height();
-    if (height_window > 800 ) { 
+    if (height_window > 800 ) {
         height_window = 600;
     } else {
         height_window = height_window - 100;
     }
     var tabs = new Ext.TabPanel({ height: height_window,activeTab: 0, items:[ options, seltab ]});
-    
+
 
     var save_form = function(){
                 if( form_value.set_value ) form_value.set_value();
@@ -820,39 +820,39 @@
                         win.setTitle( dd.name );
                         bt.enable();
                     } else {
-                        Ext.Msg.show({  
-                            title: _('Information'), 
-                            msg: res.msg , 
-                            buttons: Ext.Msg.OK, 
+                        Ext.Msg.show({
+                            title: _('Information'),
+                            msg: res.msg ,
+                            buttons: Ext.Msg.OK,
                             icon: Ext.Msg.INFO
-                        });  
+                        });
                         bt.enable();
                     };
                 });
             };
 
-    var tbar = new Ext.Toolbar({ 
-        items:[ 
+    var tbar = new Ext.Toolbar({
+        items:[
             '->',
-            { 
-                id:'btnClose' 
+            {
+                id:'btnClose'
                 ,text: _('Close'),
-                icon:'/static/images/icons/close.svg', 
-                handler: function(){ win.close() } 
-            } 
-            ,{ 
+                icon:'/static/images/icons/close.svg',
+                handler: function(){ win.close() }
+            }
+            ,{
                 id: 'btnSave',
                 text: _('Save'),
-                icon:'/static/images/icons/save.svg', 
+                icon:'/static/images/icons/save.svg',
                 handler: save_form
-            } 
-        ] 
+            }
+        ]
     });
 
     win = new Baseliner.Window({
         title: title,
         autoHeight: true,
-        constrain: true, 
+        constrain: true,
         width: 800,
         height: height_window,
         layout:'fit',
@@ -861,6 +861,6 @@
         items: tabs,
         save_handler: save_form
     });
-    
+
     win.show();
 })

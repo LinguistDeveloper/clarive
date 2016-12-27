@@ -13,9 +13,9 @@ params:
 ---
 */
 (function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
-	
+    var data = params.topic_data;
+    var meta = params.topic_meta;
+
     function get_expr_response_time(row){
         var str_expr = '';
         var expr = row.data.expr_response_time.split(':');
@@ -29,7 +29,7 @@ params:
         }
         return str_expr;
     }
-    
+
     function get_expr_deadline(row){
         var str_expr = '';
         var expr = row.data.expr_deadline.split(':');
@@ -43,7 +43,7 @@ params:
         }
         return str_expr;
     }
-    
+
     function load_txt_values_priority(row){
         var ff = params.form.getForm();
         var obj_rsp_expr_min = ff.findField("txt_rsptime_expr_min");
@@ -54,37 +54,37 @@ params:
         obj_rsp_time.setValue('');
         obj_deadline_expr_min.setValue('');
         obj_deadline.setValue('');
-		if(row.data){
-			if(row.data.expr_response_time){
-				obj_rsp_expr_min.setValue(row.data.expr_response_time + '#' + row.data.response_time_min);
-				obj_rsp_time.setValue(get_expr_response_time(row));
-			}
-			if(row.data.expr_deadline){
-				obj_deadline_expr_min.setValue(row.data.expr_deadline + '#' + row.data.deadline_min);
-				obj_deadline.setValue(get_expr_deadline(row));
-			}
-		}
+        if(row.data){
+            if(row.data.expr_response_time){
+                obj_rsp_expr_min.setValue(row.data.expr_response_time + '#' + row.data.response_time_min);
+                obj_rsp_time.setValue(get_expr_response_time(row));
+            }
+            if(row.data.expr_deadline){
+                obj_deadline_expr_min.setValue(row.data.expr_deadline + '#' + row.data.deadline_min);
+                obj_deadline.setValue(get_expr_deadline(row));
+            }
+        }
     }
-	
-	var store_category_priority = new Baseliner.JsonStore({
-		root: 'data' , 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/topicadmin/get_config_priority',
-		fields: [
-			{  name: 'id' },
-			{  name: 'id_category' },
-			{  name: 'name' },
-			{  name: 'response_time_min' },
-			{  name: 'expr_response_time' },
-			{  name: 'deadline_min' },
-			{  name: 'expr_deadline' },
-			{  name: 'is_active' }  
-		]
-	});
-	
-	
+
+    var store_category_priority = new Baseliner.JsonStore({
+        root: 'data' ,
+        remoteSort: true,
+        totalProperty:"totalCount",
+        id: 'id',
+        url: '/topicadmin/get_config_priority',
+        fields: [
+            {  name: 'id' },
+            {  name: 'id_category' },
+            {  name: 'name' },
+            {  name: 'response_time_min' },
+            {  name: 'expr_response_time' },
+            {  name: 'deadline_min' },
+            {  name: 'expr_deadline' },
+            {  name: 'is_active' }
+        ]
+    });
+
+
     var combo_priority = new Ext.form.ComboBox({
         value: data ? data.name_priority : '',
         mode: 'local',
@@ -97,34 +97,34 @@ params:
         displayField: 'name',
         valueField: 'id',
         store: store_category_priority,
-		readOnly: meta ? meta.readonly : true,
+        readOnly: meta ? meta.readonly : true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         listeners:{
             'select': function(cmd, rec, idx){
                 load_txt_values_priority(rec);
             }
-        }           
+        }
     });
-	
-	
-	return [
-		{
-			xtype:'textfield',
-			fieldLabel: _('Response'),
-			hidden: true,
-			name: 'txtrsptime',
-			readOnly: true
-		},
-		{
-			xtype:'textfield',
-			fieldLabel: _('Resolution'),
-			hidden: true,
-			name: 'txtdeadline',
-			readOnly: true
-		},
-		{ xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
-		{ xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
-		combo_priority
-		
+
+
+    return [
+        {
+            xtype:'textfield',
+            fieldLabel: _('Response'),
+            hidden: true,
+            name: 'txtrsptime',
+            readOnly: true
+        },
+        {
+            xtype:'textfield',
+            fieldLabel: _('Resolution'),
+            hidden: true,
+            name: 'txtdeadline',
+            readOnly: true
+        },
+        { xtype: 'hidden', name: 'txt_rsptime_expr_min', value: -1 },
+        { xtype: 'hidden', name: 'txt_deadline_expr_min', value: -1 },
+        combo_priority
+
     ]
 })

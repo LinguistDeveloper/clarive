@@ -1,14 +1,14 @@
 (function(params){
-	var form = params.form;
-    var custom_form_container = new Ext.Container({ 
+    var form = params.form;
+    var custom_form_container = new Ext.Container({
         hidden: true
     });
-	
+
     if( params.value != '' ) {
         var f = params.value;
         for( var i=0; i<f.length; i++ ) {
            var fieldset = new Ext.form.FieldSet({
-                defaults: { 
+                defaults: {
                    anchor: '70%',
                    msgTarget: 'under',
                    allowBlank: false
@@ -30,8 +30,8 @@
             });
         }
     }
-	
-	return [
-		custom_form_container
+
+    return [
+        custom_form_container
     ]
 })

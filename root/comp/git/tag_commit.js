@@ -2,21 +2,21 @@
     if( node == undefined ) node = {};
     var repo_dir = node.attributes.data.repo_dir;
     var sha = node.attributes.data.sha;
-	var store_tasks =new Baseliner.JsonStore({
-		root: 'data', 
-		remoteSort: true,
-		totalProperty:"totalCount", 
-		id: 'id', 
-		url: '/tasks/json',
-		fields: [ 'id', 'name', 'category', 'assigned', 'description' ]
-	});
-    
+    var store_tasks =new Baseliner.JsonStore({
+        root: 'data',
+        remoteSort: true,
+        totalProperty:"totalCount",
+        id: 'id',
+        url: '/tasks/json',
+        fields: [ 'id', 'name', 'category', 'assigned', 'description' ]
+    });
+
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var combo_tasks = new Ext.ux.form.SuperBoxSelect({
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: false,
-        addNewDataOnBlur: false, 
+        addNewDataOnBlur: false,
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
@@ -43,7 +43,7 @@
      });
 
     var form = new Ext.FormPanel({
-        frame: true, 
+        frame: true,
         width: 700,
         defaults: { width: 550 },
         items: [
@@ -80,7 +80,7 @@
             }
         ]
     });
-    var win = new Ext.Window({ 
+    var win = new Ext.Window({
         title: _('Create Tag'),
         closeAction: 'destroy',
         items: [ form ]

@@ -3,10 +3,10 @@
     Baseliner.help_push({ title: _('Manual Deploy'), path: '/manualdeploy' });
     var store_roles = new Baseliner.JsonStore({
         root: 'data', remoteSort: true, autoLoad: true,
-        totalProperty:"totalCount", baseParams: {}, id: 'id', 
-        url: '/role/all', fields: ['id','role','role_hash','description', 'role_name'] 
+        totalProperty:"totalCount", baseParams: {}, id: 'id',
+        url: '/role/all', fields: ['id','role','role_hash','description', 'role_name']
     });
- 
+
     var tpl = new Ext.XTemplate(
         '<tpl for="."><div class="search-item {recordCls}">',
         '<span>{role_name}</span>',
@@ -18,7 +18,7 @@
         allowBlank: true,
         msgTarget: 'under',
         allowAddNewData: true,
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         //emptyText: _('Enter or select the category tags'),
         triggerAction: 'all',
         resizable: true,
@@ -52,7 +52,7 @@
            displayField: 'role',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store_roles,
            editable: true,
            forceSelection: true,
@@ -60,7 +60,7 @@
            allowBlank: false
     }); */
 
-    
+
     var form = new Ext.FormPanel({
         frame: true,
         //style: 'margin: 20px 200px 200px 20px',

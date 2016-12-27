@@ -10,23 +10,23 @@
             fieldLabel:_('Contents'), anchor:'100%', height: 350, name:'body', value: data.body
         });
     }
-    var log_body = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Log Body'), name:'log_body', value: data.log_body || 'no', 
-        data: [ 
-          ['no',_("Don't print body to log")], 
+    var log_body = new Baseliner.ComboDouble({
+        fieldLabel: _('Log Body'), name:'log_body', value: data.log_body || 'no',
+        data: [
+          ['no',_("Don't print body to log")],
           ['yes',_('Print body in log')]
         ]
     });
 
-    var templating = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Template Use'), name:'templating', value: data.templating || 'none', 
-        data: [ 
-          ['none',_("No Template")], 
+    var templating = new Baseliner.ComboDouble({
+        fieldLabel: _('Template Use'), name:'templating', value: data.templating || 'none',
+        data: [
+          ['none',_("No Template")],
           ['tt',_('Template Toolkit')]
         ]
     });
-    
-    var template_var = new Ext.form.TextField({ fieldLabel:_('Template Var'), 
+
+    var template_var = new Ext.form.TextField({ fieldLabel:_('Template Var'),
         name:'template_var', hidden: !data.templating || data.templating=='none', value: data.template_var });
 
     templating.on('select', function(){

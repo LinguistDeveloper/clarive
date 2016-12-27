@@ -1,5 +1,5 @@
 <%args>
-    $row 
+    $row
 </%args>
     xtype: "combo",
     typeAhead: "true",

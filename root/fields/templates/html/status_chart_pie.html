@@ -10,11 +10,11 @@
     if ( $filter_category ) {
         if ( !is_number($filter_category) ) {
             my $cat = mdb->category->find_one({ name => $filter_category });
-            $filter_category = $cat->{id} if $cat; 
+            $filter_category = $cat->{id} if $cat;
         }
     }
     my $depth = $meta->{depth} || 1;
-    
+
     my ($topics, @topics_by_status) = Baseliner->model('Topic')->group_by_status(depth=>$depth,filter_category=>$filter_category,mid=>$$data{mid} );
     my @filter_topics_by_status;
     my @filter_status_names =  map {lc ($_)} split(',', $meta->{filter});
@@ -30,24 +30,24 @@
             $others_total += $_->{total};
             push @others_id, $_->{status_id};
         }
-        
+
         $others_id = join ',', @others_id;
         push @filter_topics_by_status, { color => '#FF9933', status => 'Others', status_id => $others_id, total => $others_total} if $others_total > 0 ;
     }
     else{
         @filter_topics_by_status = @topics_by_status;
     }
-    
+
 </%perl>
 
 % if(@filter_topics_by_status && !$meta->{hidden}){
-	<div id='boot' style="clear:left;" >
-		<b><%$meta->{name_field}%></b><br>
-		<div id="<%$graph_id%>" 
-			style="width: 150px; height: 150px; float: left; " 
-			onmouseout="document.body.style.cursor='default';"></div>
-		<div id="<%$graph_id%>legend" ></div>
-	</div>
+    <div id='boot' style="clear:left;" >
+        <b><%$meta->{name_field}%></b><br>
+        <div id="<%$graph_id%>"
+            style="width: 150px; height: 150px; float: left; "
+            onmouseout="document.body.style.cursor='default';"></div>
+        <div id="<%$graph_id%>legend" ></div>
+    </div>
     <div style="clear:left;" ></div>
 
 
@@ -62,7 +62,7 @@
 %}
 
         // DEFAULT
-        $.plot($("#<%$graph_id%>"), data, 
+        $.plot($("#<%$graph_id%>"), data,
         {
             series: {
                 status_id: status_id,
@@ -89,32 +89,32 @@
             grid: {
                 hoverable: true,
                 clickable: true
-            }        
+            }
         });
         $("#<%$graph_id%>").bind("plothover", pieHover);
-        $("#<%$graph_id%>").bind("plotclick", pieClick);    
+        $("#<%$graph_id%>").bind("plotclick", pieClick);
     });
 
-    function pieHover(event, pos, obj) 
+    function pieHover(event, pos, obj)
     {
         if (!obj)
                     return;
         document.body.style.cursor='pointer';
     }
 
-    function pieClick(event, pos, obj) 
+    function pieClick(event, pos, obj)
     {
         if (!obj)
                     return;
-                
+
         var topic_list = new Array();
-        
+
 %foreach my $mid (@$topics){
     topic_list.push(<% $mid %>);
-%}                   
-               
-        var name = Baseliner.topic_title( '<%$data->{topic_mid}%>', '<% $data->{name_category} %>', '<% $data->{color_category} %>', true); //, literal_only, id) {        
-          
+%}
+
+        var name = Baseliner.topic_title( '<%$data->{topic_mid}%>', '<% $data->{name_category} %>', '<% $data->{color_category} %>', true); //, literal_only, id) {
+
         var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + name + ' &#10145; ' + obj.series.label + '</span></div>';
         //Baseliner.addNewTabComp('/topic/grid?status_id=' + obj.series.status_id[obj.series.label] + '&release=<%$data->{topic_mid}%>', _(title_status));
         Baseliner.add_tabcomp('/comp/topic/topic_grid.js', title_status , { status_id: obj.series.status_id[obj.series.label] , topic_list: topic_list });

@@ -1,7 +1,7 @@
 (function(params){
     var data = params.data || {};
-    
-    var lang_combo = new Baseliner.ComboDouble({ 
+
+    var lang_combo = new Baseliner.ComboDouble({
         fieldLabel: _('Programming language'), name:'lang', value: data.lang || 'js', data: [
             ['js',_('JavaScript')],
             ['perl',_('Perl')]
@@ -11,7 +11,7 @@
     var code = new Cla.AceEditor({
         fieldLabel:_('Code'), anchor:'100%', height: 500, name:'code', value: data.code, mode: 'javascript'
     });
-    
+
     lang_combo.on('select',function(){
         var lang = lang_combo.getValue() == 'perl' ? 'perl' : 'javascript';
         code.editor.getSession().setMode("ace/mode/" + lang);

@@ -8,7 +8,7 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
         var btnUndo = new Ext.Button({ icon: IC('undo'), handler: function(){ self.$undo() } });
         var btnRedo = new Ext.Button({ icon: IC('redo'), handler: function(){ self.$redo() } });
         if( self.tbar !== undefined ) self.tbar = [
-            btnUndo,btnRedo 
+            btnUndo,btnRedo
         ];
         self.addEvents( 'aftereditor', 'docchange' );
         self.on('afterrender', function(){
@@ -56,7 +56,7 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
         switch( this.theme ) {
             case 'dark' : return 'idle_fingers';
             case 'light' : return 'github';
-            default: return this.theme; 
+            default: return this.theme;
         }
     },
     getValue : function(){
@@ -93,19 +93,19 @@ Cla.AceEditor = Ext.extend( Ext.Panel, {
     },
     focus : function(){
         Cla.AceEditor.superclass.focus.apply(this,arguments);
-        if( this.editor ) 
+        if( this.editor )
             this.editor.focus();
     },
-    $undo : function(){ 
+    $undo : function(){
         var self = this;
-        self.editor.undo(); 
-        self.editor.focus(); 
+        self.editor.undo();
+        self.editor.focus();
         self.editor.getSession().selection.clearSelection();
     },
-    $redo : function(){ 
+    $redo : function(){
         var self = this;
-        self.editor.redo(); 
-        self.editor.focus(); 
+        self.editor.redo();
+        self.editor.focus();
         self.editor.getSession().selection.clearSelection();
     }
 });

@@ -1,11 +1,11 @@
 (function(){
     var store=new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
+        totalProperty:"totalCount",
+        id: 'id',
         url: '/project/list',
-        fields: [ 
+        fields: [
             {  name: 'name' },
             {  name: 'nature' },
             {  name: 'id_parent' },
@@ -50,10 +50,10 @@
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
             loadMask: true,
             columns: [
-                { header: _('Project'), width: 120, dataIndex: 'name', sortable: true },	
-                { header: _('Parent'), width: 40, dataIndex: 'id_parent', sortable: true },	
-                { header: _('Nature'), width: 80, dataIndex: 'nature', sortable: true },	
-                { header: _('Scope'), width: 150, dataIndex: 'ns', sortable: true },	
+                { header: _('Project'), width: 120, dataIndex: 'name', sortable: true },
+                { header: _('Parent'), width: 40, dataIndex: 'id_parent', sortable: true },
+                { header: _('Nature'), width: 80, dataIndex: 'nature', sortable: true },
+                { header: _('Scope'), width: 150, dataIndex: 'ns', sortable: true },
                 { header: _('Description'), width: 150, dataIndex: 'description', sortable: true },
                 { header: _('Data'), width: 350, dataIndex: 'data', sortable: true, editor: new Ext.form.TextArea({ grow: true }) }
             ],
@@ -84,7 +84,7 @@
                                     Baseliner.message( _("Surrogate Error"), _("Error during surrogate: %1", err ));
                                 }
                             });
-                        } 
+                        }
                     }
                 },
                 new Ext.Toolbar.Button({
@@ -100,7 +100,7 @@
                         } else {
                             Baseliner.addNewTab('/project/create' , '<% _loc('New Project') %>' );
                         };
-                        
+
                     }
                 }),
                 new Ext.Toolbar.Button({
@@ -110,8 +110,8 @@
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         var sel = sm.getSelected();
-                        Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the project ' + sel.data.name + '?', 
-                            function(btn){ 
+                        Ext.Msg.confirm('<% _loc('Confirmation') %>', 'Are you sure you want to delete the project ' + sel.data.name + '?',
+                            function(btn){
                                 if(btn=='yes') {
                                     var conn = new Ext.data.Connection();
                                     conn.request({
@@ -119,7 +119,7 @@
                                         params: { action: 'delete', id_rel: sel.data.id },
                                         success: function(resp,opt) { grid.getStore().remove(sel); },
                                         failure: function(resp,opt) { Ext.Msg.alert('<% _loc('Error') %>', '<% _loc('Could not delete the release.') %>'); }
-                                    });	
+                                    });
                                 }
                             } );
                     }
@@ -132,7 +132,7 @@
         grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             //Baseliner.addNewTab('/endevor/pkg_data?package=' + r.get('package') , r.get('package') );
-        });		
+        });
 
     return grid;
 })();

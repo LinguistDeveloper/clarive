@@ -2,8 +2,8 @@
     var data = params.data || {};
     var ta = Baseliner.cols_templates['textarea'];
     var slurp = new Baseliner.CBox({ name: 'slurp', checked: params.data.slurp, fieldLabel: _("Slurp") });
-    var item_mode = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Items Mode'), name:'items_mode', value: data.items_mode || 'all_files', 
+    var item_mode = new Baseliner.ComboDouble({
+        fieldLabel: _('Items Mode'), name:'items_mode', value: data.items_mode || 'all_files',
         data: [ ['all_files',_('All files')], ['only_job_items',_('Job Items')] ]
     });
 
@@ -13,26 +13,26 @@
         item_mode,
         new Baseliner.MonoTextArea({ fieldLabel: _('Output Dir'), height: 40, name: 'output_dir', value: params.data.output_dir }),
         { xtype:'textfield', name:'suffix', value: data.suffix || '', fieldLabel: _('Suffix') },
-        new Baseliner.ArrayGrid({ 
-            fieldLabel:_('Patterns'), 
-            name: 'patterns', 
+        new Baseliner.ArrayGrid({
+            fieldLabel:_('Patterns'),
+            name: 'patterns',
             value: params.data.patterns,
-            description:_('Patterns Regex'), 
-            default_value:'s{}{}g' 
-        }), 
-        new Baseliner.ArrayGrid({ 
-            fieldLabel:_('Includes'), 
-            name: 'includes', 
+            description:_('Patterns Regex'),
+            default_value:'s{}{}g'
+        }),
+        new Baseliner.ArrayGrid({
+            fieldLabel:_('Includes'),
+            name: 'includes',
             value: params.data.includes,
-            description:_('Include Regex'), 
-            default_value:'.*' 
-        }), 
-        new Baseliner.ArrayGrid({ 
-            fieldLabel:_('Excludes'), 
-            name: 'excludes', 
+            description:_('Include Regex'),
+            default_value:'.*'
+        }),
+        new Baseliner.ArrayGrid({
+            fieldLabel:_('Excludes'),
+            name: 'excludes',
             value: params.data.excludes,
-            description:_('Exclude Regex'), 
-            default_value:'.*' 
+            description:_('Exclude Regex'),
+            default_value:'.*'
         })
     ]
 })

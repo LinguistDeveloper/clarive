@@ -34,7 +34,7 @@
             sortInfo: {field: 'item', direction: "ASC"},
             groupField: group_field
     });
-    
+
     store.load({params:{start: 0, limit: ps }});
 
     <& /comp/search_field.mas &>
@@ -109,10 +109,10 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask: true,
         columns: [
-            { header: _("Scope"), width: 120, dataIndex: 'ns', sortable: true },	
-            { header: _("Item"), width: 120, dataIndex: 'item', sortable: true },	
-            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
-            { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
+            { header: _("Scope"), width: 120, dataIndex: 'ns', sortable: true },
+            { header: _("Item"), width: 120, dataIndex: 'item', sortable: true },
+            { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },
+            { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },
             { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
         ],
         bbar: ptool,
@@ -120,7 +120,7 @@
             { text: _("Views"), menu: filter_menu },
 <%doc>
             { text: _('Auto Refresh'),
-                icon: '/static/images/icons/slot.svg', 
+                icon: '/static/images/icons/slot.svg',
                 enableToggle: true,
                 pressed: false,
                 cls: 'x-btn-text-icon',
@@ -156,7 +156,7 @@
                 msg :  'Buffering. Please wait...'
             }
         });
-        
+
     var store_live = new Ext.ux.grid.livegrid.Store({
                 autoLoad : true,
                 url: '/package/list',
@@ -185,19 +185,19 @@
                 ]),
                 sortInfo   : {field: 'item', direction: 'ASC'}
             })
-    
+
     var itemTpl = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon = rec.icon || 'package.svg';
         return "<img alt='"+ rec.id +"' border=0 src='/static/images/icons/"+icon+"' /><b>" + value + "</b>" ;
     };
-    
+
     var livegrid = new Ext.ux.grid.livegrid.GridPanel({
             enableDragDrop : false,
             cm             : new Ext.grid.ColumnModel([
                 new Ext.grid.RowNumberer({header : '#', width: 60 }),
-                { header: _("Item"), width: 180, dataIndex: 'item', sortable: true, renderer: itemTpl  },	
-                { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },	
-                { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },	
+                { header: _("Item"), width: 180, dataIndex: 'item', sortable: true, renderer: itemTpl  },
+                { header: _("Tipo"), width: 120, dataIndex: 'ns_type', sortable: true },
+                { header: _("Parent"), width: 120, dataIndex: 'related', sortable: true },
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid'  }
             ]),
             loadMask: true,
@@ -244,13 +244,13 @@
                 icon: '/static/images/icons/post.svg',
                 cls: 'x-btn-text-icon',
                 handler: annotation
-            }, 
+            },
 </%doc>
             '->'
             ]
-        }); 
+        });
     return livegrid;
-    
+
 })();
 
 

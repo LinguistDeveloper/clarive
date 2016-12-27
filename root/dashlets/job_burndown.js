@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
     var id = params.id_div;  // id of the target div
 
     var reload_dashlet = function( ) {
@@ -23,7 +23,7 @@
         var slopeAndIntercept = function(points){
           var rV = {},
               N = points.length,
-              sumX = 0, 
+              sumX = 0,
               sumY = 0,
               sumXx = 0,
               sumYy = 0,
@@ -32,7 +32,7 @@
           // can't fit with 0 or 1 point
           if (N < 2){
             return rV;
-          }    
+          }
 
           for (var i = 0; i < N; i++){
             var x = points[i][0],
@@ -68,9 +68,9 @@
           var trend = data0 ; // not working, 23h point is superlow lineFit( data0 );
           for( var i=0; i<24; i++ ) {
               //var hr = ( i>11 ? (i-12)+'pm' : i+'am' );
-              ticks.push([i,i+'h']); 
+              ticks.push([i,i+'h']);
           }
-           
+
           $.plot( $('#'+id), [
                   {
                       data: trend,
@@ -85,14 +85,14 @@
               ],
               {
                   legend: { show: true },
-                  xaxis: { 
+                  xaxis: {
                       ticks: ticks,
                       axisLabelUseCanvas: true,
                       labelAngle: -90
                   }
               }
           );
-           
+
 
       });
   };

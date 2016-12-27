@@ -3,20 +3,20 @@
 
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> - ({description})</span></div></tpl>' );
 
-    var states_store = new Baseliner.JsonStore({ 
-        id: 'id', 
+    var states_store = new Baseliner.JsonStore({
+        id: 'id',
         baseParams: {},
         root: 'data',
         autoLoad: true,
         url: '/job/states',
-        fields: ['id','name'] 
+        fields: ['id','name']
     });
 
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
 
     var states = new Ext.ux.form.SuperBoxSelect({
         msgTarget: 'under',
-        addNewDataOnBlur: true, 
+        addNewDataOnBlur: true,
         triggerAction: 'all',
         store: states_store,
         mode: 'remote',
@@ -42,7 +42,7 @@
     // });
 
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
-        include_root: true, 
+        include_root: true,
         collection: 'project',
         autoLoad: false
     } });
@@ -77,11 +77,11 @@
         style: 'margin-bottom3'
     });
 
-    var natures = Baseliner.ci_box({ 
-        name:'natures', 
-        anchor:'100%', 
-        fieldLabel:_('Natures'), role:'Nature', 
-        force_set_value: true, 
+    var natures = Baseliner.ci_box({
+        name:'natures',
+        anchor:'100%',
+        fieldLabel:_('Natures'), role:'Nature',
+        force_set_value: true,
         value: data.natures,
         singleMode: false
     });
@@ -97,12 +97,12 @@
         style: 'margin-bottom: 3px'
     });
 
-    var bl = Baseliner.ci_box({ 
-        name:'bl', 
-        anchor:'100%', 
-        fieldLabel:_('BLs'), 
+    var bl = Baseliner.ci_box({
+        name:'bl',
+        anchor:'100%',
+        fieldLabel:_('BLs'),
         "class":'BaselinerX::CI::bl',
-        force_set_value: true, 
+        force_set_value: true,
         value: data.bl,
         valueField: 'moniker',
         singleMode: false
@@ -182,7 +182,7 @@
     var users_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true
     });
-    
+
     var users = new Baseliner.model.Users({
         fieldLabel: _('User'),
         name: 'users',

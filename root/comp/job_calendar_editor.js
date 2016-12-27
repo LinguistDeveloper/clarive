@@ -4,8 +4,8 @@
 (function(){
     var id = Ext.id();
     var id2 = 'container-' + id;
-    var bl_store = new Ext.data.SimpleStore({ 
-       fields: ['value', 'name'], 
+    var bl_store = new Ext.data.SimpleStore({
+       fields: ['value', 'name'],
        data : <% js_dumper( $c->stash->{baselines} ) %>
     });
 

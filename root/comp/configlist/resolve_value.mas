@@ -1,7 +1,7 @@
 //////////////// Resolve, Eval variable
 
 var resolve_config = function(rec) {
-    
+
     var config_name = '';
     var xtype = 'textarea';
     var input_type = 'text';
@@ -11,8 +11,8 @@ var resolve_config = function(rec) {
         config_name += rec.get('config_label')==null
             ? rec.get('key') : rec.get('config_label') ;
         if( rec.get('config_type') == 'password' ) {
-            input_type = 'password';	
-            xtype = 'textfield';	
+            input_type = 'password';
+            xtype = 'textfield';
         }
     }
     var form = new Ext.form.FormPanel({
@@ -27,15 +27,15 @@ var resolve_config = function(rec) {
                 hideLabel: input_type=='password' ? false : true,
                 name: 'value',
                 anchor: input_type=='password' ? '' : '100% -98',
-                inputType: input_type 
+                inputType: input_type
             }
         ]
     });
-    
-    var baselines = new Ext.data.SimpleStore({ 
-       fields: ['bl', 'name'], 
+
+    var baselines = new Ext.data.SimpleStore({
+       fields: ['bl', 'name'],
        data : <% js_dumper( $c->stash->{baselines} ) %>
-    }); 
+    });
 
     var win = new Ext.Window({
         layout: 'fit',
@@ -51,11 +51,11 @@ var resolve_config = function(rec) {
               form
           ],
         buttons: [{
-            text: '<% _loc('Resolve') %>', 
+            text: '<% _loc('Resolve') %>',
             handler: function() {
                 var ff = form.getForm();
                 ff.submit({
-                        success: function(form, action) { 
+                        success: function(form, action) {
                             Ext.Msg.alert( 'Value', action.result.msg );
                         },
                         failure: function(form, action) { Ext.Msg.alert("<% _loc('Failure') %>", action.result.msg); }

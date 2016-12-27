@@ -1,4 +1,4 @@
-(function(params){ 
+(function(params){
     var id = params.id_div;
     var project_id = params.project_id;
     var meta = params.data;

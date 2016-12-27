@@ -2,13 +2,13 @@
     var ps = 20;
     var Record = Ext.data.Record.create(
         [ 'event_key', 'event_status', 'event_data', 'description', 'ts',
-            'data', 'type', 'id_rule', 'id_rule_log', 'id_event', 
+            'data', 'type', 'id_rule', 'id_rule_log', 'id_event',
             'mid', 'id', '_id', '_is_leaf', '_parent' ]
     );
      var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({
        autoLoad : true,
        url: '/event/log',
-	   //baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
+       //baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, Record )
     });
 
@@ -50,7 +50,7 @@
         }
         return arr.join(' ');
     };
-    
+
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon = value == 'ok' ? '/static/images/icons/active.svg' :
                    value == 'ko' ? '/static/images/icons/error_red.svg' :
@@ -59,14 +59,14 @@
 
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );
     };
-    
+
     var del_event = function(){
         var sm = grid.getSelectionModel();
         if( sm.hasSelection() ) {
             var sels = sm.getSelections();
             var ids = [];
             Ext.each( sels, function(sel) {
-                ids.push( sel.data.id ); 
+                ids.push( sel.data.id );
             });
             Baseliner.ajaxEval('/event/del', { ids: ids }, function( res ){
                 Baseliner.message( _('Event Delete'), res.msg );
@@ -81,7 +81,7 @@
             var sels = sm.getSelections();
             var ids = [];
             Ext.each( sels, function(sel) {
-                ids.push( sel.data.id ); 
+                ids.push( sel.data.id );
             });
             Baseliner.ajaxEval('/event/status', { ids: ids, event_status: event_status }, function( res ){
                 Baseliner.message( _('Event Status Changed'), res.msg );
@@ -133,7 +133,7 @@
         tbar: [  _('Search') + ': ', ' ',
             searchField,' ',' ',
             { icon:'/static/images/icons/refresh.svg', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
-            { icon:'/static/images/icons/delete.svg', handler: del_event , 
+            { icon:'/static/images/icons/delete.svg', handler: del_event ,
             text:_('Delete')},
             { icon:'/static/images/icons/restart_new.svg', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
         ],

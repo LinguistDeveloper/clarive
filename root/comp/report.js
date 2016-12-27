@@ -1,31 +1,31 @@
 (function(params) {
-	var ps = 25;
+    var ps = 25;
     //Baseliner.add_tabcomp( '/comp/topic/topic_grid.js', {}, function(res){
     //});
 
     /*
-	var columns_grid = [];
-	for (i=0;i < params.fields.length; i++){
-		columns_grid.push({header: params.fields[i]});
-	}
+    var columns_grid = [];
+    for (i=0;i < params.fields.length; i++){
+        columns_grid.push({header: params.fields[i]});
+    }
 
     var store = new Baseliner.JsonStore({
-		baseParams: { select: params.fields },
+        baseParams: { select: params.fields },
         root: 'data' ,
         remoteSort: true,
         totalProperty:"totalCount",
         url: '/report/list_topics',
-		fields: params.fields,
-		autoLoad: true
+        fields: params.fields,
+        autoLoad: true
     });
 
-	var colModel = new Ext.grid.ColumnModel({
-		columns: columns_grid,
-		defaults: {
-			sortable: true,
-			menuDisabled: true,
-			width: 100
-		}
+    var colModel = new Ext.grid.ColumnModel({
+        columns: columns_grid,
+        defaults: {
+            sortable: true,
+            menuDisabled: true,
+            width: 100
+        }
    });
 
     var btn_html = {
@@ -100,7 +100,7 @@
         autoScroll: true,
         stateful: !Baseliner.DEBUG,
         stateId: 'topic-grid',
-		cm: colModel,
+        cm: colModel,
         store: store,
         dropable: true,
         autoSizeColumns: true,
@@ -108,12 +108,12 @@
         loadMask:'true',
         stripeRows: true,
         tbar:   [
-				'->',
+                '->',
                 btn_reports
         ],
-		bbar: ptool
+        bbar: ptool
     });
 
-	return grid_report;
+    return grid_report;
     */
 })

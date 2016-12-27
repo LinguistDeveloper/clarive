@@ -11,7 +11,7 @@
         panel_prev.removeAll();
         panel_prev.setTitle( query );
     }
-    
+
     var block_tmpl = function(){/*
         <div id="boot" style="margin:4"><div id="search-result-block">
             [% if( url[4] ){ %]
@@ -27,15 +27,15 @@
             </div>
         </div>
     */}.tmpl();
-    var panel = panel_prev 
+    var panel = panel_prev
         ? panel_prev
         : new Ext.Panel({
-        title: query, 
+        title: query,
         layout:'column',
         id: 'search-' + Ext.id(),
-        overflow:'auto', 
+        overflow:'auto',
         style:{ margin: '10px 10px 10px 10px' } });
-    
+
     var toptpl = '<div id="boot"><h6>{0}</h6><h7>{1}</h7></div>';
     Baseliner.ajaxEval( '/search/providers', {}, function(res) {
         var provs = res.providers;
@@ -44,7 +44,7 @@
             var prov_wait = new Ext.Container({
                 html: String.format( toptpl, _(provider.name), _('searching...') ),
                 style: 'border-bottom: 1px solid #ddd; margin: 0px 0px 0px 0px'
-                
+
             });
             var prov_panel = new Ext.Container({ columnWidth: 1/provs.length, style:{ margin:'0px 7px 0px 7px' } });
             prov_panel.add( prov_wait );
@@ -64,7 +64,7 @@
                         var url;
                         if( r.type == 'topic' ) {
                             r.title = ['<table><tr><td>', Baseliner.topic_name({ category_name:r.url[1], category_color:r.url[2], mid:r.mid }),
-                                '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join(''); 
+                                '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join('');
                         }
                         var block = block_tmpl(r);
                         var hit_panel = new Ext.Container({ html: block, style:'padding-right:20px; cursor:pointer; border: 1px solid #fff;', name: 'search-result' });

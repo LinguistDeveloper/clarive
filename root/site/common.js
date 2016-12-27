@@ -87,7 +87,7 @@ Baseliner.loadFile = function(filename, filetype){
 };
 
 Baseliner.require = function(url, cb, cache){
-    Cla.use(url, cb, cache===undefined?false:cache ); 
+    Cla.use(url, cb, cache===undefined?false:cache );
 };
 
 Baseliner.clone = function(obj){
@@ -122,9 +122,9 @@ Baseliner.unload_warning = function() {
 
 // Errors
 Baseliner.errorWin = function( p_title, p_html ) {
-    var win = new Ext.Window({ layout: 'fit', 
+    var win = new Ext.Window({ layout: 'fit',
         autoScroll: true, title: p_title,
-        height: 600, width: 1000, 
+        height: 600, width: 1000,
         html: p_html });
     win.show();
 };
@@ -134,25 +134,25 @@ Baseliner.js_reload = function(msg) {
     Baseliner.loadFile( '/static/site.css', 'css' );
     Baseliner.loadFile( '/static/final.css', 'css' );
     Cla.use([
-        '/i18n/js', 
-        '/site/common.js', 
-        '/site/model.js', 
-        '/site/kanban.js', 
-        '/site/calendar.js', 
-        '/site/explorer.js',  
-        '/site/dashboard.js',  
-        '/site/aceeditor.js',  
-        '/site/editors.js',  
-        '/site/graph.js', 
-        '/site/portal/Portal.js', 
-        '/site/portal/Portlet.js', 
-        '/site/portal/PortalColumn.js', 
-        '/comp/topic/topic_lib.js', 
-        '/comp/topic/topic_lib_grid.js', 
-        '/site/prefs.js', 
-        '/site/help.js', 
+        '/i18n/js',
+        '/site/common.js',
+        '/site/model.js',
+        '/site/kanban.js',
+        '/site/calendar.js',
+        '/site/explorer.js',
+        '/site/dashboard.js',
+        '/site/aceeditor.js',
+        '/site/editors.js',
+        '/site/graph.js',
+        '/site/portal/Portal.js',
+        '/site/portal/Portlet.js',
+        '/site/portal/PortalColumn.js',
+        '/comp/topic/topic_lib.js',
+        '/comp/topic/topic_lib_grid.js',
+        '/site/prefs.js',
+        '/site/help.js',
         ], function(){
-            if( msg ) Baseliner.message(_('JS'), _('Reloaded successfully') );  
+            if( msg ) Baseliner.message(_('JS'), _('Reloaded successfully') );
         }, false
     );
 };
@@ -211,7 +211,7 @@ Baseliner.message = function(title, msg, config){
     if( !msg ) {
         msg = _('(empty message)');
     }
-    
+
     msg = Baseliner.error_msg( msg );
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, 'class': 'baseliner-message',
@@ -426,7 +426,7 @@ Baseliner.store_exception_handler = function( proxy, type, action, opts, res, ar
         var r = Ext.util.JSON.decode( res.responseText );
         if( res.status == 401 || r.logged_out ) {
             Baseliner.login({ no_reload: 1, scope: store, on_login: function(s){ s.reload() } });
-        } 
+        }
         else if( r.msg ) {
             //Baseliner.error( _('Server Error'), r.msg );
             new Baseliner.ErrorWindow({ title: _('Server Error'), msg: r.msg  }).show();
@@ -460,7 +460,7 @@ Baseliner.JsonStore = Ext.extend( Ext.data.JsonStore, {
         }
         this.on('exception', Baseliner.store_exception_handler );
         this.on('beforeload', Baseliner.store_exception_params );
-        this.on('load', function(){ 
+        this.on('load', function(){
             if( self.reader.jsonData && self.reader.jsonData.__broadcast ) {
                 Baseliner.broadcast_process( self.reader.jsonData.__broadcast );
                 delete self.reader.jsonData.__broadcast;
@@ -476,7 +476,7 @@ Baseliner.GroupingStore = Ext.extend( Ext.data.GroupingStore, {
         var self = this;
         this.on('exception', Baseliner.store_exception_handler );
         this.on('beforeload', Baseliner.store_exception_params );
-        this.on('load', function(){ 
+        this.on('load', function(){
             if( self.reader.jsonData && self.reader.jsonData.__broadcast ) {
                 Baseliner.broadcast_process( self.reader.jsonData.__broadcast );
                 delete self.reader.jsonData.__broadcast;
@@ -489,20 +489,20 @@ Baseliner.GroupingStore = Ext.extend( Ext.data.GroupingStore, {
 
 // deprecated:
 Baseliner.json_store = Ext.extend( Baseliner.JsonStore, {
-    root: 'data', 
+    root: 'data',
     remoteSort: true,
-    totalProperty: 'totalCount', 
-    id: 'id', 
+    totalProperty: 'totalCount',
+    id: 'id',
     baseParams: {  start: 0, limit: this.ps || 99999999 }
 });
 
 Baseliner.new_jsonstore = function(params) {
     if( params == undefined ) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data', 
+        root: 'data',
         remoteSort: true,
-        totalProperty: params.totalProperty || 'totalCount', 
-        id: 'id', 
+        totalProperty: params.totalProperty || 'totalCount',
+        id: 'id',
         fields: params.fields || [],
         url: params.url || '',
         baseParams: {  start: 0, limit: params.ps || 99999999 }
@@ -510,20 +510,20 @@ Baseliner.new_jsonstore = function(params) {
     return store;
 };
 
-Baseliner.button = function(text,icon,handler){ 
+Baseliner.button = function(text,icon,handler){
     return new Ext.Button({
        text: text,
        icon: icon || '/static/images/icons/revision_create.svg',
        cls: 'x-btn-text-icon',
-       handler: handler || function(){} 
+       handler: handler || function(){}
     });
 };
 
-Baseliner.img_button = function(icon,handler){ 
+Baseliner.img_button = function(icon,handler){
     return new Ext.Button({
        icon: icon || '/static/images/icons/revision_create.svg',
        cls: 'x-btn-icon',
-       handler: handler || function(){} 
+       handler: handler || function(){}
     });
 };
 
@@ -545,25 +545,25 @@ Baseliner.close_parent = function(comp) {
 Baseliner.combo_project = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || {},
-        id: 'ns', 
+        id: 'ns',
         url: '/project/user_projects',
-        fields: ['ns','name','description'] 
+        fields: ['ns','name','description']
     });
     var valueField = params.valueField || 'ns';
     var combo = new Ext.form.ComboBox({
            fieldLabel: _("Project"),
            name: params.name || 'ns',
            hiddenName: params.hiddenName || 'ns',
-           valueField: valueField, 
+           valueField: valueField,
            displayField: params.displayField || 'name',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store,
            editable: true,
            forceSelection: true,
@@ -576,7 +576,7 @@ Baseliner.combo_project = function(params) {
         });
     } else if( params.value ) {
         combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
+            var ix = store.find( valueField, params.value );
             if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
         });
     }
@@ -606,18 +606,18 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         if( self.value != undefined ) {
             if( Ext.isString( self.value ) ) self.value = [self.value];
             Ext.each( self.value, function(v){
-                self.push_item( self.name, v ); 
+                self.push_item( self.name, v );
             });
             self.update_fields();
         }
-        
+
         self.viewConfig = { scrollOffset: 2, forceFit: true };
         self.cm = new Ext.grid.ColumnModel([{
             dataIndex: self.name,
             width: '100%',
             renderer: function(v){ return String.format('<span style="font: 12px Consolas, Courier New, monotype">{0}</span>', v) },
             editor: new Ext.form.TextField({
-                allowBlank: false, 
+                allowBlank: false,
                 style: 'font-family: Consolas, Courier New, monotype',
                 renderer: function(v) {  return "a" }
             })
@@ -649,7 +649,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
             name: f,
             type: 'string'
         }]);
-        var h = {}; 
+        var h = {};
         h[ self.name ] = v;
         // put it in the grid store
         //fgrid.stopEditing();
@@ -681,7 +681,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
             self.fieldset.doLayout();
         }
         self.raw_value = arr;
-    }, 
+    },
     getValue : function() {
         var self = this;
         return self.raw_value;
@@ -719,12 +719,12 @@ Baseliner.array_field = function( args ) {
             // if it's an Array or Hash
             if( typeof( value ) == 'object' ) {
                 for( var x=0; x < value.length ; x++ ) {
-                    push_item( field_name, value[ x ] ); 
+                    push_item( field_name, value[ x ] );
                 }
-                // save 
-                try { value =Ext.util.JSON.encode( value ); } catch(f) {} 
+                // save
+                try { value =Ext.util.JSON.encode( value ); } catch(f) {}
             } else if( value.length > 0 ) {  // just one element
-                push_item( field_name, value ); 
+                push_item( field_name, value );
             }
         } catch(e) {}
     }
@@ -748,7 +748,7 @@ Baseliner.array_field = function( args ) {
                 dataIndex: field_name,
                 width: 390,
                 editor: new Ext.form.TextField({
-                    allowBlank: false, 
+                    allowBlank: false,
                     renderer: function(v) {  return "a" }
                 })
             }]),
@@ -808,25 +808,25 @@ Baseliner.array_field = function( args ) {
 Baseliner.combo_baseline = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || {},
-        id: 'id', 
+        id: 'id',
         url: '/baseline/json',
-        fields: ['id','name','description', 'active'] 
+        fields: ['id','name','description', 'active']
     });
     var valueField = params.valueField || 'id';
     var combo = new Ext.form.ComboBox({
            fieldLabel: _("Baseline"),
            name: params.name || 'bl',
            hiddenName: params.hiddenName || 'bl',
-           valueField: valueField, 
+           valueField: valueField,
            displayField: params.displayField || 'name',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store,
            editable: true,
            forceSelection: true,
@@ -839,7 +839,7 @@ Baseliner.combo_baseline = function(params) {
         });
     } else if( params.value ) {
         combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
+            var ix = store.find( valueField, params.value );
             if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
         });
     }
@@ -852,25 +852,25 @@ Baseliner.combo_baseline = function(params) {
 Baseliner.combo_dashboard = function(params) {
     if( params==undefined) params={};
     var store = new Baseliner.JsonStore({
-        root: 'data' , 
+        root: 'data' ,
         remoteSort: true,
         autoLoad: true,
-        totalProperty:"totalCount", 
+        totalProperty:"totalCount",
         baseParams: params.request || {},
-        id: 'id', 
+        id: 'id',
         url: '/dashboard/json',
-        fields: ['id','name'] 
+        fields: ['id','name']
     });
     var valueField = params.valueField || 'id';
     var combo = new Ext.form.ComboBox({
            fieldLabel: _("Dashboard"),
            name: params.name || 'dashboard',
            hiddenName: params.hiddenName || 'dashboard',
-           valueField: valueField, 
+           valueField: valueField,
            displayField: params.displayField || 'name',
            typeAhead: false,
            minChars: 1,
-           mode: 'remote', 
+           mode: 'remote',
            store: store,
            editable: true,
            forceSelection: true,
@@ -883,7 +883,7 @@ Baseliner.combo_dashboard = function(params) {
         });
     } else if( params.value ) {
         combo.store.on('load',function(store) {
-            var ix = store.find( valueField, params.value ); 
+            var ix = store.find( valueField, params.value );
             if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
         });
     }
@@ -959,7 +959,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
         return this.getRawValue();
     }
 });
-    
+
 Baseliner.SearchSimple = Ext.extend(Baseliner.SearchField,{
     initComponent : function(){
         var self = this;
@@ -974,7 +974,7 @@ Baseliner.SearchSimple = Ext.extend(Baseliner.SearchField,{
         var self = this;
         if(this.hasSearch){
             this.el.dom.value = '';
-            
+
             if( self.cleaner ) {
                 self.cleaner(this.el.dom.value);
             } else if( self.handler ) {
@@ -998,7 +998,7 @@ Baseliner.SearchSimple = Ext.extend(Baseliner.SearchField,{
         this.triggers[0].show();
     }
 });
-    
+
 Baseliner.merge = function() {
     // copy reference to target object
     var target = arguments[0] || {}, i = 1, length = arguments.length, deep = true, options;
@@ -1012,7 +1012,7 @@ Baseliner.merge = function() {
     }
 
     // Handle case when target is a string or something (possible in deep copy)
-    if ( typeof target !== "object" ) 
+    if ( typeof target !== "object" )
         target = {};
 
     /* if ( typeof target !== "object" && !jQuery.isFunction(target) )
@@ -1038,15 +1038,15 @@ Baseliner.merge = function() {
                         var is_arr = Baseliner.isArray( copy );
                         // Recurse if we're merging object values
                         if ( deep && copy && typeof copy === "object" && ! is_arr && !copy.nodeType )
-                                target[ name ] = Baseliner.merge( deep, 
+                                target[ name ] = Baseliner.merge( deep,
                                         // Never move original objects, clone them
                                         src || ( copy.length != null ? [ ] : { } )
                                 , copy );
                         else if ( deep && copy && is_arr && !copy.nodeType ) {
-                            if( src === undefined ) src = []; 
+                            if( src === undefined ) src = [];
                                 target[ name ]= src.concat( copy );
                         }
-                 
+
                         // Don't bring in undefined values
                         else if ( copy !== undefined )
                                 target[ name ] = copy;
@@ -1233,7 +1233,7 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
         config = Ext.apply({
             text: _('Activate'),
             icon:'/static/images/icons/start.svg',
-            cls: 'x-btn-text-icon',         
+            cls: 'x-btn-text-icon',
             disabled: true
         }, config);
         Baseliner.Grid.Buttons.Start.superclass.constructor.call(this, config);
@@ -1253,12 +1253,12 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
 });
 
 // Baseliner.gantt = function( format ) {
-//     var divTag = document.createElement("div");  
-//     divTag.setAttribute("align", "center");           
+//     var divTag = document.createElement("div");
+//     divTag.setAttribute("align", "center");
 //     var g = new JSGantt.GanttChart( 'g', divTag, format );
 
 //     g.Draw();
-    
+
 //     return g;
 // };
 
@@ -1275,7 +1275,7 @@ Baseliner.PDFJS = function(config){
         tbar: [
            prev, next,
            _('Page:'), page_num, _('Total:'), page_count
-        ], 
+        ],
         bodyCfg: { tag:'canvas', style:{ 'background-color':'#fff' } }
     }, config ) );
 
@@ -1283,13 +1283,13 @@ Baseliner.PDFJS = function(config){
         var id = this.body.id;
 
         //
-        // NOTE: 
+        // NOTE:
         // Modifying the URL below to another server will likely *NOT* work. Because of browser
         // security restrictions, we have to use a file server with special headers
         // (CORS) - most servers don't support cross-origin browser requests.
         //
         var url = self.url;
-      
+
          // var url = 'http://cdn.mozilla.net/pdfjs/tracemonkey.pdf';
         // url = '/static/pdfjs/build/tracemonkey.pdf';
         //
@@ -1357,7 +1357,7 @@ Baseliner.PDFJS = function(config){
         });
     });
 };
-Ext.extend( Baseliner.PDFJS, Ext.Panel ); 
+Ext.extend( Baseliner.PDFJS, Ext.Panel );
 
 // Usage: Baseliner.read_pdf( '/static/pdfjs/build/tracemonkey.pdf' );
 Baseliner.read_pdf = function( url ) {
@@ -1385,7 +1385,7 @@ Baseliner.show_revision = function(mid) {
             repo_mid: res.url.repo_mid
         };
         var url =  title == sha ? "/comp/view_commits_history.js" : res.url.url;
-        Baseliner.add_tabcomp( url, title, params );             
+        Baseliner.add_tabcomp( url, title, params );
     });
 };
 
@@ -1399,14 +1399,14 @@ function returnOpposite(hexcolor) {
     var b = parseInt(hexcolor.substr(4,2),16);
     var yiq = ((r*299)+(g*587)+(b*114))/1000;
     return (yiq >= 128) ? '#000000' : '#FFFFFF';
-}    
+}
 
 Baseliner.loading_panel = function(msg){
-    if( ! msg ) 
+    if( ! msg )
         msg = _('Loading');
     return new Ext.Container({
         margin: 70,
-        html: [ 
+        html: [
             '<div style="position:absolute; left:0; top:0; width:100%; height:100%; background-color:white;"></div>',
             '<div style="position:absolute; left:45%; top:40%; padding:2px; height:auto;">',
             '<center>',
@@ -1431,7 +1431,7 @@ Baseliner.editId = function( panel, id_cal, id, date) {
 Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
     var comp = Baseliner.showAjaxComp( '/job/calendar_slot_edit',
         { id: id,  pdia: 'day-'+pdia, id_cal: id_cal, panel: panel, date: date, pini: "00:00", pfin: "24:00"} );
-}   
+}
 
 Baseliner.Window = Ext.extend( Ext.Window, {
     tabifiable: false,
@@ -1451,7 +1451,7 @@ Baseliner.Window = Ext.extend( Ext.Window, {
                 new Ext.KeyMap( self.el, {
                     key: 's', ctrl: true, scope: self.el,
                     stopEvent: true,
-                    fn: function(){  
+                    fn: function(){
                         if( self.el ) self.save_handler();
                         return false;
                     }
@@ -1481,7 +1481,7 @@ Baseliner.Window = Ext.extend( Ext.Window, {
     },
     tabify : function(a,b,c){
         var self = this;
-        var comp = self.items.items[0]; 
+        var comp = self.items.items[0];
         if( comp ) {
             comp.title = null;
             comp.header = false;
@@ -1512,7 +1512,7 @@ Baseliner.ImportWindow = Ext.extend( Baseliner.Window, {
         self.data_paste = new Baseliner.MonoTextArea({});
         self.items = self.data_paste;
         self.tbar = [
-            { text: self.title, 
+            { text: self.title,
                 icon: '/static/images/icons/import.svg',
                 handler: function(){
                     Baseliner.ajaxEval( self.url, { text: self.data_paste.getValue(), format: self.format, ci_type: self.ci_type }, function(res){
@@ -1673,7 +1673,7 @@ Baseliner.Base64 = (function() {
     var encode = function (input, utf8) {
         var output = "", chr1, chr2, chr3, enc1, enc2, enc3, enc4, i = 0;
 
-        if( utf8 ) 
+        if( utf8 )
             input = _utf8_encode(input);
 
         while (i < input.length) {
@@ -1754,7 +1754,7 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
    activeItem: 0,
    constructor: function(c){
        var store_remote = new Ext.data.SimpleStore({
-           fields: ['name', 'archive', 'abstract', 'version', 'author', 
+           fields: ['name', 'archive', 'abstract', 'version', 'author',
                     'url', 'date', 'release', 'size' ]
        });
        var ic = '/static/images/icons/downloads_favicon.svg';
@@ -1785,20 +1785,20 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        ];
        Baseliner.CPANDownloader.superclass.constructor.call(this, Ext.apply({ tbar: tbar }, c));
        var self = this;
-       
+
        // ------- Remote CPAN
        var sm = new Ext.grid.CheckboxSelectionModel();
        var columns = [
            sm,
           { header:_('Name'), dataIndex: 'name' },
           { header:_('Release'), width: 30, dataIndex: 'release', renderer: Baseliner.render_bold },
-          { header:_('Version'), width: 30, dataIndex: 'version' }, 
+          { header:_('Version'), width: 30, dataIndex: 'version' },
           { header:_('Date'), width: 30, dataIndex: 'date' },
           { header:_('Size'), width: 30, dataIndex: 'size', renderer: Baseliner.render_bytes },
-          { header:_('URL'), dataIndex: 'url' }              
+          { header:_('URL'), dataIndex: 'url' }
        ];
        var cm = new Ext.grid.ColumnModel({ columns: columns });
-       
+
        self.store_remote = store_remote;
        self.grid_remote = new Ext.grid.EditorGridPanel({
            store: self.store_remote,
@@ -1811,11 +1811,11 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        // ------- Local CPAN
        self.store_local = new Baseliner.JsonStore({
            url: '/feature/local_cpan',
-           root: 'data' , 
+           root: 'data' ,
            remoteSort: true,
-           totalProperty: 'totalCount', 
-           id: 'id', 
-           fields: ['name', 'archive', 'abstract', 'version', 'file', 
+           totalProperty: 'totalCount',
+           id: 'id',
+           fields: ['name', 'archive', 'abstract', 'version', 'file',
                     'url', 'date', 'release', 'size' ]
        });
        var sm2 = new Ext.grid.CheckboxSelectionModel();
@@ -1834,11 +1834,11 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
        });
        self.grid_installed = new Ext.grid.EditorGridPanel({
            store: new Baseliner.JsonStore({
-               url: '/feature/installed_cpan', 
-               root: 'data' , 
+               url: '/feature/installed_cpan',
+               root: 'data' ,
                remoteSort: true,
-               totalProperty: 'totalCount', 
-               id: 'id', 
+               totalProperty: 'totalCount',
+               id: 'id',
                fields: ['name', 'version' ]
            }),
            viewConfig: { forceFit: true },
@@ -1881,8 +1881,8 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
                Baseliner.message(_('Error'), _('CPAN Search failed: %1', res) );
                self.el.unmask();
            }
-       });           
-   }, 
+       });
+   },
    download: function(){
        var self = this;
        var sels = self.grid_remote.getSelectionModel().getSelections();
@@ -2114,7 +2114,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             checkOnly: true,
             singleSelect: false
         });
-        //self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+        //self.sm = new Baseliner.RowSelectionModel({ singleSelect: true });
 
         var cols = [
             //dragger,
@@ -2169,18 +2169,18 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         if( self.ci_role) self.ci.role = self.ci_role;
         if( self.ci_class) self.ci['class'] = self.ci_class;
         if( self.ci_grid == undefined ) self.ci_grid = {};
-        self.ci_store = new Baseliner.store.CI({ 
+        self.ci_store = new Baseliner.store.CI({
             baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store', no_vars: 1, filter: self.filter }, self.ci )
         });
         self.ci_box = new Baseliner.model.CICombo({
-            store: self.ci_store, 
+            store: self.ci_store,
             height: 400,
             width: 400,
-            singleMode: true, 
+            singleMode: true,
             autoLoad: false,
             fieldLabel: _('CI'),
             name: 'ci',
-            hiddenName: 'ci', 
+            hiddenName: 'ci',
             allowBlank: true
         });
         self.ci_box.on('select', function(combo,rec,ix) {
@@ -2239,9 +2239,9 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
                 });
             });
         }
-    
+
         Baseliner.CIGrid.superclass.initComponent.call( this );
-        
+
         self.on('afterrender', function(){
             var width = self.el.getWidth();
             self.ci_box.width = width -100;
@@ -2286,7 +2286,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             Baseliner.warning( _('Warning'), _('Row already exists: %1', rec.name + '(' + rec.mid + ')' ) );
             return;
         }
-        if( !rec.rel_type ) 
+        if( !rec.rel_type )
             rec.rel_type = self.rel_type || ( self.collection + '_' + rec.collection );
         var r = new self.store.recordType( rec );
         self.store.add( r );
@@ -2307,7 +2307,7 @@ Baseliner.CheckColumn = Ext.extend(Ext.grid.Column, {
     },
 
     renderer : function(v, p, record){
-        p.css += ' x-grid3-check-col-td'; 
+        p.css += ' x-grid3-check-col-td';
         return String.format('<div class="x-grid3-check-col{0}">&#160;</div>', v ? '-on' : '');
     },
     init: Ext.emptyFn
@@ -2600,7 +2600,7 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
     stripeRows : true,
     initComponent: function(){
         var self = this;
-        
+
         // load checkboxes if value is set
         self.$updating = false;
         if( self.value != undefined && self.store ) {
@@ -2610,7 +2610,7 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
         } else {
             self.value = [];
         }
-    
+
         // setup form field
         self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
         self.ps = 100;
@@ -2620,7 +2620,7 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
                 });
         self.tbar.insert( 0, self.search );
         self.tbar.add( self.field );
-        
+
         self.viewConfig = Ext.apply({
             headersDisabled: true,
             enableRowBody: true,
@@ -2634,7 +2634,7 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
         self.sm.on('selectionchange', function(grid,ix){
             self.refresh_field();
         });
-        
+
         var columns = [ self.sm ];
         Ext.each( self.columns, function(col){
             columns.push( col );
@@ -2673,7 +2673,7 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
         if( self.$updating ) return;
         var ids = [];
         self.getSelectionModel().each( function(r){
-            ids.push( r.data.id ); 
+            ids.push( r.data.id );
         });
         var value = ids.join(',');
         self.field.setValue( value );
@@ -2687,10 +2687,10 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
     disabled: false,
     initComponent: function(){
         var self = this;
-        self.store = new Baseliner.store.CI({ 
+        self.store = new Baseliner.store.CI({
             baseParams: Ext.apply({ pretty: true }, self.ci )
         });
-        
+
         self.columns = [
           { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
           { width: 40, dataIndex: 'mid', header: _('ID') },
@@ -2710,50 +2710,50 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var self = this;
         var form2 = this.getForm();
         var is_valid = form2.isValid();
-		var first_novalid_top = -1;
-		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = 0;
-		this.cascade(function(obj){
-			var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
-			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
-			//if( obj.name && !obj.allowBlank && obj.is_valid ) {
-			if( obj.name && !obj.allowBlank ) {
-				if (obj.is_valid) {
-					if( !obj.is_valid() ) {
-						is_valid = false;
-						var id_objHTML = obj.getEl().dom.id;
-						var objHTML = $('#' + id_objHTML);
-						var offset = objHTML.offset();
-						if(first_novalid_top == -1) first_novalid_top = offset.top - obj.getEl().dom.offsetHeight;
-						obj.getEl().applyStyles(sty);
-						if( !obj.on_change_lab ) {
-							var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
-							obj.on_change_lab = lab;
-							obj.on('change', function(){
-								if( obj.is_valid() ) {
-									obj.getEl().applyStyles('border: none; margin_bottom: 0px');
-									obj.on_change_lab.style.display = 'none';
-								} else {
-									obj.getEl().applyStyles(sty);
-									obj.on_change_lab.style.display = 'block';
-									
-								}
-							});
-						}
-					}
-				}
-				else{
-					if(obj.validate && typeof obj.validate == 'function'){
-						if(!obj.validate()){
-							var id_objHTML = obj.getEl().dom.id;
-							var objHTML = $('#' + id_objHTML);
-							var offset = objHTML.offset();
-							if(first_novalid_top == -1) first_novalid_top = offset.top - 125;
-						}
-					}
-				}
-			}
-		});
-		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_top;	
+        var first_novalid_top = -1;
+        Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = 0;
+        this.cascade(function(obj){
+            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+            //console.dir(obj.name, obj.allowBlank, obj.is_valid);
+            //if( obj.name && !obj.allowBlank && obj.is_valid ) {
+            if( obj.name && !obj.allowBlank ) {
+                if (obj.is_valid) {
+                    if( !obj.is_valid() ) {
+                        is_valid = false;
+                        var id_objHTML = obj.getEl().dom.id;
+                        var objHTML = $('#' + id_objHTML);
+                        var offset = objHTML.offset();
+                        if(first_novalid_top == -1) first_novalid_top = offset.top - obj.getEl().dom.offsetHeight;
+                        obj.getEl().applyStyles(sty);
+                        if( !obj.on_change_lab ) {
+                            var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
+                            obj.on_change_lab = lab;
+                            obj.on('change', function(){
+                                if( obj.is_valid() ) {
+                                    obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+                                    obj.on_change_lab.style.display = 'none';
+                                } else {
+                                    obj.getEl().applyStyles(sty);
+                                    obj.on_change_lab.style.display = 'block';
+
+                                }
+                            });
+                        }
+                    }
+                }
+                else{
+                    if(obj.validate && typeof obj.validate == 'function'){
+                        if(!obj.validate()){
+                            var id_objHTML = obj.getEl().dom.id;
+                            var objHTML = $('#' + id_objHTML);
+                            var offset = objHTML.offset();
+                            if(first_novalid_top == -1) first_novalid_top = offset.top - 125;
+                        }
+                    }
+                }
+            }
+        });
+        Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_top;
         return is_valid;
     },
     getValues : function(a,b,c){
@@ -2775,7 +2775,7 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
 });
 
 Baseliner.FormEditor = Ext.extend( Baseliner.FormPanel, {
-    frame: false, forceFit: true, 
+    frame: false, forceFit: true,
     defaults: { msgTarget: 'under', anchor:'100%' },
     width: 800, height: 600,
     autoScroll: true,
@@ -2802,29 +2802,29 @@ Baseliner.run_service = function(params, service){
     var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
     //var initial_data = Ext.apply( { timeout:0 }, service, params );
     var initial_data = { service: service, data: service.data };
-    var deditor= service.form 
+    var deditor= service.form
         ? new Baseliner.FormEditor({ data: initial_data, form_url: service.form })
         : new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
-    var btn_restart = new Ext.Button({ icon:'/static/images/icons/left.svg', text:_('Restart'), hidden: true, handler: function(){ 
+    var btn_restart = new Ext.Button({ icon:'/static/images/icons/left.svg', text:_('Restart'), hidden: true, handler: function(){
         btn_restart.hide();
-        card.getLayout().setActiveItem(0); 
+        card.getLayout().setActiveItem(0);
     }});
-    var btn_output = new Ext.Button({ icon:'/static/images/icons/down.svg', text:_('Output'), hidden: true, handler: function(){ 
-        card.getLayout().setActiveItem(2); 
+    var btn_output = new Ext.Button({ icon:'/static/images/icons/down.svg', text:_('Output'), hidden: true, handler: function(){
+        card.getLayout().setActiveItem(2);
     }});
-    var btn_run = new Ext.Button({ icon:'/static/images/icons/play.svg', text:_('Run'), handler: function(){ 
+    var btn_run = new Ext.Button({ icon:'/static/images/icons/play.svg', text:_('Run'), handler: function(){
             btn_run.disable();
             if(!params) params = {};
             btn_restart.show();
             var run_data = Ext.apply({ key: service.key, _merge_with_params: 1, as_json: true }, params);
             run_it( Ext.apply(run_data, { data: deditor.getData() }) );
-            card.getLayout().setActiveItem(1); 
+            card.getLayout().setActiveItem(1);
         } })
     var tabp = new Ext.TabPanel({});
     var run_it = function(data){
         Baseliner.ajax_json( '/ci/service_run', data, function(res){
             btn_run.enable();
-            card.getLayout().setActiveItem(2); 
+            card.getLayout().setActiveItem(2);
             tabp.removeAll();
             btn_output.show();
             if( !res.success ) {
@@ -2882,7 +2882,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 if( bg && self.value == v ){
                     anchor.style['backgroundColor'] = bg;
                 }
-                anchor.href = '#'; 
+                anchor.href = '#';
                 anchor.onclick = function(){
                     if ( !self.readOnly ){
                         for ( i=0; i<self.list.length; i++ ) {
@@ -2910,8 +2910,8 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                 self.anchors.push( anchor );
             });
         }
-        
-        // a boot, for styling 
+
+        // a boot, for styling
         var boot = document.createElement('span');
         boot.id = 'boot';
         this.el.dom.appendChild( boot );
@@ -2923,7 +2923,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
             ul.appendChild( self.list[i] );
         }
         boot.appendChild( ul );
-        
+
         // the hidden field
         self.$field = document.createElement('input');
         self.$field.type = 'hidden';
@@ -2932,7 +2932,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
         this.el.dom.appendChild( self.$field );
     },
     // private
-    redraw : function(){ 
+    redraw : function(){
     },
     initEvents : function(){
         this.originalValue = this.getValue();
@@ -2985,15 +2985,15 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
         self.valueField = self.field || self.name;
         self.displayField = self.displayField || self.field || self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
-        
-        Baseliner.ComboSingle.superclass.initComponent.call(this); 
+
+        Baseliner.ComboSingle.superclass.initComponent.call(this);
     },
     buildStore : function(data){
         var self = this;
         return new Ext.data.SimpleStore({
             fields: [ self.name ],
-            data : data 
-        });  
+            data : data
+        });
     }
 });
 
@@ -3001,14 +3001,14 @@ Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
     mode: 'remote',
     buildStore : function(){
         return new Ext.data.JsonStore({
-            root: this.root || 'data', 
+            root: this.root || 'data',
             remoteSort: true,
-            totalProperty: this.totalProperty || 'totalCount', 
-            id: 'id', 
+            totalProperty: this.totalProperty || 'totalCount',
+            id: 'id',
             baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
             url: this.url,
             fields: this.fields || [ this.name ]
-        });  
+        });
     }
 });
 
@@ -3036,8 +3036,8 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         self.displayField = self.displayField || self.field || 'display_name';
         self.hiddenField = self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
-        
-        Baseliner.ComboDouble.superclass.initComponent.call(this); 
+
+        Baseliner.ComboDouble.superclass.initComponent.call(this);
     },
     get_save_data : function(){  // otherwise, getForm().getValues() returns the displayField
         return this.getValue();
@@ -3046,8 +3046,8 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         var self = this;
         return new Ext.data.SimpleStore({
             fields: [ self.name, 'display_name' ],
-            data : data 
-        });  
+            data : data
+        });
     }
 });
 
@@ -3122,15 +3122,15 @@ Baseliner.ComboDoubleRemote = Ext.extend( Baseliner.ComboDouble, {
     },
     buildStore : function(){
         return new Ext.data.JsonStore({
-            root: this.root || 'data', 
+            root: this.root || 'data',
             remoteSort: true,
             autoLoad: true,
-            totalProperty: this.totalProperty || 'totalCount', 
-            id: 'id', 
+            totalProperty: this.totalProperty || 'totalCount',
+            id: 'id',
             baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
             url: this.url,
             fields: this.fields || [ self.name, 'display_name' ]
-        });  
+        });
     }
 });
 
@@ -3174,7 +3174,7 @@ Cla.user_date_timezone = function(dt,tz) {
     var stz = Prefs.server_timezone;
     return Prefs.timezone == 'server_timezone'
         ? moment(dt).tz( stz )
-        : Prefs.timezone == 'browser_timezone' 
+        : Prefs.timezone == 'browser_timezone'
             ? moment(dt).tz( stz ).utcOffset( moment().utcOffset() )
             : moment(dt).tz( stz ).tz( Prefs.timezone );
 }
@@ -3278,25 +3278,25 @@ Cla.generateFieldletFilter = function(meta, mids) {
 };
 
 Baseliner.render_checkbox = function(v){
-    return v 
+    return v
         ? '<img src="/static/images/icons/checkbox.svg">'
         : '<img src="/static/images/icons/delete.svg">';
 };
 Baseliner.render_avatar = function(v){
     return '<img width="16" src="/user/avatar/'+v+'/checkbox.svg">'
 };
-        
+
 Baseliner.render_ago = function(t,p){
     return Cla.moment(t).fromNow();  // TODO use the user prefs for timezone and language
 };
-        
+
 Baseliner.cols_templates = {
       id : function(){ return {width: 10 } },
       index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
       htmleditor: function(){ return { editor: new Ext.form.HtmlEditor({submitValue: false}), default_value:'' } },
       cleditor: function(){ return { editor: new Baseliner.CLEditorField({submitValue: false}), default_value:'' } },
       textfield : function(){ return { width: 100, editor: new Ext.form.TextField({submitValue: false}), default_value:'' } },
-      datefield : function(){ 
+      datefield : function(){
           var df = new Ext.form.DateField({ format: Prefs.js_date_format, submitValue: false });
           return { width: 30, editor: df, renderer: Baseliner.render_date }
       },
@@ -3307,20 +3307,20 @@ Baseliner.cols_templates = {
       password  : function(){
         var ed = new Ext.form.TextField({submitValue: false, inputType:'password' });
         ed.on('afterrender', function(cmp){ cmp.el.set({ autocomplete:'off'}) });
-        return { editor: ed, default_value:'', renderer: function(v){ if (v) { return '********'; } else { return ''; } } } 
+        return { editor: ed, default_value:'', renderer: function(v){ if (v) { return '********'; } else { return ''; } } }
       },
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } },
-      bl_combo : function(){ 
+      bl_combo : function(){
         //var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1, singleMode: true });
         var bl_combo = Baseliner.combo_baseline({ no_common: 1 });
-        return { editor: bl_combo, default_value:'', css: 'line-height: 40px', width: 20 }; 
+        return { editor: bl_combo, default_value:'', css: 'line-height: 40px', width: 20 };
       },
-      color_combo : function(){ 
+      color_combo : function(){
             var color_btn_gen = function(color){
-                return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: #{0}">#{1}</span></div>', 
+                return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: #{0}">#{1}</span></div>',
                     color, color  );
             };
-            
+
             //var mi_combo = new Baseliner.ComboDouble( store_colors );
 
             var combo_origin = new Ext.form.ComboBox({
@@ -3333,7 +3333,7 @@ Baseliner.cols_templates = {
                 editable: false,
                 mode: 'local',
                 forceSelection: true,
-                triggerAction: 'all', 
+                triggerAction: 'all',
                 fieldLabel: _('Origin'),
                 emptyText: _('select origin...'),
                 //displayFieldTpl = new Ext.XTemplate( '<tpl>{[ values.name ? values.bl + " (" + values.name + ")" : ( values.bl == "*" ? _("Common") : values.bl ) ]}</tpl>' );
@@ -3341,7 +3341,7 @@ Baseliner.cols_templates = {
                 initComponent: function(){
                     var store_colors =new Ext.data.SimpleStore({
                         fields: ['origin', 'name'],
-                        data:[ 
+                        data:[
                             [ '8E44AD', color_btn_gen('8E44AD') ],
                             [ '800000', color_btn_gen('800000') ],
                             [ 'FF0000', color_btn_gen('FF0000') ]
@@ -3359,7 +3359,7 @@ Baseliner.cols_templates = {
                 }
             });
 
-        return { editor: combo_origin, default_value:'' }; 
+        return { editor: combo_origin, default_value:'' };
       }
 };
 
@@ -3419,8 +3419,8 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
     },
     load: function(csv, replace){
         var self = this;
-        var tab = self.parse( csv ); 
-        // load data into a store ? 
+        var tab = self.parse( csv );
+        // load data into a store ?
         if( self.store ) {
             if( replace ) {
                 self.store.removeAll();
@@ -3457,14 +3457,14 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
             layout: 'fit',
             tbar:[ '->', button_load, button_replace, button_close ],
             width: 800, height: 300,
-            items: ta 
+            items: ta
         });
         win.show();
     }
 });
 
 Baseliner.RowEditor = Ext.extend(Ext.ux.grid.RowEditor, {
-    // the original class is in 
+    // the original class is in
     //     features/extjs_3.4.0/root/static/ext/examples/ux/RowEditor.js
     layout: 'column',
     showTooltip: function(msg){
@@ -3507,12 +3507,12 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         self.viewConfig = Ext.apply({
             forceFit: true
         }, self.viewConfig );
-        
-        self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+
+        self.sm = new Baseliner.RowSelectionModel({ singleSelect: true });
         //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
-        
+
         var cols, fields;
-        
+
         if( self.columns != undefined ) {
             cols=[]; fields=[];
             var cc = Ext.isArray( self.columns ) ? self.columns : self.columns.split(';');
@@ -3570,19 +3570,19 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                 {name: 'description'}
             ];
         }
-        
+
         // default record for adding
         if( !Ext.isObject(self.default_record) ) {
-            var rec_default = {}; 
+            var rec_default = {};
             Ext.each( cols, function(col){
-                rec_default[ col.dataIndex ] = Ext.isFunction(col.default_value) 
-                    ? col.default_value() 
-                    : col.default_value!=undefined 
-                        ? col.default_value 
+                rec_default[ col.dataIndex ] = Ext.isFunction(col.default_value)
+                    ? col.default_value()
+                    : col.default_value!=undefined
+                        ? col.default_value
                         : '';
             });
             self.default_record = rec_default;
-        } 
+        }
 
         var reader = new Ext.data.JsonReader({
             totalProperty: 'total',
@@ -3590,39 +3590,39 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             idProperty: 'id',
             fields: fields
         });
-       
+
         // records is JSON?
         if( Ext.isString( self.records ) ) {
             self.records = Ext.decode( self.records );
-        } 
+        }
         // now recheck
         if( !Ext.isArray(self.records) ) {
             self.records = [];
         }
-        
+
         self.store = new Ext.data.Store({
             reader: reader,
-            data: self.records 
+            data: self.records
         });
-		
+
         self.store.on('add', function(){ self.fireEvent( 'change', self ) });
         self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
-            
+
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
             tooltip: _('Create'),
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.add_row() }
         });
-        
+
         var button_delete = new Baseliner.Grid.Buttons.Delete({
             text: '',
             tooltip: _('Delete'),
-            cls: 'x-btn-icon',  
+            cls: 'x-btn-icon',
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.del_row() }
         });
-        
+
         var button_load = new Ext.Button({
             text: '',
             tooltip: _('Load'),
@@ -3630,26 +3630,26 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.show_load_csv() }
         });
-        
+
         // use RowEditor for editing
         if( self.use_row_editor ) {
             self.editor = new Baseliner.RowEditor({
                 clicksToMoveEditor: 1,
                 autoCancel: false,
-                enableDragDrop: true, 
+                enableDragDrop: true,
                 listeners: {
                     afteredit: function(roweditor, changes, record, rowIndex){
                         // after editing a row, serialize data to hidden field
                         self.store.commitChanges();
                         delete record.data.id;
                     }
-                }       
-            }); 
+                }
+            });
             self.plugins = [ self.editor ];
         }
-        
+
         self.columns = cols;
-		self.fields = fields;
+        self.fields = fields;
         self.ddGroup = 'grid_editor_' + Ext.id();
         self.tbar = [
             button_add,
@@ -3684,10 +3684,10 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                             sm.clearSelections();
                         }
                         ds.commitChanges();
-                        self.getView().refresh();   
+                        self.getView().refresh();
                     }
                 }
-            }); 
+            });
         });
     },
     add_row : function(rec,no_edit){
@@ -3696,7 +3696,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var index = self.store.getCount();
         if( self.editor && !no_edit ) self.editor.stopEditing();
         self.store.insert(index, u);
-        self.getSelectionModel().selectRow(index);          
+        self.getSelectionModel().selectRow(index);
         if( self.editor && !no_edit ) self.editor.startEditing(index);
     },
     remove_all : function(){
@@ -3723,7 +3723,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var arr = [];
         self.store.each( function(r) {
-			var res = r.data[self.fields[0].name];
+            var res = r.data[self.fields[0].name];
             if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') {
                 var arr2 = [];
                 Ext.iterate( r.data, function(k,v){
@@ -3739,15 +3739,15 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var arr = [];
         self.store.each( function(r) {
             var res = r.data[self.fields[0].name];
-			if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') arr.push( r.data );
+            if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') arr.push( r.data );
         });
         return arr;
-    }, 
+    },
     is_valid : function(){
         var self = this;
         var cont = 0;
         self.store.each( function(r) {
-			var res = r.data[self.fields[0].name];
+            var res = r.data[self.fields[0].name];
             if( (typeof(res) == 'number' && res == 0 || res == 1) || res != '') cont++;
         });
         return cont > 0 ;
@@ -3769,11 +3769,11 @@ Baseliner.encode_tree = function( root ){
 };
 
 
-Baseliner.timeline = function(args){ 
+Baseliner.timeline = function(args){
     var mid = args.mid;
-    var render_to = args.render_to; 
+    var render_to = args.render_to;
     var parent_id = args.parent_id;  // optional
-    
+
     Cla.use(['/static/timeline/jquery.timeline.js'], function(){
         Timeline.urlPrefix = '/static/timeline/';
         Baseliner.ajaxEval( '/ci/'+mid+'/timeline', { mid: mid }, function(res){
@@ -3787,24 +3787,24 @@ Baseliner.timeline = function(args){
                 Timeline.createBandInfo({
                     eventSource:    eventSource,
                     //date:           "Jun 28 2006 00:00:00 GMT",
-                    width:          "60%", 
-                    intervalUnit:   Timeline.DateTime.HOUR, 
+                    width:          "60%",
+                    intervalUnit:   Timeline.DateTime.HOUR,
                     intervalPixels: 100
                 }),
                 */
                 Timeline.createBandInfo({
                     eventSource:    eventSource,
                     //date:           "Jun 28 2006 00:00:00 GMT",
-                    width:          "90%", 
-                    intervalUnit:   Timeline.DateTime.DAY, 
+                    width:          "90%",
+                    intervalUnit:   Timeline.DateTime.DAY,
                     intervalPixels: 50
                 })
                 ,Timeline.createBandInfo({
                     overview:       true,
                     eventSource:    eventSource,
                     //date:           "Jun 28 2006 00:00:00 GMT",
-                    width:          "10%", 
-                    intervalUnit:   Timeline.DateTime.MONTH, 
+                    width:          "10%",
+                    intervalUnit:   Timeline.DateTime.MONTH,
                     intervalPixels: 200
                 })
             ];
@@ -3813,7 +3813,7 @@ Baseliner.timeline = function(args){
 
             var el = document.getElementById(render_to);
             $(el).height( height );
-            $(el).width( $('#'+parent_id).width() - 80 );  // set my width to the topicmain panel width 
+            $(el).width( $('#'+parent_id).width() - 80 );  // set my width to the topicmain panel width
 
             tl = Timeline.create(el, bandInfos);
             eventSource.loadJSON(data, document.location.href);
@@ -3821,7 +3821,7 @@ Baseliner.timeline = function(args){
             var resizeTimerID = null;
 
             var parent_comp = Ext.getCmp( parent_id );
-            if( parent_comp && parent_comp.body ) 
+            if( parent_comp && parent_comp.body )
                 $(parent_comp.body.dom).animate({ scrollTop: $('#'+parent_id).height() + 3000 }, "slow");
 
             function xonResize() {
@@ -3860,9 +3860,9 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
         Baseliner.CBox.superclass.initComponent.call(this);
     },
     getValue : function(){
-        return !this.submit_num 
-            ? this.checked 
-            : this.checked ? 1 : 0 ;  
+        return !this.submit_num
+            ? this.checked
+            : this.checked ? 1 : 0 ;
     }
 });
 Ext.reg( 'cbox', Baseliner.CBox );
@@ -3871,13 +3871,13 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
         if ( c.fieldLabel != undefined ) {
-		    //c.fieldLabel = "(SF: "+ c.system_force + ", LA: " + c.labelAlign + ", RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
+            //c.fieldLabel = "(SF: "+ c.system_force + ", LA: " + c.labelAlign + ", RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
             //if ( c.labelAlign != undefined && c.labelAlign == 'top') {
-			if ( c.origin == 'custom') {
+            if ( c.origin == 'custom') {
                 c.labelSeparator = '';
                 var readonly = c.readOnly !=undefined ? c.readOnly:true;
                 readonly = readonly || c.disabled;
-                
+
                 if ( !c.system_force) c.disabled = readonly;
 
                 if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && !readonly ) {
@@ -3896,7 +3896,7 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     }
 });
 
-/* 
+/*
  *  UploadPanel : a simple uploader
  *
  *  Example:
@@ -3932,10 +3932,10 @@ Baseliner.UploadPanel = Ext.extend( Ext.Panel, {
             self.uploader = new qq.FileUploader({
                 element: self.el.dom,
                 action: self.url,
-                template: '<div class="qq-uploader">' + 
+                template: '<div class="qq-uploader">' +
                     '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
                     '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-                    '<ul class="qq-upload-list"></ul>' + 
+                    '<ul class="qq-upload-list"></ul>' +
                  '</div>',
                 onComplete: function(fu, filename, res){
                     return self.on_complete(fu,filename,res);
@@ -3975,7 +3975,7 @@ Baseliner.UploadPanel = Ext.extend( Ext.Panel, {
     }
 });
 
-/* 
+/*
  *  IMPORTANT: This is for fieldlets only. Use Baseliner.UploadPanel for a more generic one.
  *
  *  new Baseliner.UploadFilesPanel({
@@ -3983,7 +3983,7 @@ Baseliner.UploadPanel = Ext.extend( Ext.Panel, {
  *      readonly    : meta.readonly,
  *      id_field    : meta.id_field,
  *      name_field  : meta.name_field,
- *      [ form : <FormPanel> | mid: <Num> ] 
+ *      [ form : <FormPanel> | mid: <Num> ]
  *  });
  */
 Baseliner.UploadFilesPanel = Ext.extend(Ext.Panel, {
@@ -4378,7 +4378,7 @@ Baseliner.UploadFilesPanel = Ext.extend(Ext.Panel, {
 
                             } catch (err) {
                                 Ext.MessageBox.hide();
-                                uploadFileCompleted = 0;                                
+                                uploadFileCompleted = 0;
                             }
                         }
                     });
@@ -4460,7 +4460,7 @@ Baseliner.BOM = Ext.extend( Ext.Panel, {
                         <td>[%= _('User') %]</td>
                         <td>[%= _(username) %]</td>
                     </tr>
-                </tbody>    
+                </tbody>
             </table>
             <h3>Changesets</h3>
             <table class="table table-bordered table-condensed dashboard">
@@ -4469,7 +4469,7 @@ Baseliner.BOM = Ext.extend( Ext.Panel, {
                     <tr>
                     </tr>
                     [% } %]
-                </tbody>    
+                </tbody>
             </table>
             </div>
         */}.tmpl();
@@ -4479,7 +4479,7 @@ Baseliner.BOM = Ext.extend( Ext.Panel, {
 Baseliner.request_approval = function(mid,id_grid){
     var grid = Ext.getCmp( id_grid );
     var user_comments = new Ext.form.TextArea({ title: _('Comments'), value:'' });
-    
+
     Baseliner.ci_call( mid, 'can_approve', { }, function(res){
         if( res.data == '0' ) {
             Baseliner.error( _('Approval'), _('User is not authorized to approve this job') );
@@ -4519,49 +4519,49 @@ Baseliner.request_approval = function(mid,id_grid){
         tab_approve.on('afterrender', function(){
             tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.svg' );
         });
-        var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
-            title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'), 
+        var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit',
+            title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'),
             tbar: [ btn_approve, btn_reject ],
-            items:[ tab_approve ] 
+            items:[ tab_approve ]
          });
         win.show();
     });
 };
 
 Baseliner.ErrorOutputTabs = Ext.extend( Ext.TabPanel, {
-    fieldLabel: _('Output'), 
-    height: 180, 
-    activeTab:0, 
+    fieldLabel: _('Output'),
+    height: 180,
+    activeTab:0,
     initComponent: function(){
         var data = this.data;
-        this.items = [ 
-            new Baseliner.ArrayGrid({ 
-                title:_('Error'), 
-                name: 'output_error', 
+        this.items = [
+            new Baseliner.ArrayGrid({
+                title:_('Error'),
+                name: 'output_error',
                 value: data.output_error,
-                description:_('Regex'), 
-                default_value:'.*' 
-            }), 
-            new Baseliner.ArrayGrid({ 
-                title:_('Warn'), 
-                name: 'output_warn', 
+                description:_('Regex'),
+                default_value:'.*'
+            }),
+            new Baseliner.ArrayGrid({
+                title:_('Warn'),
+                name: 'output_warn',
                 value: data.output_warn,
-                description:_('Regex'), 
-                default_value:'.*' 
+                description:_('Regex'),
+                default_value:'.*'
             }),
-            new Baseliner.ArrayGrid({ 
-                title:_('OK'), 
-                name: 'output_ok', 
+            new Baseliner.ArrayGrid({
+                title:_('OK'),
+                name: 'output_ok',
                 value: data.output_ok,
-                description:_('Regex'), 
-                default_value:'.*' 
+                description:_('Regex'),
+                default_value:'.*'
             }),
-            new Baseliner.ArrayGrid({ 
-                title:_('Capture'), 
-                name: 'output_capture', 
+            new Baseliner.ArrayGrid({
+                title:_('Capture'),
+                name: 'output_capture',
                 value: data.output_capture,
-                description:_('Use Named Captures in Regex'), 
-                default_value:'.*' 
+                description:_('Use Named Captures in Regex'),
+                default_value:'.*'
             })
         ];
         Baseliner.ErrorOutputTabs.superclass.initComponent.call(this);
@@ -4599,16 +4599,16 @@ Baseliner.datatable = function( el, opts, cb) {
         }
     },opts);
     $(el).DataTable(opt);
-    if(Ext.isFunction(cb)) cb(); 
+    if(Ext.isFunction(cb)) cb();
 };
 
 Baseliner.datatable_toggle = function(el,show){
     var dt = $(el).dataTable();
     // toggle dataEditor controls
     var obj = $( '#'+ dt.api().table().container().id + ' .row-fluid' );
-    if( show === false ) 
+    if( show === false )
         obj.hide();
-    else 
+    else
         obj.toggle();
     // change page length so that we can see the whole table
     if( !obj.is(':visible') || show===false) {
@@ -4627,10 +4627,10 @@ Baseliner.generic_fields = function(params){
     }
     data.active = data.active || 1;
     data.allowBlank = data.allowBlank || 1;
-    var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });   
-    var active = new Ext.form.Hidden({  xtype:'hidden', name:'active', value: data.active });   
+    var allowBlank_field = new Ext.form.Hidden({  xtype:'hidden', name:'allowBlank', value: data.allowBlank });
+    var active = new Ext.form.Hidden({  xtype:'hidden', name:'active', value: data.active });
 
-    var all_sections = { 
+    var all_sections = {
         'title': _('Title'),
         'head': _('Header'),
         'body': _('Body'),
@@ -4639,7 +4639,7 @@ Baseliner.generic_fields = function(params){
         'between': _('Between')
     };
     var final_sections = [];
-    var available_sections = data.config.section_allowed ? data.config.section_allowed : ['head','body','details','more','between']; 
+    var available_sections = data.config.section_allowed ? data.config.section_allowed : ['head','body','details','more','between'];
     available_sections.forEach( function(element){
         final_sections.push([ element, all_sections[element] ]);
     });
@@ -4657,7 +4657,7 @@ Baseliner.generic_fields = function(params){
         name: 'colspan',
         editable: false,
         fieldLabel: _('Row width'),
-        data:[ 
+        data:[
             [ '1', '1' ],
             [ '2', '2' ],
             [ '3', '3' ],
@@ -4704,7 +4704,7 @@ Baseliner.generic_fields = function(params){
     });
     return [{
         xtype: 'fieldset',
-        collapsible: true, 
+        collapsible: true,
         title: _('Common Options'),
         items: [
             { xtype:'textfield', fieldLabel: _('ID'), name: 'id_field', fieldClass: "x-item-disabled", allowBlank: false, readOnly:true, value: data.id_field },
@@ -4734,7 +4734,7 @@ Baseliner.generic_list_fields = function(params,opts){
 
     var store_values = new Ext.data.SimpleStore({
         fields: ['value_type', 'name'],
-        data:[ 
+        data:[
             [ 'single', _('Single') ],
             [ 'multiple', _('Multiple') ],
             [ 'grid', _('Grid') ]
@@ -4771,9 +4771,9 @@ Baseliner.generic_list_fields = function(params,opts){
     var filter_name = _(opts.filter_name) || _('Advanced Filter JSON');
     var json_field = new Ext.form.TextArea({ name:'filter' ,vtype: 'json', fieldLabel: filter_name, height: 60, anchor:'100%', value: data.filter });
     var display_field = new Ext.form.TextField({ name:'display_field', fieldLabel: _('Display Field'), anchor:'100%', value: data.display_field==undefined?'title':data.display_field });
-    var ret = [ 
-        value_combo, 
-        list_type, 
+    var ret = [
+        value_combo,
+        list_type,
         display_field,
         json_field
     ];
@@ -4784,7 +4784,7 @@ Cla.json_filter_builder = function(json_field){
     Cla.ajaxEval( '/comp/topic/topic_grid.js', {}, function(grid) {
         var prev = json_field.getValue();
         if( prev ) {
-            grid.get_grid().store.baseParams = Ext.util.JSON.decode(prev); 
+            grid.get_grid().store.baseParams = Ext.util.JSON.decode(prev);
         }
         delete grid.title;
         var btn_save = new Ext.Button({ text:_('Capture JSON'), icon: IC('edit'), handler:function(){

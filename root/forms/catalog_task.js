@@ -8,13 +8,13 @@
         listeners:{
             'load': function(store, rec, opt){
                 if (data && data.category) {
-                    type_category.setValue(data.category);    
-                }                
+                    type_category.setValue(data.category);
+                }
             }
-        }        
+        }
     });
 
-    var type_category = new Ext.form.ComboBox({ 
+    var type_category = new Ext.form.ComboBox({
         name: 'category',
         valueField: 'category',
         hiddenName: 'category',
@@ -34,7 +34,7 @@
         deferredRender: false,
         renderHidden: false,
         no_validation: true
-    });    
+    });
 
     var variables_output = new Baseliner.VariableForm({
         name: 'variables_output',
@@ -44,14 +44,14 @@
         deferredRender: false,
         renderHidden: false,
         no_validation: true
-    }); 
+    });
 
-    // var type = new Baseliner.ComboDouble({ 
+    // var type = new Baseliner.ComboDouble({
     //     fieldLabel: _('Type'), name:'type', value: data.type,
-    //     data: [ 
-    //       ['CAT',_('Catalog')], 
+    //     data: [
+    //       ['CAT',_('Catalog')],
     //       ['GEN',_('Generator')],
-    //       ['RUN',_('Execution')] 
+    //       ['RUN',_('Execution')]
     //     ]
     // });
 
@@ -65,6 +65,6 @@
         { xtype: 'cbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: data.active, allowBlank: true },
         { xtype: 'cbox', colspan: 1, fieldLabel: _('Repeatable'), name:'repeatable', checked: data.frozen, allowBlank: true },
         { xtype: 'cbox', colspan: 1, fieldLabel: _('CMDB'), name:'notify', checked: data.notify, allowBlank: true },
-        { xtype: 'cbox', colspan: 1, fieldLabel: _('Notify'), name:'notify', checked: data.notify, allowBlank: true } 
+        { xtype: 'cbox', colspan: 1, fieldLabel: _('Notify'), name:'notify', checked: data.notify, allowBlank: true }
     ]
 })

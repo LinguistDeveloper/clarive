@@ -1,18 +1,18 @@
 (function(params){
     var data = params.data || {};
-    
+
     var store_origin =new Ext.data.SimpleStore({
         fields: ['origin', 'name'],
-        data:[ 
+        data:[
             [ 'custom', _('Custom') ],
             [ 'system', _('System') ]
         ]
     });
-    
+
 
     var store_sections =new Ext.data.SimpleStore({
         fields: ['section', 'name'],
-        data:[ 
+        data:[
             [ 'head', _('Head') ],
             [ 'body', _('Body') ],
             [ 'details', _('Details') ]
@@ -29,7 +29,7 @@
         editable: false,
         mode: 'local',
         forceSelection: true,
-        triggerAction: 'all', 
+        triggerAction: 'all',
         fieldLabel: _('Origin'),
         emptyText: _('select origin...'),
         autoLoad: true
@@ -45,7 +45,7 @@
         editable: false,
         mode: 'local',
         forceSelection: true,
-        triggerAction: 'all', 
+        triggerAction: 'all',
         fieldLabel: _('Section'),
         emptyText: _('select section...'),
         autoLoad: true

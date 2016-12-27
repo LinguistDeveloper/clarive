@@ -23,16 +23,16 @@ params:
     var height = meta.height ? meta.height : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_HEIGHT: DEFAULT_TEXTFIELD_HEIGHT );
     var maxLength = meta.maxLength ? meta.maxLength : ( meta.type === 'textarea' ? DEFAULT_TEXTPLAIN_MAX_LENGTH : DEFAULT_TEXTFIELD_MAX_LENGTH );
 
-    var style = { 'font-size': '16px',  
-            'font-weight': meta.font_weight || ( meta.key == 'fieldlet.system.title' ? 'bold' : 'normal' ), 
+    var style = { 'font-size': '16px',
+            'font-weight': meta.font_weight || ( meta.key == 'fieldlet.system.title' ? 'bold' : 'normal' ),
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
-    if( Ext.isIE ) style['margin-top'] = '1px';    
+    if( Ext.isIE ) style['margin-top'] = '1px';
     return [
         {
             xtype: meta.type,
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
-            value: data && data[ meta.id_field ]!=undefined  ? data[ meta.id_field ] : ( meta.default_value || '' ), 
+            value: data && data[ meta.id_field ]!=undefined  ? data[ meta.id_field ] : ( meta.default_value || '' ),
             style: style,
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',

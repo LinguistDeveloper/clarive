@@ -267,7 +267,7 @@
         var user_menu = [
              { text: _('Inbox'),
                  handler: function(){ Cla.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.svg" } ); },
-                 icon : '/static/images/icons/envelope.svg' 
+                 icon : '/static/images/icons/envelope.svg'
              },
              { text: _('Permissions'), handler: function(){ Cla.user_actions(); }, icon:'/static/images/icons/action.svg' },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }

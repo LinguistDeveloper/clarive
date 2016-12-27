@@ -17,18 +17,18 @@ params:
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     var meta = params.topic_meta;
     var data = params.topic_data;
-    var style = { 'font-size': '16px',  
-            'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
+    var style = { 'font-size': '16px',
+            'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ),
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';
-    
-    
+
+
     return [
         {
             xtype:'numberfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
-            value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
+            value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ),
             style: style,
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
@@ -53,9 +53,9 @@ params:
                             var cad = i+1;
                             cad = "$" + cad;
                             var obj_field = form.findField(name_fields[i]);
-                            if ( obj_field ) {                            
+                            if ( obj_field ) {
                                 if ( !obj_field.on_change ) {
-                                    obj_field.on_change = true;            
+                                    obj_field.on_change = true;
                                     obj_field.on('change', function() {
                                         var obj_this = form.findField(meta.id_field);
                                         obj_this.setValue(calculatedValue());

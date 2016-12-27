@@ -2,9 +2,9 @@
 <%perl>
     my $lang = $c->language;
     my $debug = $c->debug ? '-debug' : '';
-    my $to_bool = sub{ 
+    my $to_bool = sub{
         return $_[0] unless defined $_[0];
-        ref $_[0] and return $_[0]; $_[0] eq '1' ? \1 : $_[0] eq '0' ? \0 : $_[0] 
+        ref $_[0] and return $_[0]; $_[0] eq '1' ? \1 : $_[0] eq '0' ? \0 : $_[0]
     };
 </%perl>
 <html>
@@ -12,7 +12,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="Cache-Control" Content="no-cache">
     <meta http-equiv="Pragma" Content="no-cache">
-    <meta http-equiv="Expires" Content="0"> 
+    <meta http-equiv="Expires" Content="0">
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta http-equiv="X-UA-Compatible" content="IE=7,8,9" />
 
@@ -62,7 +62,7 @@
     <link rel="stylesheet" href="/static/codemirror/theme/lesser-dark.css">
     <link rel="stylesheet" href="/static/codemirror/lib/util/simple-hint.css">
     <style type="text/css">
-        .CodeMirror { border: 1px solid #eee;} 
+        .CodeMirror { border: 1px solid #eee;}
         .CodeMirror-scroll {
             overflow: visible;
             height: 100%;
@@ -134,7 +134,7 @@
     </div>
 
     <div id='run-panel'></div>
-    <div id='main-div'></div>    
+    <div id='main-div'></div>
     <iframe id="FD" name="FrameDownload" height="0px" width="0%" border="0"></iframe>
 
     <!--Config JS libraries -->
@@ -199,10 +199,10 @@
 <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
     <!-- BEGIN <% $include->{name} %> -->
-<% $include->{content} %> 
+<% $include->{content} %>
     <!-- END   <% $include->{name} %> -->
 % }
-<!-- Hooks End -->  
+<!-- Hooks End -->
 
 </body>
 </html>

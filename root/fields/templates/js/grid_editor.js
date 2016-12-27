@@ -11,18 +11,18 @@ params:
 ---
 */
 (function(params){
-	var meta = params.topic_meta;
-	var data = params.topic_data;
-	var ff = params.form.getForm();
+    var meta = params.topic_meta;
+    var data = params.topic_data;
+    var ff = params.form.getForm();
 
     var allow = Baseliner.eval_boolean(meta.allowBlank);
     var readonly = Baseliner.eval_boolean(meta.readonly);
-	
+
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var grid = new Baseliner.GridEditor({
-		fieldLabel: _(meta.name_field),
-		allowBlank: readonly ? true : allow,
-		readOnly: readonly,
+        fieldLabel: _(meta.name_field),
+        allowBlank: readonly ? true : allow,
+        readOnly: readonly,
         width: meta.width || '100%',
         height: meta.height || 300,
         hidden: Baseliner.eval_boolean(!meta.active),
@@ -31,8 +31,8 @@ params:
         cls:'grid_editor_look',
         id_field: meta.id_field,
         bd_field: meta.bd_field,
-        records: records, 
-        preventMark: false,        
+        records: records,
+        preventMark: false,
         columns: meta.columns,
         html_view_columns: meta.html_view_columns,
         disabled: readonly,
@@ -42,7 +42,7 @@ params:
     });
 
 
-	return [
+    return [
         //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         grid
     ]

@@ -10,13 +10,13 @@ html: /dashlets/bar_jobs.html
 
 <div id="principal" style="clear:left;" >
     <h2><% _loc('Jobs Daily (7 days)') %></h2><br>
-		<div id="<%$graph_id%>" 
-			style="width: 95%; height: 250px; float: left; " 
-			onmouseout="document.body.style.cursor='default';"></div>
+        <div id="<%$graph_id%>"
+            style="width: 95%; height: 250px; float: left; "
+            onmouseout="document.body.style.cursor='default';"></div>
 </div>
 
 <script type="text/javascript">
- 
+
     $(function () {
         var id = "#<% $graph_id %>";
             var chart = c3.generate({

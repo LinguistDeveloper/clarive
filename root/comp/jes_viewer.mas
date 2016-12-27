@@ -10,31 +10,31 @@
 
     var find = new Ext.form.TextField({
         name: 'find',
-        width: 600, 
+        width: 600,
         labelStyle: style_cons,
-        style: text_style_cons, 
+        style: text_style_cons,
         enableKeyEvents: true,
         listeners: {
             'keyup': function(a,b) {
                 if (b.getKey()==b.ENTER) {
-                    var domElement = code.getEl().dom; 
+                    var domElement = code.getEl().dom;
                     // console.log("DOM SELSTART",domElement.selectionStart);
                     var findValue=find.getValue();
                     var start = code.selectionStart?code.selectionStart+1 : 0;
                     // console.log("START",start);
                     var re = new RegExp ('<br>', 'gi') ;
                     var txt = code.value.replace(re,"").substring(start);
-                    
+
                     var regexp = new RegExp(findValue);
                     var indexOf = txt.search(regexp);
                     // console.log("INDEX",indexOf);
                     if(indexOf==-1) {
-                        return;                                    
+                        return;
                         }
                     if(Ext.isGecko) {
                         code.selectText(indexOf , indexOf + findValue.length);
                         // console.log("FROM",domElement.selectionStart, "TO",domElement.selectionEnd);
-                        
+
                         // code.scrollIntoView(start);
                         // code.focus(false, true);
                     } else {
@@ -57,7 +57,7 @@
 
     var tbar = [
         _('Search'),
-        find, 
+        find,
         '->',
         {   xtype: 'button',
             text: _('Previous'),
@@ -74,7 +74,7 @@
             }
         }];
 
-        
+
     var command = new Ext.form.FormPanel({
         items: [ find ],
         region: 'north',
@@ -84,28 +84,28 @@
         });
 
     var root = new Ext.tree.AsyncTreeNode({
-        text:'JOBS Executed', 
-        draggable:false, 
-        expandable:true, 
+        text:'JOBS Executed',
+        draggable:false,
+        expandable:true,
         id:'root'
         });
-        
-    var treeLoader=new Ext.tree.TreeLoader({ 
-        dataUrl: '<% $c->stash->{jobStore} %>' 
+
+    var treeLoader=new Ext.tree.TreeLoader({
+        dataUrl: '<% $c->stash->{jobStore} %>'
         });
-        
+
     treeLoader.on('load', function(n,e) {
         tree.getRootNode().firstChild.expand();
         });
 
     var tree = new Ext.tree.TreePanel({
         expanded: true,
-        animate : true,          
+        animate : true,
         nodeType: 'async',
         useArrows: true,
         split: true,
-        autoScroll : true,          
-        containerScroll : true,     
+        autoScroll : true,
+        containerScroll : true,
     lines: true,
     rootVisible : false,
         root : root,
@@ -113,13 +113,13 @@
         });
 
     new Ext.tree.TreeSorter(tree, {property: 'id'});
-    
+
     tree.on('click', function(n,e) {
        if( n.attributes.needLoad ) {
           var id = n.attributes['_id'] || n.attributes.id;
           Ext.Ajax.request({
-                url: '/job/log/jesFile?id=' + id, 
-                params: { id: id }, 
+                url: '/job/log/jesFile?id=' + id,
+                params: { id: id },
                 success: function(xhr) {
                     var json = Ext.util.JSON.decode( xhr.responseText );
                     n.attributes.code=json.data;
@@ -142,7 +142,7 @@
         title: _("JES Files"),
         width: 280,
         collapsible: true,
-        items 	 : [ tree ]
+        items      : [ tree ]
         }
     );
 
@@ -153,7 +153,7 @@
         frame    : false,
         hideLabel: false,
         // tbar:tbar,
-        items 	 : [ code ]
+        items      : [ code ]
         }
     );
 
@@ -165,7 +165,7 @@
         layout: 'border',
         items: [ formTree, form ]
         });
-    
+
     return panel;
 })();
 

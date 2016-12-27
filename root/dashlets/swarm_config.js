@@ -3,7 +3,7 @@
 
     var data = params.data;
 
-    /*var limit = new Ext.ux.form.SpinnerField({ 
+    /*var limit = new Ext.ux.form.SpinnerField({
         value: data.limit,
         name: "limit",
         fieldLabel: _("Limit of records to animate")
@@ -29,24 +29,24 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-              { layout:'form', 
-                columnWidth: 1, 
+              { layout:'form',
+                columnWidth: 1,
                 bodyStyle: 'background:transparent;',
                 items: [
                     new Baseliner.ComboDouble({ fieldLabel: _('Background Color'), name:'background_color', value: data.background_color || '#FFFFFF', data: [
                         ['#FFFFFF', _('White')],
                         ['#000000',_('Black')]
-                      ] 
+                      ]
                     }),
                     new Baseliner.ComboDouble({ fieldLabel: _('Animation Start Mode'), name:'start_mode', value: data.start_mode || 'auto', data: [
                         ['auto', _('Automatically')],
                         ['manual', _('Manually')]
-                      ] 
+                      ]
                     }),
                     //{xtype: 'checkbox', id: 'anim_bucle', name: 'anim_bucle', boxLabel: 'anim_bucle', hideLabel: true, checked: true}
                     { xtype : "checkbox", name : "anim_bucle", checked: data.anim_bucle=='on' ? true : false, boxLabel : _('Repeat the animation') },
@@ -78,13 +78,13 @@
                 'font-weight': 'bold'
             }
         },
-        { xtype:'panel', 
-          hideBorders: true, 
-          layout:'column', 
+        { xtype:'panel',
+          hideBorders: true,
+          layout:'column',
           bodyStyle: 'margin: 3px; padding: 3px 3px;background:transparent;',
           items:[
-            { layout:'form', 
-              columnWidth: 1, 
+            { layout:'form',
+              columnWidth: 1,
               bodyStyle: 'background:transparent;',
               items: [
                 ccategory,

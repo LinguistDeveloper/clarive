@@ -11,16 +11,16 @@
     <tr>
         <td colspan='2'>
             <h3><% $data->{ $meta->{id_field} } %></h3>
-        </td>    
+        </td>
     </tr>
     <tr >
         <td style="padding: 5 0 10 0; color: #999">
             <a href="javascript:Baseliner.Topic.data_user_event('<% $data->{modified_by}%>')">
                 <img  width=16 src="/user/avatar/<% $data->{modified_by} %>/image.png" />
             </a>
-            <% $data->{modified_by}%>, <small><% $c->user_date( $data->{modified_on} )%></small> &nbsp; | &nbsp;            
+            <% $data->{modified_by}%>, <small><% $c->user_date( $data->{modified_on} )%></small> &nbsp; | &nbsp;
             <% lc _loc('Created')%>: <a href="javascript:Baseliner.Topic.data_user_event('<% $data->{created_by} %>')"> <img  width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" /> </a>
-            <% $data->{created_by}%>, <small><% $c->user_date($data->{created_on}) %></small>    
+            <% $data->{created_by}%>, <small><% $c->user_date($data->{created_on}) %></small>
 % if( _array( $data->{labels} ) ) {
 
 % foreach my $label ( _array( $data->{labels} ) ) {
@@ -47,11 +47,11 @@
                     Baseliner.message( _('Success'), response.msg );
                 } else {
                     Ext.Msg.show({
-                        title: _('Information'), 
-                        msg: response.msg , 
-                        buttons: Ext.Msg.OK, 
+                        title: _('Information'),
+                        msg: response.msg ,
+                        buttons: Ext.Msg.OK,
                         icon: Ext.Msg.INFO
-                    });     
+                    });
                 }
             }
         );

@@ -1,5 +1,5 @@
 <%args>
-    $row 
+    $row
 </%args>
     xtype: 'textarea',
     attrs_xml: {  wysiwyg: 1 },

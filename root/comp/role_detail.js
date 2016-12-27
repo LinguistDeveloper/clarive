@@ -52,7 +52,7 @@
 
     var cm = new Ext.grid.ColumnModel({
         defaults: {
-            sortable: true // columns are not sortable by default           
+            sortable: true // columns are not sortable by default
         },
         columns: [{
             header: '',

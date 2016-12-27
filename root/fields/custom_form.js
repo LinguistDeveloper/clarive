@@ -8,27 +8,27 @@ params:
     section: details
     set_method: set_custom
     form_file: /forms
-    fieldset: 0 
+    fieldset: 0
     fieldset_check: 0
     custom_fields: []
 ---
 */
 (function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
-	var form = params.form;
+    var data = params.topic_data;
+    var meta = params.topic_meta;
+    var form = params.form;
 
     var file = meta.form_file;
 
     // return a container first, then later load it with the component from ajaxEval
-    var custom_form_container = new Ext.Container({ 
+    var custom_form_container = new Ext.Container({
         layout:'form',
         hidden: true
     });
-	
+
     // optional fieldset configuration
     var fs = {
-        defaults: { 
+        defaults: {
            anchor: '70%',
            msgTarget: 'under',
            allowBlank: false
@@ -55,7 +55,7 @@ params:
         if( ! custom_form_container.isVisible() ) custom_form_container.show();
         form.doLayout();
     });
-	
-	return [ custom_form_container ]
+
+    return [ custom_form_container ]
 })
 

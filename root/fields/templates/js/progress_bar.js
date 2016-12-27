@@ -10,16 +10,16 @@ params:
 ---
 */
 (function(params){
-	var data = params.topic_data;
-	var meta = params.topic_meta;
+    var data = params.topic_data;
+    var meta = params.topic_meta;
     return [
-		{ xtype:'sliderfield', fieldLabel: _(meta.name_field), name: meta.id_field,
-			value: data ? eval('data.' + meta.bd_field) : 0,
-			anchor: '100%', tipText: function(thumb){
-					return String(thumb.value) + '%';
-			},
-			disabled: Baseliner.eval_boolean(meta.readonly),
-			hidden: Baseliner.eval_boolean(!meta.active)
-		}
+        { xtype:'sliderfield', fieldLabel: _(meta.name_field), name: meta.id_field,
+            value: data ? eval('data.' + meta.bd_field) : 0,
+            anchor: '100%', tipText: function(thumb){
+                    return String(thumb.value) + '%';
+            },
+            disabled: Baseliner.eval_boolean(meta.readonly),
+            hidden: Baseliner.eval_boolean(!meta.active)
+        }
     ]
 })

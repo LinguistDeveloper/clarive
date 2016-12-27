@@ -15,7 +15,7 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     var value = data[ meta.bd_field ];
-    
+
     var options = meta[ 'options' ];
 
     var opt_arr = [];
@@ -25,11 +25,11 @@ params:
             opt_arr.push([ v ]);
         });
     }
-    
+
     var store = new Ext.data.ArrayStore({
         fields: [ meta.id_field ],
         data : opt_arr
-    });  
+    });
     var combo =  new Ext.form.ComboBox({
         name: meta.id_field,
         xtype: 'combo',
@@ -48,12 +48,12 @@ params:
         hidden: Baseliner.eval_boolean(!meta.active),
         disabled: Baseliner.eval_boolean(meta.readonly),
         allowBlank: Baseliner.eval_boolean(meta.allowBlank)
-    });  
-    
+    });
+
     combo.on('afterrender', function(){
         combo.el.setHeight( meta.height || 30 );
     });
-    
+
     return [
         combo
     ]

@@ -11,17 +11,17 @@
 //     witdth: 400,
 //     name: 'options',
 //     records: data ? data.options_colors: [],
-//     preventMark: false,        
+//     preventMark: false,
 //     columns: [
 //         Ext.apply({ dataIndex:'option', header: _('Option') }, tf() ),
 //         Ext.apply({ dataIndex:'color', header: _('Color') }, pf() ),
 //     ],
 //     viewConfig: { forceFit: true }
 // });
-     ret.push([  
+     ret.push([
        { xtype:'textfield',fieldLabel: _('Option settings'), name: 'options', value: data.options },
        { xtype:'textfield',fieldLabel: _('Default value'), name: 'default_value', value: data.default_value }
-       //opitions 
+       //opitions
     ]);
     return ret;
 })

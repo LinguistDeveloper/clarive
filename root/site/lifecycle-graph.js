@@ -1,6 +1,6 @@
 (function(params) {
 var checked_general= false;
-var checked_rol= false;    
+var checked_rol= false;
 
 var general_text= false;
 var general_source = false;
@@ -123,7 +123,7 @@ var menu_role = new Ext.Button({
         {
             text: _('Unselect All'),
             handler: function() {
-            var bool = false;                      
+            var bool = false;
             checked_rol=true;
 
             rol_labels.setChecked(bool);
@@ -153,26 +153,26 @@ var menu_role = new Ext.Button({
         //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)"
     });
 
-    //OVERVIEW PANEL 
+    //OVERVIEW PANEL
     var pn_general_overview = new Ext.Panel({
         title: _('Overview'),
         html: 'overview',
-        bodyStyle:"z-index:10", 
+        bodyStyle:"z-index:10",
         //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)",
         floating: true,
         height: 250,
-        width: 250,        
+        width: 250,
         animCollapse: true,
         collapsible: true,
-    });    
+    });
     var pn_rol_overview = new Ext.Panel({
         title: _('Overview'),
         html: 'overview',
-        bodyStyle:"z-index:10", 
+        bodyStyle:"z-index:10",
         //bodyStyle: "background-image:url(/static/gojs/circuit_bkg.jpg)",
         floating: true,
         height: 250,
-        width: 250,        
+        width: 250,
         animCollapse: true,
         collapsible: true,
     });
@@ -191,16 +191,16 @@ var menu_role = new Ext.Button({
     init_general_overview = function(){
 
         var go_api = go.GraphObject.make;
- 
+
         var diagram =  go_api(go.Diagram, pn_general_diagram.body.id, {
-          initialContentAlignment: go.Spot.Center, 
+          initialContentAlignment: go.Spot.Center,
           allowDelete: false
         });
         general_container.diagram = diagram;
 
-        var overview = go_api(go.Overview, pn_general_overview.body.id, { 
-          observed: diagram, contentAlignment: go.Spot.Center 
-        });   
+        var overview = go_api(go.Overview, pn_general_overview.body.id, {
+          observed: diagram, contentAlignment: go.Spot.Center
+        });
         general_container.overview = overview;
 
 
@@ -210,17 +210,17 @@ var menu_role = new Ext.Button({
     init_role_overview = function(){
 
         var go_api = go.GraphObject.make;
- 
+
         var diagram =  go_api(go.Diagram, pn_rol_diagram.body.id, {
-          initialContentAlignment: go.Spot.Center, 
+          initialContentAlignment: go.Spot.Center,
           allowDelete: false
         });
 
         role_container.diagram = diagram;
 
-        var overview = go_api(go.Overview, pn_rol_overview.body.id, { 
-          observed: diagram, contentAlignment: go.Spot.Center 
-        });   
+        var overview = go_api(go.Overview, pn_rol_overview.body.id, {
+          observed: diagram, contentAlignment: go.Spot.Center
+        });
 
         role_container.overview = overview;
 
@@ -240,27 +240,27 @@ var menu_role = new Ext.Button({
         };
 
         // the node template describes how each Node should be constructed
-        diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }}, 
+        diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }},
             go_api(go.Shape,
                 new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),
                 new go.Binding("figure","figure"),
                 new go.Binding("fill", "color")),
-            go_api(go.TextBlock, { margin: 3 }, 
+            go_api(go.TextBlock, { margin: 3 },
                 new go.Binding("text", "key"),
                 new go.Binding("stroke","text_color"))
         );
 
         // define the only Link template
         diagram.linkTemplate =
-          go_api(go.Link,// {click: function(e, link) { showLinks(link); }},   
+          go_api(go.Link,// {click: function(e, link) { showLinks(link); }},
             { reshapable: true, resegmentable: false},
-            { routing: go.Link.Orthogonal },  
+            { routing: go.Link.Orthogonal },
             { curve: go.Link.JumpOver },
             { fromPortId: "" },
-            new go.Binding("fromPortId", "fromport"), 
-            new go.Binding("opacity", "isSelected", function(b) { return b ? 1 : 0.5; }).ofObject(),           
-            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),   
-            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),                    
+            new go.Binding("fromPortId", "fromport"),
+            new go.Binding("opacity", "isSelected", function(b) { return b ? 1 : 0.5; }).ofObject(),
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),
+            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),
             go_api(go.TextBlock,{
                 textAlign: "left",
                 font: "bold 8px sans-serif",
@@ -282,30 +282,30 @@ var menu_role = new Ext.Button({
                 new go.Binding("background", "isSelected", function(b) { return b ? "#1E90FF" : "transparent"; }).ofObject()),
             go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
               new go.Binding("source", "source"))
-        );         
+        );
 
         // define the diagram of groupTemplate
         diagram.groupTemplate =
           go_api(go.Group, "Vertical",
             go_api(go.Panel, "Auto",
-              go_api(go.Shape, "RoundedRectangle", 
+              go_api(go.Shape, "RoundedRectangle",
                 { parameter1: 14,
                   fill: "rgba(128,128,128,0.33)" }),
               go_api(go.Placeholder,
-                { padding: 5})  
+                { padding: 5})
             ),
             go_api(go.TextBlock,
               { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
               new go.Binding("text", "key"))
           );
-        
+
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
-        	var i = 0;
-        	var j = 0;
-        	var k = 0;
-        	var z = 0;
-        	var equal = 0;
+            var i = 0;
+            var j = 0;
+            var k = 0;
+            var z = 0;
+            var equal = 0;
 
             //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
@@ -318,8 +318,8 @@ var menu_role = new Ext.Button({
                             //save the min number in the correct position
                             res.data[j]=res.data[j+1];
                             //save the aux in the min position (change max with min)
-                            res.data[j+1]=aux;         
-                      }         
+                            res.data[j+1]=aux;
+                      }
                  }
             }
 
@@ -334,33 +334,33 @@ var menu_role = new Ext.Button({
                             //save the min number in the correct position
                             res.data[j]=res.data[j+1];
                             //save the aux in the min position (change max with min)
-                            res.data[j+1]=aux;         
-                      }         
+                            res.data[j+1]=aux;
+                      }
                  }
             }
 
-			//Order data for final type
+            //Order data for final type
             for(i=0; i<res.data.length-1; i++){
-            	k = 0;
-            	while (k < res.data[i].statuses_to.length){
-	                 for(j=0;j<res.data.length-1;j++){
-	                     var final_type = res.data[i].statuses_to_type[k];
-	                     var final_type2 = res.data[j+1].status_type;
-	                      if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
-	                            //save the max number in aux
-	                           aux=res.data[j];
-	                            //save the min number in the correct position
-	                            res.data[j]=res.data[j+1];
-	                            //save the aux in the min position (change max with min)
-	                            res.data[j+1]=aux;         
-	                      }         
-	                 }
-	            k++;     
+                k = 0;
+                while (k < res.data[i].statuses_to.length){
+                     for(j=0;j<res.data.length-1;j++){
+                         var final_type = res.data[i].statuses_to_type[k];
+                         var final_type2 = res.data[j+1].status_type;
+                          if((final_type!= 'FC' || final_type!= 'F') && (initial_type2=='F' || initial_type2=='FC')){
+                                //save the max number in aux
+                               aux=res.data[j];
+                                //save the min number in the correct position
+                                res.data[j]=res.data[j+1];
+                                //save the aux in the min position (change max with min)
+                                res.data[j+1]=aux;
+                          }
+                     }
+                k++;
                 }
             }
 
 
-            //In the statuses_to delete the text after to []                 
+            //In the statuses_to delete the text after to []
             i=0;
             while (i < res.data.length){
                 k = 0;
@@ -372,15 +372,15 @@ var menu_role = new Ext.Button({
             i++;
             }
 
-            //In the status_from delete the text after to []  
-            i=0;     
+            //In the status_from delete the text after to []
+            i=0;
             while (i < res.data.length){
                 z = res.data[i].status_from;
                 res.data[i].status_from = String(z.split(" [", 1));
               i++;
             }
 
-            //In the statuses_to_type delete the text after to []                  
+            //In the statuses_to_type delete the text after to []
             i=0;
             while (i < res.data.length){
                 k = 0;
@@ -488,9 +488,9 @@ var menu_role = new Ext.Button({
                   }
               i++;
               }
-              
-        var object_link = [];  
-        object_link = insert_links(res, general_text, general_source);      
+
+        var object_link = [];
+        object_link = insert_links(res, general_text, general_source);
 
         // the Model holds only the essential information describing the diagram
         diagram.model = new go.GraphLinksModel(object_node, object_link);
@@ -498,18 +498,18 @@ var menu_role = new Ext.Button({
         });
 
         if(general_text == true || general_source == true){
-          diagram.layout = go_api(go.LayeredDigraphLayout, 
-            { 
-            direction: 0, 
-            layerSpacing: 100,      
+          diagram.layout = go_api(go.LayeredDigraphLayout,
+            {
+            direction: 0,
+            layerSpacing: 100,
             columnSpacing: 90,
             layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
             });
         }else{
-          diagram.layout = go_api(go.LayeredDigraphLayout, 
-            { 
-            direction: 0, 
-            layerSpacing: 50,      
+          diagram.layout = go_api(go.LayeredDigraphLayout,
+            {
+            direction: 0,
+            layerSpacing: 50,
             columnSpacing: 20,
             layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
             });
@@ -534,12 +534,12 @@ var menu_role = new Ext.Button({
 
 
         // the node template describes how each Node should be constructed
-        diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }}, 
+        diagram.nodeTemplate = go_api(go.Node, "Auto", {click: function(e, node) { showConnections(node); }},
           go_api(go.Shape,
             new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),
             new go.Binding("figure","figure"),
             new go.Binding("fill", "color")),
-          go_api(go.TextBlock, { margin: 3 }, 
+          go_api(go.TextBlock, { margin: 3 },
             new go.Binding("text", "text"),
             new go.Binding("stroke","text_color"))
         );
@@ -547,13 +547,13 @@ var menu_role = new Ext.Button({
         // define the only Link template
         diagram.linkTemplate = go_api(go.Link,
           { reshapable: true, resegmentable: false },
-          { routing: go.Link.Orthogonal },  
+          { routing: go.Link.Orthogonal },
           { curve: go.Link.JumpOver }, //Bezier
           { fromPortId: "" },
-          new go.Binding("fromPortId", "fromport"), 
-          new go.Binding("opacity", "isSelected", function(b) { return b ? 1 : 0.5; }).ofObject(),           
-            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),   
-            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),                                 
+          new go.Binding("fromPortId", "fromport"),
+          new go.Binding("opacity", "isSelected", function(b) { return b ? 1 : 0.5; }).ofObject(),
+            go_api(go.Shape, { stroke: "#000000", strokeWidth: 1 },new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),
+            go_api(go.Shape, { toArrow: "Standard"},new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : "black"; }).ofObject(),new go.Binding("strokeWidth", "isHighlighted", function(h) { return h ? 3 : 1; }).ofObject()),
           go_api(go.TextBlock, {
               textAlign: "left",
               font: "bold 8px sans-serif",
@@ -577,7 +577,7 @@ var menu_role = new Ext.Button({
           go_api(go.Picture, { width: 32, height: 32, segmentOffset: new go.Point(NaN, 10) },
             new go.Binding("source", "source")
           )
-        );        
+        );
 
         diagram.groupTemplate = go_api(go.Group, "Vertical",
             go_api(go.Panel, "Auto",
@@ -599,15 +599,15 @@ var menu_role = new Ext.Button({
                 },
                 new go.Binding("text", "key"))
         );
-        
+
         Baseliner.ajaxEval( '/topicadmin/list_workflow', {categoryId:id_category}, function(res) {
 
-        	var i = 0; 
-        	var j = 0;
-        	var k = 0;
-        	var z = 0;
-        	var equal = 0;
-        	
+            var i = 0;
+            var j = 0;
+            var k = 0;
+            var z = 0;
+            var equal = 0;
+
             //Order data for creation date.
             for(i=0;i<res.data.length-1;i++){
                  for(j=0;j<res.data.length-1;j++){
@@ -619,8 +619,8 @@ var menu_role = new Ext.Button({
                             //save the min number in the correct position
                             res.data[j]=res.data[j+1];
                             //save the aux in the min position (change max with min)
-                            res.data[j+1]=aux;         
-                      }         
+                            res.data[j+1]=aux;
+                      }
                  }
             }
 
@@ -635,12 +635,12 @@ var menu_role = new Ext.Button({
                             //save the min number in the correct position
                             res.data[j]=res.data[j+1];
                             //save the aux in the min position (change max with min)
-                            res.data[j+1]=aux;         
-                      }         
+                            res.data[j+1]=aux;
+                      }
                  }
             }
 
-			//Order data for final type
+            //Order data for final type
             for(i=0;i<res.data.length-1;i++){
               k = 0;
               while (k < res.data[i].statuses_to.length){
@@ -653,14 +653,14 @@ var menu_role = new Ext.Button({
                               //save the min number in the correct position
                               res.data[j]=res.data[j+1];
                               //save the aux in the min position (change max with min)
-                              res.data[j+1]=aux;         
-                        }         
+                              res.data[j+1]=aux;
+                        }
                    }
-              k++;     
+              k++;
                 }
             }
 
-            //In the statuses_to delete the text after to []                 
+            //In the statuses_to delete the text after to []
             i=0;
             while (i < res.data.length){
                 k = 0;
@@ -672,15 +672,15 @@ var menu_role = new Ext.Button({
             i++;
             }
 
-            //In the status_from delete the text after to []  
-            i=0;     
+            //In the status_from delete the text after to []
+            i=0;
             while (i < res.data.length){
                 z = res.data[i].status_from;
                 res.data[i].status_from = String(z.split(" [", 1));
               i++;
             }
 
-            //In the statuses_to_type delete the text after to []                  
+            //In the statuses_to_type delete the text after to []
             i=0;
             while (i < res.data.length){
                 k = 0;
@@ -813,8 +813,8 @@ var menu_role = new Ext.Button({
                   }
               i++;
               }
-            
-              var object_link = []; 
+
+              var object_link = [];
               var texto = "";
               isource = [];
               if(rol_source){
@@ -865,7 +865,7 @@ var menu_role = new Ext.Button({
                       }
                     }
                   j++;
-                  }             
+                  }
                 i++;
               }
               //Insert text in links
@@ -878,23 +878,23 @@ var menu_role = new Ext.Button({
                         object_link[j].source = aux[i].source;
                     }
                   j++;
-                  }             
+                  }
                 i++;
               }
 
         diagram.model = new go.GraphLinksModel(object_node, object_link);
 
         });
-      
-        diagram.layout = go_api(go.LayeredDigraphLayout, { 
-            direction: 0, 
-            layerSpacing: 10,      
+
+        diagram.layout = go_api(go.LayeredDigraphLayout, {
+            direction: 0,
+            layerSpacing: 10,
             columnSpacing: 10,
             layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
         });
-        diagram.groupTemplate.layout = go_api(go.LayeredDigraphLayout, { 
-            direction: 0, 
-            layerSpacing: 50,      
+        diagram.groupTemplate.layout = go_api(go.LayeredDigraphLayout, {
+            direction: 0,
+            layerSpacing: 50,
             columnSpacing: 20,
             layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
         });
@@ -966,7 +966,7 @@ var menu_role = new Ext.Button({
               }
             }
           j++;
-          }             
+          }
         i++;
       }
       //Insert text in links
@@ -979,7 +979,7 @@ var menu_role = new Ext.Button({
                 object_link[j].source = aux[i].source;
             }
           j++;
-          }             
+          }
         i++;
       }
 
@@ -1016,14 +1016,14 @@ var menu_role = new Ext.Button({
     var role_container = new Ext.Panel({
          width: 800,
          height: 600,
-         layout: 'absolute', 
+         layout: 'absolute',
          items:[pn_rol_diagram,pn_rol_overview]
     });
 
   var general_container = new Ext.Panel({
          width: 800,
          height: 600,
-         layout: 'absolute', 
+         layout: 'absolute',
          items:[pn_general_diagram,pn_general_overview]
     });
     var cardpanel = new Ext.Panel({
@@ -1032,5 +1032,5 @@ var menu_role = new Ext.Button({
       tbar:[ btn_general, btn_role, '-', menu_general, menu_role, btn_decreaseZoom, btn_increaseZoom] ,
       items:[general_container,role_container]
     })
-    return cardpanel;    
+    return cardpanel;
 });

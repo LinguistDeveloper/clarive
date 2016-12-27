@@ -48,7 +48,7 @@
 
     var __now=new Date();
     __now.setSeconds(00);
-    
+
         // Baseline Combo
     var label_dest = _('Destination Baseline');
     var label_orig = _('Origin Baseline');
@@ -74,7 +74,7 @@
                     Baseliner.jobResetAll();
                     ds_combo.removeAll();
                     jc_grid.getStore().removeAll();
-                    } 
+                    }
                 }
             },
         width: 120
@@ -111,7 +111,7 @@
         width: 150,
         labelWidth: 250,
         listeners:{
-            'change':function(p,t){ }, //after the users changes it by hand 
+            'change':function(p,t){ }, //after the users changes it by hand
             'beforedateclick':function(picker,t){ },
             'beforerender':function(picker){
                 _setDatePicker(this);
@@ -146,12 +146,12 @@
         labelWidth: 250,
         strategy: new Ext.ux.form.Spinner.TimeStrategy(),
         listeners:{
-            'spin':function(p,t){ 
+            'spin':function(p,t){
                 this.validate();
                 }
             }
         });
-        
+
     var txtComment = new Ext.form.TextArea({
         id:   'comments<% $iid %>',
         fieldLabel: _('Comments'),
@@ -364,7 +364,7 @@
 
     var checkExpired = function( val ) {
         var myHora = parseTime(val, main_form.getForm().findField('job_date').value);
-        myHora.setSeconds(59);          
+        myHora.setSeconds(59);
         if ( myHora < __now ) {
             field_spinner.markInvalid( _('Job time expired') );
             Ext.form.VTypes['hourText'] = _('Job time expired');
@@ -372,9 +372,9 @@
             }
         return false;
         };
-        
+
     var checkInRange = function(val, range) {
-        eval("_range = " + range + ";");                    
+        eval("_range = " + range + ";");
         var range_str = _range.start_time + " - " + _range.end_time;
         // alert( ">" + _range.start_time + "<" );
         var a = to_hour( _range.start_time );
@@ -387,21 +387,21 @@
         };
 
     // hour validator
-    Ext.form.VTypes['hourVal']  = /^[0-2][0-9]:[0-5][0-9]$/; 
-    Ext.form.VTypes['hourMask'] = /[0-9:]/; 
+    Ext.form.VTypes['hourVal']  = /^[0-2][0-9]:[0-5][0-9]$/;
+    Ext.form.VTypes['hourMask'] = /[0-9:]/;
     Ext.form.VTypes['hourText'] = _('Invalid time format (00:00-23:59)');
-    Ext.form.VTypes['hour']     = function(v){ 
-        var t = Ext.form.VTypes['hourVal'].test(v); 
+    Ext.form.VTypes['hour']     = function(v){
+        var t = Ext.form.VTypes['hourVal'].test(v);
         if( ! t ) return false;
         if( !window_check.checked && !checkInRange(v,job_time.getValue() ) ) return false;
         if( checkExpired(v) ) return false;
-        var arr = v.split(":"); 
+        var arr = v.split(":");
         if( arr[0] > 23 || arr[1] > 59 ) {
             field_spinner.markInvalid( _('Invalid time format (00:00-23:59)') );
             return false;
             }
         return true;
-        }; 
+        };
 
     function parseTime (time, date){
         // date=main_form.getForm().findField('job_date').value;
@@ -519,7 +519,7 @@
         {header: _('Last Updated'), width: 110, sortable: true, dataIndex: 'date' },
         {header: _('Description'), width: 230, sortable: true, dataIndex: 'text'}
         ]);
-        
+
     var ds_grid = new Ext.data.Store({});
     var jc_grid = new Ext.grid.GridPanel({
         width: 800,
@@ -551,7 +551,7 @@
                         icon: node.attributes.icon,
                         //item: data.name,
                         item: node.text,
-                        text: node.text 
+                        text: node.text
                     });
                        /* {name: 'provider', mapping: 'provider'},
                         {name: 'related', mapping: 'related'},
@@ -586,17 +586,17 @@
 
                 //if( data.promotable[ bl ] == 1  || data.demot) {
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
-                if ( bl_item == undefined ) {  
+                if ( bl_item == undefined ) {
                     Ext.Msg.alert( _('Error'),
                         _("Cannot promote/demote changeset %1 to baseline %2 (job type %3)", '<b>' + n.text + '</b>', bl, job_type ) );
                 } else {
                     add_node(n);
                 }
-                return (true); 
+                return (true);
              }
         });
     });
-        
+
     var button_submit = new Ext.Button({
             xtype:'button', text: _('Create'),
             icon:'/static/images/icons/write.svg',
@@ -626,7 +626,7 @@
                         });
                     }
                 }
-    }); 
+    });
     button_submit.disable();
 
     var tb = new Ext.Toolbar({
@@ -663,16 +663,16 @@
                 Baseliner.calendar_reload();
                 }
             },
-            { 
+            {
             xtype:'button', text: _('Reset'),
             icon:'/static/images/icons/reset-grey.svg',
             cls: 'x-btn-text-icon',
             handler: Baseliner.jobResetAll
-            }, 
+            },
             '->'
             ]
         });
-        
+
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
         frame: true,
@@ -680,7 +680,7 @@
         width: 900,
         items: [
             tb,
-            { 
+            {
             xtype: 'radiogroup',
             name: 'job_type',
             columns: 3,
@@ -733,7 +733,7 @@
             root: 'data',
             totalProperty: 'totalCount',
             id: 'id'
-            }, 
+            },
         [
             {name: 'provider', mapping: 'provider'},
             {name: 'moreinfo', mapping: 'more_info'},

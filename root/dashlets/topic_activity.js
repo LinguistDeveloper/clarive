@@ -1,7 +1,7 @@
 <%perl>
 my $iid = Util->_md5;
 </%perl>
-(function(params){ 
+(function(params){
     var id = params.id_div;
 
     var graph;
@@ -47,7 +47,7 @@ my $iid = Util->_md5;
         html = html + '<tbody>';
         Ext.each( res.data, function(topic) {
           html = html + '<tr>';
-          
+
           Ext.each( columns, function(col) {
             html = html + '<td>';
             if ( col.name == 'name' ) {

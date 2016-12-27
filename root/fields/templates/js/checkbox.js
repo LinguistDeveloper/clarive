@@ -13,7 +13,7 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
+
     var checkbox = new Baseliner.CBox({
         name: meta.id_field,
         checked: Baseliner.eval_boolean(data[meta.id_field] || meta.default_value, false),
@@ -27,6 +27,6 @@ params:
         fieldLabel: _(meta.name_field),
         // style: 'margin-bottom: 15px'
     });
-    
+
     return [checkbox]
 })

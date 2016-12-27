@@ -1,16 +1,16 @@
 (function(params){
     var data = params.data || {};
-    
+
     var body;
     var engine = new Baseliner.ComboDouble({
-        fieldLabel: _('Engine'), name:'engine', value: data.engine || 'mason', 
-        data: [ 
+        fieldLabel: _('Engine'), name:'engine', value: data.engine || 'mason',
+        data: [
           ['mason',_('Mason')],
           ['tt',_('Template Toolkit')]
         ]
     });
-    
-    var template_var = new Ext.form.TextField({ fieldLabel:_('Template Stash Var'), 
+
+    var template_var = new Ext.form.TextField({ fieldLabel:_('Template Stash Var'),
         name:'template_var', value: data.template_var });
 
     return [

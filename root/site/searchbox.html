@@ -1,19 +1,19 @@
 <script type="text/javascript">
-/* Cool Javascript Find on this Page 
+/* Cool Javascript Find on this Page
 v. 2.0
 Written by Jeff Baker on September, 8, 2007.
-Copyright 2007 by Jeff Baker - 
+Copyright 2007 by Jeff Baker -
 www.seabreezecomputers.com
 Paste the following javascript call in your HTML web page where
 you want a button called "Find on this Page...":
 
-<---script type="text/javascript" language="JavaScript" 
+<---script type="text/javascript" language="JavaScript"
 src="find2.js">
 <-- /script>
 
 When you click on the button a floating DIV will pop up
 that will have a text box for users to enter in the text they
-want to find on the page.  
+want to find on the page.
 
 WARNING: If you want to place a second "Find on this page..."
 button somewhere on the same page then use the code below for
@@ -22,9 +22,9 @@ display the text that users type in and it will not find
 text correctly because there will be two different text input
 boxes with the same name:
 
-<input type="button" value="Find on this page..." 
+<input type="button" value="Find on this page..."
 onclick="show();">
-    
+
 */
 
 /* You may edit the following variables */
@@ -44,7 +44,7 @@ var ie = (document.all)
 //if (document.getElementById && !document.all)
 if (window.find)
     var nav = 1; // to detect if netscape or firefox
-else 
+else
     var nav = 0;
 var t = 0;  // used for timer to move window in IE when scrolling
 
@@ -53,7 +53,7 @@ var range; // range object needed for Firefox
 
 // The following is to capture mouse movement
 // If Netscape or Mozilla -- then set up for mouse capture
-if (!ie) 
+if (!ie)
 {
     document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);
 }
@@ -82,74 +82,74 @@ if (ie)
 // variable to record number fo finds
 var finds = 0;
 
-function findit() 
+function findit()
 {
     // put the value of the textbox in string
     var string = document.getElementById('fwtext').value;
-    
+
     // 8-9-2010 Turn DIV to hidden just while searching so doesn't find the text in the window
     findwindow.style.visibility = 'hidden';
-    
+
     if (ie)
     {
     // Bookmark this position in bookmark array at finds variable
     bookmark[finds] = txt.getBookmark();
-	    
+
     // findText is IE's javascript function to find text in
     // a text range
     if (string)  // only call findText if there is a string or IE will have error
-	    if (txt.findText(string)) // if found
-	    {	
-		    // select() not only highlights the string but
-		    // it also moves the view to that location
-		    txt.select();
-		    // scrollIntoView() is just a duplicate of what
-		    // select does by jumping to the selection, so
-		    // we don't realy need it.
-		    txt.scrollIntoView();
-		    // moveStart('character') moves the position in the
-		    // text one character forward so that we can search
-		    // for the next case of string in the body
-		    //txt.moveStart('character');
-		    
-		    // collapse moves the insertion point to the end
-		    // of the range so we can search for the next value
-		    txt.collapse(false);
-	    
-		    test.innerHTML = "<% _loc("Found") %>";
-	    }
-	    else
-	    {
-		    test.innerHTML = "<% _loc("Not found") %>";
-		    finds--;
-	    }
+        if (txt.findText(string)) // if found
+        {
+            // select() not only highlights the string but
+            // it also moves the view to that location
+            txt.select();
+            // scrollIntoView() is just a duplicate of what
+            // select does by jumping to the selection, so
+            // we don't realy need it.
+            txt.scrollIntoView();
+            // moveStart('character') moves the position in the
+            // text one character forward so that we can search
+            // for the next case of string in the body
+            //txt.moveStart('character');
+
+            // collapse moves the insertion point to the end
+            // of the range so we can search for the next value
+            txt.collapse(false);
+
+            test.innerHTML = "<% _loc("Found") %>";
+        }
+        else
+        {
+            test.innerHTML = "<% _loc("Not found") %>";
+            finds--;
+        }
     }
     else // Netscape or firefox
     {
-	    if (finds > 0)
-	    {
-		    sel = window.getSelection(); // get selection
-		    // remove all ranges
-		    if(sel.rangeCount > 0) sel.removeAllRanges();
-		    // add last highlighted range
-		    sel.addRange(range);		
-	    }	
-	    // window.find(string, caseSensitive, searchBackwards)
-	    //for (i=0;i <= finds; i++)
-	    if (string != "")	
-		    test.innerHTML = window.find(string, false, false);
-	    // In Firefox (not Netscape) when we press the
-	    // Next or Prev buttons in the DIV it looses the
-	    // selection, so we have to grab the selection
-	    // locations so we don't keep searching for only
-	    // the first found search over and over
-	    sel = window.getSelection(); // get selection
-	    range = sel.getRangeAt(0); // get object
-	    //test.innerHTML = sel.toString();
+        if (finds > 0)
+        {
+            sel = window.getSelection(); // get selection
+            // remove all ranges
+            if(sel.rangeCount > 0) sel.removeAllRanges();
+            // add last highlighted range
+            sel.addRange(range);
+        }
+        // window.find(string, caseSensitive, searchBackwards)
+        //for (i=0;i <= finds; i++)
+        if (string != "")
+            test.innerHTML = window.find(string, false, false);
+        // In Firefox (not Netscape) when we press the
+        // Next or Prev buttons in the DIV it looses the
+        // selection, so we have to grab the selection
+        // locations so we don't keep searching for only
+        // the first found search over and over
+        sel = window.getSelection(); // get selection
+        range = sel.getRangeAt(0); // get object
+        //test.innerHTML = sel.toString();
     }
     finds++;
-    findwindow.style.visibility = 'visible';	
-    
+    findwindow.style.visibility = 'visible';
+
 }  // end function findit()
 
 
@@ -158,76 +158,76 @@ function findprev()
 {
     // put the value of the textbox in string
     var string = document.getElementById('fwtext').value;
-    
+
     // 8-9-2010 Turn DIV to hidden just while searching so doesn't find the text in the window
     findwindow.style.visibility = 'hidden';
-    
+
     if (ie)
     {
     // if they found only 0 or 1 occurance then don't do anything
     // because they haven't found enough to go backwards
     if (finds < 2)
     {
-	    findwindow.style.visibility = 'visible';
-	    return;  
+        findwindow.style.visibility = 'visible';
+        return;
     }
     // Make finds variable go back to previous find
     finds = finds - 2;  // I don't know why I have to go back 2
-    
+
     // move back to previously bookmarked position
     txt.moveToBookmark(bookmark[finds]);
-    
+
     // select it
     findit();
     }
     else // if netscape or firefox
     {
-		    if (finds > 0)
-		    {
-			    sel = window.getSelection(); // get selection
-			    // remove all ranges
-			    if(sel.rangeCount > 0) sel.removeAllRanges();
-			    // add last highlighted range
-			    sel.addRange(range);		
-		    }
-	    // window.find(string, caseSensitive, searchBackwards)
-	    if (string != "")
-		    test.innerHTML = window.find(string, false, true);	
-	    // In Firefox (not Netscape) when we press the
-		    // Next or Prev buttons in the DIV it looses the
-		    // selection, so we have to grab the selection
-		    // locations so we don't keep searching for only
-		    // the first found search over and over
-		    sel = window.getSelection(); // get selection
-		    range = sel.getRangeAt(0); // get object
+            if (finds > 0)
+            {
+                sel = window.getSelection(); // get selection
+                // remove all ranges
+                if(sel.rangeCount > 0) sel.removeAllRanges();
+                // add last highlighted range
+                sel.addRange(range);
+            }
+        // window.find(string, caseSensitive, searchBackwards)
+        if (string != "")
+            test.innerHTML = window.find(string, false, true);
+        // In Firefox (not Netscape) when we press the
+            // Next or Prev buttons in the DIV it looses the
+            // selection, so we have to grab the selection
+            // locations so we don't keep searching for only
+            // the first found search over and over
+            sel = window.getSelection(); // get selection
+            range = sel.getRangeAt(0); // get object
     }
-    
+
     findwindow.style.visibility = 'visible';
-    
+
 } // end findprev()
 
 
-// This function looks for the ENTER key (13) 
+// This function looks for the ENTER key (13)
 // while the find window is open, so that if they user
 // press ENTER it will do the find next
 function checkkey(e)
-{	
+{
     var keycode;
     if (window.event)  // if ie
-	    keycode = window.event.keyCode;
+        keycode = window.event.keyCode;
     else // if Firefox or Netscape
-	    keycode = e.which;
-    
+        keycode = e.which;
+
     //test.innerHTML = keycode;
-    
+
     if (keycode == 13) // if ENTER key
-    {	
-	    // For some reason in IE, 
-	    // I have to focus on the 'NEXT' button
-	    // or finding by the Enter key does not always work.
-	    if (ie)
-		    document.getElementById('btn').focus();
-	    findit(); // call findit() function (like pressing NEXT)	
+    {
+        // For some reason in IE,
+        // I have to focus on the 'NEXT' button
+        // or finding by the Enter key does not always work.
+        if (ie)
+            document.getElementById('btn').focus();
+        findit(); // call findit() function (like pressing NEXT)
     }
 } // end function checkkey()
 
@@ -239,34 +239,34 @@ function show()
     if (ie || mozilla_opt == 1)
     {
     //var findwindow = document.getElementById('findwindow');
-    
+
     // Object to hold textbox so we can focus on it
     // so user can just start typing after "find" button
     // is clicked
     var textbox = document.getElementById('fwtext');
-    
+
     // Make the find window visible
     findwindow.style.visibility = 'visible';
     //fwtext.style.visibility = 'visible';
-    
+
     // Put cursor focus in the text box
     textbox.focus();
-    
+
     // Call timer to move textbox in case they scroll the window
-    t = setInterval('move_window();', 500); 	
-    
+    t = setInterval('move_window();', 500);
+
     // Setup to look for keypresses while window is open
     document.onkeydown = checkkey;
-    
+
     }
     else  // if netscape or firefox
-	    window.find();
+        window.find();
     // Note: Netscape and Firefox have a built in find window
     // that can be called with window.find()
     // They also have a find like IE's with self.find(string, 0, 1)
     // But I can't find any instructions on how to use it to
     // keep searching forward on "Next" button presses
-    
+
 } // end function show()
 
 
@@ -275,15 +275,15 @@ function show()
 function hide()
 {
     //var findwindow = document.getElementById('findwindow');
-    
+
     findwindow.style.visibility = 'hidden';
-    
+
     // turn off timer to move window on scrolling
     clearTimeout(t);
-    
+
     // Make document no longer look for enter key
     document.onkeydown = null;
-    
+
 } // end function hide()
 
 
@@ -295,9 +295,9 @@ function resettext()
 {
     if (ie)
     {
-	    txt = document.body.createTextRange();
-	    txt.moveStart("character", start_at);
-	    //txt.select();
+        txt = document.body.createTextRange();
+        txt.moveStart("character", start_at);
+        //txt.select();
     }
     finds = 0;
 } // end function reset()
@@ -308,87 +308,87 @@ function resettext()
 // scrolls when it is hightlighting the next found text
 function move_window()
 {
-    //var findwindow = document.getElementById('findwindow');	
-    
+    //var findwindow = document.getElementById('findwindow');
+
     // get current left, top and height of find_window
     fwtop = parseFloat(findwindow.style.top);
     fwleft = parseFloat(findwindow.style.left);
     fwheight = parseFloat(findwindow.style.height);
-    
+
     // get current top and bottom position of browser screen
     if (document.documentElement.scrollTop) // Needed if you use doctype loose.htm
-	    current_top = document.documentElement.scrollTop;
-    else 
-	    current_top = document.body.scrollTop;
+        current_top = document.documentElement.scrollTop;
+    else
+        current_top = document.body.scrollTop;
     if (document.documentElement.clientHeight)
     {
-	    if (document.documentElement.clientHeight > document.body.clientHeight)
-		    current_bottom = document.body.clientHeight + current_top;
-	    else
-		    current_bottom = document.documentElement.clientHeight + current_top;
+        if (document.documentElement.clientHeight > document.body.clientHeight)
+            current_bottom = document.body.clientHeight + current_top;
+        else
+            current_bottom = document.documentElement.clientHeight + current_top;
     }
     else
-	    current_bottom = document.body.clientHeight + current_top;
-    
+        current_bottom = document.body.clientHeight + current_top;
+
     // get current left and right position of browser
     if (document.documentElement.scrollLeft) // Needed if you use doctype loose.htm
-	    current_left = document.documentElement.scrollLeft;
-    else 
-	    current_left = document.body.scrollLeft;
+        current_left = document.documentElement.scrollLeft;
+    else
+        current_left = document.body.scrollLeft;
     if (document.documentElement.clientWidth)
     {
-	    if (document.documentElement.clientWidth > document.body.clientWidth)
-		    current_right = document.body.clientWidth + current_left;
-	    else
-		    current_right = document.documentElement.clientWidth + current_left;
+        if (document.documentElement.clientWidth > document.body.clientWidth)
+            current_right = document.body.clientWidth + current_left;
+        else
+            current_right = document.documentElement.clientWidth + current_left;
     }
     else
-	    current_right = document.body.clientWidth + current_left;
-    
+        current_right = document.body.clientWidth + current_left;
+
     //test.innerHTML = current_right + ',' + current_left;
-    
+
     // Only move window if it is out of the view
     if (fwtop < current_top)
-    {	
-	    // move window to current_top
-	    findwindow.style.top = current_top + 'px';	 
+    {
+        // move window to current_top
+        findwindow.style.top = current_top + 'px';
     }
     else if (fwtop > current_bottom - fwheight)
     {
-	    // move to current_bottom
-	    findwindow.style.top = current_bottom - fwheight + 'px';	 
+        // move to current_bottom
+        findwindow.style.top = current_bottom - fwheight + 'px';
     }
-    
+
     // Only move left position if out of view
     if (fwleft < current_left ||
-	    fwleft > current_right)
+        fwleft > current_right)
     {
     findwindow.style.left = current_left + 'px';
     }
-    
+
     /* var test = document.getElementById('test');
     test.innerHTML = 'find window: ' + fwtop
-	    + ' curr_bottom: ' + current_bottom; */
+        + ' curr_bottom: ' + current_bottom; */
 
 } // end function move_window()
 
 
-function MouseDown(e) 
+function MouseDown(e)
 {
     if (over == 1)
         DivID = 'findwindow';
-    
+
     if (over)
-    {    
-	    if (ie) 
-	    {
+    {
+        if (ie)
+        {
             objDiv = document.getElementById(DivID);
             objDiv = objDiv.style;
             mousex=event.offsetX;
             mousey=event.offsetY;
         }
-        else // if Mozilla or Netscape 
-	    {
+        else // if Mozilla or Netscape
+        {
             objDiv = document.getElementById(DivID);
             mousex=e.layerX;
             mousey=e.layerY;
@@ -399,33 +399,33 @@ function MouseDown(e)
 
 
 
-function MouseMove(e) 
+function MouseMove(e)
 {
-    
-    // get current top 
+
+    // get current top
     if (document.documentElement.scrollTop) // Needed if you use doctype loose.htm
-	    current_top = document.documentElement.scrollTop;
-    else 
-	    current_top = document.body.scrollTop;
-    
-    
+        current_top = document.documentElement.scrollTop;
+    else
+        current_top = document.body.scrollTop;
+
+
     // get current left
     if (document.documentElement.scrollLeft) // Needed if you use doctype loose.htm
-	    current_top = document.documentElement.scrollLeft;
-    else 
-	    current_left = document.body.scrollLeft;
-    
-    
-    if (objDiv) 
+        current_top = document.documentElement.scrollLeft;
+    else
+        current_left = document.body.scrollLeft;
+
+
+    if (objDiv)
     {
-        if (ie) 
+        if (ie)
         {
             objDiv.pixelLeft = event.clientX-mousex + current_left;
             objDiv.pixelTop = event.clientY-mousey + current_top;
             return false;
         }
-	    else // if Mozilla or Netscape
-	    {
+        else // if Mozilla or Netscape
+        {
             objDiv.style.left = (e.pageX-mousex) + 'px';
             objDiv.style.top = (e.pageY-mousey) + 'px';
             return false;
@@ -436,7 +436,7 @@ function MouseMove(e)
 //
 //
 //
-function MouseUp() 
+function MouseUp()
 {
     objDiv = null;
 }
@@ -450,23 +450,23 @@ function create_div(dleft, dtop, dwidth, dheight)
 {
     if (document.documentElement.scrollTop) // Needed if you use doctype loose.htm
     current_top = document.documentElement.scrollTop;
-    else 
+    else
     current_top = document.body.scrollTop;
-    
+
     if (document.getElementById('findwindow'))
     {
         findwindow = document.getElementById('findwindow');
         //win_iframe = document.getElementById('win_iframe');
     }
     else
-    { 
+    {
         findwindow.id = "findwindow";
         findwindow.style.position = 'absolute';
         document.body.appendChild(findwindow);
         findwindow.className = 'findwindow';
-	    findwindow.style.visibility = 'hidden';
+        findwindow.style.visibility = 'hidden';
     }
-    
+
     findwindow.style.backgroundColor = window_background;
     findwindow.style.border = '2px solid ' + window_border;
     findwindow.style.color = text_color;
@@ -474,13 +474,13 @@ function create_div(dleft, dtop, dwidth, dheight)
     findwindow.style.height = + window_height + 'px';
     findwindow.style.top = 0;
     findwindow.style.left = 0;
-    findwindow.style.padding = '0px'; 
+    findwindow.style.padding = '0px';
     findwindow.style.zIndex = 2000;
     findwindow.style.fontFamily = 'arial';
     findwindow.style.fontSize = '14px';
     findwindow.style.overflowX = 'hidden';
     //findwindow.style.display = "block";
-    
+
     // This part creates the title bar
     findwindow.innerHTML = '<div style="text-align: center'
     + ';width: ' + (window_width-20) + 'px'
@@ -488,7 +488,7 @@ function create_div(dleft, dtop, dwidth, dheight)
     + ';color: ' + title_color
     + ';border: 1px solid ' + text_color
     + ';background-color: ' + window_border
-    + ';float: left' 
+    + ';float: left'
     + ';" onmouseover="over=1;" onmouseout="over=0;">'
     + '<% _loc("Find Window") %></div>';
     // This part creates the closing X
@@ -511,7 +511,7 @@ function create_div(dleft, dtop, dwidth, dheight)
     + '<input id="btn" type="button" class="btn" value="<% _loc("Find Next") %>" onclick="findit();">'
     + '</div>\n'
     + '<div id="test"><br /></div>';
-    
+
 } // end function create_div()
 
 
@@ -519,7 +519,7 @@ function create_div(dleft, dtop, dwidth, dheight)
 // where the script is pasted in the HTML code
 document.write('<input type="button" value="<% _loc("Find on this page...") %>"'
     + ' onclick="show();">');
-    
+
 // Create the DIV
 var findwindow = document.createElement("div");
 create_div();

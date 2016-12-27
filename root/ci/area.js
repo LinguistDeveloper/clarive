@@ -2,22 +2,22 @@
     var data_value = params.rec.data || {};
     var data_value_json = Ext.util.JSON.encode( data_value );
     var store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable'} });
-    var combo_vars = new Ext.form.ComboBox({ 
+    var combo_vars = new Ext.form.ComboBox({
            width: 350,
-           //name: 'ci', 
-           //hiddenName: 'ci', 
+           //name: 'ci',
+           //hiddenName: 'ci',
            submitValue: false,
-           valueField: 'name', 
+           valueField: 'name',
            displayField: 'name',
            mode:'remote',
            emptyText: _('<select variable>'),
            typeAhead: false,
-           minChars: 1, 
-           store: store_vars, 
+           minChars: 1,
+           store: store_vars,
            editable: false, forceSelection: true, triggerAction: 'all',
            allowBlank: true
     });
-    
+
     var del_var = function(){
         de.del_row();
     };
@@ -31,18 +31,18 @@
         };
     */
 
-    var combo_bl = Baseliner.combo_baseline({ value: '*' }); 
+    var combo_bl = Baseliner.combo_baseline({ value: '*' });
 
     var de = new Baseliner.DataEditor({
         fieldLabel: _('Variables'),
         height: 300,
         //hide_type: true,
         //cols: [{header: _("Baseline"), width: 80, sortable: true, dataIndex: 'bl', editor: new Ext.form.TextArea() }],
-        col_key_width: 100, 
-        col_value_width: 100, 
+        col_key_width: 100,
+        col_value_width: 100,
         tbar: [
             combo_bl,
-            combo_vars, 
+            combo_vars,
             { icon:'/static/images/icons/delete.svg', handler: del_var }
         ],
         data: data_value
@@ -75,7 +75,7 @@
     return {
         beforesubmit: on_submit,
         fields: [
-           variables_field 
+           variables_field
         ]
     }
 })

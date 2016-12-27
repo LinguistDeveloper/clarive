@@ -58,4 +58,4 @@ Ext.grid.TableGrid = function(table, config) {
 };
 
 Ext.extend(Ext.grid.TableGrid, Ext.grid.GridPanel);
- 
+
