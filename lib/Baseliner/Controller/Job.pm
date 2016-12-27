@@ -11,6 +11,7 @@ use Array::Utils qw(intersect);
 use Encode ();
 use experimental 'autoderef';
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::Model::PromotesAndDemotes;
 use Baseliner::Model::Jobs;
 use Baseliner::Model::Permissions;
 use BaselinerX::Type::Model::ConfigStore;
@@ -702,7 +703,7 @@ sub jc_store : Local  {
     my %deploy_changesets;
     my $add_deploy = sub{
         my ($cs,$id_project)=@_;
-        my ($static,$promote,$demote) = BaselinerX::LcController->promotes_and_demotes(
+        my ($static,$promote,$demote) = Baseliner::Model::PromotesAndDemotes->promotes_and_demotes_menu(
             username   => $c->username,
             topic      => $cs,
             id_project => $id_project,
