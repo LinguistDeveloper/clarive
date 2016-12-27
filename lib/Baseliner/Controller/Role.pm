@@ -382,24 +382,18 @@ sub update : Local {
             }
         }
 
-        my @bounds_uniq;
-        for (my $i = 0; $i < @bounds; $i++) {
-            my $current = $bounds[$i];
-
-            my $uniq = 1;
-            for (my $j = $i + 1; $j < @bounds; $j++) {
-                my $diff = Hash::Diff::diff($current, $bounds[$j]);
-                if (!%$diff) {
-                    $uniq = 0;
-                    last;
-                }
+        my %bounds_uniq;
+        foreach my $bound (@bounds) {
+            if ( !%$bound ) {
+                %bounds_uniq = ( '' => {} );
+                last;
             }
-
-            next unless $uniq;
-
-            push @bounds_uniq, $current;
+            my $signature = join ';', map { join '=', $_, $bound->{$_} } sort keys %$bound;
+            next if exists $bounds_uniq{$signature};
+            $bounds_uniq{$signature} = $bound;
         }
 
+        my @bounds_uniq = values %bounds_uniq;
         push @bounds_uniq, {} unless @bounds_uniq;
 
         push @{ $row->{actions} }, {

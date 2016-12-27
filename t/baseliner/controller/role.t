@@ -299,7 +299,7 @@ subtest 'update: creates role with actions converting empty bounds to no bounds'
         req => {
             params => {
                 name         => 'Developer',
-                role_actions => JSON::encode_json( [ { action => 'action.some', bounds => [ {'' => ''}, { foo => 'bar' } ] } ] )
+                role_actions => JSON::encode_json( [ { action => 'action.some', bounds => [ {'' => ''} ] } ] )
             }
         }
     );
@@ -307,7 +307,7 @@ subtest 'update: creates role with actions converting empty bounds to no bounds'
 
     my $role_updated = mdb->role->find_one();
 
-    is_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ {}, { foo => 'bar' } ] } ];
+    is_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ {} ] } ];
 };
 
 subtest 'update: creates role with actions removing private keys' => sub {
@@ -340,6 +340,38 @@ subtest 'update: creates role with actions removing private keys' => sub {
     is_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ { _deny => 1, foo => 'bar' } ] } ];
 };
 
+subtest 'update: creates role with no bounds overwriting everything else' => sub {
+    _setup();
+
+    local $Baseliner::_no_cache = 1;
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                name         => 'Developer',
+                role_actions => JSON::encode_json(
+                    [
+                        {
+                            action => 'action.some',
+                            bounds => [
+                                {},
+                                { foo => 'bar' },
+                                { foo => 'bar', another => 'here' }
+                            ]
+                        }
+                    ]
+                )
+            }
+        }
+    );
+    $controller->update($c);
+
+    my $role_updated = mdb->role->find_one();
+
+    cmp_deeply $role_updated->{actions}, [ { 'action' => 'action.some', 'bounds' => [ {} ] } ];
+};
+
 subtest 'update: creates role with actions removing duplications' => sub {
     _setup();
 
@@ -355,10 +387,9 @@ subtest 'update: creates role with actions removing duplications' => sub {
                         {
                             action => 'action.some',
                             bounds => [
-                                { '' => '' },
-                                {},
                                 { foo => 'bar' },
                                 { foo => 'bar' },
+                                { foo => 'bar', another => 'here' },
                                 { foo => 'bar', another => 'here' }
                             ]
                         }
@@ -371,8 +402,8 @@ subtest 'update: creates role with actions removing duplications' => sub {
 
     my $role_updated = mdb->role->find_one();
 
-    is_deeply $role_updated->{actions},
-      [ { 'action' => 'action.some', 'bounds' => [ {}, { foo => 'bar' }, { foo => 'bar', another => 'here' } ] } ];
+    cmp_deeply $role_updated->{actions},
+      [ { 'action' => 'action.some', 'bounds' => bag({ foo => 'bar' }, { foo => 'bar', another => 'here' }) } ];
 };
 
 subtest 'update: does not update role with same name as another' => sub {
