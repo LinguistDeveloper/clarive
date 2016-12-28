@@ -234,15 +234,18 @@
 
             if (sm.hasSelection()) {
                 rows = sm.getSelections();
-                Ext.each(rows, function (row){
+                Ext.each(rows, function(row) {
                     ids.push(row.id);
                 });
 
-                Ext.Msg.confirm(_('Confirmation'), String.format(_('Are you sure you want to delete the selected calendar(s)?')),
+                Ext.Msg.confirm(_('Confirmation'),
+                    String.format(_('Are you sure you want to delete the selected calendar(s)?')),
                     function(btn) {
                         if (btn == 'yes') {
                             require(['calendar'], function(calendar) {
-                                calendar.delete({ids: ids}, function (){
+                                calendar.delete({
+                                    ids: ids
+                                }, function() {
                                     grid.getStore().remove(rows);
                                 })
                             })

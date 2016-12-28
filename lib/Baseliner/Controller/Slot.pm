@@ -255,6 +255,8 @@ sub calendar_delete : Path( '/job/calendar_delete' ) {
     };
 
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {

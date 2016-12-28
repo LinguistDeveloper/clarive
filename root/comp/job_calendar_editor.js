@@ -253,11 +253,14 @@
         icon: '/static/images/icons/delete.svg',
         text: _('Delete'),
         handler: function() {
-            Ext.Msg.confirm(_('Confirmation'), String.format(_('Are you sure you want to delete the selected calendar(s)?')),                        
+            Ext.Msg.confirm(_('Confirmation'),
+                String.format(_('Are you sure you want to delete the selected calendar(s)?')),
                 function(btn) {
                     if (btn == 'yes') {
-                        require(['calendar'], function (calendar){
-                            calendar.delete({ids: [id_cal]}, function (){
+                        require(['calendar'], function(calendar) {
+                            calendar.delete({
+                                ids: [id_cal]
+                            }, function() {
                                 cal_windows.hide();
                                 Baseliner.closeCurrentTab();
                             });
