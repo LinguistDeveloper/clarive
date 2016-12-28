@@ -9899,10 +9899,6 @@ msgid "Reset Grid Columns"
 msgstr ""
 
 #: root/comp/monitor_grid.js
-msgid "All-f"
-msgstr ""
-
-#: root/comp/monitor_grid.js
 msgid "Natures: %1"
 msgstr ""
 

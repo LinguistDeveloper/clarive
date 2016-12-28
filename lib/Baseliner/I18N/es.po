@@ -10050,10 +10050,6 @@ msgid "Reset Grid Columns"
 msgstr "Resetear Columnas del Grid"
 
 #: root/comp/monitor_grid.js
-msgid "All-f"
-msgstr "Todas"
-
-#: root/comp/monitor_grid.js
 msgid "Natures: %1"
 msgstr "Naturalezas: %1"
 
@@ -15987,6 +15983,9 @@ msgstr "destino"
 
 #~ msgid "EXPIRED"
 #~ msgstr "CADUCADO"
+
+#~ msgid "All-f"
+#~ msgstr "Todas"
 
 #~ msgid "event daemon frequency (secs)"
 #~ msgstr "frecuencia del demonio de eventos (segs)"
