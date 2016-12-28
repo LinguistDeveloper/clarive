@@ -11018,11 +11018,11 @@ msgstr "Importada la regla: %1"
 
 #: root/comp/rules.js
 msgid "Drag and Drop Files Here"
-msgstr ""
+msgstr "Arastre y deje los ficheros aqui"
 
 #: root/comp/rules.js
 msgid "Select or Drag and Drop Rule Files Here"
-msgstr ""
+msgstr "Seleccione o arrastre los ficheros aqui"
 
 #: root/comp/rules.js
 msgid "Edit Rule"

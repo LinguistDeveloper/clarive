@@ -202,6 +202,7 @@
         up.on('complete', function(){
             reload_tree();
             rules_store.reload();
+            win.hide();
         });
         var win = new Baseliner.Window({ title:_('Import'), layout:'form',
             width: 600, height: 300, tbar:[_('Select or Drag and Drop Rule Files Here')], items:up });
