@@ -278,7 +278,7 @@
 
 
     var nature_menu = [{
-          text: _('All-f'),
+          text: _('All'),
           icon: '/static/images/icons/nature.svg',
           handler: function (item) {
             item.parentMenu.ownerCt.setText('');
