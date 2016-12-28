@@ -8840,6 +8840,10 @@ msgid "Total Time"
 msgstr "Tiempo Total"
 
 #: root/comp/dashboard_job.html
+msgid "sec"
+msgstr "seg"
+
+#: root/comp/dashboard_job.html
 msgid "Last Step"
 msgstr "Último paso"
 
