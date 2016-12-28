@@ -141,6 +141,7 @@
             {  name: 'contents' },
             {  name: 'changesets' },
             {  name: 'changeset_cis' },
+            {  name: 'release_cis' },
             {  name: 'cs_comments' },
             {  name: 'releases' },
             {  name: 'applications' },
@@ -1419,19 +1420,24 @@
                 }
                 var return_value = new Array();
                 if ( record.data.changeset_cis && record.data.changeset_cis.length > 0 ) {
-                  Ext.each(record.data.changeset_cis, function(cs) {
-                    var link = '<span style="text-align: center;vertical-align: middle;"><a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
+                  Ext.each([].concat( record.data.changeset_cis, record.data.release_cis ), function(cs) {
+                    var link = function(){/*
+                           <span id="boot" style="text-align: center; vertical-align: middle; background: transparent;
+                           font-size: .92em; border-left: 4px solid [%= cs.category.color %]; padding-left: 4px;">
+                               <a id="topic_[%= cs.mid %]_<% $iid %>"
+                                   onclick="javascript:Baseliner.show_topic_colored('[%= cs.mid %]',
+                                   '[%= cs.category.name %]', '[%= cs.category.color %]')"
+                                   style="cursor:pointer">
+                                   <span style="font-weight: bolder; margin-right: 5px;">
+                                   [%= cs.category.name %] #[%= cs.mid %]</span>[%= cs.title %]
+                               </a>
+                    */}.tmpl({ cs: cs });
                     var comments = '';
                     if ( record.data.cs_comments[cs.mid] ) {
                       comments = "<img src='/static/images/icons/paperclip.svg' style='cursor:pointer;height:12px;width:12px;' onclick='javascript:( new Baseliner.view_field_content({ username: \"<% $c->username %>\", mid: \""+ cs.mid + "\", field: \"" + record.data.cs_comments[cs.mid] + "\", title: \"" + cs.category.name + ' #' + cs.mid + ' - ' + cs.title + "\" }))'/>";
                     }
                     return_value.push(link + '&nbsp' + comments + '</span>');
                   });
-                  if ( record.data.releases ) {
-                    Ext.each( record.data.releases, function(rel) {
-                      return_value.push(rel);
-                    });
-                  }
                 } else {
                   return_value = record.data.contents;
                 }
