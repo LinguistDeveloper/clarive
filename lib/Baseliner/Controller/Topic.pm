@@ -2314,6 +2314,7 @@ sub get_files : Local {
 
     my $username = $p->{username} || $c->username;
     my $fields = $p->{field} // 'ALL';
+    my $depth = $p->{depth} // 4;
     my $mid = $p->{mid} || _throw _loc('Missing mid');
 
     my $topic = ci->new($mid);
@@ -2321,7 +2322,7 @@ sub get_files : Local {
     my ($info, @user_topics) = Baseliner->model('Topic')->topics_for_user({ username => $username, query=>$mid, clear_filter => 1});
     my $where = { mid => mdb->in(map {$_->{mid}} @user_topics), collection => 'topic'};
 
-    my @topics = $topic->children( where => $where, depth => -1 );
+    my @topics = $topic->children( where => $where, depth => $depth );
 
     my $download_path = _tmp_dir."/downloads/";
     #my $topic_path = $download_path._nowstamp."_".$mid;
@@ -2344,7 +2345,7 @@ sub get_files : Local {
                 _array $cat_meta->{ $related->{name_category} }
             ];
         }
-        my $rel_data = ci->new($related->{mid})->get_data;
+        my $rel_data = $related->get_data;
 
         for my $field ( _array $cat_fields->{$related->{name_category}} ) {
             if ( _array($rel_data->{$field->{id_field}}) ) {
