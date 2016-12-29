@@ -1258,28 +1258,28 @@
 
     function statusCodeToStatusName(statusCode) {
         var map = {
-            REJECTED: _('REJECTED'),
-            CANCELLED: _('CANCELLED'),
-            TRAPPED: _('TRAPPED'),
-            TRAPPED_PAUSED: _('TRAPPED_PAUSED'),
-            ERROR: _('ERROR'),
-            RUNNING: _('RUNNING'),
-            FINISHED: _('FINISHED'),
-            KILLED: _('KILLED'),
-            'IN-EDIT': _('IN-EDIT'),
-            WAITING: _('WAITING'),
-            READY: _('READY'),
-            APPROVAL: _('APPROVAL'),
-            SUSPENDED: _('SUSPENDED'),
-            RESUME: _('RESUME'),
-            PAUSED: _('PAUSED'),
-            REJECTED: _('REJECTED'),
-            ROLLBACK: _('ROLLBACK'),
-            ROLLBACKFAIL: _('ROLLBACKFAIL'),
-            ROLLEDBACK: _('ROLLEDBACK'),
-            PENDING: _('PENDING'),
-            SUPERSEDED: _('SUPERSEDED'),
-            EXPIRED: _('EXPIRED')
+            REJECTED: _('Rejected'),
+            CANCELLED: _('Cancelled'),
+            TRAPPED: _('Trapped'),
+            TRAPPED_PAUSED: _('Trapped_Paused'),
+            ERROR: _('Error'),
+            RUNNING: _('Running'),
+            FINISHED: _('Finished'),
+            KILLED: _('Killed'),
+            'IN-EDIT': _('In-Edit'),
+            WAITING: _('Waiting'),
+            READY: _('Ready'),
+            APPROVAL: _('Approval'),
+            SUSPENDED: _('Suspended'),
+            RESUME: _('Resume'),
+            PAUSED: _('Paused'),
+            REJECTED: _('Rejected'),
+            ROLLBACK: _('Rollback'),
+            ROLLBACKFAIL: _('Rollbackfail'),
+            ROLLEDBACK: _('Rolledback'),
+            PENDING: _('Pending'),
+            SUPERSEDED: _('Superseded'),
+            EXPIRED: _('Expired')
         };
 
         return map[statusCode] || statusCode;
@@ -1295,8 +1295,7 @@
         var status = rec.data.status_code;
         var icon = Baseliner.getJobStatusIcon(status, rollback);
         var type   = rec.data.type_raw;
-
-        var value = '<b>'+ statusCodeToStatusName(value) + '</b>';
+        var value = '<b>'+ statusCodeToStatusName(status) + '</b>';
 
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
