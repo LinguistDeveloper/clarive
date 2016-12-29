@@ -1,4 +1,4 @@
-(function(params){
+(function(params) {
     var data = params.data || {};
     var path_mode = new Baseliner.ComboDouble({
         fieldLabel: _('Path Mode'), name:'path_mode', value: data.path_mode || 'files_flat',
@@ -16,11 +16,25 @@
           ['dir_only',_('Only Directories')]
         ]
     });
-    return [
-        { xtype:'textfield', fieldLabel: _('Variable'), name: 'varname', value: data.varname },
-        new Baseliner.MonoTextArea({ fieldLabel: _('Path'), height: 80, name: 'path', value: params.data.path }),
+    return [{
+            xtype: 'textfield',
+            fieldLabel: _('Variable'),
+            name: 'varname',
+            value: data.varname
+        },
+        new Baseliner.MonoTextArea({
+            fieldLabel: _('Path'),
+            height: 80,
+            name: 'path',
+            value: params.data.path
+        }),
         path_mode,
-        dir_mode,
+        dir_mode, {
+            xtype: "checkbox",
+            name: "relative_paths",
+            checked: data.relative_paths == 'on' ? true : false,
+            fieldLabel: _('Return relative paths?')
+        },
         { xtype:'tabpanel', fieldLabel: _('Filters'), height: 200, activeTab:0, items:[
             new Baseliner.ArrayGrid({
                 title:_('Include Paths'),
@@ -39,6 +53,3 @@
         ]}
     ]
 })
-
-
-

@@ -165,6 +165,7 @@ sub file_foreach {
     my $path = $config->{path};
     my $path_mode = $config->{path_mode} // 'files_flat';
     my $dir_mode = $config->{dir_mode} // 'file_only';
+    my $relative_paths = $config->{relative_paths} // 0;
 
     _fail _loc('Root path not configured') if $path_mode ne 'nature_items' && !length $path;
     _fail _loc('Path does not exist or is not readable: `%1`', $path) if length $path && $path!~/\*|\?/ && !-e $path;
@@ -201,7 +202,26 @@ sub file_foreach {
 
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
     @files = $self->filter_paths( $include_path, $exclude_path, @files );
+
+    @files = $relative_paths ? $self->get_relative_paths( $path, @files ) : @files;
     return \@files;
+}
+
+sub get_relative_paths {
+    my $self = shift;
+    my ( $root, @files ) = @_;
+
+    return () unless $root && @files;
+
+    my @relative_paths;
+
+    foreach my $file (@files) {
+        my $relative_path = $file;
+        $relative_path =~ s/^$root\/?//;
+        push @relative_paths, $relative_path;
+    }
+
+    return @relative_paths;
 }
 
 sub filter_paths {

@@ -13928,6 +13928,10 @@ msgid "Only Directories"
 msgstr "Sólo directorios"
 
 #: root/forms/file_foreach.js
+msgid "Return relative paths?"
+msgstr "¿Devolver rutas relativas?"
+
+#: root/forms/file_foreach.js
 msgid "Exclude Paths"
 msgstr "Excluir rutas"
 

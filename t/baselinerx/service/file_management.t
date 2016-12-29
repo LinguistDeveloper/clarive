@@ -15,6 +15,38 @@ use Baseliner::Utils qw(_slurp);
 
 use_ok 'BaselinerX::Service::FileManagement';
 
+subtest 'get_relative_paths: returns empty array if path not present' => sub {
+    _setup();
+
+    my $service = _build_service();
+
+    my @files = $service->get_relative_paths();
+
+    is_deeply \@files, [];
+};
+
+subtest 'get_relative_paths: returns empty array if files are not present' => sub {
+    _setup();
+
+    my $service = _build_service();
+
+    my @files = $service->get_relative_paths('my_path');
+
+    is_deeply \@files, [];
+};
+
+subtest 'get_relative_paths: returns relatave paths' => sub {
+    _setup();
+
+    my $service         = _build_service();
+    my $path            = '/test/path';
+    my @full_path_files = ( '/test/path/a.txt', '/test/path/b.txt', '/test/path/c.txt', '/new/test/path/c.txt' );
+    my @files           = $service->get_relative_paths( $path, @full_path_files );
+
+    is_deeply \@files, [qw#a.txt b.txt c.txt /new/test/path/c.txt#];
+};
+
+
 subtest 'run_ship: fails when no server was configured' => sub {
     _setup();
 
