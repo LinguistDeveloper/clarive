@@ -3325,6 +3325,7 @@ msgid "System message %1 remove"
 msgstr ""
 
 #: lib/Baseliner/Model/SystemMessages.pm lib/Baseliner/Model/Topic.pm
+#: lib/BaselinerX/Service/UserServices.pm
 msgid "Missing username"
 msgstr ""
 
@@ -7129,6 +7130,10 @@ msgstr ""
 
 #: lib/BaselinerX/Service/TopicServices.pm
 msgid "Error asseting the file %1 to the topic %2. Error: %3"
+msgstr ""
+
+#: lib/BaselinerX/Service/UserServices.pm
+msgid "Load CI User Data"
 msgstr ""
 
 #: lib/BaselinerX/Service/ValidateStashVariables.pm
@@ -14432,6 +14437,14 @@ msgstr ""
 
 #: root/forms/topic_update.js
 msgid "Variables to Update"
+msgstr ""
+
+#: root/forms/user_load.js
+msgid "Load User"
+msgstr ""
+
+#: root/forms/user_load.js
+msgid "Mid only?"
 msgstr ""
 
 #: root/forms/validate_stash_variables.js
