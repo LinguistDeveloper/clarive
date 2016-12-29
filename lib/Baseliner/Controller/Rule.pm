@@ -79,24 +79,29 @@ sub list : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
 
+    my $start = $p->{start} || 0;
+    my $limit = $p->{limit} || 10;
     my $qry = $p->{query};
     my %query;
 
     $query{rule_active} = mdb->true;
     $query{rule_type}   = mdb->in( $p->{rule_type} ) if ( $p->{rule_type} );
+    $query{id}          = $qry if length $qry && $p->{valuesqry};
     $query{rule_name}   = qr/$qry/i if length $qry && !$p->{valuesqry};
 
-    my @rows = mdb->rule->find( {%query} )->sort( { rule_name => 1 } )->fields( { rule_tree => 0 } )->all;
+    my $rs = mdb->rule->find( {%query} )->sort( { rule_name => 1 } )->fields( { rule_tree => 0 } );
+    $rs->skip($start)  if $start;
+    $rs->limit($limit) if $limit;
 
-    @rows = map {
-        $_->{icon} = $RULE_ICONS{ $_->{rule_type} } // Util->icon_path('rule.svg');
-        $_;
-    } @rows;
+    my @rows;
+    while ( my $row = $rs->next ) {
+        $row->{icon} = $RULE_ICONS{ $row->{rule_type} } // Util->icon_path('rule.svg');
+        push @rows, $row;
+    }
 
-    $c->stash->{json} = { data => \@rows, totalCount => scalar(@rows) };
+    $c->stash->{json} = { data => \@rows, totalCount =>  $rs->count };
     $c->forward('View::JSON');
 }
-
 
 sub actions : Local {
     my ($self,$c)=@_;

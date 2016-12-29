@@ -381,6 +381,7 @@
             cls: 'ui-comp-topic-admin-window-form',
             hiddenName: 'default_form',
             fieldLabel: _("Form Rule"),
+            emptyText: _('Select Form Rule'),
             baseParams: { rule_type: ['form'] },
             value: rec ? rec.data.default_form : '',
             singleMode: true,

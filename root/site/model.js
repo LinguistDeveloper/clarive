@@ -475,13 +475,14 @@ Baseliner.RoleBox = Ext.extend(Baseliner.SuperBox, {
     }
 });
 
-Baseliner.RuleBox = Ext.extend(Baseliner.SuperBox, {
+Cla.RuleBox = Ext.extend(Baseliner.SuperBox, {
     name: 'rule',
     hiddenName: 'rule',
+    pageSize: 10,
     valueField: 'id',
     displayField: 'rule_name',
     fieldLabel: _("Rule"),
-    emptyText: _('Defined in the Workflow Tab'),
+    emptyText: _('Select Rule'),
     singleMode: true,
     forceSelection: true,
     $firstload: true,
@@ -494,11 +495,11 @@ Baseliner.RuleBox = Ext.extend(Baseliner.SuperBox, {
             autoLoad: false,
             totalProperty: 'totalCount',
             fields: ['id', 'rule_name', 'icon'],
-            baseParams: self.baseParams || {} //  rule_type: 'workflow'
+            baseParams: self.baseParams || {}
         });
 
         self.store.on('load', function() {
-            if (self.$firstload) { // For default value purpose
+            if (self.$firstload) {
                 self.$firstload = false;
                 self.setValue(self.value);
             }

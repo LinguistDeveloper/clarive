@@ -1487,8 +1487,8 @@ msgid "Admin Rules"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm root/comp/monitor_grid.js
-#: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/email/generic_rule.html root/site/model.js
+#: root/comp/rule_new.js root/comp/rules.js root/email/generic_rule.html
+#: root/site/model.js
 msgid "Rule"
 msgstr ""
 
@@ -11646,7 +11646,11 @@ msgstr ""
 msgid "Form Rule"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js root/site/model.js
+#: root/comp/topic/topic_admin.js
+msgid "Select Form Rule"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
 msgid "Defined in the Workflow Tab"
 msgstr ""
 
@@ -15437,6 +15441,10 @@ msgstr ""
 
 #: root/site/model.js
 msgid "Select Roles"
+msgstr ""
+
+#: root/site/model.js
+msgid "Select Rule"
 msgstr ""
 
 #: root/site/model.js

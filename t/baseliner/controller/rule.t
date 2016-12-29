@@ -195,6 +195,29 @@ subtest 'list: filters by rule type array' => sub {
     cmp_deeply $c->stash->{json}{data}, [ superhashof({ rule_type=>'independent' }) ];
 };
 
+subtest 'list: paging over rules list' => sub {
+    _setup();
+
+    for ( my $i = 0; $i < 2; $i++ ) {
+        _create_rule();
+    }
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                start     => '0',
+                limit     => '1'
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+    $controller->list($c);
+
+    is $c->stash->{json}{totalCount}, 2;
+    is scalar @{ $c->stash->{json}{data} }, 1;
+};
+
 subtest 'grid: filters by rule type array' => sub {
     _setup();
 

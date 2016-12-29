@@ -1499,8 +1499,8 @@ msgid "Admin Rules"
 msgstr "Administrar reglas"
 
 #: lib/Baseliner/Controller/Rule.pm root/comp/monitor_grid.js
-#: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/email/generic_rule.html root/site/model.js
+#: root/comp/rule_new.js root/comp/rules.js root/email/generic_rule.html
+#: root/site/model.js
 msgid "Rule"
 msgstr "Regla"
 
@@ -11804,7 +11804,11 @@ msgstr ""
 msgid "Form Rule"
 msgstr "Regla de Formulario"
 
-#: root/comp/topic/topic_admin.js root/site/model.js
+#: root/comp/topic/topic_admin.js
+msgid "Select Form Rule"
+msgstr "Seleccionar Regla de Formulario"
+
+#: root/comp/topic/topic_admin.js
 msgid "Defined in the Workflow Tab"
 msgstr "Definido en la pestaña de Flujo de trabajo"
 
@@ -15627,6 +15631,10 @@ msgid "Select Roles"
 msgstr "Seleccionar Roles"
 
 #: root/site/model.js
+msgid "Select Rule"
+msgstr "Seleccionar Regla"
+
+#: root/site/model.js
 msgid "Select CI Role"
 msgstr "Seleccione el Rol CI"
 
@@ -15961,6 +15969,12 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Select rule"
+#~ msgstr "Selecciona regla"
+
+#~ msgid "Select topic form"
+#~ msgstr "Seleccione formulario"
 
 #~ msgid "REJECTED"
 #~ msgstr "RECHAZADO"
