@@ -494,7 +494,7 @@ Cla.RuleBox = Ext.extend(Baseliner.SuperBox, {
             remoteSort: true,
             autoLoad: false,
             totalProperty: 'totalCount',
-            fields: ['id', 'rule_name', 'icon'],
+            fields: ['id', 'rule_name', 'icon', 'rule_type', 'rule_desc'],
             baseParams: self.baseParams || {}
         });
 

@@ -449,13 +449,7 @@
             fieldLabel: _('Workdays only')
         });
 
-        var store_pipeline = new Baseliner.JsonStore({
-            url: '/rule/list',
-            root: 'data',
-            totalProperty: 'totalCount',
-            id: 'id',
-            fields: ['id', 'rule_name', 'rule_type', 'rule_desc']
-        });
+
         var result_template = new Ext.XTemplate(
             '<tpl for="."><div class="x-combo-list-item">',
             '<span id="boot" style="background: transparent;">',
@@ -466,24 +460,16 @@
             '</span>',
             '</div></tpl>'
         );
-        var schedule_service = new Baseliner.SuperBox({
-            singleMode: true,
-            fieldLabel: _('Rule'),
-            name: 'id_rule',
-            displayField: 'rule_name',
-            hiddenName: 'id_rule',
-            valueField: 'id',
-            store: store_pipeline,
-            mode: 'remote',
-            minChars: 0,
+
+        var schedule_service = new Cla.RuleBox({
             loadingText: _('Searching...'),
-            tpl: result_template,
             allowBlank: false,
             value: rec.id_rule,
             editable: false,
-            lazyRender: true
+            lazyRender: true,
+            name: 'id_rule',
+            hiddenName: 'id_rule'
         });
-        store_pipeline.load();
 
         var btn_submit = new Ext.Button({
             text: _('Save'),
