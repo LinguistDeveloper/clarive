@@ -1285,6 +1285,11 @@
         return map[statusCode] || statusCode;
     }
 
+    var blRenderer = function(value) {
+        return '<span id="boot" style="background-color: transparent">' +
+            '<span class="label monitor-env-tag">' + value + '</span></span>';
+    };
+
     var render_level = function(value,metadata,rec,rowIndex,colIndex,store,status) {
         var rollback = rec.data.rollback;
         var status = rec.data.status_code;
@@ -1503,13 +1508,13 @@
         columns: [
                 { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true, groupable: false },
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true, groupable: false },
+                { header: _('Env'), width: 50, dataIndex: 'bl', sortable: true, renderer: blRenderer },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job, groupable: false },
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
                 { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true,  renderer: progressBarRenderer, groupable: false },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },
                 { header: _('Project'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
-                { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: true },
