@@ -3336,6 +3336,8 @@ sub get_categories_permissions {
         else {
             return ();
         }
+    } elsif ($id_category && !@id_categories && !@{$action->{bounds}}){
+        @id_categories = ($id_category);
     }
 
     my $where = {};
