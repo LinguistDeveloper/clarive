@@ -1004,6 +1004,10 @@ table.table-bordered.table-condensed.dashboard td > div > img {
     list-style: none;
 }
 
+.x-dd-drag-ghost .styledCheckboxWrap {
+    display: none;
+}
+
 .x-dd-drop-icon {
     position: absolute;
     top: 4px;
@@ -1039,6 +1043,8 @@ table.table-bordered.table-condensed.dashboard td > div > img {
 
 .x-dd-drop-ok .x-dd-drop-icon {
     background-image: url("/static/images/icons/drop-yes.svg");
+    margin-top: 3px;
+    margin-left: 3px;
 }
 
 .x-dd-drop-ok-add .x-dd-drop-icon {

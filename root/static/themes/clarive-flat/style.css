@@ -1942,5 +1942,14 @@ div.x-panel-body .job-calendar {
 }
 
 .ext-strict .ext-webkit .x-small-editor .x-form-text.x-superboxselect {
-   height: 27px !important;
+    height: 27px !important;
+}
 
+.x-tree-node div.forum-ct {
+    background: #eee !important;
+    margin-top: 1px !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
