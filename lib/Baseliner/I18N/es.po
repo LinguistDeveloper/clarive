@@ -1960,6 +1960,10 @@ msgid "Error %1 the calendar: "
 msgstr "Error %1 el calendario: "
 
 #: lib/Baseliner/Controller/Slot.pm
+msgid "Calendar(s) deleted"
+msgstr "Calendario(s) borrado"
+
+#: lib/Baseliner/Controller/Slot.pm
 msgid "Error deleting calendar(s)"
 msgstr "Error borrando calendario(s)"
 
@@ -2711,10 +2715,6 @@ msgstr "Falta parámetro: update"
 #: lib/Baseliner/Model/CI.pm
 msgid "Update user ok"
 msgstr "Usuario actualizado correctamente"
-
-#: lib/Baseliner/Model/Calendar.pm
-msgid "Calendar(s) deleted"
-msgstr "Calendario(s) borrado"
 
 #: lib/Baseliner/Model/Catalog.pm
 msgid "View catalog"
