@@ -9,6 +9,7 @@ use Baseliner::Model::Permissions;
 use Baseliner::Model::Users;
 use Baseliner::RuleRunner;
 use Path::Class;
+use List::Util qw(first);
 use Try::Tiny;
 use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
@@ -843,6 +844,150 @@ sub update_mid_data {
         $$mid_data{$mid} = $data;
     }
     return $mid_data;
+}
+
+sub filter_valid_update_params {
+    my $self = shift;
+    my ($p) = @_;
+
+    my $username = delete $p->{username};
+    die 'username required' unless $username;
+
+    my $data;
+    if ( !$p->{topic_mid} || $p->{topic_mid} eq '-1' ) {
+        my $category = mdb->category->find_one( { id => $p->{category} } );
+
+        my @statuses = _array $category->{statuses};
+        my $initial_status = ci->status->find_one( { id_status => mdb->in(@statuses), type => 'I' } );
+
+        $data = {
+            id_category_status => $initial_status->{id_status},
+            id_category        => $p->{category}
+        };
+    }
+    else {
+        $data = mdb->topic->find_one( { mid => "$p->{topic_mid}" } );
+        die 'Topic not found' unless $data;
+    }
+
+    my $id_category = $data->{id_category};
+    die 'id_category required' unless $id_category;
+
+    my $meta_all_fields = $self->get_meta( undef, $id_category );
+    die 'Topic meta not found' unless $meta_all_fields;
+
+    my $meta = $self->get_meta_permissions(
+        username => $username,
+        meta     => $meta_all_fields,
+        data     => $data,
+    );
+
+    my $new_project_security = $self->_build_new_project_security( $p, $meta, $data );
+
+    if ($new_project_security) {
+        my $permissions = Baseliner::Model::Permissions->new;
+        if ( !$permissions->user_has_security( $username, $new_project_security ) ) {
+            _fail _loc 'User does not have permission to use this security';
+        }
+
+        $meta = Baseliner::Model::Topic->get_meta_permissions(
+            username => $username,
+            meta     => $meta,
+            data     => { %$data, _project_security => $new_project_security },
+        );
+    }
+
+    my %fields = map { $_->{id_field} => 1 } @$meta;
+    my %hidden_by_permissions = map { $_->{id_field} => 1 } grep { !$fields{ $_->{id_field} } } @$meta_all_fields;
+
+    my @violations;
+    my %validated_params;
+    foreach my $key ( keys %$p ) {
+        my ($field) = first { $_->{id_field} eq $key } @$meta;
+
+        if ( !$field ) {
+            if ( $hidden_by_permissions{$key} ) {
+                push @violations,
+                  {
+                    type     => 'hidden',
+                    reason   => 'permissions',
+                    id_field => $key
+                  };
+            }
+
+            next;
+        }
+
+        my $id_field = $field->{id_field};
+
+        if ( exists $p->{$id_field} ) {
+            if ( $field->{hide_from_edit_cb} ) {
+                push @violations,
+                  {
+                    type     => 'hidden',
+                    reason   => 'settings',
+                    id_field => $id_field
+                  };
+            }
+            elsif ( _bool $field->{readonly} ) {
+                if ( !grep { $_ eq $id_field } qw/title category status status_new/ ) {
+                    push @violations,
+                      {
+                        type     => 'readonly',
+                        reason   => 'permissions',
+                        id_field => $id_field
+                      };
+                }
+            }
+            else {
+                $validated_params{$id_field} = $p->{$id_field};
+            }
+        }
+        else {
+
+            # TODO validate if fields are required?
+        }
+    }
+
+    if (@violations) {
+
+        # TODO Violation event
+    }
+
+    $validated_params{topic_mid} = $data->{mid} if $data->{mid};
+    $validated_params{status}     //= $data->{id_category_status};
+    $validated_params{status_new} //= $data->{id_category_status};
+    $validated_params{id_category} = $data->{id_category};
+    $validated_params{username}    = $username;
+
+    return \%validated_params;
+}
+
+sub _build_new_project_security {
+    my $self = shift;
+    my ( $p, $meta, $data ) = @_;
+
+    my @project_fields = grep { $_->{key} eq 'fieldlet.system.projects' } @$meta;
+    return unless @project_fields;
+
+    $data->{_project_security} //= {};
+
+    my $new_project_security;
+    for my $project_field (@project_fields) {
+        next if $project_field->{hide_from_edit_cb} || _bool $project_field->{readonly};
+
+        my $dimension = $project_field->{collection} // 'project';
+
+        my @new_value = _array $p->{ $project_field->{id_field} };
+        my @old_value = _array $data->{_project_security}->{$dimension};
+
+        if ( array_diff( @new_value, @old_value ) ) {
+            $new_project_security //= $data->{_project_security};
+            $new_project_security->{$dimension} = $p->{ $project_field->{id_field} };
+        }
+    }
+
+    return $new_project_security;
 }
 
 sub update {
