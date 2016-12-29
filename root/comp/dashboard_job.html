@@ -51,7 +51,7 @@
                         <td><% _loc( 'Total Time') %></td>
                         <td><%$resumen->{execution_time}?sprintf("%.02f %s",
                             $resumen->{execution_time} < 60 ? $resumen->{execution_time} : ($resumen->{execution_time}/60),
-                            $resumen->{execution_time} < 60? 'seg.' : 'min.'):''%></td>
+                            $resumen->{execution_time} < 60? _loc('sec') . '.' : 'min.'):''%></td>
                     </tr>
                     <tr>
                         <td><% _loc( 'Last Step' ) %></td>
@@ -193,7 +193,7 @@
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?mid=<%$mid%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.svg' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
-                        <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}}." sec" %></b></td>
+                        <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}} .' '. _loc('sec') %></b></td>
 
                     </tr>
 <%perl>
