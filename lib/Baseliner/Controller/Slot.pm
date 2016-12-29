@@ -231,25 +231,22 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     $c->forward( 'View::JSON' );
 }
 
-sub calendar_delete : Path( '/job/calendar_delete' ) {
+sub calendar_delete : Path( '/job/calendar_delete' ) : Does('ACL') : ACL('action.calendar.admin') {
     my ( $self, $c ) = @_;
-    my $params   = $c->req->params;
 
-    my $ids      = $params->{ids};
-    my $username = $c->username;
+    my $params = $c->req->params;
+
+    my $ids = $params->{ids};
 
     try {
-        my ($result) = Baseliner::Model::Calendar->new->delete(
-            ids      => $ids,
-            username => $username
-        );
+        Baseliner::Model::Calendar->new->delete_multi( ids => $ids );
 
-        $c->stash->{json} = { success => \1, msg => $result };
+        $c->stash->{json} = { success => \1, msg => _loc('Calendar(s) deleted') };
     }
     catch {
         my $err = shift;
+
         _error $err;
-        chomp($err);
 
         $c->stash->{json} = { success => \0, msg => _loc('Error deleting calendar(s)') };
     };

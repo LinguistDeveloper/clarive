@@ -2,21 +2,16 @@ package Baseliner::Model::Calendar;
 use Moose;
 BEGIN { extends 'Catalyst::Model' }
 
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils qw(_loc);
-use Try::Tiny;
-use v5.10;
+sub delete_multi {
+    my $self = shift;
+    my (%params) = @_;
 
-sub delete {
-    my ( $self, %params ) = @_;
-
-    my $ids      = $params{ids};
-    my $username = $params{username};
+    my $ids = $params{ids};
 
     mdb->calendar->remove( { id => mdb->in($ids) } );
     mdb->calendar_window->remove( { id_cal => mdb->in($ids) } );
 
-    return _loc('Calendar(s) deleted');
+    return 1;
 }
 
 no Moose;
