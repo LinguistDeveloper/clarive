@@ -7,16 +7,33 @@
     use Baseliner::Utils;
     my $id = _nowstamp . $meta->{id_field};
 </%perl>
-% if( _array( $data->{$meta->{id_field}} ) && !($meta->{hidden}+0)) {
+% if( _array( $data->{$meta->{id_field}} ) && !($meta->{hidden})) {
+%   if ( $meta->{section} eq 'details' ){
+    <div colspan=2 id='td-tree-<%$id%>'  style="background: transparent">
+        <b><% _loc( $meta->{name_field} || $meta->{id_field} ) %>:</b><br><br>
+        <div id='div-tree-<%$id%>' style='padding-bottom: 10px; padding-left: 10px'></div>
+    </div>
+% } elsif ( $meta->{section} eq 'between' ) {
     <tr>
         <td colspan=2 id='td-tree-<%$id%>'  style="background: transparent">
-                <b><% _loc( $meta->{name_field} || $meta->{id_field} ) %>:</b>
-                <br>
-                <br>
-                <div id='div-tree-<%$id%>' style='padding-bottom: 10px; padding-left: 10px'></div>
+            <b><% _loc( $meta->{name_field} || $meta->{id_field} ) %>:</b>
+            <br><br>
+            <div id='div-tree-<%$id%>' style='padding-bottom: 10px; padding-left: 10px'></div>
         </td>
     </tr>
-% }
+% } else {
+    <tr>
+        <th colspan="2" style="padding: 10px 0 10px 0">
+            <h5 style="border-bottom: 1px solid #bbb"> <% _loc($meta->{name_field}) %></h5>
+        </th>
+        <tr>
+            <td id='td-tree-<%$id%>'  style="background: transparent">
+                <div id='div-tree-<%$id%>' style='padding-bottom: 10px; padding-left: 10px'></div>
+            </td>
+        </tr>
+    </tr>
+%  }
+%}
 
 <script>
 
