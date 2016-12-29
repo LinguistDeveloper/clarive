@@ -126,3 +126,17 @@ By default it sort by topic MID.
 ### Sort Order
 
 Set to sort ASC or DESC.
+
+### Custom Columns
+
+Allows to add personalize columns in the fieldlet when type is Grid.
+
+**Id Column** - The Id of the column. This field is mandatory and can not be changed.
+
+**Display Column** - The name of the column. If is not defined, the column will be called with the id.
+
+**Column Type** - Can be text or a variable. This field is mandatory and can not be changed.
+
+**Variable** - This field is mandatory if column type is variable. You can select a variable of type combo or array.
+
+Edit the value of a cell clicking two times on it.

@@ -122,6 +122,182 @@ subtest 'topic_grid: returns correct headers' => sub {
     );
 };
 
+subtest 'list_topics: returns topics' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"   => "project",
+                        "name_field" => "project",
+                        meta_type    => 'project',
+                        collection   => 'project',
+                    },
+                    "key" => "fieldlet.system.projects",
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field"   => "list_topics",
+                        "name_field" => "list_topics",
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                }
+            }
+        ],
+    );
+    my $id_changeset_category = TestSetup->create_category(
+        name      => 'My Changeset',
+        id_rule   => $id_changeset_rule,
+        id_status => $status->mid
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+    my $topic = ci->new($changeset_mid);
+    my $meta  = $topic->get_meta;
+
+    my ($meta_field) = grep { $_->{id_field} eq 'list_topics' } @$meta;
+
+    my $data = Baseliner::Model::Topic->new->get_data( $meta, $changeset_mid );
+
+    my $c = _build_c( username => $user->username );
+
+    my $helper = _build_helper( c => $c );
+
+    my $grid = $helper->list_topics( $meta_field, { list_topics => $data } );
+
+    is_deeply( $grid->{topics}->[0]->{name_category}, "My Changeset" );
+    is_deeply( $grid->{topics}->[0]->{title},         "Fix everything" );
+};
+
+subtest 'list_topics: returns correct headers' => sub {
+    _setup();
+
+    my $helper = _build_helper();
+    my $c      = _build_c();
+
+    cmp_deeply(
+        $helper->list_topics( { id_field => 'list_topics' } )->{head},
+        [
+            {
+                'name' => 'ID',
+                'key'  => 'name'
+            },
+            {
+                'name' => 'Title',
+                'key'  => 'title'
+            },
+            {
+                'name' => 'Status',
+                'key'  => 'name_status'
+            },
+            {
+                'key'  => 'created_by',
+                'name' => 'Created By'
+            },
+            {
+                'key'  => 'created_on',
+                'name' => 'Created On'
+            },
+            {
+                'key'  => 'modified_by',
+                'name' => 'Modified By'
+            },
+            {
+                'name' => 'Modified On',
+                'key'  => 'modified_on'
+            }
+        ]
+    );
+};
+
+subtest 'list_topics: returns correct headers of custom columns' => sub {
+    _setup();
+
+    my $status = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                'attributes' => {
+                    'data' => {
+                        id_field   => 'project',
+                        name_field => 'project',
+                        meta_type  => 'project',
+                        collection => 'project',
+                    },
+                    key => 'fieldlet.system.projects',
+                }
+            },
+            {
+                'attributes' => {
+                    'data' => {
+                        id_field   => 'list_topics',
+                        name_field => 'list_topics',
+                    },
+                    key => 'fieldlet.system.list_topics',
+                }
+            }
+        ],
+    );
+    my $id_changeset_category = TestSetup->create_category(
+        name      => 'My Changeset',
+        id_rule   => $id_changeset_rule,
+        id_status => $status->mid
+    );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topics.view',
+                bounds => [ { id_category => $id_changeset_category } ]
+            },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+    my $topic = ci->new($changeset_mid);
+    my $meta  = $topic->get_meta;
+
+    my ($meta_field) = grep { $_->{id_field} eq 'list_topics' } @$meta;
+    $meta_field->{custom_columns}->[0] = { id_column => 'my_column', display_column => 'My Custom Column' };
+
+    my $c = _build_c( username => $user->username );
+
+    my $helper = _build_helper( c => $c );
+    my $grid = $helper->list_topics( $meta_field, { id_field => 'list_topics' } );
+    my @custom_column = grep { $_->{key} eq 'my_column' } @{ $grid->{head} };
+
+    is_deeply( $custom_column[0]->{key},  'my_column' );
+    is_deeply( $custom_column[0]->{name}, 'My Custom Column' );
+};
+
 done_testing;
 
 sub _setup {

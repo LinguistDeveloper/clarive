@@ -261,18 +261,19 @@ register 'fieldlet.status_changes' => {
 };
 
 register 'fieldlet.topic_grid' => {
-    name        => _locl('Topic Grid'),
-    html        => '/fields/templates/html/topic_grid.html',
-    js          => '/fields/templates/js/topic_grid.js',
-    form        => '/fields/templates/config/topic_grid.js',
-    icon        => '/static/images/icons/grid.svg',
-    get_method  => 'get_topics',
-    meta_type   => 'topic',
-    relation    => 'system',
-    set_method  => 'set_topics',
-    type        => 'generic',
+    name            => _locl('Topic Grid'),
+    html            => '/fields/templates/html/topic_grid.html',
+    js              => '/fields/templates/js/topic_grid.js',
+    form            => '/fields/templates/config/topic_grid.js',
+    icon            => '/static/images/icons/grid.svg',
+    get_method      => 'get_topics',
+    meta_type       => 'topic',
+    relation        => 'system',
+    set_method      => 'set_topics',
+    type            => 'generic',
+    show_in_palette => 0,
     section_default => 'head',
-    section_allowed => ['head','more']
+    section_allowed => [ 'head', 'more' ]
 };
 
 register 'fieldlet.checkbox' => {

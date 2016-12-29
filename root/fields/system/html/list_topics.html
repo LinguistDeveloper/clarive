@@ -8,7 +8,7 @@
 <%perl>
 my $iid = Util->_md5;
 my $ix = 0;
-my $table = $c->build_helper('Topics')->list_topics($meta, $data, $user_security);
+my $table = $c->build_helper('Topic')->list_topics($meta, $data, $user_security);
 </%perl>
 %  if ( !$meta->{hidden} ) {
     <tr>
@@ -43,6 +43,11 @@ my $table = $c->build_helper('Topics')->list_topics($meta, $data, $user_security
                 <tr class="topic-row" mid="<% $topic->{mid} %>">
 % foreach my $h ( @{$table->{head}} ) {
 %    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
+%    if ( $data->{_custom_columns} ) {
+%       my $custom_columns = $data->{_custom_columns};
+%       my $field = $custom_columns->{$meta->{id_field}};
+%       $val = $field->{$topic->{mid}}->{$h->{key}} if defined $field->{$topic->{mid}}->{$h->{key}};
+%    }
 %    if( $$h{key} eq 'name' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px; width: 1%" class="fieldlet-html">
                 <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>

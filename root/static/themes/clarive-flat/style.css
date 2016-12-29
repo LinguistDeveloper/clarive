@@ -1940,3 +1940,7 @@ div.x-panel-body .job-calendar {
     -moz-transition : border 500ms ease-out;
     -o-transition : border 500ms ease-out;
 }
+
+.ext-strict .ext-webkit .x-small-editor .x-form-text.x-superboxselect {
+   height: 27px !important;
+

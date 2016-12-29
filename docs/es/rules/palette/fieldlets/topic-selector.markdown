@@ -145,3 +145,19 @@ Por defecto, se ordena por MID del tópico.
 ### Forma de ordenar
 
 Establece el tipo de ordenación, ascendente o descendente.
+
+Para más información, hay un how-to llamado [Filtros es fieldlets](how-to/filter-fieldlet).
+
+### Columnas Customizables
+
+Permite añadir columnas personalizadas en el fieldlet cuando es de tipo Grid.
+
+**Id** - El id de la columna. Este campo es obligatorio y no puede ser cambiado una vez guardado.
+
+**Nombre** - Nombre que aparecerá en la columna. Si no se especifica, éste será el id.
+
+**Tipo** - Puede ser de tipo texto o variable. Este campo es obligatorio y no se puede modificar.
+
+**Variable** - Este campo es obligatorio si el tipo es variable. Aparecen variables de tipo combo o array.
+
+Para modificar el valor de la celda, hacer doble click en ella.
