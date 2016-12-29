@@ -141,6 +141,7 @@
             {  name: 'contents' },
             {  name: 'changesets' },
             {  name: 'changeset_cis' },
+            {  name: 'release_cis' },
             {  name: 'cs_comments' },
             {  name: 'releases' },
             {  name: 'applications' },
@@ -1396,59 +1397,99 @@
         return String.format('{0}<br/>by {1}', value.dateFormat('M j, Y, g:i a'), r.data['lastposter']);
     }
 
-    var gview = new Ext.grid.GroupingView({
-            forceFit: true,
-            enableRowBody: true,
-            autoWidth: true,
-            autoSizeColumns: true,
-            deferredRender: true,
-            startCollapsed: false,
-            stripeRows: true,
-            hideGroupedColumn: true,
-            //groupTextTpl: '{[ values.rs[0].data["day"] ]}',
-            //groupTextTpl: '{[ values.rs[0].data["ago"] ]}',  // TODO use this only when field is "when"
-            getRowClass: function(record, index, p, store){
-                var css='';
-                p.body='';
-                var desc = record.data.comments;
-                if( (desc != undefined) && (desc != '') ) {
-                    p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px; white-space: pre">';
-                    p.body += '<img style="float:left" src="/static/images/icons/post.svg" />';
-                    p.body += '&nbsp;' + desc + '</div>';
-                    css += ' x-grid3-row-expanded ';
-                }
-                var return_value = new Array();
-                if ( record.data.changeset_cis && record.data.changeset_cis.length > 0 ) {
-                  Ext.each(record.data.changeset_cis, function(cs) {
-                    var link = '<span style="text-align: center;vertical-align: middle;"><a id="topic_'+ cs.mid +'_<% $iid %>" onclick="javascript:Baseliner.show_topic_colored(\''+ cs.mid + '\', \''+ cs.category.name + '\', \''+ cs.category.color + '\')" style="cursor:pointer">'+ cs.category.name + ' #' + cs.mid + ' - ' + cs.title + '</a>';
-                    var comments = '';
-                    if ( record.data.cs_comments[cs.mid] ) {
-                      comments = "<img src='/static/images/icons/paperclip.svg' style='cursor:pointer;height:12px;width:12px;' onclick='javascript:( new Baseliner.view_field_content({ username: \"<% $c->username %>\", mid: \""+ cs.mid + "\", field: \"" + record.data.cs_comments[cs.mid] + "\", title: \"" + cs.category.name + ' #' + cs.mid + ' - ' + cs.title + "\" }))'/>";
-                    }
-                    return_value.push(link + '&nbsp' + comments + '</span>');
-                  });
-                  if ( record.data.releases ) {
-                    Ext.each( record.data.releases, function(rel) {
-                      return_value.push(rel);
-                    });
-                  }
-                } else {
-                  return_value = record.data.contents;
-                }
+    function renderChangesetList(data) {
+        var changesetTemplate;
+        var changesetHtml = [];
 
-                var cont = return_value;
-                if( cont != undefined ) {
-                    p.body +='<div style="color: #505050; margin: 0px 0px 5px 20px;">';
-                    for( var i=0; i<cont.length; i++ ) {
-                        p.body += cont[i] + '<br />';
-                    }
-                    p.body +='</div>';
-                    css += ' x-grid3-row-expanded ';
-                }
-                css += index % 2 > 0 ? ' level-row info-odd ' : ' level-row info-even ' ;
-                return css;
+        if (data.changeset_cis && data.changeset_cis.length) {
+            changesetTemplate = new Ext.XTemplate([
+                '<span',
+                '  style="font-size: .92em; border-left: 4px solid {category_color}; padding-left: 4px;">',
+                '  <a id="topic_{mid}_<% $iid %>"',
+                '    onclick="',
+                '      javascript:Baseliner.show_topic_colored(\'{mid}\', \'{category_name}\', \'{category_color}\')',
+                '    "',
+                '    style="cursor:pointer">',
+                '    <span style="font-weight: bolder;">',
+                '      {category_name} #{mid}',
+                '    </span> - {title}',
+                '  </a>',
+                '  <tpl if="hasComments == true">',
+                '      &nbsp;',
+                '  <img',
+                '     src="/static/images/icons/paperclip.svg"',
+                '     style="cursor:pointer;height:12px;width:12px;"',
+                '     onclick="javascript:(new Baseliner.view_field_content(\'{viewFieldContentData}\'))" />',
+                '  </tpl>',
+                '</span>'
+            ], {
+                compiled: true
+            });
+
+            Ext.each([].concat(data.changeset_cis, data.release_cis), function(changeset) {
+                var comments = data.cs_comments[changeset.mid];
+                var changesetRendered = changesetTemplate.apply({
+                    mid: changeset.mid,
+                    title: changeset.title,
+                    category_name: changeset.category.name,
+                    category_color: changeset.category.color,
+                    hasComments: !!comments,
+                    viewFieldContentData: Ext.util.JSON.encode({
+                        username: "<% $c->username %>",
+                        mid: changeset.mid,
+                        field: comments,
+                        title: changeset.category.name + ' #' + changeset.mid + ' - ' + changeset.title
+                    })
+                });
+                changesetHtml.push(changesetRendered);
+            });
+        } else {
+            changesetHtml.push(data.contents);
+        }
+
+        return new Ext.XTemplate([
+            '<tpl if="description">',
+            '  <div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px; white-space: pre">',
+            '    <img style="float:left" src="/static/images/icons/post.svg" />&nbsp;{description}',
+            '  </div>',
+            '</tpl>',
+            '<tpl if="changesets">',
+            '  <div style="color: #505050; margin: 0px 0px 5px 20px;">',
+            '    <tpl for="changesets"><div>{.}</div></tpl>',
+            '  </div>',
+            '</tpl>',
+        ], {
+            compiled: true
+        }).apply({
+            description: data.comments,
+            changesets: changesetHtml
+        });
+    }
+
+    var gview = new Ext.grid.GroupingView({
+        forceFit: true,
+        enableRowBody: true,
+        autoWidth: true,
+        autoSizeColumns: true,
+        deferredRender: true,
+        startCollapsed: false,
+        stripeRows: true,
+        hideGroupedColumn: true,
+        getRowClass: function(record, index, p, store) {
+            var css = [];
+
+            if (!Ext.isEmpty(record.data.comments) || record.data.changeset_cis) {
+                css.push('x-grid3-row-expanded');
             }
+
+            css.push(index % 2 > 0 ? 'level-row info-odd' : 'level-row info-even');
+
+            p.body = renderChangesetList(record.data);
+
+            return css.join(' ');
+        }
     });
+
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
 
     var filters = new Cla.GridFilters({
