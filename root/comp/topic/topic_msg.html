@@ -164,29 +164,11 @@ if (imagen.width()>600) { captura.show(); }
 %}
 
 % if(  _array $fields->{between} ) {
-        <tr>
-            <td colspan=2>
 %foreach my $field ( _array $fields->{between} ) {
 %   if ($field->{html}){
         <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %   }
-%   elsif ($field->{js_file}){
-%     my $graph_id = "dashfield-" . Util->_md5();
-      <div id='boot' style="clear:left;" >
-          <b><%$field->{name_field}%></b><br>
-        <div id="<%$graph_id%>"
-            style="width: <% $field->{field_width} || '100%' %>; height: <% $field->{field_height} || '220px' %>; text-align: center; vertical-align: middle;"
-            onmouseout="document.body.style.cursor='default';"
-            class="field-dashlet"
-            js_file='<% $field->{js_file} %>'
-            dashlet_data='<% Util->_encode_json($field->{data}) %>'
-            ></div>
-      </div>
-      <div style="clear:left;" ></div>
-%   }
 %}
-            </td>
-        </tr>
 % }
 
 
