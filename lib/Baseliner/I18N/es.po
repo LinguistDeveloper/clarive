@@ -1944,14 +1944,6 @@ msgid "A calendar (%1) already exists for namespace %2 and baseline %3"
 msgstr "Un calendario (%1) ya existe para el ámbito %2 y entorno %3"
 
 #: lib/Baseliner/Controller/Slot.pm
-msgid "deleted"
-msgstr "borrado"
-
-#: lib/Baseliner/Controller/Slot.pm
-msgid "deleting"
-msgstr "borrando"
-
-#: lib/Baseliner/Controller/Slot.pm
 msgid "modified"
 msgstr "modificado"
 
@@ -1968,6 +1960,14 @@ msgid "Error %1 the calendar: "
 msgstr "Error %1 el calendario: "
 
 #: lib/Baseliner/Controller/Slot.pm
+msgid "Calendar(s) deleted"
+msgstr "Calendario(s) borrado"
+
+#: lib/Baseliner/Controller/Slot.pm
+msgid "Error deleting calendar(s)"
+msgstr "Error borrando calendario(s)"
+
+#: lib/Baseliner/Controller/Slot.pm
 msgid "Error: Window with id not found."
 msgstr "Error: id de ventana no encontrado."
 
@@ -1982,14 +1982,6 @@ msgstr "Calendario modificado."
 #: lib/Baseliner/Controller/Slot.pm
 msgid "Error modifying the calendar: %1"
 msgstr "Error modificando el calendario: %1"
-
-#: lib/Baseliner/Controller/Slot.pm
-msgid "Calendar deleted."
-msgstr "Calendario borrado."
-
-#: lib/Baseliner/Controller/Slot.pm
-msgid "Error deleting the calendar: "
-msgstr "Error al borrar el calendario: "
 
 #: lib/Baseliner/Controller/Slot.pm
 msgid "You do not have permissions to open this calendar"
@@ -8365,10 +8357,10 @@ msgstr "Éxito: %1"
 #: root/comp/ci-editor.js root/comp/ci-gridtree.js
 #: root/comp/config/config_grid.mas root/comp/config/config_main.mas
 #: root/comp/configlist/grid.mas root/comp/feature_grid.mas
-#: root/comp/job_calendar_grid.js root/comp/job_calendar_slot_edit.js
-#: root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/lifecycle/deploy.js root/comp/lifecycle/tasks.js
-#: root/comp/log_grid.js root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
+#: root/comp/job_new_comp.js root/comp/lifecycle/deploy.js
+#: root/comp/lifecycle/tasks.js root/comp/log_grid.js
+#: root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
 #: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js root/comp/show_email.js
@@ -8480,8 +8472,9 @@ msgstr "¿Está seguro de querer borrar %1 elementos?"
 
 #: root/comp/ci-gridtree.js root/comp/config/config_grid.mas
 #: root/comp/configlist/grid.mas root/comp/daemon_grid.js
-#: root/comp/feature_grid.mas root/comp/job_calendar_grid.js
-#: root/comp/job_new.js root/comp/label_admin.js root/comp/lifecycle/tasks.js
+#: root/comp/feature_grid.mas root/comp/job_calendar_editor.js
+#: root/comp/job_calendar_grid.js root/comp/job_new.js
+#: root/comp/label_admin.js root/comp/lifecycle/tasks.js
 #: root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
 #: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
@@ -9180,6 +9173,10 @@ msgstr "Global"
 msgid "Calendar Windows"
 msgstr "Ventanas del Calendario"
 
+#: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
+msgid "Are you sure you want to delete the selected calendar(s)?"
+msgstr "¿Estás seguro de que quieres borrar el calendario(s) seleccionado?"
+
 #: root/comp/job_calendar_grid.js
 msgid "[Select a calendar]"
 msgstr "[Seleccione calendario]"
@@ -9213,24 +9210,8 @@ msgid "Create Calendar"
 msgstr "Crear Calendario"
 
 #: root/comp/job_calendar_grid.js
-msgid "Are you sure you want to delete the calendar"
-msgstr "¿Seguro que quiere borrar el calendario"
-
-#: root/comp/job_calendar_grid.js
-msgid "Could not delete the calendar."
-msgstr "No he podido borrar el calendario."
-
-#: root/comp/job_calendar_grid.js root/comp/message_grid.js
-msgid "Are you sure you want to delete the "
-msgstr ""
-
-#: root/comp/job_calendar_grid.js
-msgid "Could not delete the calendar"
-msgstr ""
-
-#: root/comp/job_calendar_grid.js
 msgid "Select at least one calendar"
-msgstr ""
+msgstr "Selecciona al menos un calendario"
 
 #: root/comp/job_calendar_grid.js
 msgid "Job Calendars"
@@ -10036,6 +10017,10 @@ msgstr ""
 #: root/comp/message_grid.js
 msgid "Could not delete the message"
 msgstr "No se ha podido borrar el mensaje"
+
+#: root/comp/message_grid.js
+msgid "Are you sure you want to delete the "
+msgstr ""
 
 #: root/comp/message_grid.js
 msgid "Delete all"
@@ -16026,6 +16011,24 @@ msgstr "destino"
 
 #~ msgid "All-f"
 #~ msgstr "Todas"
+
+#~ msgid "deleted"
+#~ msgstr "borrado"
+
+#~ msgid "deleting"
+#~ msgstr "borrando"
+
+#~ msgid "Calendar deleted."
+#~ msgstr "Calendario borrado."
+
+#~ msgid "Error deleting the calendar: "
+#~ msgstr "Error al borrar el calendario: "
+
+#~ msgid "Are you sure you want to delete the calendar"
+#~ msgstr "¿Seguro que quiere borrar el calendario"
+
+#~ msgid "Could not delete the calendar."
+#~ msgstr "No he podido borrar el calendario."
 
 #~ msgid "event daemon frequency (secs)"
 #~ msgstr "frecuencia del demonio de eventos (segs)"

@@ -253,23 +253,21 @@
         icon: '/static/images/icons/delete.svg',
         text: _('Delete'),
         handler: function() {
-            var ff = cal_form.getForm();
-            ff.submit({
-                params: {
-                    action: 'delete',
-                    id_cal: id_cal
-                },
-                success: function(form, action) {
-                    Baseliner.message(_('Calendar'), action.result.msg);
-                    id_cal = '';
-                    cal_windows.hide();
-                    Baseliner.closeCurrentTab();
-                },
-
-                failure: function(form, action) {
-                    Baseliner.message(_('Failure'), action.result.msg);
+            Ext.Msg.confirm(_('Confirmation'),
+                String.format(_('Are you sure you want to delete the selected calendar(s)?')),
+                function(btn) {
+                    if (btn == 'yes') {
+                        require(['calendar'], function(calendar) {
+                            calendar.delete({
+                                ids: [id_cal]
+                            }, function() {
+                                cal_windows.hide();
+                                Baseliner.closeCurrentTab();
+                            });
+                        })
+                    }
                 }
-            });
+            );
         }
     });
 

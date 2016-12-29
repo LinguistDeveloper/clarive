@@ -1147,6 +1147,27 @@ TODO: {
         };
     }
 
+subtest 'calendar_delete: returns true if calendar is deleted' => sub {
+    _setup();
+
+    my $id_cal = TestSetup->create_calendar( name => 'Common', seq => '100', bl => '*' );
+    my @id_win = _create_initial_slots( id_cal => $id_cal, type => 'N' );
+
+    my $params = { ids => [$id_cal] };
+
+    my $c = _build_c( req => { params => $params }, username => 'test_user' );
+    my $controller = _build_controller();
+    $controller->calendar_delete($c);
+
+    cmp_deeply $c->stash,
+      {
+        json => {
+            success => \1,
+            msg     => re( qr/Calendar\(s\) deleted/ )
+        }
+      };
+};
+
 done_testing;
 
 sub _create_initial_slots {

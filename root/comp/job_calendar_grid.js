@@ -228,58 +228,32 @@
         cls: 'x-btn-text-icon',
         hidden: true,
         handler: function() {
-            var sm = grid.getSelectionModel();
-            var sel = sm.getSelected();
+            var sm = grid.getSelectionModel(),
+                ids = [],
+                rows;
+
             if (sm.hasSelection()) {
-                if (sm.selections.length == '1') {
-                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the calendar') + ' ' + sel.data.name + '?',
-                        function(btn) {
-                            if (btn == 'yes') {
-                                var conn = new Ext.data.Connection();
-                                conn.request({
-                                    url: '/job/calendar_update',
-                                    params: {
-                                        action: 'delete',
-                                        id_cal: sel.data.id
-                                    },
-                                    success: function(resp, opt) {
-                                        grid.getStore().remove(sel);
-                                        grid.getStore().reload();
-                                    },
-                                    failure: function(resp, opt) {
-                                        Ext.Msg.alert(_('Error'), _('Could not delete the calendar.'));
-                                    }
-                                });
-                            }
+                rows = sm.getSelections();
+                Ext.each(rows, function(row) {
+                    ids.push(row.id);
+                });
+
+                Ext.Msg.confirm(_('Confirmation'),
+                    String.format(_('Are you sure you want to delete the selected calendar(s)?')),
+                    function(btn) {
+                        if (btn == 'yes') {
+                            require(['calendar'], function(calendar) {
+                                calendar.delete({
+                                    ids: ids
+                                }, function() {
+                                    grid.getStore().remove(rows);
+                                })
+                            })
                         }
-                    );
-                } else {
-                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the ') + ' <b>' + sm.selections.length + '</b> selected calendars?',
-                        function(btn) {
-                            if (btn == 'yes') {
-                                var total_items = sm.selections.length;
-                                for (var x = 0; x < total_items; x++) {
-                                    var conn = new Ext.data.Connection();
-                                    conn.request({
-                                        url: '/job/calendar_update',
-                                        params: {
-                                            action: 'delete',
-                                            id_cal: sm.selections.items[x].data.id
-                                        },
-                                        success: function(resp, opt) {
-                                            grid.getStore().remove(sm.selections.items[0]);
-                                        },
-                                        failure: function(resp, opt) {
-                                            Ext.Msg.alert(_('Error'), _('Could not delete the calendar'));
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             } else {
-                Ext.Msg.alert('Error', _('Select at least one calendar'));
+                Baseliner.message(_('Calendar'), _('Select at least one calendar'));
             }
         }
     });

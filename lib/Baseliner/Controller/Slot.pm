@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Core::Registry ':dsl';
 BEGIN { extends 'Catalyst::Controller' };
 use Baseliner::Core::Baseline;
+use Baseliner::Model::Calendar;
 use Baseliner::Utils;
 use Calendar::Slots 0.15;
 use DateTime;
@@ -210,12 +211,6 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 }
             }
         }
-        elsif ( $p->{action} && $p->{ action } eq 'delete' ) {
-            @msgs = ( _loc('deleted'), _loc('deleting') );
-            mdb->calendar->remove({ id => ''.$p->{ id_cal } });
-            #borramos las ventanas asociadas a ese calendario
-            mdb->calendar_window->remove({ id_cal => ''.$p->{ id_cal } });
-        }
         else { # update
             @msgs = ( _loc('modified'), _loc('modifying') );
             my $row = mdb->calendar->find_one({ id => ''.$p->{ id_cal } });
@@ -234,6 +229,31 @@ sub calendar_update : Path( '/job/calendar_update' ) {
         $c->stash->{ json } = { success => \0, msg => ( _loc( "Error %1 the calendar: ", $msgs[1] ) . $err ) };
     };
     $c->forward( 'View::JSON' );
+}
+
+sub calendar_delete : Path( '/job/calendar_delete' ) : Does('ACL') : ACL('action.calendar.admin') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    my $ids = $params->{ids};
+
+    try {
+        Baseliner::Model::Calendar->new->delete_multi( ids => $ids );
+
+        $c->stash->{json} = { success => \1, msg => _loc('Calendar(s) deleted') };
+    }
+    catch {
+        my $err = shift;
+
+        _error $err;
+
+        $c->stash->{json} = { success => \0, msg => _loc('Error deleting calendar(s)') };
+    };
+
+    $c->forward('View::JSON');
+
+    return;
 }
 
 sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {
@@ -360,23 +380,6 @@ sub calendar_submit : Path('/job/calendar_submit') {
         $c->stash->{json} = { success => \0, msg => _loc( "Error modifying the calendar: %1", $err ) };
     };
     $c->forward('View::JSON');
-}
-
-sub calendar_delete :
- {
-    my ( $self, $c ) = @_;
-    my $p           = $c->req->params;
-    my $id_cal      = $p->{ id_cal };
-    my $panel       = $p->{ panel };
-    my $date_str    = $p->{ date };
-    my $currentDate = $self->parseDateTime( $date_str );
-
-    if ( mdb->calendar_window->remove({ id_cal => $id_cal, start_date => $self->parseDateTimeToDbix( $currentDate ) },{ multiple=>1 }) ) {
-        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar deleted." ) };
-    } else {
-        $c->stash->{ json } = { success => \0, msg => _loc( "Error deleting the calendar: " ) };
-    }
-    $c->forward( 'View::JSON' );
 }
 
 =head2 db_merge_slots ( id_cal )
