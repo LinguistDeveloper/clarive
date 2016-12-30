@@ -360,18 +360,16 @@
             stripeRows: true,
             autoScroll: true,
             autoWidth: true,
+            autoSizeColumns: true,
             viewConfig: {
                 forceFit: true
             },
-            height:150,
-            cls:'user_grid_edit_window',
             loadMask: true,
             columns: [
                 check_roles_sm,
                 { hidden: true, dataIndex:'id' },
                 { header: _('All'), width:250, dataIndex: 'role', sortable: true }
-            ],
-            autoSizeColumns: true
+            ]
         });
 
         grid_roles.on('rowclick', function(grid, rowIndex, columnIndex, e) {
@@ -411,10 +409,8 @@
             enableDrag: true,
             containerScroll: true,
             autoScroll: true,
-            height:150,
             rootVisible: true,
             preloadChildren: true,
-            cls:'user_grid_edit_window',
             root: treeRoot
         });
 
@@ -561,46 +557,41 @@
         })
 
         var grid_user_roles_projects = new Ext.grid.GridPanel({
-    title: _('Roles/Projects User'),
-    stripeRows: true,
-    autoScroll: true,
-    //autoWidth: true,
-    store: store_user_roles_projects,
-    stripeRows: true,
-    viewConfig: {
-        forceFit: true
-    },
-    selModel: new Ext.grid.RowSelectionModel({
-        singleSelect: true
-    }),
-    loadMask: true,
-    cls: 'user_grid_edit_window',
-    columns: [{
-        header: _('Role'),
-        width: 120,
-        dataIndex: 'role',
-        sortable: true,
-        renderer: render_rol_field
-    }, {
-        header: _('Description'),
-        width: 350,
-        dataIndex: 'description',
-        sortable: true
-    }, {
-        header: _('Namespace'),
-        width: 150,
-        dataIndex: 'projects',
-        sortable: false,
-        renderer: render_projects
-    }],
-    autoSizeColumns: true,
-    deferredRender: true,
-    height: 210,
-    bbar: [
-        btn_delete_row,
-        btn_delete_all
-    ]
-});
+            title: _('Roles/Projects User'),
+            stripeRows: true,
+            autoScroll: true,
+            store: store_user_roles_projects,
+            stripeRows: true,
+            selModel: new Ext.grid.RowSelectionModel({
+                singleSelect: true
+            }),
+            loadMask: true,
+            cls: 'user_grid_edit_window',
+            columns: [{
+                header: _('Role'),
+                width: 120,
+                dataIndex: 'role',
+                sortable: true,
+                renderer: render_rol_field
+            }, {
+                header: _('Description'),
+                width: 350,
+                dataIndex: 'description',
+                sortable: true
+            }, {
+                header: _('Namespace'),
+                width: 150,
+                dataIndex: 'projects',
+                sortable: false,
+                renderer: render_projects
+            }],
+            autoSizeColumns: true,
+            boxMinHeight: 150,
+            bbar: [
+                btn_delete_row,
+                btn_delete_all
+            ]
+        });
 
         grid_user_roles_projects.on('cellclick', function(grid, rowIndex, columnIndex, e) {
             if(columnIndex == 1){
@@ -612,183 +603,176 @@
             name: form_user,
             url: '/user/update',
             frame: true,
-            cls:'user_grid_edit_window_padding' ,
-            items   : [
-            {
-            layout:'column'
-            ,defaults:{
-                layout:'form'
-                ,border:false
-                ,xtype:'panel'
-                ,bodyStyle:'padding:0 18px 0 0'
-            }
-            ,items:[{
-                columnWidth:0.90,
-                items:[
-                    { xtype: 'hidden', name: 'id', value: -1 },
-                    {
-                    // column layout with 2 columns
-                    layout:'column'
-                    ,defaults:{
-                        columnWidth:0.5
-                        ,layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:0 18px 0 0'
-                    }
-                    ,items:[{
-                        // left column
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                            { fieldLabel: _('User'), name: 'username', emptyText: 'User', allowBlank:false, xtype: 'textfield'}
-                            ]
-                        },
-                        {
-                        // right column
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                            new Ext.form.ComboBox({
-                                name: 'account_type',
-                                hiddenName: 'account_type',
-                                fieldLabel: _('Account Type'),
-                                editable: false,
-                                typeAhead: true,
-                                triggerAction: 'all',
-                                lazyRender: true,
-                                mode: 'local',
-                                allowBlank: false,
-                                value: 'regular',
-                                store: new Ext.data.ArrayStore({
-                                    id: 0,
-                                    fields: ['accountType', 'displayText'],
-                                    data: [
-                                        ['regular', _('Regular')],
-                                        ['system', _('System')]
+            cls: 'user_grid_edit_window_padding',
+            layout: 'fit',
+            items: [
+                {
+                    layout: 'column',
+                    defaults: {
+                        layout: 'form',
+                        border: false,
+                        xtype: 'panel',
+                        bodyStyle: 'padding:0 18px 0 0'
+                    },
+                    items: [{
+                        columnWidth: 0.90,
+                        items: [{
+                                xtype: 'hidden',
+                                name: 'id',
+                                value: -1
+                            }, {
+                                // column layout with 2 columns
+                                layout: 'column',
+                                defaults: {
+                                    columnWidth: 0.5,
+                                    layout: 'form',
+                                    border: false,
+                                    xtype: 'panel',
+                                    bodyStyle: 'padding:0 18px 0 0'
+                                },
+                                items: [{
+                                    // left column
+                                    defaults: {
+                                        anchor: '100%'
+                                    },
+                                    items: [{
+                                        fieldLabel: _('User'),
+                                        name: 'username',
+                                        emptyText: 'User',
+                                        allowBlank: false,
+                                        xtype: 'textfield'
+                                    }]
+                                }, {
+                                    // right column
+                                    defaults: {
+                                        anchor: '100%'
+                                    },
+                                    items: [
+                                        new Ext.form.ComboBox({
+                                            name: 'account_type',
+                                            hiddenName: 'account_type',
+                                            fieldLabel: _('Account Type'),
+                                            editable: false,
+                                            typeAhead: true,
+                                            triggerAction: 'all',
+                                            lazyRender: true,
+                                            mode: 'local',
+                                            allowBlank: false,
+                                            value: 'regular',
+                                            store: new Ext.data.ArrayStore({
+                                                id: 0,
+                                                fields: ['accountType', 'displayText'],
+                                                data: [
+                                                    ['regular', _('Regular')],
+                                                    ['system', _('System')]
+                                                ]
+                                            }),
+                                            valueField: 'accountType',
+                                            displayField: 'displayText'
+                                        })
                                     ]
-                                }),
-                                valueField: 'accountType',
-                                displayField: 'displayText'
-                            })
-                            ]
-                        }
-                    ]
-                    },
-                    {
-                    // column layout with 2 columns
-                    layout:'column'
-                    ,defaults:{
-                        columnWidth:0.5
-                        ,layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:0 18px 0 0'
-                    }
-                    ,items:[{
-                        // left column
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                            { fieldLabel: _('Password'), name: 'pass', id:'pass', emptyText: '********', xtype: 'textfield',  inputType: 'password'},
-                            ]
-                        },
-                        {
-                        // right column
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                            {
-                            fieldLabel: _('Confirm Password'),
-                            name: 'pass_cfrm',
-                            emptyText: '********',
-                            inputType: 'password',
-                            vtype: 'password',
-                            initialPassField: 'pass',
-                            xtype: 'textfield'
+                                }]
+                            }, {
+                                // column layout with 2 columns
+                                layout: 'column',
+                                defaults: {
+                                    columnWidth: 0.5,
+                                    layout: 'form',
+                                    border: false,
+                                    xtype: 'panel',
+                                    bodyStyle: 'padding:0 18px 0 0'
+                                },
+                                items: [{
+                                    // left column
+                                    defaults: {
+                                        anchor: '100%'
+                                    },
+                                    items: [{
+                                        fieldLabel: _('Password'),
+                                        name: 'pass',
+                                        id: 'pass',
+                                        emptyText: '********',
+                                        xtype: 'textfield',
+                                        inputType: 'password'
+                                    }, ]
+                                }, {
+                                    // right column
+                                    defaults: {
+                                        anchor: '100%'
+                                    },
+                                    items: [{
+                                        fieldLabel: _('Confirm Password'),
+                                        name: 'pass_cfrm',
+                                        emptyText: '********',
+                                        inputType: 'password',
+                                        vtype: 'password',
+                                        initialPassField: 'pass',
+                                        xtype: 'textfield'
+                                    }]
+                                }]
+                            }, {
+                                anchor: '97%',
+                                fieldLabel: _('Name'),
+                                name: 'realname',
+                                emptyText: 'Full name',
+                                xtype: 'textfield'
+                            }, {
+                                fieldLabel: _('Alias'),
+                                name: 'alias',
+                                emptyText: 'Alias',
+                                xtype: 'textfield'
+                            }, {
+                                // column layout with 2 columns
+                                layout: 'column',
+                                defaults: {
+                                    columnWidth: 0.5,
+                                    layout: 'form',
+                                    border: false,
+                                    xtype: 'panel',
+                                    bodyStyle: 'padding:0 18px 0 0'
+                                },
+                                items: [{
+                                    // left column
+                                    defaults: {
+                                        anchor: '100%'
+                                    },
+                                    items: [
+                                    ]
+                                }, {
+                                    // right column
+                                    defaults: {
+                                        anchor: '100%'
+                                    },
+                                    items: [{
+                                        fieldLabel: _('Phone Number'),
+                                        name: 'phone',
+                                        emptyText: 'xx-xxx-xx-xx',
+                                        //maskRe: /[\d\-]/,
+                                        //regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
+                                        //regexText: 'Must be in the format xxx-xxx-xxxx',
+                                        xtype: 'textfield'
+                                    }]
+                                }]
+                            }, {
+                                anchor: '97%',
+                                fieldLabel: _('Email address'),
+                                name: 'email',
+                                emptyText: 'usuario@dominio.com',
+                                vtype: 'email',
+                                xtype: 'textfield'
                             }
-                            ]
-                        }
-                    ]
-                    },
-
-                    { anchor:'97%', fieldLabel: _('Name'), name: 'realname', emptyText: 'Full name', xtype: 'textfield'},
-                    { fieldLabel: _('Alias'), name: 'alias', emptyText: 'Alias', xtype: 'textfield'},
-                    {
-                    // column layout with 2 columns
-                    layout:'column'
-                    ,defaults:{
-                        columnWidth:0.5
-                        ,layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:0 18px 0 0'
-                    }
-                    ,items:[{
-                        // left column
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                            //{ fieldLabel: _('Alias'), name: 'alias1', emptyText: 'Alias', xtype: 'textfield'}
-                            ]
-                        },
-                        {
-                        // right column
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                            {
-                            fieldLabel: _('Phone Number'),
-                            name: 'phone',
-                            emptyText: 'xx-xxx-xx-xx',
-                            //maskRe: /[\d\-]/,
-                            //regex: /^\d{2}-\d{3}-\d{2}-\d{2}$/,
-                            //regexText: 'Must be in the format xxx-xxx-xxxx',
-                            xtype: 'textfield'
-                            }
-                            ]
-                        }
-                    ]
-                    },
-                    {
-                    anchor:'97%',
-                    fieldLabel: _('Email address'),
-                    name: 'email',
-                    emptyText: 'usuario@dominio.com',
-                    vtype: 'email',
-                    xtype: 'textfield'
-                    }
-                    ]
+                        ]
+                    }, {
+                        columnWidth: 0.10,
+                        items: [
+                            saveButton,
+                            blank_image,
+                            btn_cerrar
+                        ]
+                    }]
                 },
-                {
-                columnWidth:0.10,
-                items:[
-                    saveButton,
-                    blank_image,
-                    btn_cerrar
-                    ]
-                }
+                blank_image,
             ]
-            },
-            blank_image
-            ,
-            {
-            xtype: 'panel',
-            layout: 'column',
-            bbar: [
-                   btn_asignar_roles_projects,
-                   btn_desasignar_roles_projects
-            ],
-            items:  [
-                {
-                columnWidth: .49,
-                items:  grid_roles
-                },
-                {
-                columnWidth: .02,
-                items: blank_image
-                },
-                {
-                columnWidth: .49,
-                items: tree_projects
-            }]
-            },
-            grid_user_roles_projects
-        ]
         });
 
         Ext.apply(Ext.form.VTypes, {
@@ -811,19 +795,62 @@
             ff.loadRecord( rec );
             username = rec.get('username');
             title = _('Edit user');
-            //username_readonly = true;
         }
         win = new Ext.Window({
             title: title,
-            autoScroll: true,
-            height: 650,
-            width: 1120,
+            width: 720,
+            height: 700,
+            minHeight: 700,
+            minWidth: 720,
+            resizable: true,
+            maximizable: true,
             closeAction: 'close',
-            modal: true,
-            constrain: true,
-            items: [
-                form_user
-            ]
+            modal: false,
+            layout: 'border',
+            items: [{
+                region: 'north',
+                height: 250,
+                layout: 'fit',
+                items: [
+                    form_user
+                ]
+            }, {
+                region: 'center',
+                layout: 'border',
+                items: [{
+                    height: 180,
+                    split: true,
+                    region: 'north',
+                    layout: 'fit',
+                    items: [{
+                        layout: 'hbox',
+                        layoutConfig: {
+                            align: 'stretch'
+                        },
+                        items: [{
+                            layout: 'fit',
+                            flex: 1,
+                            items: grid_roles
+                        }, {
+                            layout: 'fit',
+                            flex: 1,
+                            items: tree_projects
+                        }],
+                        bbar: [
+                            btn_asignar_roles_projects,
+                            btn_desasignar_roles_projects
+                        ],
+                    }]
+                }, {
+                    xtype: 'container',
+                    split: true,
+                    layout: 'fit',
+                    region: 'center',
+                    items: [
+                        grid_user_roles_projects
+                    ]
+                }]
+            }]
         });
         if (win.height >= window.innerHeight) {
             win.setSize(win.width, window.innerHeight - Cla.constants.MARGIN_BOTTOM_SIZE);
@@ -831,6 +858,7 @@
         if (win.width >= window.innerWidth) {
             win.setSize(window.innerWidth - Cla.constants.MARGIN_BOTTOM_SIZE, win.height);
         }
+
         win.show();
         store_user_roles_projects.load({ params: {username: username} });
         store_roles.load({params:{start:0 }});
