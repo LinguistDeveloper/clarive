@@ -44,6 +44,7 @@ params:
         columns: meta.columns || [],
         //labelAlign: 'top',
         readOnly: Baseliner.eval_boolean(meta.readOnly, false),
+        disabled: Baseliner.eval_boolean(meta.readonly),
         //style: 'margin-top: 20px',
         height: (meta.height ? parseInt(meta.height) : 200),
         value: value,

@@ -286,13 +286,25 @@ sub update : Local {
     $p->{status_new} = $p->{status_new}[0] if (ref $p->{status_new} eq 'ARRAY');     # Only for IE8
     $p->{username} = $c->username;
     my $return_options;   # used by event rules to return anything back to the form
+
+    my $action = $p->{action};
+
     try  {
+        my $validated_params;
+        if ( $action eq 'add' || $action eq 'update' ) {
+            $validated_params = Baseliner::Model::Topic->new->filter_valid_update_params($p);
+        }
+        else {
+            %$validated_params = %$p;
+        }
+
         my ($isValid, @field_name) = (1,());
         #my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
 
         if($isValid == 1){
             my ($msg, $topic_mid, $status, $title, $category, $modified_on);
-            ($msg, $topic_mid, $status, $title, $category, $modified_on, $return_options) = $c->model('Topic')->update( $p );
+            ( $msg, $topic_mid, $status, $title, $category, $modified_on, $return_options ) =
+              $c->model('Topic')->update( { %$validated_params, action => $p->{action} } );
             $c->stash->{json} = {
                 success        => \1,
                 msg            => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),

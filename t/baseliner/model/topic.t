@@ -4578,18 +4578,194 @@ subtest 'get_category_default_workflow: returns default workflow set' => sub {
     is $default_workflow, $id_workflow;
 };
 
+subtest 'filter_valid_update_params: removes params to which user doesnt have access when creating a topic' => sub {
+    _setup();
+
+    my $status_new = TestUtils->create_ci('status', type => 'I');
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.topicsfield.read',  bounds => [ { id_field => 'revisions' } ] },
+            { action => 'action.topicsfield.write', bounds => [ { id_field => 'title' } ] }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_changeset_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule, statuses => [$status_new->id_status] );
+
+    my $validated_params = _build_model()->filter_valid_update_params(
+        {
+            username  => $user->username,
+            category  => $id_changeset_category,
+            topic_mid => -1,
+            title     => 'My Title',
+            revisions => [ 1, 2, 3 ],
+            unknown   => 'field',
+            release   => '123',
+        }
+    );
+
+    is_deeply $validated_params,
+      {
+        'status_new'  => $status_new->id_status,
+        'status'      => $status_new->id_status,
+        'username'    => $user->username,
+        'title'       => 'My Title',
+        'id_category' => $id_changeset_category
+      };
+};
+
+subtest 'filter_valid_update_params: throws when creating a topic with unknown security' => sub {
+    _setup();
+
+    my $status_new = TestUtils->create_ci('status', type => 'I');
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_changeset_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule, statuses => [$status_new->id_status] );
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.topicsfield.write', bounds => [ { id_field => 'title' }, {id_field => 'project'} ] }
+        ]
+    );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    like exception {
+        _build_model()->filter_valid_update_params(
+            {
+                project   => ['123'],
+                username  => $user->username,
+                category  => $id_changeset_category,
+                topic_mid => -1,
+                title     => 'My Title',
+                revisions => [ 1, 2, 3 ],
+                unknown   => 'field'
+            }
+          )
+    },
+      qr/User does not have permission to use this security/;
+};
+
+subtest 'filter_valid_update_params: removes params to which user doesnt have access when updating a topic' => sub {
+    _setup();
+
+    my $status_new = TestUtils->create_ci('status', type => 'I');
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.topicsfield.read',  bounds => [ { id_field => 'revisions' } ] },
+            { action => 'action.topicsfield.write', bounds => [ { id_field => 'title' } ] },
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = TestSetup->create_rule_form_changeset();
+    my $id_changeset_category = TestSetup->create_category( name => 'Release', id_rule => $id_rule, statuses => [$status_new->id_status] );
+
+    my $topic_mid = TestSetup->create_topic(
+        project => [],
+        status      => $status_new,
+        id_category => $id_changeset_category,
+        username    => $user->username
+    );
+
+    my $validated_params = _build_model()->filter_valid_update_params(
+        {
+            username  => $user->username,
+            category  => $id_changeset_category,
+            topic_mid => $topic_mid,
+            title     => 'My Title',
+            revisions => [ 1, 2, 3 ],
+            unknown   => 'field'
+        }
+    );
+
+    is_deeply $validated_params,
+      {
+        'topic_mid'   => $topic_mid,
+        'status_new'  => $status_new->id_status,
+        'status'      => $status_new->id_status,
+        'username'    => $user->username,
+        'title'       => 'My Title',
+        'id_category' => $id_changeset_category
+      };
+};
+
+subtest 'filter_valid_update_params: removes params hidden from edit view' => sub {
+    _setup();
+
+    my $status_new = TestUtils->create_ci('status', type => 'I');
+
+    my $project = TestUtils->create_ci_project;
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topicsfield.write',
+                bounds => [ { id_field => 'title' }, { id_field => 'revisions' } ]
+            }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $id_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                attributes => {
+                    active => 1,
+                    data   => {
+                        id_field => 'revisions',
+                        hide_from_edit_cb => 1
+                    },
+                    holds_children    => \0,
+                    key               => 'fieldlet.text',
+                },
+            }
+        ]
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Release', id_rule => $id_rule, statuses => [ $status_new->id_status ] );
+
+    my $topic_mid = TestSetup->create_topic(
+        project => [],
+        status      => $status_new,
+        id_category => $id_changeset_category,
+        username    => $user->username
+    );
+
+    my $validated_params = _build_model()->filter_valid_update_params(
+        {
+            username  => $user->username,
+            category  => $id_changeset_category,
+            topic_mid => $topic_mid,
+            title     => 'My Title',
+            revisions => [ 1, 2, 3 ]
+        }
+    );
+
+    is_deeply $validated_params,
+      {
+        'topic_mid'   => $topic_mid,
+        'status_new'  => $status_new->id_status,
+        'status'      => $status_new->id_status,
+        'username'    => $user->username,
+        'id_category' => $id_changeset_category
+      };
+};
+
 done_testing();
 
 sub _setup {
     TestUtils->setup_registry(
-        'BaselinerX::Type::Event',
-        'BaselinerX::Type::Action',
-        'BaselinerX::Type::Service',
-        'BaselinerX::Type::Registor',
-        'BaselinerX::Type::Fieldlet',
-        'BaselinerX::CI',          'BaselinerX::Fieldlets',
-        'Baseliner::Model::Topic', 'Baseliner::Model::Rules',
-        'BaselinerX::Type::Statement'
+        'BaselinerX::Type::Event',    'BaselinerX::Type::Action',
+        'BaselinerX::Type::Service',  'BaselinerX::Type::Registor',
+        'BaselinerX::Type::Fieldlet', 'BaselinerX::CI',
+        'BaselinerX::Fieldlets',      'Baseliner::Model::Topic',
+        'Baseliner::Model::Rules',    'BaselinerX::Type::Statement'
     );
 
     TestUtils->cleanup_cis;
