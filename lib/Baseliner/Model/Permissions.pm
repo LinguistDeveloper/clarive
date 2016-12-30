@@ -387,12 +387,12 @@ sub user_action ($self, $username, $action_key, %options) {
     if ( @$roles && $bounds ) {
         my $deny_roles = mdb->role->aggregate(
             [
-                { '$match'  => { id => { '$in' => \@roles_ids }, 'actions.action' => mdb->in(@action_keys) } },
+                { '$match'  => { id => { '$in' => \@roles_ids }, 'actions.action' => $action_key } },
                 { '$unwind' => '$actions' },
                 { '$unwind' => '$actions.bounds' },
                 {
                     '$match' => {
-                        'actions.action'       => mdb->in(@action_keys),
+                        'actions.action'       => $action_key,
                         'actions.bounds._deny' => 1,
                         @query_bounds
                     }

@@ -593,25 +593,49 @@ subtest 'user_has_action: returns true when deny bounds but no match' => sub {
     ok $permissions->user_has_action( $user->username, 'action.some', bounds => { foo => 'baz' } );
 };
 
-#subtest 'user_has_action: returns true when deny bounds but different action' => sub {
-#    _setup();
-#
-#    Baseliner::Core::Registry->add( 'main', 'action.child' => { bounds => [ { key => 'bar' } ] } );
-#    Baseliner::Core::Registry->add( 'main', 'action.parent' => { extends => ['action.child'] } );
-#    Baseliner::Core::Registry->initialize;
-#
-#    my $user = _create_user_with_actions(
-#        actions => [
-#            { action => 'action.ignoreme', bounds => [ {} ] },
-#            { action => 'action.child',    bounds => [ { _deny => 1, foo => 'bar' }, {} ] },
-#            { action => 'action.parent',   bounds => [ {} ] },
-#        ]
-#    );
-#
-#    my $permissions = _build_permissions();
-#
-#    ok $permissions->user_has_action( $user->username, 'action.child', bounds => { foo => 'bar' } );
-#};
+subtest 'user_has_action: does not deny parent actions' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.child' => { bounds => [ { key => 'foo' }, { key => 'bar' } ] } );
+    Baseliner::Core::Registry->add( 'main',
+        'action.parent' => { extends => ['action.child'], bounds => [ { key => 'foo' }, { key => 'bar' } ] } );
+    Baseliner::Core::Registry->initialize;
+
+    my $user = _create_user_with_actions(
+        actions => [
+            { action => 'action.ignoreme', bounds => [ {} ] },
+            { action => 'action.child',    bounds => [ { _deny => 1, foo => 'bar', bar => 'baz' }, { foo => 'bar' } ] },
+            { action => 'action.parent', bounds => [ { foo => 'bar' } ] },
+        ]
+    );
+
+    my $permissions = _build_permissions();
+
+    ok !$permissions->user_has_action( $user->username, 'action.child', bounds => { foo => 'bar', bar => 'baz' } );
+    ok $permissions->user_has_action( $user->username, 'action.parent', bounds => { foo => 'bar', bar => 'baz' } );
+};
+
+subtest 'user_has_action: does not deny child actions' => sub {
+    _setup();
+
+    Baseliner::Core::Registry->add( 'main', 'action.child' => { bounds => [ { key => 'foo' }, { key => 'bar' } ] } );
+    Baseliner::Core::Registry->add( 'main',
+        'action.parent' => { extends => ['action.child'], bounds => [ { key => 'foo' }, { key => 'bar' } ] } );
+    Baseliner::Core::Registry->initialize;
+
+    my $user = _create_user_with_actions(
+        actions => [
+            { action => 'action.ignoreme', bounds => [ {} ] },
+            { action => 'action.child',    bounds => [ { foo => 'bar' } ] },
+            { action => 'action.parent',   bounds => [ { _deny => 1, foo => 'bar', bar => 'baz' }, { foo => 'bar' } ] },
+        ]
+    );
+
+    my $permissions = _build_permissions();
+
+    ok $permissions->user_has_action( $user->username, 'action.child', bounds => { foo => 'bar', bar => 'baz' } );
+    ok !$permissions->user_has_action( $user->username, 'action.parent', bounds => { foo => 'bar', bar => 'baz' } );
+};
 
 subtest 'user_has_action: returns true when deny bounds but different role' => sub {
     _setup();
