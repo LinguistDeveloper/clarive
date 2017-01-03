@@ -21,7 +21,7 @@ subtest 'trap_action: creates event when status job is changed to trappedpause' 
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
     my $job_ci;
 
     capture {
@@ -48,7 +48,7 @@ subtest 'trap_action: creates event when status job is changed to untrapped' => 
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
     my $job_ci;
 
     capture {
@@ -75,7 +75,7 @@ subtest 'pause: creates event when status job is changed to pause' => sub {
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
     my $job_ci;
 
     capture {
@@ -100,7 +100,7 @@ subtest 'resume: creates event when status job is restarted' => sub {
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
     my $job_ci;
 
     capture {
@@ -125,7 +125,7 @@ subtest 'start_task: sets current_service' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset] );
 
@@ -144,7 +144,7 @@ subtest 'start_task: creates job_log entry' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset] );
 
@@ -167,7 +167,7 @@ subtest 'new: creates job and runs CHECK & INIT' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job;
     capture { $job = TestUtils->create_ci( 'job', changesets => [$changeset] ) };
@@ -186,7 +186,7 @@ subtest 'new: saves rule versions for INIT & CHECK' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
     my $job;
     capture {
         $job = TestUtils->create_ci( 'job', changesets => [$changeset] );
@@ -207,7 +207,7 @@ subtest 'run: runs rule with version tag' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     Baseliner::Model::Rules->new->write_rule(
         id_rule  => '1',
@@ -240,7 +240,7 @@ subtest 'run: creates notify with job step in event.job.end_step' => sub {
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
     my $job = _build_ci( changesets => [$changeset], bl => 'QA' );
@@ -278,21 +278,87 @@ subtest 'run: creates notify with job step in event.job.end' => sub {
     is $notify->{step}, 'POST';
 };
 
+subtest 'reset: throws if user has no permissions to rerun jobs' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
+
+    my $job = _build_ci( changesets => [$changeset] );
+    capture {
+        $job->save;
+    };
+
+    like exception { $job->reset( { username => $user->username } ) }, qr/User .*? has no permissions to re-run jobs.*/;
+};
+
+subtest 'reset: throws if user has no permissions to rerun jobs with status changed' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.job.restart', bounds => [{}] }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
+
+    my $job = _build_ci( changesets => [$changeset] );
+
+    capture {
+        $job->save;
+    };
+
+    like exception { $job->reset( { username => $user->username, last_finish_status => 'ERROR' } ) },
+        qr/User .*? has no permissions to rerun and change status jobs.*/;
+};
+
+subtest 'reset: throws if user has no permissions to rerun jobs with status changed in bl' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci_project();
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.job.restart', bounds => [{}] },
+            { action => 'action.job.change_step_status', bounds => [{bl => 'ANOTHER'}] }
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
+
+    my $job = _build_ci( changesets => [$changeset] );
+
+    capture {
+        $job->save;
+    };
+
+    like exception { $job->reset( { username => $user->username, last_finish_status => 'ERROR' } ) },
+        qr/User .*? has no permissions to rerun and change status jobs.*/;
+};
+
 subtest 'reset: creates correct event event.job.rerun with parameters step POST and last_finish_status ERROR' => sub {
     _setup();
 
     my $project = TestUtils->create_ci_project();
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.job.restart', bounds => [{}] },
+            { action => 'action.job.change_step_status' , bounds => [{}]},
+        ]
+    );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset] );
 
     capture {
         $job->save;
 
-        $job->reset( { username => $user->name, step => 'POST', last_finish_status => 'ERROR' } );
+        $job->reset( { username => $user->username, step => 'POST', last_finish_status => 'ERROR' } );
     };
 
     my $events = _build_events_model();
@@ -307,17 +373,23 @@ subtest 'reset: creates correct event event.job.rerun with parameters step POST 
     _setup();
 
     my $project = TestUtils->create_ci_project();
-    my $id_role = TestSetup->create_role();
-    my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.job.restart', bounds => [{}] },
+            { action => 'action.job.change_step_status', bounds => [{}] },
+        ]
+    );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset] );
 
     capture {
         $job->save;
 
-        $job->reset( { username => $user->name, step => 'POST', last_finish_status => 'OK' } );
+        $job->reset( { username => $user->username, step => 'POST', last_finish_status => 'OK' } );
     };
 
     my $events = _build_events_model();
@@ -334,7 +406,7 @@ subtest 'run: creates notify with job step in event.job.start_step' => sub {
     my $project   = TestUtils->create_ci_project();
     my $id_role   = TestSetup->create_role();
     my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $bl = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
     my $job = _build_ci( changesets => [$changeset], bl => 'QA' );
@@ -385,7 +457,7 @@ subtest 'run_inproc: runs job in process' => sub {
     my $id_role = TestSetup->create_role( actions => [ { action => 'action.job.run_in_proc' } ] );
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job;
     capture {
@@ -395,7 +467,7 @@ subtest 'run_inproc: runs job in process' => sub {
     $job = Test::MonkeyMock->new($job);
     $job->mock( run => sub { } );
 
-    capture { $job->run_inproc( { username => $user->name } ) };
+    capture { $job->run_inproc( { username => $user->username } ) };
 
     ok $job->mocked_called('run');
 };
@@ -407,14 +479,14 @@ subtest 'run_inproc: throws when user does not have permission' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job;
     capture {
         $job = TestUtils->create_ci( 'job', changesets => [$changeset] );
     };
 
-    like exception { $job->run_inproc( { username => $user->name } ) },
+    like exception { $job->run_inproc( { username => $user->username } ) },
         qr/User .*? does not have permissions to start jobs in process/;
 };
 
@@ -487,13 +559,13 @@ subtest 'reschedule: updates time and date of the job' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset] );
 
     capture {
         $job->save;
-        $job->reschedule( { username => $user->name, date => '2022-05-18', time => '15:15:00' } );
+        $job->reschedule( { username => $user->username, date => '2022-05-18', time => '15:15:00' } );
     };
 
     is $job->{schedtime}, '2022-05-18 15:15:00';
@@ -506,14 +578,14 @@ subtest 'reschedule: updates comment of the job' => sub {
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset] );
 
     capture {
         $job->save;
         $job->reschedule(
-            { username => $user->name, date => '2022-05-18', time => '15:15:00', comments => "new comment" } );
+            { username => $user->username, date => '2022-05-18', time => '15:15:00', comments => "new comment" } );
     };
 
     is $job->{comments}, 'new comment';
@@ -526,14 +598,14 @@ subtest 'reschedule: concatenates comments, and the last comment is in the first
     my $id_role = TestSetup->create_role();
     my $user    = TestSetup->create_user( id_role => $id_role, project => $project );
 
-    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->name );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
 
     my $job = _build_ci( changesets => [$changeset], comments => "First comment" );
 
     capture {
         $job->save;
         $job->reschedule(
-            { username => $user->name, date => '2022-05-18', time => '15:15:00', comments => "Second comment" } );
+            { username => $user->username, date => '2022-05-18', time => '15:15:00', comments => "Second comment" } );
     };
 
     is $job->{comments}, "Second comment\nFirst comment";

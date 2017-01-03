@@ -550,6 +550,7 @@ sub contract {
 sub reset {   # aka restart
     my ($self, $p )=@_;
     my %p = %{ $p || {} };
+
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
     my $last_finish_status = $p{last_finish_status};
@@ -557,6 +558,18 @@ sub reset {   # aka restart
     _fail _loc('Job %1 is currently running (%2) and cannot be rerun', $self->name, $self->status)
         if $self->is_running;
 
+    my $has_permissions = Baseliner::Model::Permissions->new->user_has_action( $username, 'action.job.restart',
+        bounds => { bl => $self->bl } );
+    _fail _loc( 'User %1 has no permissions to re-run jobs', $username ) if !$has_permissions;
+
+    if ( $p{last_finish_status} ) {
+        $has_permissions = Baseliner::Model::Permissions->new->user_has_action(
+            $username,
+            'action.job.change_step_status',
+            bounds => { bl => $self->bl }
+        );
+        _fail _loc( 'User %1 has no permissions to rerun and change status jobs', $username ) if !$has_permissions;
+    }
     my $msg;
     event_new 'event.job.rerun' => { job=> $self } => sub {
         # prepare stash for rules

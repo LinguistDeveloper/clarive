@@ -968,6 +968,7 @@
                 Ext.Msg.alert(_('Error'), _('Select a row first'));
             } else {
                 var sel = sm.getSelected();
+                var bl = sel.data.bl;
                 var data_users = sel.data.username == '<% $c->username %>' ? [ [sel.data.username] ] : [ ['<% $c->username %>'], [sel.data.username] ];
                 var users = new Ext.data.SimpleStore({
                     fields: ['username'],
@@ -988,12 +989,12 @@
                     mode: 'local',
                     editable: true,
                     triggerAction: 'all',
-                    displayField: 'username'
+                    displayField: 'username',
                 });
                 var step_field = sel.data.step_code == 'END' ? 'PRE' : sel.data.step_code;
                 var run_now = sel.data.step_code == 'END' ? true : false;
                 var mid = sel.data.mid;
-                var radio_post = new Ext.form.RadioGroup({
+                var radioPost = new Ext.form.RadioGroup({
                     name: 'job_status',
                     defaults: {
                         xtype: "radio",
@@ -1016,10 +1017,10 @@
                     listeners: {
                         check: function(info) {
                             if (info.checked) {
-                                radio_post.show()
+                                radioPost.show()
                                 form_res.doLayout();
                             } else {
-                                radio_post.hide()
+                                radioPost.hide()
                             };
                         }
                     }
@@ -1042,27 +1043,42 @@
                             allowDepress: false,
                             pressed: step_field == st,
                             handler: function() {
+                                disableOnDefault({
+                                    radioPost: radioPost,
+                                    step_buttons: step_buttons,
+                                    changeJobStatusCheckbox: changeJobStatusCheckbox
+                                });
                                 if (this.text == 'POST') {
-                                    changeJobStatusCheckbox.show();
-                                    form_res.doLayout();
-                                } else {
-                                    changeJobStatusCheckbox.hide();
-                                    changeJobStatusCheckbox.reset();
-                                    radio_post.hide();
+                                    enableIfPermissions({
+                                        action: 'action.job.change_step_status',
+                                        bl: bl,
+                                        username: "<% $c->username %>"
+                                    }, {
+                                        radioPost: radioPost,
+                                        step_buttons: step_buttons,
+                                        changeJobStatusCheckbox: changeJobStatusCheckbox
+                                    });
                                 }
-                            },
-                            listeners: {
-                                afterrender: function() {
-                                    if (step_field == 'POST') {
-                                        changeJobStatusCheckbox.show();
-                                        form_res.doLayout();
-                                    }
-                                }
+                                form_res.doLayout();
                             }
                         });
                         return step_button;
-                    })
+                    }),
+                    listeners: {
+                        afterrender: function() {
+                            enableIfPermissions({
+                                action: 'action.job.change_step_status',
+                                bl: bl,
+                                username: "<% $c->username %>"
+                            }, {
+                                radioPost: radioPost,
+                                step_buttons: step_buttons,
+                                changeJobStatusCheckbox: changeJobStatusCheckbox
+                            });
+                        }
+                    }
                 });
+
                 var form_res = new Ext.FormPanel({
                     frame: false,
                     autoHeight: true,
@@ -1090,7 +1106,7 @@
                         },
                         step_buttons,
                         changeJobStatusCheckbox,
-                        radio_post,
+                        radioPost,
                     ],
                     buttons: [
                         {text:_('Rerun'), handler:function(f){
@@ -1677,6 +1693,29 @@
         store: store,
         view: gview,
         selModel: row_sel,
+        listeners:{
+            click: function(e) {
+                var sm = grid.getSelectionModel();
+                var sel = sm.getSelected();
+                if (sel) {
+                    Baseliner.ajaxEval('/permissions/user_has_action', {
+                        username: '<% $c->username %>',
+                        action: 'action.job.restart',
+                        options: Ext.util.JSON.encode({
+                            bounds: {
+                                bl: sel.data.bl
+                            }
+                        })
+                    }, function(res) {
+                        if (!res.has) {
+                            rerunButton.disable()
+                        } else {
+                            rerunButton.enable()
+                        }
+                    });
+                }
+            }
+        },
         columns: [
                 { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true, groupable: false },
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true, groupable: false },
@@ -1830,5 +1869,30 @@
     grid.get_current_state = function(){
         return { baseParams: grid.store.baseParams }
     }
+
+    function disableOnDefault(interfaceParams) {
+        interfaceParams.changeJobStatusCheckbox.hide();
+        interfaceParams.changeJobStatusCheckbox.reset();
+        interfaceParams.radioPost.hide();
+    };
+
+    function enableIfPermissions(actionParams,interfaceParams) {
+        Baseliner.ajaxEval('/permissions/user_has_action', {
+            username: actionParams.username,
+            action: actionParams.action,
+            options: Ext.util.JSON.encode({
+                bounds: {
+                    bl: actionParams.bl
+                }
+            })
+        }, function(res) {
+            var steps = interfaceParams.step_buttons.items.items;
+            steps.map(function(item) {
+                if (item.pressed == true && item.text == 'POST' && res.has) {
+                     interfaceParams.changeJobStatusCheckbox.show();
+                }
+            });
+        });
+    };
     return grid;
 })

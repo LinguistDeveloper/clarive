@@ -4776,6 +4776,14 @@ msgid "Job %1 is currently running (%2) and cannot be rerun"
 msgstr ""
 
 #: lib/BaselinerX/CI/job.pm
+msgid "User %1 has no permissions to re-run jobs"
+msgstr ""
+
+#: lib/BaselinerX/CI/job.pm
+msgid "User %1 has no permissions to rerun and change status jobs"
+msgstr ""
+
+#: lib/BaselinerX/CI/job.pm
 msgid "Job restarted by user %1, execution %2, step %3"
 msgstr ""
 
@@ -5739,6 +5747,10 @@ msgstr ""
 
 #: lib/BaselinerX/Job.pm
 msgid "Job Expired"
+msgstr ""
+
+#: lib/BaselinerX/Job.pm
+msgid "Change job status on Post step"
 msgstr ""
 
 #: lib/BaselinerX/Lc.pm
