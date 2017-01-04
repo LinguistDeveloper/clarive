@@ -3665,6 +3665,85 @@ subtest 'view: does not allow users without action to see job monitor to see it'
     is $stash->{permissionJobs},  '0';
 };
 
+subtest 'view: does not allow users without action to see Graph see it' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    is $stash->{permissionGraph}, '0';
+};
+
+subtest 'view: allow users with action to see Graph see it' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'changeset',
+        id_rule      => $id_changeset_rule,
+        is_changeset => 1
+    );
+
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.topics.view_graph' } ] );
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $topic_mid = TestSetup->create_topic(
+        username    => $user->username,
+        id_category => $id_changeset_category,
+        project     => $project,
+    );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        username => $user->username,
+        req      => {
+            params => {
+                topic_mid => $topic_mid,
+                html      => 0
+            }
+        }
+    );
+
+    $controller->view($c);
+
+    my $stash = $c->stash;
+
+    is $stash->{permissionGraph}, '1';
+};
+
 subtest 'category_list: returns the category that is of type release' => sub {
     _setup();
 
