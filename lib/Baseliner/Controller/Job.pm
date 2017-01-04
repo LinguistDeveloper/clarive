@@ -157,17 +157,16 @@ sub pipeline_versions : Local {
 sub rollback : Local {
     my ( $self, $c ) = @_;
 
-    # local $Baseliner::_no_cache = 1;
-    my $p                       = $c->req->params;
-    my $force_confirmation      = $p->{force_confirmation} || 0;
-    my $bl                      = $p->{bl};
-    my $permissions             = Baseliner::Model::Permissions->new;
-    my $user_can_restart        = $permissions->user_has_action( $c->username, 'action.job.restart',        bounds => { bl => $bl } );
-    my $user_can_force_rollback = $permissions->user_has_action( $c->username, 'action.job.force_rollback', bounds => { bl => $bl } );
+    my $p                  = $c->req->params;
+    my $force_confirmation = $p->{force_confirmation} || 0;
+    my $bl                 = $p->{bl};
+    my $permissions        = Baseliner::Model::Permissions->new;
+    my $user_can_restart   = $permissions->user_has_action( $c->username, 'action.job.restart', bounds => { bl => $bl } );
+    my $user_can_force_rollback
+        = $permissions->user_has_action( $c->username, 'action.job.force_rollback', bounds => { bl => $bl } );
 
     try {
         if ( $user_can_restart || $user_can_force_rollback ) {
-
             my $job = ci->new( $p->{mid} ) // _fail( _loc( 'Job %1 not found', $p->{name} ) );
             _fail( _loc( 'Job %1 is currently running', $job->name ) ) if $job->is_running;
             my @deps = $job->find_rollback_deps;
@@ -175,23 +174,16 @@ sub rollback : Local {
             if ( @deps && !$force_confirmation ) {
                 $c->stash->{json} = {
                     needs_confirmation => $user_can_force_rollback ? \1 : \0,
-                    msg  => _loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'),
+                    msg =>
+                        _loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'),
                     deps => \@deps
                 };
             }
             else {
-                if ( $job->is_rollback_needed ) {
-
-                    $job->start_rollback;
-
-                    $job->logger->info( _loc( 'Job rollback requested by %1', $c->username ) );
-                    $c->stash->{json} = { success => \1, msg => _loc( 'Job %1 rollback scheduled', $job->name ) };
-                }
-                else {
-                    $c->stash->{json} = { success => \0, msg => _loc( 'Job %1 does not need rollback', $job->name ) };
-                }
+                $job->start_rollback;
+                $job->logger->info( _loc( 'Job rollback requested by %1', $c->username ) );
+                $c->stash->{json} = { success => \1, msg => _loc( 'Job %1 rollback scheduled', $job->name ) };
             }
-
         }
         else {
             _fail( _loc( 'User %1 does not have permissions to action %2', $c->username, 'Rollback' ) );
@@ -203,8 +195,6 @@ sub rollback : Local {
     $c->forward('View::JSON');
 }
 
-
-# list objects ready for a job
 sub job_items_json : Path('/job/items/json') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;

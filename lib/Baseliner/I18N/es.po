@@ -1055,10 +1055,6 @@ msgid "Job %1 rollback scheduled"
 msgstr "Pase %1 marcha atrás programada"
 
 #: lib/Baseliner/Controller/Job.pm
-msgid "Job %1 does not need rollback"
-msgstr "Pase %1 no necesita marcha atrás"
-
-#: lib/Baseliner/Controller/Job.pm
 msgid "User %1 does not have permissions to action %2"
 msgstr "El usuario %1 no tiene permisos para la acción %2"
 
@@ -15975,6 +15971,9 @@ msgstr "destino"
 
 #~ msgid "Select topic form"
 #~ msgstr "Seleccione formulario"
+
+#~ msgid "Job %1 does not need rollback"
+#~ msgstr "Pase %1 no necesita marcha atrás"
 
 #~ msgid "REJECTED"
 #~ msgstr "RECHAZADO"
