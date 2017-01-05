@@ -1242,6 +1242,9 @@ ul.x-tab-strip li {
     width: 100%;
 }
 
+.x-form-field-wrap.x-form-field-trigger-wrap {
+    margin-right: 5px !important;
+}
 .level-row .x-grid3-td-env-tag .x-grid3-cell-inner.x-grid3-col-env-tag.x-unselectable {
     color: white;
 }
