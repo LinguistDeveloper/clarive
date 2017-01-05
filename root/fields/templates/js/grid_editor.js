@@ -31,7 +31,7 @@ params:
         bd_field: meta.bd_field,
         records: records,
         preventMark: false,
-        columns: meta.columns,
+        columns: meta.columns || _('Title'),
         html_view_columns: meta.html_view_columns,
         disabled: readonly,
         viewConfig: {

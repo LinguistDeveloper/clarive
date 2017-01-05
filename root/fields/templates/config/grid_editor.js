@@ -10,6 +10,7 @@
         value: data.height || "300"
     }, {
         xtype: 'textfield',
+        allowBlank: false,
         name: 'columns',
         fieldLabel: _('Columns'),
         value: data.columns || _("Title")

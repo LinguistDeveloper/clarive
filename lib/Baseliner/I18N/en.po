@@ -2658,7 +2658,8 @@ msgstr ""
 #: root/comp/topic/topic_lib_grid.js root/dashlets/filtered_topics.html
 #: root/dashlets/my_topics.html root/email/generic_post.html
 #: root/email/generic_topic.html root/fields/templates/config/grid_editor.js
-#: root/forms/link_revision.js root/forms/topic_create.js root/site/common.js
+#: root/fields/templates/js/grid_editor.js root/forms/link_revision.js
+#: root/forms/topic_create.js root/site/common.js
 msgid "Title"
 msgstr ""
 
