@@ -173,20 +173,20 @@ sub repo_items {
 sub create_or_update {
     my ( $self, $p ) = @_;
 
-    my $repo_dir = $p->{repo_dir};
-    my $repo_mid = $p->{repo_mid};
-    my $sha      = $p->{sha};
+    my $repo_dir = $p->{repo_dir} || _fail( _loc('Missing parameter repo_dir') );
+    my $repo_mid = $p->{repo_mid} || _fail( _loc('Missing parameter repo_mid') );
+    my $sha      = $p->{sha}      || _fail( _loc('Missing parameter sha') );
+
+    my $rev = ci->GitRevision->find_one( { sha => "$sha", repo => $repo_mid } );
+
     my $rev_mid;
-
-    my $g = Girl::Repo->new( path => $repo_dir );
-    my $commit = $g->commit($sha);
-
-    my $rev = ci->GitRevision->find_one( { sha => "$sha" } );
-
     if ($rev) {
         $rev_mid = $rev->{mid};
     }
     else {
+        my $g = Girl::Repo->new( path => $repo_dir );
+        my $commit = $g->commit($sha);
+
         my $title = $commit->message;
         my $sha_short = substr( $sha, 0, 8 );
 
@@ -202,7 +202,5 @@ sub create_or_update {
 
     return $rev_mid;
 }
-
-
 
 1;
