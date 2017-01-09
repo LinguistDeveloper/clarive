@@ -212,36 +212,123 @@
 .form-field-help { font-size: 10px; padding: 0px 0px 0px 100px }
 
 /* Calendar */
-.job-calendar h1 { font-size: 12pt; font-weight: bold; text-transform: capitalize }
-.job-calendar th { font-size: 12pt; font-weight: bold; text-transform: capitalize }
-.job-calendar td { font-size: 9pt; }
+.job-calendar h1 {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.job-calendar th {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.job-calendar td {
+    font-size: 9pt;
+}
+
+.job_calendar_edit_cal_windows_column,
+.job_calendar_edit_cal_windows_column {
+    margin: 50px 5px 15px 60px;
+}
+
+.job_calendar_edit_cal_windows,
+.job_calendar_edit_cal_windows {
+    margin-top: 20px
+}
 
 td.cal_slot {
     padding: 0;
     border: transparent 1px dashed;
     font-family: Calibri, OpenSans, Arial, sans-serif;
-    font-size: 13px;
 }
 
-td.slot_N { background-color: #77da50; }
-td.slot_U { background-color: #f07444; }
-td.slot_X { background-color: #777; }
-td.slot_B { background-color: #D0D0D0; }
+td.slot-N { background-color: #77da50; }
+td.slot-U { background-color: #f07444; }
+td.slot-X { background-color: #777; }
+td.slot-B { background-color: #D0D0D0; }
 
-td.slot_N_off { background-color: #b9daad; }
-td.slot_U_off { background-color: #f0c5b4; }
-td.slot_X_off { background-color: #f3f3f3; }
-td.slot_B_off { background-color: #e0e0e0; }
+td.slot-N-off { background-color: #b9daad; }
+td.slot-U-off { background-color: #f0c5b4; }
+td.slot-X-off { background-color: #f3f3f3; }
+td.slot-B-off { background-color: #e0e0e0; }
 
 td.nopaseDes { background-color: #E0E0E0; }
 
-td.slot_hover { border: #000 1px dashed }
+td.slot-hover { border: #000 1px dashed }
 
 .job-calendar .boton {  }
 .job-calendar select { width: 160px; }
 
 .expandall { background-image: '/static/images/icons/expandall.svg' }
 .colapseall { background-image: '/static/images/icons/collapseall.svg' }
+
+
+.x-panel-header.job-slots-panel-header.x-unselectable {
+    padding: 5px 0 4px 4px;
+    border: 1px solid #f5f5f5;
+}
+
+.job-slots-panel .x-panel-tl .x-panel-tr{
+    padding-right: 0px !important;
+}
+
+.job-slots-panel .x-panel-tl {
+    padding-left: 0px !important;
+}
+
+.x-panel-body.job-slots-panel-body.x-column-layout-ct .x-column-inner {
+    overflow: auto !important;
+    width: auto !important;
+}
+
+.x-panel.job-slots-panel-item.x-column {
+    padding-left: 80px;
+    min-width: 450px;
+}
+
+.x-panel-body.job-slots-panel-item-body.x-panel-body-noheader.x-column-layout-ct {
+    min-width: 450px;
+}
+
+div.x-panel-body .job-calendar {
+    overflow: visible !important;
+    padding: 3px 5px 3px 1px;
+}
+
+#calendarDiv > table {
+   width: 100%;
+   padding: 20px;
+}
+
+.slots-caption {
+    padding-left: 10px;
+    width: 70px;
+}
+
+.slots-caption-big {
+    padding-left: 10px;
+    width: 90px;
+}
+
+.slot-N,
+.slot-U,
+.slot-X,
+.slot-B,
+.slot-N-off,
+.slot-U-off {
+    width: 20px;
+}
+
+#calendarDiv table {
+    border: none;
+    width: 100%;
+}
+
+.job-calendar-slots-table {
+    height: 300px;
+}
 
 /*****************   Search box ********************/
 
