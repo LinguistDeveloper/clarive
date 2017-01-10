@@ -3,6 +3,7 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 
 use Baseliner::Core::Registry ':dsl';
+use Baseliner::Role::CI::Generic;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Baseliner::Model::Permissions;

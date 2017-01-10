@@ -43,7 +43,9 @@
                 ci_class_box.clearValue();
                 default_box.clearValue();
             }
-            if (data.var_ci_role.length === obj.usedRecords.items.length) firstRoleChange = true;
+            if (data.var_ci_role && data.var_ci_role.length === obj.usedRecords.items.length) {
+                firstRoleChange = true;
+            };
             var selected = [];
             for (var i = 0; i < obj.usedRecords.items.length; i++) {
                 var temp = obj.usedRecords.items[i].data.role;
