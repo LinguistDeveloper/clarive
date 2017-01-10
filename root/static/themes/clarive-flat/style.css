@@ -1981,25 +1981,35 @@ div.x-panel-body .job-calendar {
 }
 
 .x-form-field-wrap .x-form-trigger {
-    background: #fff url("/static/images/icons/combo-arrow-down.svg") no-repeat 50% 50%;
+    background: #fff url("/static/images/icons/fieldlet-trigger-combo.svg") no-repeat 50% 50%;
 }
 
 .x-form-field-wrap .x-form-clear-trigger {
-    background: #fff url("/static/images/icons/close.svg") no-repeat 50% 50%;
+    background: #fff url("/static/images/icons/fieldlet-trigger-close.svg") no-repeat 50% 50%;
     border-right: none !important;
 }
 
 .x-form-field-wrap .x-form-search-trigger {
-    background: #fff url("/static/images/icons/search-small.svg") no-repeat 50% 50%;
+    background: #fff url("/static/images/icons/fieldlet-trigger-search.svg") no-repeat 50% 50%;
 }
 
 .x-form-field-wrap .x-form-date-trigger {
-    background: #fff url("/static/images/icons/calendar.svg") no-repeat 50% 50%;
+    background: #fff url("/static/images/icons/fieldlet-trigger-calendar.svg") no-repeat 50% 50%;
 }
 
+.x-form-field-wrap .x-form-spinner-trigger {
+    background: #fff url("/static/images/icons/fieldlet-trigger-spinner.svg") no-repeat 50% 50% !important;
+    background-size: 15px !important;
+}
+
+
 .x-form-field-wrap .x-form-trigger-over,
-.x-form-field-wrap .x-form-trigger-click {
-    background-color : #f5f5f5;
+.x-form-field-wrap .x-form-trigger-click,
+.x-trigger-wrap-focus .x-form-spinner-overup,
+.x-trigger-wrap-focus .x-form-spinner-clickup,
+.x-trigger-wrap-focus .x-form-spinner-overdown,
+.x-trigger-wrap-focus .x-form-spinner-clickdown{
+    background-color : #f5f5f5 !important;
 }
 
 .x-trigger-wrap-focus .x-form-trigger{
@@ -2009,4 +2019,8 @@ div.x-panel-body .job-calendar {
 
 .x-form-field-trigger-wrap .x-form-text.x-form-field {
     border-right: none;
+}
+
+.x-form-field-wrap .x-form-spinner-splitter {
+    background: none !important;
 }
