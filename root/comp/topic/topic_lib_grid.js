@@ -2076,12 +2076,11 @@ Cla.topic_grid = function(params){
         // expand the whole tree
         tree_filters.getLoader().on( 'load', function(){
             tree_root.expandChildNodes();
-            if(!hasPermissionToAttachLabels){
-                for (var i = 0; i < tree_root.childNodes.length; i++) {
-                    if(tree_root.childNodes[i].id == 'L'){
-                        for (var j = 0; j < tree_root.childNodes[i].childNodes.length; j++) {
-                                tree_root.childNodes[i].childNodes[j].draggable = false;
-                        }
+            for (var i = 0; i < tree_root.childNodes.length; i++) {
+                if ((tree_root.childNodes[i].id == 'L' && !hasPermissionToAttachLabels) ||
+                    tree_root.childNodes[i].id != 'L') {
+                    for (var j = 0; j < tree_root.childNodes[i].childNodes.length; j++) {
+                        tree_root.childNodes[i].childNodes[j].draggable = false;
                     }
                 }
             }
