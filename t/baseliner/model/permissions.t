@@ -1440,6 +1440,48 @@ subtest 'user_security_dimensions_map: returns dimensions map' => sub {
       };
 };
 
+subtest 'user_security_dimensions_map: returns dimensions map filtered by role' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role();
+    my $project = TestUtils->create_ci('project');
+
+    my $id_role2 = TestSetup->create_role();
+    my $project2 = TestUtils->create_ci('project');
+
+    my $project3 = TestUtils->create_ci('project');
+
+    my $area1 = TestUtils->create_ci('area');
+    my $area2 = TestUtils->create_ci('area');
+
+    my $user = TestSetup->create_user(
+        project_security => {
+            $id_role => {
+                project => $project->mid,
+                area    => $area1->mid,
+            },
+            $id_role2 => {
+                project => [ $project2->mid, $project3->mid ],
+                area    => [ $area1->mid,    $area2->mid ]
+            }
+        }
+    );
+
+    my $permissions = _build_permissions();
+
+    my $map = $permissions->user_security_dimensions_map( $user->username, roles => [$id_role] );
+
+    is_deeply $map,
+      {
+        project => {
+            $project->mid  => 1,
+        },
+        area => {
+            $area1->mid => 1,
+        }
+      };
+};
+
 subtest 'user_security_dimension: returns dimension' => sub {
     _setup();
 

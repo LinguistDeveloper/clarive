@@ -45,7 +45,7 @@ sub user_projects_ids ($self, $username) {
     }
 }
 
-sub user_security_dimensions_map ($self, $username) {
+sub user_security_dimensions_map ($self, $username, %params) {
     if ( $self->is_root($username) ) {
         return {};
     }
@@ -54,8 +54,14 @@ sub user_security_dimensions_map ($self, $username) {
 
     my $project_security = $user->{project_security};
 
+    my @roles = _array $params{roles};
+
     my $map = {};
     foreach my $id_role ( keys %$project_security ) {
+        if ( @roles && !first { $_ eq $id_role } @roles ) {
+            next;
+        }
+
         foreach my $security_dimension ( keys %{ $project_security->{$id_role} } ) {
             my @values = _array $project_security->{$id_role}->{$security_dimension};
 
