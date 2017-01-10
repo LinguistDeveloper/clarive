@@ -1449,8 +1449,8 @@
 
         return new Ext.XTemplate([
             '<tpl if="description">',
-            '  <div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px; white-space: pre">',
-            '    <img style="float:left" src="/static/images/icons/post.svg" />&nbsp;{description}',
+            '  <div style="color: #333; font-weight: bold; padding: 2px 0px 10px 30px; white-space: pre">',
+            '    <img style="vertical-align:middle" src="/static/images/icons/post.svg" />&nbsp;{description}',
             '  </div>',
             '</tpl>',
             '<tpl if="changesets">',
