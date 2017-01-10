@@ -187,7 +187,7 @@ sub do_cmd {
     my $opts = $self->options($cmd);
 
     if( $cmd =~ /\./ ) {
-        $cmd_pkg = 'bali';
+        $cmd_pkg = 'service';
         $opts->{service_name} = $cmd;
     }
     elsif( my @cmds = split '-', $cmd  ) {
