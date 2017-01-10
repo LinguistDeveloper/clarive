@@ -87,7 +87,7 @@ sub load_command {
     # special command processing?
     my ($altrun, $altcmd, $cmd_long);
     if( $cmd =~ /\./ ) {
-        $cmd_long = 'bali';
+        $cmd_long = 'service';
         $opts->{service_name} = $cmd;
     }
     elsif( my @cmds = split '-', $cmd  ) {
