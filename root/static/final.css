@@ -1241,3 +1241,7 @@ ul.x-tab-strip li {
     background: #193a8d !important;
     width: 100%;
 }
+
+.level-row .x-grid3-td-env-tag .x-grid3-cell-inner.x-grid3-col-env-tag.x-unselectable {
+    color: white;
+}
