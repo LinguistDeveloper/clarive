@@ -1444,7 +1444,23 @@ Baseliner.SuperBoxSelect = function(opt) {
     if (opt.withVars) {
         opt.baseParams.with_vars = 1;
     }
-
+    opt.onTriggerClick = function() {
+        if (this.readOnly || this.disabled) {
+            return;
+        }
+        if (this.isExpanded()) {
+            this.collapse();
+        } else {
+            this.onFocus({});
+            if (this.triggerAction == 'all') {
+                this.doQuery(this.allQuery, true);
+                this.expand();
+            } else {
+                this.doQuery(this.getRawValue());
+            }
+        }
+        this.el.focus();
+    };
     if (opt.withExtraValues && (!opt.listeners || !opt.listeners.newitem)) {
         opt.baseParams.with_extra_values = 1;
 
