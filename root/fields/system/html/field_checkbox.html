@@ -4,10 +4,21 @@
 </%args>
 % my $val = $data->{$meta->{id_field}} eq '1' ? _loc('Yes') : _loc('No');
 % if( defined $val && !$meta->{hidden} ) {
+%   if ( $meta->{section} eq 'details' ){
+    <ul class="nav nav-list">
+        <li class="nav-header">
+            <% _loc($meta->{name_field}) %>
+    </li>
+    </ul>
+     <ul style="margin-left: 20px">
+      <li class="fieldlet-html"
+          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" ><% _loc( $val ) %></li>
+    </ul>
+%   } else {
     <tr>
       <th><% _loc($meta->{name_field}) %>:</th>
-      <td
-          class="fieldlet-html"
+      <td class="fieldlet-html"
           style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" ><% _loc( $val ) %></td>
     </tr>
+%   }
 % }

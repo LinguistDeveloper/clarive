@@ -4,43 +4,54 @@
     $user_security
 </%args>
 
-
 <%perl>
 my $iid = Util->_md5;
 my $ix = 0;
 my $table = $c->build_helper('Topic')->list_topics($meta, $data, $user_security);
+my $display_field = $meta->{display_field};
 </%perl>
 %  if ( !$meta->{hidden} ) {
+%   if ( $meta->{section} eq 'details' ) {
+      <ul class="nav nav-list">
+        <li class="nav-header"><% _loc($meta->{name_field}) %></li>
+      </ul>
+      <ul style="margin-left: 20px">
+%     foreach my $topic ( @{$table->{topics}} ) {
+        <li style="font-size: <% $meta->{td_font_size} // 12 %>px; width: 400px; font-weight:bold;" class="bl-text-over">
+          <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &> <% $topic->{$display_field} %></li>
+%     }
+      </ul><br>
+%   }
+%   else {
     <tr>
-        <th colspan="2" style="padding: 10px 0 10px 0">
-            <h5 style="border-bottom: 1px solid #bbb">
-                  <% _loc($meta->{name_field}) %>
-% if( $table->{topics} && $$meta{datatable} ne 'never' ) {
-                   <div style="float:right; cursor:pointer">
-                       <img src="/static/images/icons/cog.svg" alt="<% _loc('Show/Hide Search Options') %>"
-                                onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
-                       <img src="/static/images/icons/topic-out-open.svg" alt="<% _loc('Open in topic grid') %>"
-                                onclick="javascript:Cla.open_grid_from_field('#<% $iid %>','<% $data->{mid} %>', '<% $data->{category}{name} %>', '<% $meta->{name_field} %>')">
-                   </div>
-% }
-            </h5>
-        </th>
+      <th colspan="2" style="padding: 10px 0 10px 0">
+        <h5 style="border-bottom: 1px solid #bbb"> <% _loc($meta->{name_field}) %>
+%         if( $table->{topics} && $$meta{datatable} ne 'never' ) {
+           <div style="float:right; cursor:pointer">
+             <img src="/static/images/icons/cog.svg" alt="<% _loc('Show/Hide Search Options') %>"
+                      onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
+             <img src="/static/images/icons/topic-out-open.svg" alt="<% _loc('Open in topic grid') %>"
+                      onclick="javascript:Cla.open_grid_from_field('#<% $iid %>','<% $data->{mid} %>', '<% $data->{category}{name} %>', '<% $meta->{name_field} %>')">
+           </div>
+%         }
+        </h5>
+      </th>
     </tr>
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
 
-% if( $table->{topics} && @{ $table->{topics} } > 0 ) {
+%     if( $table->{topics} && @{ $table->{topics} } > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
-              <thead>
-                <tr>
+          <thead>
+            <tr>
 % foreach my $h ( @{$table->{head}}) {
-                    <th style="white-space:nowrap;" width="<% $$h{width} %>"><% _loc( $$h{name} ) %></th>
+              <th style="white-space:nowrap;" width="<% $$h{width} %>"><% _loc( $$h{name} ) %></th>
 % }
-                </tr>
-              </thead>
-              <tbody>
+            </tr>
+          </thead>
+          <tbody>
 % foreach my $topic ( @{$table->{topics}} ) {
-                <tr class="topic-row" mid="<% $topic->{mid} %>">
+            <tr class="topic-row" mid="<% $topic->{mid} %>">
 % foreach my $h ( @{$table->{head}} ) {
 %    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
 %    if ( $data->{_custom_columns} ) {
@@ -51,47 +62,47 @@ my $table = $c->build_helper('Topic')->list_topics($meta, $data, $user_security)
 %    if( $$h{key} eq 'name' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px; width: 1%" class="fieldlet-html">
                 <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
-%    } elsif( $$h{type} && $$h{type} eq 'topics' ) {
+%           } elsif( $$h{type} && $$h{type} eq 'topics' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px;" class="fieldlet-html">
                 <& /partial/topic_name_multi.html, topics => $val, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &>
-%    } elsif( $$h{key} eq 'title' ) {
+%           } elsif( $$h{key} eq 'title' ) {
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
-%    } elsif( $$h{type} && $$h{type} eq 'ci' ) {
-%        $val = ref $val
-%          ? Util->_markdown( join( "<br>", map { $table->{related_cis}{$_} } _array($val) ), { tab_width => 2 } )
-%          : Util->_markdown( $table->{related_cis}{$val}, { tab_width => 2 } );
+%           } elsif( $$h{type} && $$h{type} eq 'ci' ) {
+%             $val = ref $val
+%             ? Util->_markdown( join( "<br>", map { $table->{related_cis}{$_} } _array($val) ), { tab_width => 2 } )
+%             : Util->_markdown( $table->{related_cis}{$val}, { tab_width => 2 } );
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $val %></td>
-%    } elsif( $$h{key} eq 'name_status' ) {
+%           } elsif( $$h{key} eq 'name_status' ) {
             <& /partial/topic_status.html, topic=>$topic &>
-%    } else {
+%           } else {
             <td style="font-size: <% $meta->{td_font_size} // 10 %>px" class="fieldlet-html">
 <%
-        ( defined $$h{type} && $$h{type} eq 'checkbox' )
-          ? ( !$val || $val eq 'false'
-            ? '<img src="/static/images/icons/close.svg">'
-            : '<img src="/static/images/icons/checkbox.svg">' )
-          : ( defined $$h{type} && $$h{type} eq 'index' ) ? ++$ix
-          : ref $val ? Util->_markdown( join( "<br>", _array($val) ), { tab_width => 2 } )
-          : Util->_markdown( $val, { tab_width => 2 } )
+            ( defined $$h{type} && $$h{type} eq 'checkbox' )
+              ? ( !$val || $val eq 'false'
+                ? '<img src="/static/images/icons/close.svg">'
+                : '<img src="/static/images/icons/checkbox.svg">' )
+              : ( defined $$h{type} && $$h{type} eq 'index' ) ? ++$ix
+              : ref $val ? Util->_markdown( join( "<br>", _array($val) ), { tab_width => 2 } )
+              : Util->_markdown( $val, { tab_width => 2 } )
 %>
 
-%    }
-             </td>
-% }
-             </tr>
-% }
-              </tbody>
-          </table>
+%           }
+            </td>
+%         }
+            </tr>
+%       }
+          </tbody>
+        </table>
       </td>
     </tr>
-% } # if
-% else {
+%      }
+%      else {
     <tr>
-        <td colspan="2"><% _loc( 'None' ) %></td>
+      <td colspan="2"><% _loc( 'None' ) %></td>
     </tr>
-% }# data
-% }
-
+%      }# data
+%   }
+%}
 
 <script>
     (function(){

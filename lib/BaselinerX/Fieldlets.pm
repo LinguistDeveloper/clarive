@@ -37,8 +37,8 @@ register 'fieldlet.progressbar' => {
     form        => '/fields/templates/config/progress_bar.js',
     icon        => '/static/images/icons/progressbar.svg',
     meta_type   => 'number',
-    section_default => 'details',
-    section_allowed => ['details','between']
+    section => 'between',
+    section_allowed => ['between']
 };
 
 register 'fieldlet.calculated_number' => {
@@ -61,7 +61,7 @@ register 'fieldlet.datetime' => {
     icon        => '/static/images/icons/calendar.svg',
     meta_type   => 'date',
     type        => 'datefield',
-    section_default => 'body',
+    section     => 'body',
     section_allowed => ['body'],
     limit_height   => 1
 };
@@ -244,7 +244,7 @@ register 'fieldlet.status_chart_pie' => {
     form        => '/fields/templates/config/status_chart_pie.js',
     icon        => '/static/images/icons/chart_pie.svg',
     type        => 'generic',
-    section_default => 'details',
+    section     => 'details',
     section_allowed => ['details']
 };
 
@@ -284,8 +284,8 @@ register 'fieldlet.checkbox' => {
     form        => '/fields/templates/config/checkbox.js',
     icon        => '/static/images/icons/admin_request.svg',
     type        => 'checkbox',
-    section_default => 'details',
-    section_allowed => ['details','more','between', 'body'],
+    section_default => 'between',
+    section_allowed => ['details','between', 'body'],
 };
 
 register 'fieldlet.separator' => {
@@ -446,7 +446,7 @@ register 'fieldlet.system.release' => {
     type        => 'listbox',
     rel_type    => 'topic_topic',
     section_default => 'body',
-    section_allowed => ['body','head','more'],
+    section_allowed => ['body', 'details'],
     limit_height => 1
 };
 
@@ -475,7 +475,7 @@ register 'fieldlet.system.projects' => {
     relation    => 'system',
     include_root    => 'true',
     type        => 'listbox',
-    section_default => 'details',
+    section     => 'details',
     section_allowed => ['details'],
     limit_height => 1
 };
@@ -493,7 +493,7 @@ register 'fieldlet.system.users' => {
     rel_type    => 'topic_users',
     relation    => 'system',
     type        => 'listbox',
-    section_default => 'details',
+    section     => 'details',
     section_allowed => ['details'],
     limit_height => 1
 };
@@ -547,8 +547,8 @@ register 'fieldlet.system.cis' => {
     relation    => 'system',
     type        => 'listbox',
     rel_type    => 'topic_ci',
-    section_default => 'body',
-    section_allowed => ['body','details'],
+    section     => 'body',
+    section_allowed => ['body'],
     limit_height   => 1
 };
 
