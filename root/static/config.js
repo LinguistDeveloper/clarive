@@ -206,4 +206,83 @@ var jsLibMain = [
 
 define(jsLibMain, function() {
 	Ext.Ajax.timeout = 60000;
+
+	Ext.QuickTips = function(){
+	    var tip,
+	        disabled = false;
+	        
+	    return {
+	        
+	        init : function(autoRender){
+	            if(!tip){
+	                tip = new Ext.QuickTip({
+	                    elements:'header,body', 
+	                    disabled: disabled
+	                });
+
+	                if(autoRender !== false){
+	                    tip.render(Ext.getBody());
+	                }
+	            }
+	        },
+	        
+	        
+	        ddDisable : function(){
+	            
+	            if(tip && !disabled){
+	                tip.disable();
+	            }    
+	        },
+	        
+	        
+	        ddEnable : function(){
+	            
+	            if(tip && !disabled){
+	                tip.enable();
+	            }
+	        },
+
+	        
+	        enable : function(){
+	            if(tip){
+	                tip.enable();
+	            }
+	            disabled = false;
+	        },
+
+	        
+	        disable : function(){
+	            if(tip){
+	                tip.disable();
+	            }
+	            disabled = true;
+	        },
+
+	        
+	        isEnabled : function(){
+	            return tip !== undefined && !tip.disabled;
+	        },
+
+	        
+	        getQuickTip : function(){
+	            return tip;
+	        },
+
+	        
+	        register : function(){
+	            tip.register.apply(tip, arguments);
+	        },
+
+	        
+	        unregister : function(){
+	            tip.unregister.apply(tip, arguments);
+	        },
+
+	        
+	        tips : function(){
+	            tip.register.apply(tip, arguments);
+	        }
+	    };
+	}();
+	
 });
