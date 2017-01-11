@@ -1548,7 +1548,7 @@
         columns: [
                 { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true, groupable: false },
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true, groupable: false },
-                { header: _('Env'), width: 50, dataIndex: 'bl', sortable: true, renderer: blRenderer },
+                { header: _('Env'), width: 50, id: 'env-tag' , dataIndex: 'bl', sortable: true, renderer: blRenderer },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job, groupable: false },
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
