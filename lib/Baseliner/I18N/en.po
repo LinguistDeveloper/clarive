@@ -8588,7 +8588,7 @@ msgstr ""
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js
+#: root/comp/job_new_comp.js root/comp/monitor_grid.js
 msgid "Failure"
 msgstr ""
 
@@ -9166,7 +9166,7 @@ msgstr ""
 msgid "Logfile Open Error"
 msgstr ""
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/monitor_grid.js
 msgid "no calendar window"
 msgstr ""
 
@@ -9197,7 +9197,7 @@ msgstr ""
 msgid "No job pipelines available"
 msgstr ""
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/monitor_grid.js
 msgid "Create a job outside of the available time slots."
 msgstr ""
 
@@ -9436,7 +9436,7 @@ msgstr ""
 msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr ""
 
-#: root/comp/job_new_comp.js
+#: root/comp/job_new_comp.js root/comp/monitor_grid.js
 msgid ""
 "For the jobs outside of window it is required to add a reason to the comment "
 "field"
@@ -10108,6 +10108,14 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
+#: root/comp/monitor_grid.js
+msgid "Update time and date of the job"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "There are no allowed windows for the job"
+msgstr ""
+
 #: root/comp/monitor_grid.js root/site/common.js
 msgid "Rejected"
 msgstr ""
@@ -10267,10 +10275,6 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "RUN End Date"
-msgstr ""
-
-#: root/comp/monitor_grid.js
-msgid "There are no allowed windows for the job"
 msgstr ""
 
 #: root/comp/notifications.js root/comp/rule_new.js
