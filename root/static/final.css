@@ -498,7 +498,7 @@ body {
     float:left;
     padding:1px 4px 1px 4px;
     margin-right:4px;
-    margin-top:4px;
+    margin-bottom:2px;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
@@ -1245,6 +1245,7 @@ ul.x-tab-strip li {
 .x-form-field-wrap.x-form-field-trigger-wrap {
     margin-right: 5px !important;
 }
+
 .level-row .x-grid3-td-env-tag .x-grid3-cell-inner.x-grid3-col-env-tag.x-unselectable {
     color: white;
 }
