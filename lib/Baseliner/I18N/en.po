@@ -1616,6 +1616,10 @@ msgid "id_rule is not passed"
 msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
+msgid "Rule with id %1 not found"
+msgstr ""
+
+#: lib/Baseliner/Controller/Rule.pm
 msgid "Simulation of modification of rule statements"
 msgstr ""
 

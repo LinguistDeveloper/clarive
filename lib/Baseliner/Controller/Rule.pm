@@ -583,15 +583,12 @@ sub get_rule_ts : Local{
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $id_rule = $p->{id_rule} or _fail _loc('id_rule is not passed');
-    try {
-        _debug $p;
-        my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
-        $c->stash->{json} = { success=>\1, msg => 'ok', ts => $ts };
-    } catch {
-        my $err = shift;
-        _error $err;
-        $c->stash->{json} = { success=>\0, msg => $err };
-    };
+    my $rule = mdb->rule->find_one({id => ''.$id_rule},{_id=>0, ts=>1});
+    if($rule->{ts}){
+        $c->stash->{json} = { success=>\1, msg => 'ok', ts => $rule->{ts} };
+    } else {
+        $c->stash->{json} = { success=>\0, msg => _loc("Rule with id %1 not found", $id_rule) };
+    }
     $c->forward("View::JSON");
 }
 
