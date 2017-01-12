@@ -29,11 +29,11 @@ my $table = $c->build_helper('CalendarSlots')->slots;
             my $rowspan = $col->{rowspan} // '';
             my $type    = $col->{type}    || 'B';
 
-            my $class = "slot_$type";
+            my $class = "slot-$type";
             $class = $class . '_off' unless $col->{active};
 
             print qq[<TD style='cursor:hand' rowspan=$rowspan
-                onmouseover='javascript:this.className="cal_slot $class slot_hover";'
+                onmouseover='javascript:this.className="cal_slot $class slot-hover";'
                 onmouseout='javascript:this.className="cal_slot $class";'
                 align="center" class="cal_slot $class" ];
 
@@ -74,22 +74,22 @@ my $table = $c->build_helper('CalendarSlots')->slots;
 </FORM>
 <TABLE   cellpadding="2"  id="caption_key">
 <TR>
-        <TD class="slot_N" height=20>&nbsp;</TD>
+        <TD class="slot-N" height=20>&nbsp;</TD>
         <TD class="slots-caption" ><% _loc("Normal") %></TD>
 
-        <TD class="slot_U">&nbsp;</TD>
+        <TD class="slot-U">&nbsp;</TD>
         <TD class="slots-caption"><% _loc("Urgent") %></TD>
 
-        <TD class="slot_X">&nbsp;</TD>
+        <TD class="slot-X">&nbsp;</TD>
         <TD class="slots-caption"><% _loc("No Job") %></TD>
 
-        <TD class="slot_B">&nbsp;</TD>
+        <TD class="slot-B">&nbsp;</TD>
         <TD class="slots-caption"><% _loc("Empty") %></TD>
 
-        <TD class="slot_N_off" height=20>&nbsp;</TD>
+        <TD class="slot-N-off" height=20>&nbsp;</TD>
         <TD class="slots-caption-big"><% _loc("Normal") . " <i>(" . _loc("No Job") .")</i>" %></TD>
 
-        <TD  class="slot_U_off">&nbsp;</TD>
+        <TD  class="slot-U-off">&nbsp;</TD>
         <TD class="slots-caption-big"><% _loc("Urgent") . " <i>(" . _loc("No Job") .")</i>" %></TD
 </TR>
 </TABLE>
