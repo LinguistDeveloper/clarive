@@ -300,7 +300,7 @@
         items: tbar_items
     });
     Cla.main_toolbar.on('afterlayout', function() {
-        if (Cla.hamburguer_installed) return;
+        if (Cla.hamburguer_installed || !Cla.explorer) return;
         Cla.hamburguer_installed = true;
         $('.hamburger').click(function() {
             if (Cla.explorer.collapsed) {
