@@ -1681,7 +1681,7 @@
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job, groupable: false },
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
-                { header: _('Progress'), width: 30, dataIndex: 'progress', sortable: false, hidden: true,  renderer: progressBarRenderer, groupable: false },
+                { header: _('Progress'), width: 60, dataIndex: 'progress', sortable: false, hidden: true,  renderer: progressBarRenderer, groupable: false },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },
                 { header: _('Project'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
