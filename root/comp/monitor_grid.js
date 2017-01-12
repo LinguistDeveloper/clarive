@@ -1527,11 +1527,14 @@
     }
 
     function renderChangesetList(data) {
-        var changesetTemplate;
-        var changesetHtml = [];
+        var topicTemplate;
+        var topicHtml = [];
 
         if (data.changeset_cis && data.changeset_cis.length) {
-            changesetTemplate = new Ext.XTemplate([
+            topicTemplate = new Ext.XTemplate([
+                '<tpl if="category_is_release == 1">',
+                '     <span style="margin-left:-10px;"></span>',
+                '</tpl>',
                 '<span',
                 '  style="font-size: .92em; border-left: 4px solid {category_color}; padding-left: 4px;">',
                 '  <a id="topic_{mid}_<% $iid %>"',
@@ -1554,14 +1557,14 @@
             ], {
                 compiled: true
             });
-
-            Ext.each([].concat(data.changeset_cis, data.release_cis), function(changeset) {
+            Ext.each([].concat(data.release_cis, data.changeset_cis), function(changeset) {
                 var comments = data.cs_comments[changeset.mid];
-                var changesetRendered = changesetTemplate.apply({
+                var topicRendered = topicTemplate.apply({
                     mid: changeset.mid,
                     title: changeset.title,
                     category_name: changeset.category.name,
                     category_color: changeset.category.color,
+                    category_is_release: changeset.category.is_release,
                     hasComments: !!comments,
                     viewFieldContentData: Ext.util.JSON.encode({
                         username: "<% $c->username %>",
@@ -1570,10 +1573,10 @@
                         title: changeset.category.name + ' #' + changeset.mid + ' - ' + changeset.title
                     })
                 });
-                changesetHtml.push(changesetRendered);
+                topicHtml.push(topicRendered);
             });
         } else {
-            changesetHtml.push(data.contents);
+            topicHtml.push(data.contents);
         }
 
         return new Ext.XTemplate([
@@ -1584,14 +1587,14 @@
             '</tpl>',
             '<tpl if="changesets">',
             '  <div style="color: #505050; margin: 0px 0px 5px 20px;">',
-            '    <tpl for="changesets"><div>{.}</div></tpl>',
+            '    <tpl for="changesets"><div style="margin-top:2px;padding-left:5px">{.}</div></tpl>',
             '  </div>',
             '</tpl>',
         ], {
             compiled: true
         }).apply({
             description: data.comments,
-            changesets: changesetHtml
+            changesets: topicHtml
         });
     }
 
