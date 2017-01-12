@@ -11194,10 +11194,6 @@ msgid "Height"
 msgstr ""
 
 #: root/comp/rules.js
-msgid "Invalid value. Use only 'a-z' and '_'"
-msgstr "Valor no válido. Use sólo 'a-z' y '_'"
-
-#: root/comp/rules.js
 msgid "Field with this id already exists"
 msgstr "Ya existe un campo con este id"
 
@@ -15237,6 +15233,10 @@ msgstr "Prioridad no válida"
 msgid "Invalid natural number"
 msgstr ""
 
+#: root/site/common.js
+msgid "Invalid value. Use only \"a-z\" and \"_\" inside the word"
+msgstr "Valor no válido. Use sólo \"a-z\" y \"_\" dentro del id"
+
 #: root/site/dashboard.js
 msgid "Dashlet config"
 msgstr ""
@@ -16020,6 +16020,9 @@ msgstr "destino"
 #~ msgid ""
 #~ "Your user does not have permission to create any job in any environment"
 #~ msgstr "Tu usuario no tiene permisos para crear job en ningún entorno"
+
+#~ msgid "Invalid value. Use only 'a-z' and '_'"
+#~ msgstr "Valor no válido. Use sólo 'a-z' y '_'"
 
 #~ msgid "Select rule"
 #~ msgstr "Selecciona regla"
