@@ -1260,13 +1260,16 @@ subtest 'rollback: fails when job not exists' => sub {
         };
 };
 
-subtest 'rollback: returns an error when job does not need rollback' => sub {
+subtest 'rollback: returns true when user has not defined a key in step' => sub {
     _setup();
 
     my $project = TestUtils->create_ci('project');
     my $id_role = TestSetup->create_role(
         role    => 'Role',
-        actions => [ { action => 'action.job.viewall', bounds => [ {} ] }, { action => 'action.job.restart', bounds => [ {} ] } ]
+        actions => [
+            { action => 'action.job.viewall', bounds => [ {} ] },
+            { action => 'action.job.restart', bounds => [ {} ] }
+        ]
     );
 
     my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
@@ -1303,11 +1306,12 @@ subtest 'rollback: returns an error when job does not need rollback' => sub {
     };
 
     my $job_name = $job_ci->name;
+
     cmp_deeply $c->stash,
         {
         'json' => {
-            success => \0,
-            msg     => re(qr/Job $job_name does not need rollback/)
+            success => \1,
+            msg     => re(qr/Job $job_name rollback scheduled/)
         }
         };
 };

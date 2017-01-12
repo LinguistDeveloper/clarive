@@ -1043,10 +1043,6 @@ msgid "Job %1 rollback scheduled"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
-msgid "Job %1 does not need rollback"
-msgstr ""
-
-#: lib/Baseliner/Controller/Job.pm
 msgid "User %1 does not have permissions to action %2"
 msgstr ""
 

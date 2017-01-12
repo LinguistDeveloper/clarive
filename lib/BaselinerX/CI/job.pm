@@ -1492,7 +1492,7 @@ sub start_rollback {
 
     my $exec = $self->exec + 1;
     $self->exec($exec);
-    $self->step( $rollback_steps[0] );
+    $self->step( $rollback_steps[0] // 'PRE' );
     $self->last_finish_status('');
     $self->final_status('');    # reset status, so that POST runs in rollback
     $self->rollback(1);
