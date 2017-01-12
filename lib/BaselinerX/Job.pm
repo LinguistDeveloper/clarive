@@ -81,7 +81,7 @@ register 'action.job.view_monitor' => { name=>_locl('View job monitor') };
 register 'menu.job' => { label => _locl('Jobs'), index=>110, actions => ['action.job.%','action.calendar.%']};
 
 register 'menu.job.create' => {
-    label    => _locl('Create a new Job'),
+    label    => _locl('New Job'),
     url_comp => '/job/create',
     title    => _locl('New Job'),
     icon     => '/static/images/icons/job.svg',
