@@ -3113,14 +3113,6 @@ msgid "%1"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
-msgid "Get date"
-msgstr ""
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Date %1 is not a valid date: %2"
-msgstr ""
-
-#: lib/Baseliner/Model/Rules.pm
 msgid "%1 posted a comment on %2: %3"
 msgstr ""
 
@@ -6623,6 +6615,14 @@ msgstr ""
 
 #: lib/BaselinerX/Service/FootprintElements.pm
 msgid "Footprint elements"
+msgstr ""
+
+#: lib/BaselinerX/Service/GenericServices.pm root/forms/get_date.js
+msgid "Get date"
+msgstr ""
+
+#: lib/BaselinerX/Service/GenericServices.pm
+msgid "Date %1 is not a valid date: %2"
 msgstr ""
 
 #: lib/BaselinerX/Service/Init.pm
@@ -13769,6 +13769,10 @@ msgstr ""
 msgid "Date (or blank for CURRENT date)"
 msgstr ""
 
+#: root/forms/get_date.js root/site/prefs.js
+msgid "Date Format"
+msgstr ""
+
 #: root/forms/git_create_branch.js
 msgid "Move to new sha if branch exists?"
 msgstr ""
@@ -15521,10 +15525,6 @@ msgstr ""
 
 #: root/site/prefs.js
 msgid "Default Format for Current Language"
-msgstr ""
-
-#: root/site/prefs.js
-msgid "Date Format"
 msgstr ""
 
 #: root/site/prefs.js

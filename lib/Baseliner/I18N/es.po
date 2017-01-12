@@ -3149,14 +3149,6 @@ msgid "%1"
 msgstr "%1"
 
 #: lib/Baseliner/Model/Rules.pm
-msgid "Get date"
-msgstr "Obtener fecha"
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Date %1 is not a valid date: %2"
-msgstr "La fecha %1 no es una fecha válida: %2"
-
-#: lib/Baseliner/Model/Rules.pm
 msgid "%1 posted a comment on %2: %3"
 msgstr "%1 envió un comentario sobre %2: %3"
 
@@ -6717,6 +6709,14 @@ msgstr ""
 #: lib/BaselinerX/Service/FootprintElements.pm
 msgid "Footprint elements"
 msgstr "Elementos de la huella"
+
+#: lib/BaselinerX/Service/GenericServices.pm root/forms/get_date.js
+msgid "Get date"
+msgstr "Obtener fecha"
+
+#: lib/BaselinerX/Service/GenericServices.pm
+msgid "Date %1 is not a valid date: %2"
+msgstr "La fecha %1 no es una fecha válida: %2"
 
 #: lib/BaselinerX/Service/Init.pm
 msgid "Init Job Home"
@@ -13946,6 +13946,10 @@ msgstr "Excluir rutas"
 msgid "Date (or blank for CURRENT date)"
 msgstr ""
 
+#: root/forms/get_date.js root/site/prefs.js
+msgid "Date Format"
+msgstr "Formato de Fecha"
+
 #: root/forms/git_create_branch.js
 msgid "Move to new sha if branch exists?"
 msgstr "¿Mover a un nuevo SHA si existe la rama?"
@@ -15709,10 +15713,6 @@ msgstr "Español"
 #: root/site/prefs.js
 msgid "Default Format for Current Language"
 msgstr "Formato por Defecto para Idioma Actual"
-
-#: root/site/prefs.js
-msgid "Date Format"
-msgstr "Formato de Fecha"
 
 #: root/site/prefs.js
 msgid "Time Format"
