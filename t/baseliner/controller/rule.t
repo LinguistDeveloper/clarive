@@ -1039,6 +1039,24 @@ subtest 'get_rule_ts: returns error if id_rule is not passed' => sub {
     like exception { $controller->get_rule_ts($c)}, qr/id_rule is not passed/;
 };
 
+subtest 'get_rule_ts: returns error if id_rule not exists' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c( req => { params => { id_rule => '123' } } );
+
+    my $controller = _build_controller();
+
+    $controller->get_rule_ts($c);
+
+    is_deeply $c->stash,
+        {
+        json => {
+            msg     => 'Rule with id 123 not found',
+            success => \0,
+        }
+        };
+};
+
 subtest 'default: croaks on rule_type not webservice or independent' => sub {
     _setup();
 
