@@ -1954,3 +1954,7 @@ span.x-tab-strip-text.x-panel-inline-icon {
 .x-form-field-wrap .x-form-spinner-splitter {
     background: none !important;
 }
+
+.x-form-field-wrap .x-form-trigger.x-form-arrow-trigger.x-form-trigger-over {
+    background-position: 50% 50% !important;
+}

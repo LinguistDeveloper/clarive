@@ -1248,3 +1248,7 @@ ul.x-tab-strip li {
 .level-row .x-grid3-td-env-tag .x-grid3-cell-inner.x-grid3-col-env-tag.x-unselectable {
     color: white;
 }
+
+.x-form-field-wrap .x-form-trigger.x-form-arrow-trigger.x-form-trigger-over {
+    background-position: 50% 50% !important;
+}
