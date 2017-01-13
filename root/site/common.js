@@ -2520,7 +2520,7 @@ Baseliner.Tree = Ext.extend(Ext.tree.TreePanel, {
 
         if (!c) return;
 
-        if (n.attributes.text == _('Topics')) {
+        if (n.attributes.text == _('Topics') && n.parentNode.attributes.data) {
             params.id_project = n.parentNode.attributes.data.id_project;
         }
         if (params.tab_icon == undefined) params.tab_icon = c.icon;
