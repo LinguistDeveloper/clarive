@@ -570,6 +570,7 @@ Cla.topic_grid = function(params){
                     }
                     text = text.replace(/^\s+/, '');
                     text = text.replace(/\s+$/, '');
+                    text = text.replace(/cursor:\s?pointer/g, 'cursor:default');
                     d[cfg[col].dataIndex] = text;
                 }
                 data.rows.push(d);
@@ -1089,12 +1090,12 @@ Cla.topic_grid = function(params){
             var img = dir =='in' ? 'referenced_in' : 'references_out';
             var ret = [];
             // open children
-            ret.push("<a href='javascript:void(0);' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", \""+rec.data.topic_mid+"\"); return false'>");
-            ret.push("<span class='label info-column'>");
+            ret.push("<span class='label info-column' style='cursor:pointer;' href='javascript:void(0);'" +
+                " onclick='javascript:Baseliner.open_topic_grid(\"" + dir + "\", \"" + rec.data.title + "\", \"" + rec.data.topic_mid + "\");" +
+                " return false'>");
             ret.push("<img src='/static/images/icons/"+img+".svg'>");
             ret.push( refs.length );
             ret.push("</span>");
-            ret.push("</a>");
             return ret.join('');
         }
         if( Ext.isArray( rec.data.references_out ) && rec.data.references_out.length > 0 ) {
