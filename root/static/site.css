@@ -317,7 +317,9 @@ div.x-panel-body .job-calendar {
 .slot-X,
 .slot-B,
 .slot-N-off,
-.slot-U-off {
+.slot-U-off,
+.slot-N-off,
+.slot-X-off {
     width: 20px;
 }
 

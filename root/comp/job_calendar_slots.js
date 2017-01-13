@@ -30,7 +30,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
             my $type    = $col->{type}    || 'B';
 
             my $class = "slot-$type";
-            $class = $class . '_off' unless $col->{active};
+            $class = $class . '-off' unless $col->{active};
 
             print qq[<TD style='cursor:hand' rowspan=$rowspan
                 onmouseover='javascript:this.className="cal_slot $class slot-hover";'
