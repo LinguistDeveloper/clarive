@@ -44,6 +44,7 @@ a:link, a:hover, #boot a, #boot a:hover {
 .x-tab-strip .x-tab-strip-closable a.x-tab-strip-close {
     background-image: url(images/close.png);
     background-position: 0px -17px;
+    cursor: pointer !important
 }
 
 .x-tab-strip .x-tab-strip-closable a.x-tab-strip-close:hover {
@@ -1957,4 +1958,21 @@ span.x-tab-strip-text.x-panel-inline-icon {
 
 .x-form-field-wrap .x-form-trigger.x-form-arrow-trigger.x-form-trigger-over {
     background-position: 50% 50% !important;
+}
+
+.x-tab-strip .x-tab-with-icon.x-tab-strip-over .x-tab-right,
+.x-tab-strip-closable.x-tab-strip-over .x-tab-right {
+    background-color: #f5f5f5;
+    -webkit-transition: background-color 0.5s ease;
+    -moz-transition: background-color 0.5s ease;
+    -o-transition: background-color 0.5s ease;
+    transition: background-color 0.5s ease;
+}
+
+.x-tab-strip.x-tab-strip-top .x-tab-strip-closable * {
+    cursor: pointer;
+}
+
+.x-tab-strip.x-tab-strip-top .x-tab-strip-closable.x-tab-strip-active * {
+    cursor: default;
 }
