@@ -11,18 +11,28 @@ my $table = $c->build_helper('Topic')->list_topics($meta, $data, $user_security)
 my $display_field = $meta->{display_field};
 </%perl>
 %  if ( !$meta->{hidden} ) {
-%   if ( $meta->{section} eq 'details' ) {
+%   if ( $meta->{section} eq 'details' &&  $table->{topics} && scalar @{$table->{topics}} > 0 ) {
       <ul class="nav nav-list">
         <li class="nav-header"><% _loc($meta->{name_field}) %></li>
       </ul>
       <ul style="margin-left: 20px">
 %     foreach my $topic ( @{$table->{topics}} ) {
         <li style="font-size: <% $meta->{td_font_size} // 12 %>px; width: 400px; font-weight:bold;" class="bl-text-over">
-          <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 0 &> <% $topic->{$display_field} %></li>
+          <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 1 &> <% $topic->{$display_field} %></li>
 %     }
       </ul><br>
 %   }
-%   else {
+%   if ( $meta->{section} eq 'body' ) {
+    <tr>
+      <th><% _loc($meta->{name_field}) %>:</th><td>
+%     foreach my $topic ( @{$table->{topics}} ) {
+          <& /partial/topic_name.html, topic => $topic, show_title => 0, show_short_name => 1, show_progress => 0, show_name_tooltip => 1 &> <% $topic->{$display_field} %><br>
+%     }
+      </td>
+    </tr>
+%   }
+
+%   if ( $meta->{section} ne 'details' && $meta->{section} ne 'body' )  {
     <tr>
       <th colspan="2" style="padding: 10px 0 10px 0">
         <h5 style="border-bottom: 1px solid #bbb"> <% _loc($meta->{name_field}) %>
