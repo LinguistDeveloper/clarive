@@ -21,7 +21,7 @@ my $table = $c->build_helper('CalendarSlots')->slots;
         </TR>
 <%perl>
     foreach my $row ( @{ $table->{rows} } ) {
-        print qq{<TR time="$row->{time}">};
+        print qq{<TR time="$row->{time}" height="5px">};
 
         foreach my $col ( @{ $row->{columns} } ) {
             next unless %$col;
