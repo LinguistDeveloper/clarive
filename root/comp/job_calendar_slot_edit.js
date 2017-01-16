@@ -151,7 +151,7 @@ for(my $hh=0; $hh<=24; $hh++) {
             {  xtype: 'combo',
                        name: 'ven_dia',
                        hiddenName: 'ven_dia',
-                       fieldLabel: 'Dia',
+                       fieldLabel: _('Weekday'),
                        mode: 'local',
                        editable: false,
                        //disabled: true,
@@ -227,7 +227,7 @@ for(my $hh=0; $hh<=24; $hh++) {
         layout: 'fit',
         cls: 'edit_job_window',
         height: 273, width: 600,
-        title: slot_date ? _('Edit Job Slot for %1', slot_date) : _('Edit Job Slot'),
+        title: slot_date ? _('Edit Calendar Slot for %1', slot_date) : _('Edit Calendar Slot'),
         items: fpanel
     });
     return win;

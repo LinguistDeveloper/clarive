@@ -1885,7 +1885,7 @@ msgid "Semaphore request inactive"
 msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm root/comp/job_calendar_editor.js
-msgid "Job Slots"
+msgid "Calendaring"
 msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
@@ -2027,8 +2027,8 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Job.pm
 #: root/comp/ci-viewer.js root/comp/git/tag_commit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
-#: root/comp/revision/grid.mas root/comp/rules.js root/comp/scheduler_grid.js
+#: root/comp/lifecycle/workspace_new.js root/comp/revision/grid.mas
+#: root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/site/common.js root/site/model.js
 msgid "Create"
 msgstr ""
@@ -4693,7 +4693,7 @@ msgstr ""
 msgid "Files"
 msgstr ""
 
-#: lib/BaselinerX/CI/job.pm root/comp/job_new.js root/comp/job_new_comp.js
+#: lib/BaselinerX/CI/job.pm root/comp/job_new.js
 msgid "Missing job contents"
 msgstr ""
 
@@ -5311,12 +5311,12 @@ msgstr ""
 #: root/comp/ci-editor.js root/comp/events.js root/comp/feature_grid.mas
 #: root/comp/git/tag_commit.js root/comp/job_calendar_editor.js
 #: root/comp/job_calendar_grid.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/lifecycle/tasks.js
-#: root/comp/project_grid.mas root/comp/revision/grid.mas
-#: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
-#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
+#: root/comp/lifecycle/tasks.js root/comp/project_grid.mas
+#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
+#: root/comp/rule_new.js root/comp/scheduler_grid.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/comp/user_actions.mas
+#: root/comp/user_grid.js root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
@@ -5645,13 +5645,8 @@ msgstr ""
 msgid "Jobs"
 msgstr ""
 
-#: lib/BaselinerX/Job.pm
-msgid "Create a new Job"
-msgstr ""
-
-#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/lifecycle/deploy.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_lib.js root/site/kanban.js
+#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/lifecycle/deploy.js
+#: root/comp/monitor_grid.js root/comp/topic/topic_lib.js root/site/kanban.js
 msgid "New Job"
 msgstr ""
 
@@ -7296,19 +7291,18 @@ msgstr ""
 #: root/ci/DBDest.js root/ci/balix_agent.js root/ci/dbi_connection.js
 #: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/ssh_agent.js
 #: root/ci/web_cluster.js root/comp/dashboard_job.html
-#: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
-#: root/comp/monitor_grid.js root/comp/role_detail.js root/comp/user_grid.js
-#: root/comp/user_info.mas root/email/approval_job.html
-#: root/email/generic_post.html root/email/generic_rule.html
-#: root/email/generic_topic.html root/forms/asset_file.js
-#: root/forms/eval_remote.js root/forms/link_revision.js
-#: root/forms/mkpath_remote.js root/forms/remove_file.js
-#: root/forms/rest_request.js root/forms/retrieve_remote.js
-#: root/forms/script_local.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js
-#: root/forms/test_server_connect.js root/forms/topic_status_deprecated.js
-#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
-#: root/site/model.js
+#: root/comp/lifecycle/workspace_new.js root/comp/monitor_grid.js
+#: root/comp/role_detail.js root/comp/user_grid.js root/comp/user_info.mas
+#: root/email/approval_job.html root/email/generic_post.html
+#: root/email/generic_rule.html root/email/generic_topic.html
+#: root/forms/asset_file.js root/forms/eval_remote.js
+#: root/forms/link_revision.js root/forms/mkpath_remote.js
+#: root/forms/remove_file.js root/forms/rest_request.js
+#: root/forms/retrieve_remote.js root/forms/script_local.js
+#: root/forms/script_remote.js root/forms/ship_remote.js
+#: root/forms/sync_remote.js root/forms/test_server_connect.js
+#: root/forms/topic_status_deprecated.js root/forms/web_request.js
+#: root/reports/listado_jobs.js root/site/common.js root/site/model.js
 msgid "User"
 msgstr ""
 
@@ -8250,9 +8244,8 @@ msgstr ""
 #: root/comp/config/config_grid.mas root/comp/config/config_main.mas
 #: root/comp/configlist/grid.mas root/comp/feature_grid.mas
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/lifecycle/deploy.js
-#: root/comp/lifecycle/tasks.js root/comp/log_grid.js
-#: root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/lifecycle/deploy.js root/comp/lifecycle/tasks.js
+#: root/comp/log_grid.js root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
 #: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js root/comp/show_email.js
@@ -8275,11 +8268,11 @@ msgstr ""
 msgid "There are invalid fields in the form or variables."
 msgstr ""
 
-#: root/comp/ci-editor.js root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/log_grid.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/view_file.js root/fields/system/js/list_projects.js
-#: root/forms/log.js root/site/common.js root/site/explorer.js
+#: root/comp/ci-editor.js root/comp/job_new.js root/comp/log_grid.js
+#: root/comp/monitor_grid.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/comp/view_file.js
+#: root/fields/system/js/list_projects.js root/forms/log.js
+#: root/site/common.js root/site/explorer.js
 msgid "Warning"
 msgstr ""
 
@@ -8560,8 +8553,7 @@ msgid "Configuration Items"
 msgstr ""
 
 #: root/comp/config/config_panel.mas root/comp/configlist/edit_value.mas
-#: root/comp/job_new.js root/comp/job_new_comp.js root/site/login.js
-#: root/site/tabfu.js
+#: root/comp/job_new.js root/site/login.js root/site/tabfu.js
 msgid "Reset"
 msgstr ""
 
@@ -8592,7 +8584,7 @@ msgstr ""
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
+#: root/comp/monitor_grid.js
 msgid "Failure"
 msgstr ""
 
@@ -8826,10 +8818,9 @@ msgid "Feature"
 msgstr ""
 
 #: root/comp/feature.js root/comp/job_calendar_slot_edit.js
-#: root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/lifecycle/report_edit.js root/comp/monitor_grid.js
-#: root/comp/scheduler_grid.js root/comp/view_file.js
-#: root/dashlets/topics_burndown_config.js
+#: root/comp/job_new.js root/comp/lifecycle/report_edit.js
+#: root/comp/monitor_grid.js root/comp/scheduler_grid.js
+#: root/comp/view_file.js root/dashlets/topics_burndown_config.js
 #: root/dashlets/topics_period_burndown_config.js root/email/generic_post.html
 #: root/site/common.js root/site/timeline-graph.js
 msgid "Date"
@@ -9026,10 +9017,8 @@ msgstr ""
 msgid "JES Spool"
 msgstr ""
 
-#: root/comp/job_calendar_editor.js root/comp/label_admin.js
-#: root/comp/notifications.js root/fields/system/html/field_priority.html
-#: root/fields/system/js/field_priority.js
-msgid "Priority"
+#: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
+msgid "Precedence"
 msgstr ""
 
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
@@ -9050,10 +9039,6 @@ msgstr ""
 
 #: root/comp/job_calendar_grid.js
 msgid "Calendar Name"
-msgstr ""
-
-#: root/comp/job_calendar_grid.js
-msgid "Precedence"
 msgstr ""
 
 #: root/comp/job_calendar_grid.js
@@ -9143,6 +9128,10 @@ msgid "Activate Slot"
 msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
+msgid "Weekday"
+msgstr ""
+
+#: root/comp/job_calendar_slot_edit.js
 msgid "Starts at"
 msgstr ""
 
@@ -9151,11 +9140,11 @@ msgid "Ends at"
 msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
-msgid "Edit Job Slot for %1"
+msgid "Edit Calendar Slot for %1"
 msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
-msgid "Edit Job Slot"
+msgid "Edit Calendar Slot"
 msgstr ""
 
 #: root/comp/job_calendar_slots.js
@@ -9184,7 +9173,7 @@ msgstr ""
 msgid "Transition"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/scheduler_grid.js
+#: root/comp/job_new.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_lib.js root/forms/create_job.js root/site/model.js
 msgid "Searching..."
 msgstr ""
@@ -9205,14 +9194,13 @@ msgstr ""
 msgid "Create a job outside of the available time slots."
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/log_grid.js
-#: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
-#: root/email/generic_post.html root/forms/create_job.js root/site/common.js
+#: root/comp/job_new.js root/comp/log_grid.js root/comp/monitor_grid.js
+#: root/comp/topic/topic_lib_grid.js root/email/generic_post.html
+#: root/forms/create_job.js root/site/common.js
 msgid "Comments"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/monitor_grid.js
-#: root/comp/scheduler_grid.js
+#: root/comp/job_new.js root/comp/monitor_grid.js root/comp/scheduler_grid.js
 msgid "Time"
 msgstr ""
 
@@ -9220,7 +9208,7 @@ msgstr ""
 msgid "Error generating calendar windows: %1"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Could not reload calendar"
 msgstr ""
 
@@ -9228,7 +9216,7 @@ msgstr ""
 msgid "No calendar windows available for selected date"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Remove Job Item"
 msgstr ""
 
@@ -9236,15 +9224,15 @@ msgstr ""
 msgid "Relationship"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Job Item"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/view_diff.js
+#: root/comp/job_new.js root/comp/view_diff.js
 msgid "Last Updated"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Job Contents"
 msgstr ""
 
@@ -9268,8 +9256,8 @@ msgstr ""
 
 #: root/comp/job_new.js
 msgid ""
-"En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
-"campo observaciones"
+"It's mandatory to add comments explaining why this job is outside any time "
+"slots"
 msgstr ""
 
 #: root/comp/job_new.js root/comp/role_grid.js
@@ -9292,7 +9280,7 @@ msgstr ""
 msgid "Connection Error"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/log_grid.js
+#: root/comp/job_new.js root/comp/log_grid.js
 msgid "Form Error"
 msgstr ""
 
@@ -9304,15 +9292,15 @@ msgstr ""
 msgid "Add Job Items"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Blocked"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Package cannot be added to job"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "No records found"
 msgstr ""
 
@@ -9350,115 +9338,6 @@ msgstr ""
 msgid "Live search requires a minimum of %1 characters."
 msgstr ""
 
-#: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
-#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
-msgid "Promote"
-msgstr ""
-
-#: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
-#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
-msgid "Demote"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Destination Baseline"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Origin Baseline"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Custom Window"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Check for job out of window"
-msgstr ""
-
-#: root/comp/job_new_comp.js root/site/prefs.js
-msgid "Timezone"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Loading dates..."
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Without Dates"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid ""
-"There are no allowed dates for the job. Please, select customized window"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Calendar Errors"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid ""
-"There are no allowed windows for the job. Searching returns an exception: %1"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Timeout error ocurred"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Updating times..."
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Job time expired"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Time off range %1"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid ""
-"Job is out of window. Check 'Custom window' if you want a job out of allowed "
-"windows"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Invalid time format (00:00-23:59)"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Item Type"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Location"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
-msgstr ""
-
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
-msgid ""
-"For the jobs outside of window it is required to add a reason to the comment "
-"field"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Job Options"
-msgstr ""
-
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_admin.js root/forms/create_job.js
-msgid "Job Type"
-msgstr ""
-
-#: root/comp/job_new_comp.js
-msgid "Your user does not have permission to create any job in any environment"
-msgstr ""
-
 #: root/comp/job_stash.js
 msgid "Stash Log"
 msgstr ""
@@ -9477,6 +9356,12 @@ msgstr ""
 
 #: root/comp/label_admin.js root/fields/templates/config/generic_fields.js
 msgid "Label"
+msgstr ""
+
+#: root/comp/label_admin.js root/comp/notifications.js
+#: root/fields/system/html/field_priority.html
+#: root/fields/system/js/field_priority.js
+msgid "Priority"
 msgstr ""
 
 #: root/comp/label_admin.js root/comp/topic/topic_admin.js
@@ -9761,6 +9646,16 @@ msgstr ""
 
 #: root/comp/log_grid.js
 msgid "Execution %1/%2"
+msgstr ""
+
+#: root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
+msgid "Demote"
+msgstr ""
+
+#: root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
+msgid "Promote"
 msgstr ""
 
 #: root/comp/log_grid.js root/comp/monitor_grid.js root/forms/catalog_task.js
@@ -10113,6 +10008,12 @@ msgid "Update"
 msgstr ""
 
 #: root/comp/monitor_grid.js
+msgid ""
+"For the jobs outside of window it is required to add a reason to the comment "
+"field"
+msgstr ""
+
+#: root/comp/monitor_grid.js
 msgid "Update time and date of the job"
 msgstr ""
 
@@ -10215,6 +10116,11 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Subapplications"
+msgstr ""
+
+#: root/comp/monitor_grid.js root/comp/topic/topic_admin.js
+#: root/forms/create_job.js
+msgid "Job Type"
 msgstr ""
 
 #: root/comp/monitor_grid.js
@@ -15537,6 +15443,10 @@ msgstr ""
 
 #: root/site/prefs.js
 msgid "Time Format"
+msgstr ""
+
+#: root/site/prefs.js
+msgid "Timezone"
 msgstr ""
 
 #: root/site/prefs.js

@@ -557,7 +557,7 @@
     var button_cis = new Ext.Button({
         text: _('Dependencies'),
         disabled: true,
-        icon:'/static/images/ci/ci.svg',
+        icon:'/static/images/icons/ci-grey.svg',
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = jc_grid.getSelectionModel();
@@ -812,7 +812,16 @@
         cls: 'ui-btn-create x-btn-text-icon',
         handler: function(){
             if( check_no_cal.checked && comments.getValue().length == 0 ) {
-                Ext.Msg.show({ title: _('Failure'), msg: _('En pases fuera de ventana, es obligatorio informar el motivo del pase en el campo observaciones'), width: 500, buttons: { ok: true } });
+                if( comments ) {
+                    Ext.Msg.show({
+                        title: _('Failure'),
+                        msg: _("It's mandatory to add comments explaining why this job is outside any time slots"),
+                        width: 500, buttons: { ok: true },
+                        fn: function(){
+                            comments.focus(false,200);
+                        }
+                    });
+                }
             } else {
                 var form = main_form.getForm();
                 if( ! form.isValid() ) {

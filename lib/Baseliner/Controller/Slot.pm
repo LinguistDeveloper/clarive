@@ -14,9 +14,9 @@ use experimental 'autoderef';
 our $DEFAULT_SEQ = 100;
 
 register 'menu.job.calendar' => {
-    label    => _locl('Job Slots'),
+    label    => _locl('Calendaring'),
     url_comp => '/job/calendar_grid',
-    title    => _locl('Job Slots'),
+    title    => _locl('Calendaring'),
     actions  => ['action.calendar.%'],
     icon     => '/static/images/icons/slot.svg'
 };

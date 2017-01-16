@@ -13,7 +13,7 @@
     var can_admin = Cla.eval_boolean(<% $c->stash->{can_admin} %>);
     var can_edit = Cla.eval_boolean(<% $c->stash->{can_edit} %>);
 
-    var calendar_type_help = '<b>'+_('Job Slots')+':</b><br>';
+    var calendar_type_help = '<b>'+_('Calendaring')+':</b><br>';
     calendar_type_help += '<TABLE border="0" width="100%" cellpadding="2">';
     calendar_type_help += '<TR><TD class="normal" width=20 height=20>&nbsp;</TD><TD>Pase: Son ventanas en las que se pueden realizar pases.</TD></TR>';
     calendar_type_help += '<TR><TD class="urgente" width=20 height=20>&nbsp;</TD><TD>Urgente/No pase: Son ventanas urgentes, fuera de lo habitual. Este estado sirve para sobreescribir un pase nornmal.</TD></TR>';
@@ -43,7 +43,8 @@
                     fieldLabel: _('Name'),
                     value: '<% $cal->{name} %>'
                 }, {
-                    fieldLabel: _('Priority'),
+                    xtype: 'textfield',
+                    fieldLabel: _loc('Precedence'),
                     name: 'seq',
                     value: '<% $cal->{seq} %>'
                 }, {
