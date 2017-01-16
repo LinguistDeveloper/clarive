@@ -15,7 +15,7 @@
         <th colspan="2" style="padding: 10px 0 10px 0">
             <h5 style="border-bottom: 1px solid #bbb">
                   <% _loc($meta->{name_field}) %>
-% if( $table->{topics} && $$meta{datatable} ne 'never' ) {
+% if( $table->{topics} && $$meta{datatable} ne 'never' && scalar @{$table->{topics}} > 0 ) {
                    <div style="float:right; cursor:pointer">
                        <img src="/static/images/icons/cog.svg" alt="<% _loc('Show/Hide Search Options') %>"
                                 onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
