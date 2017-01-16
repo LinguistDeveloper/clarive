@@ -1483,7 +1483,7 @@ subtest 'attach_revisions: errors when create ci and mid not exists' => sub {
 
     my $controller = _build_controller();
 
-    my $c = mock_catalyst_c( req => { params => { repo => 'foo' } }, );
+    my $c = mock_catalyst_c( req => { params => { repo => 'foo' } } );
     like exception {
         $controller->attach_revisions($c)
     }, qr/Master row not found for mid foo/;

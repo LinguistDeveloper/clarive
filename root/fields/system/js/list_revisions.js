@@ -46,7 +46,7 @@ params:
                 width: 20,
                 dataIndex: 'id',
                 renderer: function() {
-                    return '<img style="float:right" src="/static/images/icons/tag.gif" />';
+                    return '<img style="float:right" src="/static/images/icons/tag.svg" />';
                 }
             }, {
                 header: _('Name'),
@@ -66,7 +66,7 @@ params:
                 dataIndex: 'mid',
                 renderer: function(v, meta, rec, rowIndex) {
                     var html = '<a href="javascript:Baseliner.delete_revision_row(\'' + revision_grid.id + '\', \'' + v + '\')">';
-                    html += '<img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>';
+                    html += '<img style="float:middle" height=16 src="/static/images/icons/close.svg" /></a>';
                     return html;
                 }
             }
@@ -114,7 +114,7 @@ params:
         });
     };
 
-    var add_ci_to_store = function(mid,name) {
+    var addCIToStore = function(mid,name) {
         if( revision_store.find('mid', mid ) > -1 ) {
             Baseliner.message( _('Revision'), _('Revision %1 has already been selected', name ) );
             return;
@@ -126,46 +126,43 @@ params:
         revision_store.commitChanges();
     }
 
-    var add_ci = function( name, node_data ) {
-
+    var addCI = function(name, node_data) {
         var ci = node_data.ci;
+        var mid = node_data.mid;
 
-        if (node_data.repo_dir != undefined) { ci.data.repo_dir = node_data.repo_dir };
+        if (node_data.repo_dir != undefined) {
+            ci.data.repo_dir = node_data.repo_dir
+        };
 
         if (typeof ci.data.sha === 'undefined') {
-            if (typeof ci.sha !== 'undefined'){
+            if (typeof ci.sha !== 'undefined') {
                 ci.data.sha = ci.sha;
-            }else{
+            } else {
                 ci.data.sha = node_data.sha;
             }
         }
 
-        var mid = node_data.mid;
-        if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) {
-            Baseliner.message( _('Error'), _('Node is not a revision'));
-        }
-        else if ( mid!=undefined ) {
+        if (mid == undefined && (ci == undefined || ci.role != 'Revision')) {
+            Baseliner.message(_('Error'), _('Node is not a revision'));
+        } else if (mid != undefined) {
             // TODO
-        }
-        else if ( ci !=undefined ) {
+        } else if (ci != undefined) {
             Baseliner.ajaxEval('/ci/attach_revisions', {
-                    name: ci.name,
-                    'class': ci['class'],
-                    ns: ci.ns,
-                    ci_json: Ext.util.JSON.encode( ci.data ),
-                    repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
-                    topic_mid: topic_data.topic_mid,
-                    branch: node_data.branch,
-                    repo_dir: node_data.repo_dir
-                }, function(res) {
-                    if( res.success ) {
-                        add_ci_to_store( res.mid, ci.name );
-                    }
-                    else {
-                        Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
-                    }
+                name: ci.name,
+                'class': ci['class'],
+                ns: ci.ns,
+                ci_json: Ext.util.JSON.encode(ci.data),
+                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
+                topic_mid: topic_data.topic_mid,
+                branch: node_data.branch,
+                repo_dir: node_data.repo_dir
+            }, function(res) {
+                if (res.success) {
+                    addCIToStore(res.mid, ci.name);
+                } else {
+                    Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
                 }
-            );
+            });
         }
     };
 
@@ -188,12 +185,11 @@ params:
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
                     if( ci ) {
-                        add_ci( attr.text, node_data );
+                        addCI( attr.text, node_data );
                     }
                     else {
                         if( node_data.ci_new ) {
                             var ci_new = node_data.ci_new;
-                            // var url = ci_new.drop_url;
                             var coll = ci_new.collection;
                             var form_data = ci_new.form_data;
                             var name = attr.text;
@@ -202,7 +198,7 @@ params:
                                 comp.on('save', function( req, res ){
                                     var mid = res.mid;
                                     if( mid ) {
-                                        add_ci_to_store( mid, req.form_data.name);
+                                        addCIToStore( mid, req.form_data.name);
                                     }
                                     win.close();
                                 });
@@ -210,35 +206,34 @@ params:
                                 win.show();
                             });
                         }
-                     else if (node_data.repo_mid && node_data.ns) {
-                        Baseliner.ajaxEval('/ci/attach_revisions', {
-                            name: ci.name,
-                            'class': ci['class'],
-                            ns: ci.ns,
-                            ci_json: Ext.util.JSON.encode(ci.data),
-                            repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
-                            topic_mid: topic_data.topic_mid,
-                            branch: ci.data.branch,
-                            repo_dir: node_data.repo_dir
-                        }, function(res) {
-                            if (res.success) {
-                                if( res.success ) {
-                                    add_ci_to_store( res.mid, attr.text );
+                        else if (node_data.repo_mid && node_data.ns) {
+                            Baseliner.ajaxEval('/ci/attach_revisions', {
+                                name: ci.name,
+                                'class': ci['class'],
+                                ns: ci.ns,
+                                ci_json: Ext.util.JSON.encode(ci.data),
+                                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
+                                topic_mid: topic_data.topic_mid,
+                                branch: ci.data.branch,
+                                repo_dir: node_data.repo_dir
+                            }, function(res) {
+                                if (res.success) {
+                                    if (res.success) {
+                                        addCIToStore(res.mid, attr.text);
+                                    }
+                                } else {
+                                    Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
                                 }
-                            } else {
-                                Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
-                            }
-                        });
-                    }
-                    else {
-                            Baseliner.message( _('Error'), _('Node is not a Revision CI'));
+                            });
+                        }
+                        else {
+                            Baseliner.message(_('Error'), _('Node is not a Revision CI'));
                         }
                     }
                     return (true);
                 }
             });
         }
-
     });
 
     return [

@@ -1765,18 +1765,36 @@
                         });
                     };
                     var win = new Baseliner.Window({
-                        layout: 'border', width: 1024, height: 650, maximizable: true,
-                        title: _('DSL: %1', name ),
-                        tbar: [ { text:_('Run'), icon:'/static/images/icons/play.svg', handler: dsl_run } ],
+                        layout: 'border',
+                        width: 1024,
+                        height: 650,
+                        maximizable: true,
+                        title: _('DSL: %1', name),
+                        tbar: [{
+                            text: _('Run'),
+                            icon: '/static/images/icons/play.svg',
+                            handler: dsl_run
+                        }],
                         keys: [{
-                            key:[10,13],
+                            key: [10, 13],
                             ctrl: true,
                             fn: dsl_run
                         }],
                         items: [
-                           stash_txt,
-                           { region:'center', xtype:'panel', height: 400, items: dsl_txt  },
-                           { xtype:'tabpanel', items: [dsl_cons_tab, dsl_stash_tab], activeTab:0, plugins: [ new Ext.ux.panel.DraggableTabs()], region:'south', split: true, height: 200 }
+                            stash_txt, {
+                                region: 'center',
+                                xtype: 'panel',
+                                height: 400,
+                                items: dsl_txt
+                            }, {
+                                xtype: 'tabpanel',
+                                items: [dsl_cons_tab, dsl_stash_tab],
+                                activeTab: 0,
+                                plugins: [new Ext.ux.panel.DraggableTabs()],
+                                region: 'south',
+                                split: true,
+                                height: 200
+                            }
                         ]
                     });
                     win.on('beforeclose', function(){
