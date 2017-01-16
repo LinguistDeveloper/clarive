@@ -1478,6 +1478,85 @@ subtest 'user_can_search: checks if user can search cis' => sub {
     ok $controller->user_can_search( $user->username );
 };
 
+subtest 'attach_revisions: errors when create ci and mid not exists' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c( req => { params => { repo => 'foo' } }, );
+    like exception {
+        $controller->attach_revisions($c)
+    }, qr/Master row not found for mid foo/;
+};
+
+subtest 'attach_revisions: attaches GitRevision with ns' => sub {
+    _setup();
+
+    my $dir = TestGit->create_repo;
+    my $repo = TestUtils->create_ci( 'TestRepository', repo_dir => "$dir/.git" );
+
+    TestGit->commit($repo);
+
+    my $project = TestUtils->create_ci( 'project', repositories => [ $repo->mid ] );
+    my $id_role = TestSetup->create_role( actions => [ { action => 'action.ci.admin' } ] );
+    my $user = TestSetup->create_user( username => 'user', id_role => $id_role, project => $project );
+
+    my $id_rule     = _create_changeset_form();
+    my $id_category = TestSetup->create_category(
+        name         => 'Changeset',
+        id_rule      => $id_rule,
+        is_changeset => 1
+    );
+
+    my $topic_mid
+        = TestSetup->create_topic( username => $user->username, id_category => $id_category, project => $project );
+
+    my $controller = _build_controller();
+
+    my $c = mock_catalyst_c(
+        req => {
+            params => {
+                topic_mid     => $topic_mid,
+                ci_repository => $repo,
+                repo          => $repo->mid,
+                repo_dir      => $repo->repo_dir,
+                name          => 'master',
+                branch        => 'master',
+                ns            => 'git.revision/master',
+                class         => 'GitRevision',
+                ci_json       => JSON::encode_json(
+                    {   'repo_dir' => $repo->repo_dir,
+                        'ci_pre'   => [
+                            {   'class' => 'TestRepository',
+                                'name'  => $repo->repo_dir,
+                                'mid'   => $repo->mid,
+                                'data'  => { 'repo_dir' => $repo->repo_dir, },
+                                'ns'    => 'git.repository/' . $repo->repo_dir
+                            }
+                        ],
+                        'repo'    => 'ci_pre:0',
+                        'sha'     => 'master',
+                        'rev_num' => 'master',
+                        'branch'  => 'master'
+                    }
+                )
+            }
+        },
+        username => $user->username
+    );
+
+    $controller->attach_revisions($c);
+
+    cmp_deeply $c->stash,
+        {
+        'json' => {
+            'success' => \1,
+            'msg'     => 'CI master saved ok',
+            'mid'     => '123'
+        }
+        };
+};
+
 subtest 'attach_revisions: attaches GitRevision to the changeset' => sub {
     _setup();
 
@@ -1976,4 +2055,12 @@ package BaselinerX::CI::test_area;
     sub custom_grid {'/comp/ci-custom_grid_area.js'}
 
     1;
+}
+
+package BaselinerX::CI::TestRepository;
+use Moose;
+BEGIN { extends 'BaselinerX::CI::GitRepository' }
+
+sub create_revision_from_ns {
+    return '123';
 }

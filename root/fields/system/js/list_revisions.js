@@ -187,24 +187,30 @@ params:
                     var attr = n.attributes;
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
-                    if (node_data.repo_dir !== undefined) {
-                        ci.data.repo_dir = node_data.repo_dir;
+                    if( ci ) {
+                        add_ci( attr.text, node_data );
                     }
+                    else {
+                        if( node_data.ci_new ) {
+                            var ci_new = node_data.ci_new;
+                            // var url = ci_new.drop_url;
+                            var coll = ci_new.collection;
+                            var form_data = ci_new.form_data;
+                            var name = attr.text;
 
-                    if (typeof ci.data.sha === 'undefined') {
-                        if (typeof ci.sha !== 'undefined') {
-                            ci.data.sha = ci.sha;
-                        } else {
-                            ci.data.sha = node_data.sha;
+                            Cla.ajax_json( '/ci/edit', { action:'add', collection: coll, name: name, form_data: form_data }, function(comp) {
+                                comp.on('save', function( req, res ){
+                                    var mid = res.mid;
+                                    if( mid ) {
+                                        add_ci_to_store( mid, req.form_data.name);
+                                    }
+                                    win.close();
+                                });
+                                var win = new Cla.Window({ modal: true, items:[comp], layout:'fit', width: 850, height: 500 });
+                                win.show();
+                            });
                         }
-                    }
-
-                    var mid = node_data.mid;
-                    if (mid === undefined && (ci === undefined || ci.role !== 'Revision')) {
-                        Baseliner.message(_('Error'), _('Node is not a revision'));
-                    } else if (mid !== undefined) {
-                        // TODO
-                    } else if (ci !== undefined) {
+                     else if (node_data.repo_mid && node_data.ns) {
                         Baseliner.ajaxEval('/ci/attach_revisions', {
                             name: ci.name,
                             'class': ci['class'],
@@ -216,24 +222,17 @@ params:
                             repo_dir: node_data.repo_dir
                         }, function(res) {
                             if (res.success) {
-                                var mid = res.mid;
-                                if (revision_store.find('mid', mid) > -1) {
-                                    Baseliner.message(_('Revision'), _('Revision %1 has already been selected', ci.name));
-                                    return;
+                                if( res.success ) {
+                                    add_ci_to_store( res.mid, attr.text );
                                 }
-                                var d = {
-                                    name: attr.text,
-                                    id: mid,
-                                    mid: mid
-                                };
-                                var r = new revision_store.recordType(d, mid);
-
-                                revision_store.add(r);
-                                revision_store.commitChanges();
                             } else {
                                 Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
                             }
                         });
+                    }
+                    else {
+                            Baseliner.message( _('Error'), _('Node is not a Revision CI'));
+                        }
                     }
                     return (true);
                 }

@@ -941,18 +941,23 @@ sub attach_revisions : Local {
     my $repo_dir = delete $p->{repo_dir};
     my $repo_mid = $p->{repo};
     my $branch = $p->{branch};
+    my $topic_mid = $p->{topic_mid};
 
     my $valid_repo = 1;
     my $data = exists $p->{ci_json} ? _decode_json( $p->{ci_json} ) : $p;
+    my $repo = $p->{ci_repository};
 
-    if ( $p->{topic_mid} ) {
+    if ( !$repo && $repo_mid ) {
+        $repo = ci->new($repo_mid);
+    }
+
+    if ( $topic_mid ) {
         my %topic_projects = map { $_=>1 } mdb->master_rel->find_values( to_mid => { from_mid=> "$p->{topic_mid}", rel_type=>'topic_project' });
 
         if ( !%topic_projects ) {
             $c->stash->{json} = { success=>\0, msg=>_loc('The changeset must be assigned to at least one project') };
             $valid_repo = 0;
         } else {
-            my $repo = ci->new($repo_mid);
             my @repo_projects = map { $_->{mid} } $repo->related( where=>{collection => 'project'});
 
             my $ok_repo = grep { defined } @topic_projects{ @repo_projects };
@@ -981,6 +986,14 @@ sub attach_revisions : Local {
 
     if ( $valid_repo ) {
         try {
+            if ( length $mid ) {
+                my $ci = ci->new($mid);
+                $name = $ci->name;
+            }
+            elsif ( length $ns && $repo->can('create_revision_from_ns') ) {
+                $mid = $repo->create_revision_from_ns($ns);
+            }
+            else {
             # check for prereq relationships
             my @ci_pre_mid;
             my %ci_data;
@@ -1018,7 +1031,7 @@ sub attach_revisions : Local {
                     repo_mid   => $repo_mid,
                 }
             );
-
+        }
 
             $c->stash->{json} = { success => \1, msg => _loc( 'CI %1 saved ok', $name ) };
             $c->stash->{json}{mid} = $mid;
