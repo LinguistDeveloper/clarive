@@ -15,9 +15,12 @@ with 'Baseliner::Role::Service';
 
 
 register 'config.daemon.purge' => {
-    name => _locl('Event daemon configuration'),
+    name     => _locl('Event daemon configuration'),
     metadata => [
-        { id=>'frequency', label=>_locl('event purge daemon frequency (secs)'), default=>86400 },
+        { id => 'sleep_period',    label => 'sleep period between checks', default => 3600 },
+        { id => 'next_purge_date', label => 'Next date to execute purge' },
+        { id => 'min_purge_time', default => '02:00', label => 'Minimum time in the day to execute the purge' },
+        { id => 'max_purge_time', default => '04:00', label => 'Maximum time in the day to execute the purge' },
     ]
 };
 
@@ -47,31 +50,77 @@ register 'config.purge' => {
 
 
 register 'service.purge.daemon' => {
-    daemon => 1,
-    name => _locl('Purge Daemon'),
-    icon => '/static/images/icons/daemon.svg',
+    daemon    => 1,
+    name      => _locl('Purge Daemon'),
+    icon      => '/static/images/icons/daemon.svg',
     scheduled => 1,
-    config => 'config.daemon.purge',
-    handler => sub {
-                    my ($self, $c, $config ) = @_;
-                    $config->{frequency} ||= 86400;
-                    require Baseliner::Sem;
-                    for( 1..1000 ) {
-                        my $sem = Baseliner::Sem->new( key=>'purge_daemon', who=>"purge_daemon", internal=>1 );
-                        $sem->take;
-                        $self->run_once();
-                        if ( $sem ) {
-                            $sem->release;
-                        }
-                        sleep( $config->{frequency} );
-                    }
+    config    => 'config.daemon.purge',
+    handler   => sub {
+        my ( $self, $c, $config ) = @_;
+
+        require Baseliner::Sem;
+
+        for ( 1 .. 1000 ) {
+            _log( _loc("Checking purge daemon configuration") );
+
+            if ( $self->time_to_run($config) ) {
+                my $sem = Baseliner::Sem->new( key => 'purge_daemon', who => "purge_daemon", internal => 1 );
+
+                $sem->take;
+
+                $self->run_once();
+
+                if ($sem) {
+                    $sem->release;
                 }
+
+                my $tomorrow     = Class::Date->now() + "1D";
+                my $config_store = Baseliner->model('ConfigStore')->new;
+
+                $config_store->set(
+                    key   => 'config.daemon.purge.next_purge_date',
+                    value => $tomorrow->ymd,
+                    bl    => '*'
+                );
+            }
+
+            _log( _loc( "Sleeping for %1 seconds", $config->{sleep_period} ) );
+            sleep( $config->{sleep_period} || 3600 );
+        }
+    }
 };
 
 register 'service.purge.run_once' => {
     handler => \&run_once,
 };
 
+sub time_to_run {
+    my $self = shift;
+    my ($config) = @_;
+
+    my $today = Class::Date->now()->ymd;
+    my $date = $config->{next_purge_date} || $today;
+
+    if ( $date le $today ) {
+        my $time = Class::Date->now()->hms;
+        if ( $time gt $config->{min_purge_time} && $time lt $config->{max_purge_time} ) {
+            return 1;
+        }
+        else {
+            _log(
+                _loc(
+                    "Not purging now. Purging between %1 and %2", $config->{min_purge_time},
+                    $config->{max_purge_time}
+                )
+            );
+        }
+    }
+    else {
+        _log( _loc( "Not purging until %1", $date ) );
+    }
+
+    return 0;
+}
 
 sub run_once {
     my ( $self, $c, $opts )=@_;
@@ -88,7 +137,7 @@ sub run_once {
 
     my $purge_job_available = !$config_purge->{no_job_purge} && (ref $config_runner && $job_home);
     if( $purge_job_available ) {
-        my $jobs = ci->job->find({ purged => { '$ne' => '1'}})->sort({ _id=>1 });
+        my $jobs = ci->job->find({ purged => { '$ne' => '1'}})->fields({name=>1,endtime=>1,mid=>1,})->sort({_id=>1});
         while (my $job= $jobs->next){
             my $job_mid = $job->{mid};
             my $ci_job = try {
@@ -99,11 +148,14 @@ sub run_once {
             };
             next unless $ci_job;
 
+            next if $ci_job->is_active;
+
             my $job_name = $job->{name};
             my $endtime = $job->{endtime};
             my $config = $config->get('config.purge', bl => $job->{bl});
 
             my $configdays = $ci_job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
+            _debug("Days to keep for ".$ci_job->bl.": ".$configdays);
             my $limitdate = $now - "${configdays}D";
 
             my $purged_job_path = $job_home."$job->{name}";
@@ -113,38 +165,55 @@ sub run_once {
             my $now_standard_date = $now =~ s/" "/T/g;
 
             if ( length $endtime && $endtime < $limitdate && !$job->{purged} ) {
-                next if $ci_job->is_active;
                 _log "Purging job $job_name with mid $job_mid ($endtime < $limitdate)....";
-                $stats{job}++;
+
                 try {
-                    $ci_job->update( purged=>1 );
-                    next if $opts->{dry_run};
-                    _log "\tDeleting log $purged_job_log_path";
+                    _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
+
+                    return if $opts->{dry_run};
+
+                    _log "Deleting log $purged_job_log_path";
                     unlink $purged_job_log_path;
-                    my $deleted_job_logs = mdb->job_log->find({ mid => $job_mid});
-                    while( my $actual = $deleted_job_logs->next ) {
-                        if ($actual->{lev} eq 'debug'){
-                            mdb->job_log->remove({ mid => $actual->{mid}, id => $actual->{id} });
-                            $stats{job_log}++;
+
+                    my $deleted_job_logs =
+                      mdb->job_log->find( { mid => $job->{mid} } )
+                      ->fields( { id => 1, mid => 1, data => 1, lev => 1, more => 1 } );
+
+                    my $logs_deleted = 0;
+                    while ( my $actual = $deleted_job_logs->next ) {
+                        if ( $actual->{lev} eq 'debug' ) {
+                            mdb->job_log->remove( { mid => $actual->{mid}, id => $actual->{id} } );
+                            $logs_deleted++;
                         }
-                        if( $actual->{data} ){
-                            _log "\tDeleting field data of ". $job_mid ."....";
+
+                        if ( $actual->{data} ) {
+                            _log "Deleting field data of " . $job_mid . "....";
                             mdb->grid->delete( $actual->{data} );
                             $stats{grid}++;
-                        } else {
-                            if ( $actual->{more} && $actual->{more} eq 'jes' ) {
-                                _log "\tRemoving jes data of ". $job_mid ."....";
-                                mdb->jes_log->remove({ id_log => 0+$actual->{id}});
-                            }
+                        }
+
+                        if ( $actual->{more} && $actual->{more} eq 'jes' ) {
+                            _log "Removing jes data of " . $job_mid . "....";
+                            mdb->jes_log->remove( { id_log => 0 + $actual->{id} } );
                         }
                     }
+
+                    $stats{job_log} += $logs_deleted;
+                    $stats{job}++;
+
+                    _log(_loc("Deleted %1 debug lines of job %2 ", $logs_deleted, $job->{name}));
+
+                    $ci_job->update( purged=>'1' );
                 } catch {
-                    _log "Error trying to delete job $job_name. Job skipped: ".shift;
-                }
+                    my $error = shift;
+
+                    _log "Error trying to delete job $job_name. Job skipped: ".$error;
+                };
             }
 
             if( $max_job_time->datetime lt $now_standard_date && -d $purged_job_path ) {
-                _log "\tDeleting for job directory $purged_job_path....";
+                _log "Deleting job directory $purged_job_path....";
+
                 File::Path::remove_tree( $purged_job_path, {error => \my $err} );
                 unlink $purged_job_path;
             }
@@ -177,7 +246,7 @@ sub run_once {
                     #next unless -e $pid_file;
                     require Baseliner::LogfileRotate;
 
-                    _log "\tTruncating: ".$file->basename;
+                    _log "Truncating: ".$file->basename;
                     my $log = new Baseliner::LogfileRotate( File   => $file,
                                     Count  => $config_purge->{keep_rotation_level},
                                     Gzip  => 'lib',
@@ -194,7 +263,7 @@ sub run_once {
                                     Persist => 'yes',
                                     );
                     $log->rotate();
-                    _log "\tDone truncating: ".$file->basename;
+                    _log "Done truncating: ".$file->basename;
                 }
             }
         }
@@ -261,7 +330,6 @@ sub run_once {
     _log 'Done purging.';
     return \%stats;
 }
-
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
