@@ -111,29 +111,31 @@ sub lc_for_project {
             ],
           };
     };
-    push @nodes,{
-        'node' => 'Views',
-        'icon' => '/static/images/icons/views.svg',
-        'menu' => [
-                    {
-                      'icon' => '/static/images/icons/folder_new.svg',
-                      'text' => 'New Folder',
-                      'url' => '/fileversion/new_folder',
-                       'eval' => {
-                           handler=>'Baseliner.new_folder',
-                       },
-                    }
-                  ],
-        'url' => '/fileversion/tree_file_project',
-        draggable => \0,
-        'data' => {
-                    id_folder => '',
-                    'on_drop' => {
-                                   'url' => '/fileversion/drop'
-                                 }
-                  },
-        'type' => 'component',
-    };
+    # REMOVE VIEWS FROM PROJECT_LIFECICLE
+
+    # push @nodes,{
+    #     'node' => 'Views',
+    #     'icon' => '/static/images/icons/views.svg',
+    #     'menu' => [
+    #                 {
+    #                   'icon' => '/static/images/icons/folder_new.svg',
+    #                   'text' => 'New Folder',
+    #                   'url' => '/fileversion/new_folder',
+    #                    'eval' => {
+    #                        handler=>'Baseliner.new_folder',
+    #                    },
+    #                 }
+    #               ],
+    #     'url' => '/fileversion/tree_file_project',
+    #     draggable => \0,
+    #     'data' => {
+    #                 id_folder => '',
+    #                 'on_drop' => {
+    #                                'url' => '/fileversion/drop'
+    #                              }
+    #               },
+    #     'type' => 'component',
+    # };
 
     if ($permissions->user_has_action($username, 'action.home.view_project_repos')) {
         my @repos =
