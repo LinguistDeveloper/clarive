@@ -6831,10 +6831,6 @@ msgid "Pause a Job"
 msgstr "Pausar un Pase"
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "event purge daemon frequency (secs)"
-msgstr "frecuencia del demonio de purga de eventos (segs)"
-
-#: lib/BaselinerX/Service/Purge.pm
 msgid "Number of days to keep job files"
 msgstr "Número de días a mantener los ficheros de pases"
 
@@ -6917,6 +6913,26 @@ msgstr "Mantener entradas de log de eventos de login (0 ó 1)"
 #: lib/BaselinerX/Service/Purge.pm
 msgid "Purge Daemon"
 msgstr "Purgar Demonio"
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Checking purge daemon configuration"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Sleeping for %1 seconds"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Not purging now. Purging between %1 and %2"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Not purging until %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Deleted %1 debug lines of job %2 "
+msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
 msgid "Purging %1 auth events"
@@ -15879,6 +15895,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "event purge daemon frequency (secs)"
+#~ msgstr "frecuencia del demonio de purga de eventos (segs)"
 
 #~ msgid "Create a new Job"
 #~ msgstr "Nuevo Pase"

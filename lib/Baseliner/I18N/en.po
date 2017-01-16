@@ -6733,10 +6733,6 @@ msgid "Pause a Job"
 msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "event purge daemon frequency (secs)"
-msgstr ""
-
-#: lib/BaselinerX/Service/Purge.pm
 msgid "Number of days to keep job files"
 msgstr ""
 
@@ -6812,6 +6808,26 @@ msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
 msgid "Purge Daemon"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Checking purge daemon configuration"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Sleeping for %1 seconds"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Not purging now. Purging between %1 and %2"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Not purging until %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Deleted %1 debug lines of job %2 "
 msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
