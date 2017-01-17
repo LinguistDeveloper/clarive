@@ -2777,7 +2777,7 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                         delete record._custom_columns;
                     }
 
-                    form_data[obj.name] = Ext.isObject(record) ? record.mids : record;
+                    form_data[obj.name] = record.mids ? record.mids : record;
                 }
             }
         });

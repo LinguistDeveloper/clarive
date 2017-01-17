@@ -23,6 +23,34 @@ use Baseliner::Utils qw(_load _file _get_extension_file);
 
 use_ok 'Baseliner::Model::Topic';
 
+subtest 'update: creates topic without \n in title' => sub {
+    _setup();
+
+    my $id_role = TestSetup->create_role;
+    my $project = TestUtils->create_ci_project;
+    my $user    = TestSetup->create_user( name => 'developer', id_role => $id_role, project => $project );
+    my $status_id = ci->status->new( name => 'New', type => 'I' )->save;
+    my $id_rule = TestSetup->create_rule_form();
+    my $id_category = TestSetup->create_category( id_rule => $id_rule, id_status => [$status_id] );
+
+    my $base_params = {
+        'project'         => $project,
+        'category'        => $id_category,
+        'status_new'      => $status_id,
+        'status'          => $status_id,
+        'category_status' => { id => $status_id },
+        'title'           => "One line \n Other line",
+        'username'        => $user->name,
+    };
+
+    my $model = _build_model();
+
+    my @data = $model->update( { %$base_params, action => 'add' } );
+    my $title = $data[3];
+
+    is $title, 'One line   Other line';
+};
+
 subtest 'non_root_workflow: topic returns static workflow' => sub{
     _setup();
     _setup_user();
