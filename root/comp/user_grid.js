@@ -595,7 +595,7 @@
     }],
     autoSizeColumns: true,
     deferredRender: true,
-    height: 150,
+    height: 210,
     bbar: [
         btn_delete_row,
         btn_delete_all
@@ -813,12 +813,11 @@
             title = _('Edit user');
             //username_readonly = true;
         }
-
         win = new Ext.Window({
             title: title,
-            height: 600,
-            minWidth: 730,
-            width: 730,
+            autoScroll: true,
+            height: 650,
+            width: 1120,
             closeAction: 'close',
             modal: true,
             constrain: true,
@@ -826,6 +825,12 @@
                 form_user
             ]
         });
+        if (win.height >= window.innerHeight) {
+            win.setSize(win.width, window.innerHeight - Cla.constants.MARGIN_BOTTOM_SIZE);
+        }
+        if (win.width >= window.innerWidth) {
+            win.setSize(window.innerWidth - Cla.constants.MARGIN_BOTTOM_SIZE, win.height);
+        }
         win.show();
         store_user_roles_projects.load({ params: {username: username} });
         store_roles.load({params:{start:0 }});
