@@ -3,6 +3,7 @@ use Moose;
 
 use JSON ();
 use Array::Utils qw(intersect);
+use Baseliner::Search;
 use Baseliner::Model::Permissions;
 use Baseliner::Utils qw(_fail _array _unique _debug);
 
@@ -63,29 +64,8 @@ sub build_where {
 
     if ($query) {
         _debug "Job QUERY=$query";
-        my @mids_query;
-        if ( $query !~ /\+|\-|\"|\:/ ) {
-            $query =~ s{(\w+)\*}{job "$1"}g;
-            $query =~ s{([\w\-\.]+)}{"$1"}g;
-            $query =~ s{\+(\S+)}{"$1"}g;
-            $query =~ s{""+}{"}g;
-            @mids_query = map { $_->{obj}{mid} } _array(
-                mdb->master_doc->search(
-                    query   => $query,
-                    limit   => 1000,
-                    project => { mid => 1 },
-                    filter  => { collection => 'job' }
-                )->{results}
-            );
-        }
-        if ( !@mids_query ) {
-            mdb->query_build( where => $where, query => $query, fields => [ keys %$group_keys ] );
-        }
-        else {
-            my @mid_filters;
-            push @mid_filters, { mid => mdb->in(@mids_query) };
-            $where->{'$and'} = \@mid_filters if @mid_filters;
-        }
+
+        Baseliner::Search->inject_search_query( $where, $query, fields => [ keys %$group_keys ] );
     }
 
     $permissions->inject_project_filter( $username, 'action.job.viewall', $where, filter => $filter->{filter_project} );

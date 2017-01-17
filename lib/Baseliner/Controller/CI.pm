@@ -6,6 +6,7 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Role::CI::Generic;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Search;
 use Baseliner::Model::Permissions;
 use Try::Tiny;
 use experimental 'switch', 'smartmatch', 'autoderef';
@@ -1810,26 +1811,18 @@ sub search_query {
 
     return () if ! length $query;
 
-    if( $query !~ /^\s*"/ && ( $query =~ m{\*|\?|/|\:} || $query =~ m{(^[\+\-])|(\s+[\+\-])} ) ) {
-
-        mdb->query_build( where => $where, query => $query, fields =>
-              [ qw(
-                  mid
-                  moniker
-                  name
-                  description
-                  yaml
-              ) ]
-        );
-        _debug "CI QUERY REGEX=$query\n" . _dump( $where );
-    }
-    else {
-        $query =~ s{(\S+[\.\-]\S+)}{"$1"}g;
-        $query =~ s{""+}{"}g;
-
-        _debug "CI QUERY FULL TEXT=$query";
-        $where->{'$text'} = { '$search' => $query };
-    }
+    Baseliner::Search->inject_search_query(
+        $where, $query,
+        fields => [
+            qw(
+              mid
+              moniker
+              name
+              description
+              yaml
+              )
+        ]
+    );
 
     my @results = mdb->master_doc
         ->find( $where )
