@@ -1803,33 +1803,40 @@ sub search_provider_name { 'CIs' };
 sub search_provider_type { 'CI' };
 sub search_query {
     my ($self, %p ) = @_;
+
     my $query = $p{query};
-    my $limit = 50; #$p{limit} // 1000;
-    my $where = {};
+    my $limit = $p{limit} // 50;
+    my $where = { collection => mdb->nin( 'topic', 'job' ) };
 
     return () if ! length $query;
-    my $res = mdb->master_doc->search( query=>$query, limit=>1000,
-        #project=>{name=>1,collection=>1},
-        project=>{ _id=>0 },
-        filter=>{ collection=>mdb->nin('topic','job') }
-    );
 
-    my @results = map {
-        my $r = $$_{obj};
-        $r;
-    } _array( $res->{results} );
+    if( $query !~ /^\s*"/ && ( $query =~ m{\*|\?|/|\:} || $query =~ m{(^[\+\-])|(\s+[\+\-])} ) ) {
 
-    my $wh = {collection=>mdb->nin('topic','job') };
-    mdb->query_build( where=>$wh, query=>$query, fields=>['mid','moniker','name','description'] );
-    push @results, map {
-        delete $$_{_id};
-        $_;
-    } mdb->master_doc->find($wh)->limit(1000)->all;
+        mdb->query_build( where => $where, query => $query, fields =>
+              [ qw(
+                  mid
+                  moniker
+                  name
+                  description
+                  yaml
+              ) ]
+        );
+        _debug "CI QUERY REGEX=$query\n" . _dump( $where );
+    }
+    else {
+        $query =~ s{(\S+[\.\-]\S+)}{"$1"}g;
+        $query =~ s{""+}{"}g;
 
-    my %res_unique = map { $$_{mid} => $_ } @results;
+        _debug "CI QUERY FULL TEXT=$query";
+        $where->{'$text'} = { '$search' => $query };
+    }
 
-    #my @mids = map { $_->{obj}{mid} } _array $res->{results};
-    #$where->{'me.mid'} = mdb->in(@mids);
+    my @results = mdb->master_doc
+        ->find( $where )
+        ->fields({ _id=>0 })
+        ->limit( $limit )
+        ->all;
+
     return map {
         my $r = $_;
         my $text = Util->_encode_json( $r );
@@ -1854,7 +1861,7 @@ sub search_query {
             mid   => $r->{mid},
             id    => $r->{mid},
         }
-    } values %res_unique;
+    } @results;
 }
 
 =head2
