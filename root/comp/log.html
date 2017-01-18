@@ -22,54 +22,219 @@
             sort keys %p
     };
 </%perl>
-
 <head>
     <& '/site/nocache.html' &>
-   <title><% $title %></title>
-   <style>
-       <& /static/geek.css &>
-   </style>
-   <style>
-        #log-html h1 { font-size: 16px; }
-        #top { position: relative; float: right }
-        .summary-table { width: 100% }
-        body { font-family: 'Tahoma'; font-size: '10px'; }
-        hr { height: 1px; color: #eee; background-color: #ccc; border:0; border-style: solid; }
-        img { border:0 }
-        td { font-size: '8pt' }
-        pre {
-            font-family: Consolas, Monaco, "Courier New", Courier, monospace;
-            padding: 6px;
-            border: #ddd dashed 1px;
-            font-size: "11px";
-        }
-        .data {
-            background-color: #fafafa;
-            font-family: Consolas, Monaco, "Courier New", Courier, monospace;
-            font-size: "11px";
-        }
-        .info-odd { background-color: #BFCDD5;}
-        .info-even { background-color: #CED6DC; }
+   <title><% $title %>
+    </title>
+    <style>
+    <& /static/geek.css &>
+    </style>
+    <style>
+ #project tr,
+    td,
+    body {
+        font: normal 10px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    }
 
-        .warn-odd { background-color: #F5E8AE; }
-        .warn-even { background-color: #F0EBD1; }
+    #log-html h1 {
+        font-size: 20px;
+        margin: 15px 0 15px 0;
+    }
 
-        .error-odd { background-color: #EDA69E; }
-        .error-even { background-color: #EDB8B2; }
+    #log-html {
+        clear: right;
+        padding-top: 5px;
+    }
 
-        .debug-odd { background-color: #D7E1DB; }
-        .debug-even { background-color: #CADBD0; }
-        .force_size_in_icon {height:16px; width:16px;}
+    #top {
+        float: right;
+    }
 
-   </style>
-</head>
+    .summary-table {
+        width: 100%;
+        margin-top: 35px;
+    }
+
+    body {
+        font-family: 'Tahoma';
+        font-size: '10px';
+    }
+
+    hr {
+        height: 1px;
+        color: #eee;
+        background-color: #ccc;
+        border: 0;
+        border-style: solid;
+    }
+
+    img {
+        border: 0;
+    }
+
+    td {
+        font-size: '8pt';
+    }
+
+    tr * {
+        border-bottom: 1px solid #e8e8e8 !important;
+    }
+
+    .titles th,
+    .titles td {
+        border-bottom: 1px solid black !important;
+    }
+
+    #top a {
+        font-size: 12px;
+        color: #616161 !important;
+        border-bottom: none !important;
+        padding-bottom: .08em;
+        line-height: 1.70 !important;
+        text-decoration: none !important;
+        cursor: pointer;
+    }
+
+    #top a:hover {
+        color: #a0a0a0 !important;
+        text-decoration: none !important;
+        border-bottom: .08em solid #a0a0a0 !important;
+        padding-bottom: .08em;
+    }
+
+    pre {
+        font-family: Consolas, Monaco, "Courier New", Courier, monospace;
+        padding: 6px;
+        border: #ddd dashed 1px;
+        font-size: "11px";
+    }
+
+    .summary-name.step-title {
+        width: 1%;
+    }
+
+    .summary-name.task-title {
+        width: 11%;
+    }
+
+    .summary-name.pid-title {
+        width: 6%;
+    }
+
+    .summary-name.timestamp-title {
+        width: 12%;
+    }
+
+    .summary-name.message-title {
+        width: 66%;
+    }
+
+    .summary-name.actions-title {
+        width: 1%;
+    }
+
+    .summary-table * td {
+        max-width: 66%;
+    }
+
+    tr b,
+    tr a {
+        border-bottom: none !important
+    }
+
+    .info-odd,
+    .info-even,
+.warn-odd,
+ .warn-even, 
+.error-odd,
+.error-even,
+.debug-odd,
+.debug-even {
+        background-color: #ffffff;
+    }
+
+    .force_size_in_icon {
+        height: 13px;
+        width: 13px;
+        border-bottom: 1px solid white !important;
+    }
+
+    a.force_size_in_icon:hover {
+        text-decoration: none !important;
+    }
+
+    .timestamp {
+        background: url("/static/images/icons/time.svg") no-repeat;
+        background-size: 13px;
+        vertical-align: middle;
+        background-position: 0 50%;
+        padding-left: 19px !important;
+    }
+
+    td.check,
+    td.init,
+    td.pre,
+    td.run,
+    td.post,
+    td.run,
+    td.end {
+        background-size: 21px;
+        vertical-align: middle;
+        background-position: 0 50%;
+        padding-left: 22px;
+        background-repeat: no-repeat;
+    }
+
+    .step.error-even,
+    .step.error-odd,
+    .step.warn-even,
+    .step.warn-odd,
+    .step.info-even,
+    .step.info-odd,
+    .step.debug-even,
+    .step.debug-odd {
+        background-size: 13px;
+        vertical-align: middle;
+        background-position: 0 50%;
+        padding-left: 22px;
+        background-repeat: no-repeat;
+    }
+
+    .step.error-even,
+    .step.error-odd {
+        background-image: url("/static/images/icons/error_red.svg");
+    }
+
+    .step.warn-even,
+    .step.warn-odd {
+        background-image: url("/static/images/icons/log_w_1.svg");
+    }
+
+    .step.info-even,
+    .step.info-odd {
+        background-image: url("/static/images/icons/active.svg");
+    }
+
+    .step.debug-even,
+    .step.debug-odd {
+        background-image: url("/static/images/icons/debug_view.svg");
+    }
+
+    .summary-name {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        background: none !important;
+        border: none !important;
+    }    
+</style>
+    </head>
 <body>
 <center>
 <div id="top">
 % if( $debug ) {
-    <a href="<% $url_build->( debug=>0 ) %>">No Debug</a>
+    <a class="debug" href="<% $url_build->( debug=>0 ) %>">No Debug</a>
 % } else {
-    <a href="<% $url_build->( debug=>1 ) %>">Debug</a>
+    <a class="debug" href="<% $url_build->( debug=>1 ) %>">Debug</a>
 % }
 |
 <% _loc("Sort") %>:
@@ -101,14 +266,14 @@ Exec:
 <table class="summary-table">
   <tbody>
     <tr>
-        <th class="summary-name" width="1"><% _loc( 'Step' ) %></th>
-        <th class="summary-name" width="1"><% _loc( 'Task' ) %></th>
+        <th class="summary-name step-title" width="1"><% _loc( 'Step' ) %></th>
+        <th class="summary-name task-title" width="1"><% _loc( 'Task' ) %></th>
 %    if( $debug ) {
-        <th class="summary-name" width="1"><% _loc( 'PID' ) %></th>
+        <th class="summary-name pid-title" width="1"><% _loc( 'PID' ) %></th>
 %    }
-        <th class="summary-name" width="1"><% _loc( 'Timestamp' ) %></th>
-        <th class="summary-name"><% _loc( 'Message' ) %></th>
-        <th class="summary-name"><% _loc( 'Actions' ) %></th>
+        <th class="summary-name timestamp-title" width="1"><% _loc( 'Timestamp' ) %></th>
+        <th class="summary-name message-title"><% _loc( 'Message' ) %></th>
+        <th class="summary-name actions-title"><% _loc( 'Actions' ) %></th>
     </tr>
 
 % my $k = 0;
@@ -116,13 +281,13 @@ Exec:
 
 % for my $row ( @$rows ) {
     <tr class="<% $row->{lev} . $eo->()  %>">
-        <td class="<% $row->{lev} . $eo->() %>"><% $row->{step} %></td>
-        <td class="<% $row->{lev} . $eo->() %>"><% $row->{service_key} %></td>
+        <td class="step <% $row->{step} %> <% $row->{lev} . $eo->() %>"><% $row->{step} %></td>
+        <td class=" <% $row->{lev} . $eo->() %>"><% $row->{service_key} %></td>
 %    if( $debug ) {
         <td class="<% $row->{lev} . $eo->() %>"><% $row->{pid} %></td>
 %    }
-        <td class="<% $row->{lev} . $eo->()  %>"><% $debug ? ( $row->{ts} . '.' . (split/\./, $row->{t})[1] ) : $row->{ts} %></td>
-        <td class="<% $row->{lev} . $eo->()  %>"><% $row->{text} %></td>
+        <td class="timestamp <% $row->{lev} . $eo->()  %>"><% $debug ? ( $row->{ts} . '.' . (split/\./, $row->{t})[1] ) : $row->{ts} %></td>
+        <td class="message <% $row->{lev} . $eo->()  %>"><% $row->{text} %></td>
         <td class="<% $row->{lev} . $eo->()  %>">
 % if( $row->{datalen} ) {
 %     if( $row->{more}->{more} ) {
@@ -139,7 +304,7 @@ Exec:
 %   }
 
 %   if( $row->{milestone} ) {
-        <tr><td colspan=4> <hr /></td></tr>
+       <!--  <tr><td colspan=4> <hr /><p></p></td></tr> -->
 %   }
 
 %   $k++;
@@ -148,3 +313,4 @@ Exec:
 </table>
 </div>
 </body>
+
