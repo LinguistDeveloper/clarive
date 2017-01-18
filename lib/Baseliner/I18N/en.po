@@ -6827,15 +6827,15 @@ msgid "Not purging until %1"
 msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "Deleted %1 debug lines of job %2 "
-msgstr ""
-
-#: lib/BaselinerX/Service/Purge.pm
-msgid "Purging %1 auth events"
+msgid "Purging %1 ok events"
 msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
 msgid "Purging %1 ko events"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Purging %1 auth events"
 msgstr ""
 
 #: lib/BaselinerX/Service/RenameItems.pm

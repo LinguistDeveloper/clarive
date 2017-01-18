@@ -5,6 +5,7 @@ use Baseliner::Sugar qw(event_new);
 use BaselinerX::Type::Model::ConfigStore;
 use Baseliner::JobLogger;
 use Baseliner::RuleRunner;
+use List::Util qw(first);
 use Try::Tiny;
 use v5.10;
 use experimental 'autoderef';
@@ -410,6 +411,12 @@ sub gen_job_name {
     return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
 }
 
+sub running_statuses {
+    my $self = shift;
+
+    return (qw/RUNNING PAUSED TRAPPED TRAPPED_PAUSED/);
+}
+
 sub is_active {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
@@ -429,9 +436,11 @@ sub is_failed {
 
 sub is_running {
     my $self = shift;
-    if( my $status = $self->load->{status} ) {
-        return 1 if $status =~ /RUNNING|PAUSED|TRAPPED|TRAPPED_PAUSED/;
+
+    if ( my $status = $self->load->{status} ) {
+        return 1 if first { $status eq $_ } $self->running_statuses;
     }
+
     return 0;
 }
 
