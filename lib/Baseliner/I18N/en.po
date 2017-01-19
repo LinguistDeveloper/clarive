@@ -13677,6 +13677,14 @@ msgstr ""
 msgid "Exclude Content Regex"
 msgstr ""
 
+#: root/forms/fail.js
+msgid "Error Message"
+msgstr ""
+
+#: root/forms/fail.js
+msgid "abort here"
+msgstr ""
+
 #: root/forms/file_foreach.js
 msgid "Path Mode"
 msgstr ""

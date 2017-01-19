@@ -892,6 +892,7 @@ register 'statement.fail' => {
     text => _locl('FAIL'),
     data => { msg => 'abort here' },
     icon => '/static/images/icons/error_red.svg',
+    form => '/forms/fail.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
