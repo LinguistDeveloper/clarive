@@ -7254,10 +7254,6 @@ msgstr ""
 msgid "$self->{label}"
 msgstr ""
 
-#: lib/BaselinerX/Type/Menu.pm
-msgid "$title"
-msgstr ""
-
 #: lib/BaselinerX/Type/Model/ConfigStore.pm
 msgid "Could not find metadata for the key '%1' in the registry."
 msgstr ""

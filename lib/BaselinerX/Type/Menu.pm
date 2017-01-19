@@ -54,38 +54,49 @@ sub ext_menu {
     my $class = lc $self->{id};
     $class =~ s{\s+}{-}g;
 
+    my $handler;
     my $comp_data = $self->comp_data;
     $comp_data->{tab_cls} = "ui-tab-$class";
+    $comp_data->{tab_icon} //= $icon;
+    $comp_data->{title}    //= $title;
 
-    if( defined $self->{url} ) {
-        $comp_data->{tab_icon} //= $icon;
-        $comp_data = _encode_json( $comp_data );
-        $ret->{handler}=\"function(){ Baseliner.addNewTab('$self->{url}', _('$title'), $comp_data ); }";
+    if ( defined $self->{url} ) {
+        $comp_data->{url}  = $self->{url};
+        $comp_data->{mode} = 'url';
     }
-    elsif( defined $self->{url_run} ) {
-        $ret->{handler}=\"function(){ Baseliner.runUrl('$self->{url_run}'); }";
+    elsif ( defined $self->{url_run} ) {
+        $comp_data->{url}  = $self->{url_run};
+        $comp_data->{mode} = 'run';
     }
-    elsif( defined $self->{url_eval} ) {
-        $ret->{handler}=\"function(){ Baseliner.evalUrl('$self->{url_eval}'); }";
+    elsif ( defined $self->{url_eval} ) {
+        $comp_data->{url}  = $self->{url_eval};
+        $comp_data->{mode} = 'eval';
     }
-    elsif( defined $self->{url_browser_window} ) {
-        $ret->{handler}=\"function(){ Baseliner.addNewBrowserWindow('$self->{url_browser_window}', _('$title') ); }";
+    elsif ( defined $self->{url_browser_window} ) {
+        $comp_data->{url}  = $self->{url_browser_window};
+        $comp_data->{mode} = 'browserWindow';
     }
-    elsif( defined $self->{url_iframe} ) {
-        $comp_data->{tab_icon} //= $icon;
-        $comp_data = _encode_json( $comp_data );
-        $ret->{handler}=\"function(){ Baseliner.addNewIframe('$self->{url_iframe}', _('$title'), $comp_data ); }";
+    elsif ( defined $self->{url_iframe} ) {
+        $comp_data->{url}  = $self->{url_iframe};
+        $comp_data->{mode} = 'iframe';
     }
-    elsif( defined $self->{url_comp} ) {
-        $comp_data->{tab_icon} //= $icon;
-        $comp_data = _encode_json( $comp_data );
-        $ret->{handler}=\"function(){  Baseliner.addNewTabComp('$self->{url_comp}', _('$title'), $comp_data ); }";
+    elsif ( defined $self->{url_comp} ) {
+        $comp_data->{url}  = $self->{url_comp};
+        $comp_data->{mode} = 'comp';
     }
-    elsif( defined $self->{handler} ) {
-        $ret->{handler}=\"$self->{handler}";
+    elsif ( defined $self->{handler} ) {
+        $comp_data->{mode} = 'handler';
+        $handler = $self->{handler};
     }
-    elsif( ! @children ) {
-        $ret->{handler}=\"function() { Ext.Msg.alert('Error', 'No action defined'); } ";
+    elsif ( !@children ) {
+        $comp_data->{mode} = '';
+    }
+
+    my $data_json = _encode_json($comp_data);
+    if ($comp_data->{mode} eq 'handler'){
+        $ret->{handler} = \"$handler"
+    }else{
+        $ret->{handler} = \"function(){  Cla.dispatcherMenu($data_json); }";
     }
     $ret->{menu} = { ignoreParentClicks=>\'1', items=>\@children } if(@children);
     $ret->{menu_count} = scalar(@children);
