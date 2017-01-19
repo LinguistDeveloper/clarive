@@ -128,8 +128,8 @@ sub rotate {
 
     for($i = $self->{'Count'}; $i > 1; $i--) {
         $j = $i - 1;
-        my $date;
-        my @files = Path::Class::dir( $ENV{CLARIVE_BASE}.'/logs//' )->children;
+        my $date = '';
+        my @files = Path::Class::dir( $dir )->children;
         for(@files){
             my $quoted = quotemeta $curr;
             if ( $i == 3 && $_ =~ qr/^$quoted\.3\.(?<date>.*)\.gz$/ ) {
@@ -161,7 +161,7 @@ sub rotate {
         my @stat = stat $curr;
         chmod( $stat[2], $next ) or carp "error: chmod failed: ($next)";
         utime( $stat[8], $stat[9], $next ) or carp "error: failed: ($next)";
-        sleep 15;
+        sleep($ENV{BASELINER_LOG_ROTATE_SLEEP} // 15);
         chown( $stat[4], $stat[5], $next ) or carp "error: chown failed: ($next)";
     }
 
