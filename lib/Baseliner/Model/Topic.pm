@@ -1019,9 +1019,8 @@ sub update {
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
 
-                    if ($p->{title}) {
-                        $p->{title} =~ s/-->/->/;
-                        $p->{title} = _strip_html($p->{title}); #fix close comments in html templates
+                    if ( $p->{title} ) {
+                        $p->{title} = $self->_format_topic_title( $p->{title} );
                     }
 
                     my ($topic) = $self->save_data($meta, undef, $p);
@@ -1090,8 +1089,11 @@ sub update {
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
-                $p->{title} =~ s/-->/->/ if $p->{title}; #fix close comments in html templates
-                $p->{title} = _strip_html($p->{title}) if ($p->{title});
+
+                if ( $p->{title} ) {
+                    $p->{title} = $self->_format_topic_title( $p->{title} );
+                }
+
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
 
                 $topic_mid    = $topic->mid;
@@ -4538,6 +4540,16 @@ sub build_in_and_nin_query {
     }
 
     return $query;
+}
+
+sub _format_topic_title {
+    my ( $self, $title ) = @_;
+
+    $title =~ s/-->/->/;
+    $title = _strip_html($title);    #fix close comments in html templates
+    $title =~ tr/\n/ /;
+
+    return $title;
 }
 
 sub _get_mid_files_from_fields {
