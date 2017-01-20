@@ -3301,8 +3301,8 @@ Cla.generateFieldletFilter = function(meta, mids) {
 
 Baseliner.render_checkbox = function(v){
     return v
-        ? '<img src="/static/images/icons/checkbox.svg">'
-        : '<img src="/static/images/icons/checkbox-empty.svg">';
+        ? '<img src="' + IC('checkbox') + '" />'
+        : '<img src="' + IC('checkbox-empty') + '" />';
 };
 Baseliner.render_avatar = function(v){
     return '<img width="16" src="/user/avatar/'+v+'/checkbox.svg">'
