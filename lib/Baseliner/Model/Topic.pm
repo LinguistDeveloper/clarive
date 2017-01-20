@@ -3416,6 +3416,13 @@ sub get_meta_permissions {
 
     $meta = [ grep { !$hidden_fields{ $_->{id_field} } } _array $meta];
 
+    foreach my $field (@$meta) {
+        if ( $field->{custom_columns} ) {
+            push @$meta,
+              { id_field => $field->{id_field} . '#custom_columns', readonly => $field->{readonly}, key => 'internal' };
+        }
+    }
+
     return $meta;
 }
 

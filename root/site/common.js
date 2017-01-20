@@ -2773,8 +2773,8 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                 }
                 else {
                     if (record._custom_columns) {
-                        form_data._custom_columns = form_data._custom_columns || {};
-                        form_data['_custom_columns'] = $.extend(record._custom_columns, form_data._custom_columns);
+                        form_data[obj.name + '#custom_columns'] = record._custom_columns[obj.name];
+
                         delete record._custom_columns;
                     }
 

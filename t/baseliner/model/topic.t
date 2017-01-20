@@ -2623,6 +2623,156 @@ subtest 'get_meta_permissions: returns meta with filtered permissions' => sub {
     cmp_deeply $release_field->{readonly}, \0;
 };
 
+subtest 'get_meta_permissions: returns meta with filtered permissions and custom fields' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $status  = TestUtils->create_ci( 'status', name => 'New', type => 'I' );
+    my $project = TestUtils->create_ci_project;
+
+    my $id_changeset_rule = TestSetup->create_rule_form(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "title",
+                    },
+                    "key" => "fieldlet.system.title",
+                    name  => 'Title',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "status_new",
+                        "bd_field" => "id_category_status",
+                    },
+                    "key" => "fieldlet.system.status_new",
+                    name  => 'Status',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "selector1",
+                        custom_columns => [
+                            {
+                                column_type => 'text',
+                                id_column => 'key',
+                            }
+                        ]
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Selector1',
+                }
+            },
+            {
+                "attributes" => {
+                    "data" => {
+                        "id_field" => "selector2",
+                        custom_columns => [
+                            {
+                                column_type => 'text',
+                                id_column => 'key',
+                            }
+                        ]
+                    },
+                    "key" => "fieldlet.system.list_topics",
+                    name  => 'Selector2',
+                }
+            },
+        ],
+    );
+    my $id_changeset_category =
+      TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
+
+    my $id_role = TestSetup->create_role(
+        actions => [
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'title'
+                    }
+                ]
+            },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'status_new'
+                    }
+                ]
+            },
+            {
+                action => 'action.topicsfield.read',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'selector1'
+                    }
+                ]
+            },
+            {
+                action => 'action.topicsfield.write',
+                bounds => [
+                    {
+                        id_category => $id_changeset_category,
+                        id_status   => $status->id_status,
+                        id_field    => 'selector2'
+                    }
+                ]
+            },
+        ]
+    );
+
+    my $user = TestSetup->create_user( project_security => { $id_role => { project => $project->mid } } );
+
+    my $changeset_mid = TestSetup->create_topic(
+        project     => $project,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        status      => $status
+    );
+
+    my $topic_meta = Baseliner::Model::Topic->new->get_meta( $changeset_mid, $id_changeset_category, $user->username );
+
+    my $meta = $model->get_meta_permissions(
+        'data' => {
+            'topic_mid' => $changeset_mid,
+            'category'  => {
+                'id'   => $id_changeset_category,
+                'name' => 'Changeset',
+            },
+            id_category       => $id_changeset_category,
+            'category_status' => {
+                'mid'  => $status->mid,
+                'name' => 'New',
+            },
+            id_category_status => $status->mid,
+            _project_security  => { project => $project->mid }
+        },
+        meta     => $topic_meta,
+        username => $user->username
+    );
+
+    my ($selector1_field) = grep { $_->{id_field} && $_->{id_field} eq 'selector1' } @$meta;
+    cmp_deeply $selector1_field->{readonly}, \1;
+    my ($selector1_field_custom_columns) = grep { $_->{id_field} && $_->{id_field} eq 'selector1#custom_columns' } @$meta;
+    cmp_deeply $selector1_field_custom_columns->{readonly}, \1;
+
+    my ($selector2_field) = grep { $_->{id_field} && $_->{id_field} eq 'selector2' } @$meta;
+    cmp_deeply $selector2_field->{readonly}, \0;
+    my ($selector2_field_custom_columns) = grep { $_->{id_field} && $_->{id_field} eq 'selector2#custom_columns' } @$meta;
+    cmp_deeply $selector2_field_custom_columns->{readonly}, \0;
+};
+
 subtest 'get_categories_permissions: returns all categories for root' => sub {
     _setup();
 
