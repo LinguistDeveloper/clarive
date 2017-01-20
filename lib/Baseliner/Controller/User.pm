@@ -167,7 +167,8 @@ sub infodetail : Local {
                         $str = $project->{name} . ' (' . $project->{nature} . ')';
                     }
                     else {
-                        $str = $project->{name};
+                        $str = sprintf( '<img style="vertical-align:middle;" src="%s"/> %s', $project->icon,
+                            $project->name );
                     }
                     push @projects, $str;
                 }

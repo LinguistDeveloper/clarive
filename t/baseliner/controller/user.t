@@ -602,6 +602,45 @@ subtest 'projects_list: shows only the projects actives' => sub {
     is $tree[0]->{data}->{id_project}, $project->mid;
 };
 
+subtest 'infodetail: gets natures with icon' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci_project( active => '1' );
+    my $project_icon = $project->icon();
+    my $id_role      = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req      => { params => { username => 'user1' } },
+        username => 'root'
+    );
+
+    $controller->infodetail($c);
+    my $data = $c->stash->{json}->{data}[0];
+
+    like $data->{projects}->[0]->{name}, qr/$project_icon/;
+};
+
+subtest 'infodetail: gets projects with icon' => sub {
+    _setup();
+
+    my $nature      = TestUtils->create_ci('nature');
+    my $nature_icon = $nature->icon();
+    my $id_role     = TestSetup->create_role();
+    TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $nature );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req      => { params => { username => 'user1' } },
+        username => 'root'
+    );
+    $controller->infodetail($c);
+    my $data = $c->stash->{json}->{data}[0];
+
+    like $data->{projects}->[0]->{name}, qr/$nature_icon/;
+};
+
 done_testing;
 
 sub _build_c {
