@@ -23,14 +23,13 @@
     };
 </%perl>
 <head>
-    <& '/site/nocache.html' &>
-   <title><% $title %>
-    </title>
-    <style>
-    <& /static/geek.css &>
-    </style>
-    <style>
- #project tr,
+  <& '/site/nocache.html' &>
+
+  <title><% $title %></title>
+
+  <style><& /static/geek.css &></style>
+  <style>
+    tr,
     td,
     body {
         font: normal 10px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -144,12 +143,12 @@
 
     .info-odd,
     .info-even,
-.warn-odd,
- .warn-even, 
-.error-odd,
-.error-even,
-.debug-odd,
-.debug-even {
+    .warn-odd,
+    .warn-even,
+    .error-odd,
+    .error-even,
+    .debug-odd,
+    .debug-even {
         background-color: #ffffff;
     }
 
@@ -225,9 +224,10 @@
         font-size: 14px;
         background: none !important;
         border: none !important;
-    }    
-</style>
-    </head>
+    }
+  </style>
+</head>
+
 <body>
 <center>
 <div id="top">
