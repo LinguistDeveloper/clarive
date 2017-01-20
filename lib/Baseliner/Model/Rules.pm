@@ -1668,6 +1668,18 @@ sub restore_rule {
     mdb->rule_version->update({ id => $p{id_rule}, deleted => '1' }, { '$unset' => { 'deleted' => ''}, '$set' => { 'ts' => $ts }});
 }
 
+sub check_duplicated_rule {
+    my $self = shift;
+    my ( $rule_name, $rule_type, $id_rule ) = @_;
+
+    die 'rule_name and rule_name required' unless $rule_name && $rule_type;
+
+    my $where = { rule_type => $rule_type, rule_name => $rule_name, $id_rule ? ( id => mdb->nin($id_rule) ) : () };
+    my $found = mdb->rule->find_one($where);
+
+    return $found ? 1 : 0;
+}
+
 sub save_rule {
     my ($self,%params)=@_;
 

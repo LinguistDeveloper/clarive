@@ -17,6 +17,90 @@ use Baseliner::Utils qw(_load);
 
 use_ok 'Baseliner::Controller::Rule';
 
+subtest 'save: gets error message when rule is created if the rule is duplicated' => sub {
+    _setup();
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => {
+            params => {
+                rule_id   => '',
+                rule_name => 'Rule Name',
+                rule_type => 'report',
+                rule_when => 'post-offline',
+                rule_desc => 'Rule Desc',
+                rule_tree => []
+            }
+        }
+    );
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'Rule Name',
+        rule_type => 'report',
+        rule_when => 'post-offline',
+        rule_desc => 'Rule Desc',
+        rule_tree => []
+    );
+
+    my $controller = _build_controller();
+
+    $controller->save($c);
+
+    my $result = $c->stash->{json};
+
+    cmp_deeply $result,
+      {
+        success => \0,
+        msg     => "The rule of type `report` already exists with name `Rule Name`, please introduce another name",
+      };
+};
+
+subtest 'save: gets error message when rule is updated if the rule is duplicated' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_name => 'Rule Name',
+        rule_type => 'report',
+        rule_when => 'post-offline',
+        rule_desc => 'Rule Desc',
+        rule_tree => []
+    );
+
+    my $id_rule1 = TestSetup->create_rule(
+        rule_name => 'Rule Name',
+        rule_type => 'pipeline',
+        rule_when => 'post-offline',
+        rule_desc => 'Rule Desc',
+        rule_tree => []
+    );
+
+    my $c = mock_catalyst_c(
+        username => 'user',
+        req      => {
+            params => {
+                rule_id   => $id_rule1,
+                rule_name => 'Rule Name',
+                rule_type => 'report',
+                rule_when => 'post-offline',
+                rule_desc => 'Rule Desc',
+                rule_tree => []
+            }
+        }
+    );
+
+    my $controller = _build_controller();
+
+    $controller->save($c);
+
+    my $result = $c->stash->{json};
+
+    cmp_deeply $result,
+      {
+        success => \0,
+        msg     => "The rule of type `report` already exists with name `Rule Name`, please introduce another name",
+      };
+};
+
 subtest 'palette: returns fieldlets with active set to true' => sub {
     _setup();
 

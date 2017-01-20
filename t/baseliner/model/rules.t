@@ -24,6 +24,43 @@ use Baseliner::Utils qw(_retry);
 
 use_ok 'Baseliner::Model::Rules';
 
+subtest 'check_duplicated_rule: duplicated rule when have same name and same type and no id rule' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $rule_id = TestSetup->create_rule( rule_name => 'Rule', rule_type => 'Rule_type' );
+
+    my $exists = $model->check_duplicated_rule( 'Rule', 'Rule_type' );
+
+    ok $exists;
+};
+
+subtest 'check_duplicated_rule: not duplicated rule when have same name and same type and same id rule' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $rule_id = TestSetup->create_rule( rule_name => 'Rule', rule_type => 'Rule_type' );
+
+    my $exists = $model->check_duplicated_rule( 'Rule', 'Rule_type', $rule_id );
+
+    ok !$exists;
+};
+
+subtest 'check_duplicated_rule: duplicated rule when have same name and same type and diferent id rule' => sub {
+    _setup();
+
+    my $model = _build_model();
+
+    my $rule_id   = TestSetup->create_rule( rule_name => 'Rule',   rule_type => 'Rule_type' );
+    my $rule_id_2 = TestSetup->create_rule( rule_name => 'Rule_2', rule_type => 'Rule_type' );
+
+    my $exists = $model->check_duplicated_rule( 'Rule', 'Rule_type', $rule_id_2 );
+
+    ok $exists;
+};
+
 subtest 'does compile when config flag is conditional and rule is on' => sub {
     _setup();
 
