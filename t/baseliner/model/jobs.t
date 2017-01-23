@@ -217,15 +217,19 @@ subtest 'monitor: returns correct percentage after restart' => sub {
 
     my $changeset_mid = TestSetup->create_changeset();
     my $project       = TestUtils->create_ci_project();
-    my $id_role       = TestSetup->create_role();
-    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $id_role = TestSetup->create_role(
+        actions => [
+            { action => 'action.job.change_step_status', bounds => [ {} ] },
+        ]
+    );
+    my $user = TestSetup->create_user( username => 'foo', id_role => $id_role, project => $project );
 
     my $job = _create_job( changesets => [$changeset_mid] );
     $job->save;
     capture {
-        $job->reset( { username => $user->name, step => 'RUN', last_finish_status => 'ERROR' } );
+        $job->reset( { username => $user->username, step => 'RUN', last_finish_status => 'ERROR' } );
     };
-    $job->save;
+
     mdb->job_log->insert(
         {
             mid        => $job->mid,

@@ -4848,6 +4848,15 @@ msgid "Job %1 is currently running (%2) and cannot be rerun"
 msgstr ""
 
 #: lib/BaselinerX/CI/job.pm
+msgid "User %1 has no permissions to re-run jobs"
+msgstr "El usuario %1 no tiene permisos para reiniciar el pase"
+
+#: lib/BaselinerX/CI/job.pm
+msgid "User %1 has no permissions to rerun and change status jobs"
+msgstr ""
+"El usuario %1 no tiene permisos para reiniciar un pase con cambio de estado"
+
+#: lib/BaselinerX/CI/job.pm
 msgid "Job restarted by user %1, execution %2, step %3"
 msgstr "Pase reiniciado por el usuario %1, ejecución %2, paso %3"
 
@@ -5823,6 +5832,10 @@ msgstr "Job Retencion Pausada"
 #: lib/BaselinerX/Job.pm
 msgid "Job Expired"
 msgstr "Job Expirado"
+
+#: lib/BaselinerX/Job.pm
+msgid "Change job status on Post step"
+msgstr "Cambiar el estado del pase en el paso Post"
 
 #: lib/BaselinerX/Lc.pm
 msgid "Show provider tags in the Lifecycle tree"
@@ -10179,7 +10192,7 @@ msgstr "Pase Reiniciado"
 
 #: root/comp/monitor_grid.js
 msgid "Could not rerun the job: %1"
-msgstr ""
+msgstr "No se puede reiniciar el pase: %1"
 
 #: root/comp/monitor_grid.js
 msgid "Reschedule"
@@ -16016,6 +16029,17 @@ msgstr "destino"
 
 #~ msgid "Job %1 does not need rollback"
 #~ msgstr "Pase %1 no necesita marcha atrás"
+
+#~ msgid "Rerun Job"
+#~ msgstr "Reiniciar Pase"
+
+#~ msgid "User %1 not have permissions to re-run jobs"
+#~ msgstr "El usuario %1 no tiene permisos para reiniciar el pase"
+
+#~ msgid "User %1 not have permissions to rerun and change status jobs"
+#~ msgstr ""
+#~ "El usuario %1 no tiene permisos para reiniciar un pase con el estado "
+#~ "cambiado"
 
 #~ msgid "REJECTED"
 #~ msgstr "RECHAZADO"

@@ -194,6 +194,16 @@ register 'event.job.expired' => {
     notify      => { scope => ['project'] }
 };
 
+register 'action.job.change_step_status' => {
+    name    => _locl('Change job status on Post step'),
+    extends => ['action.job.restart'],
+    bounds  => [
+        {   key     => 'bl',
+            name    => 'Environment',
+            handler => 'Baseliner::Model::Jobs=bounds_baselines',
+        }
+    ]
+};
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
