@@ -843,6 +843,36 @@ if( Prefs.routing ) {
         Baseliner.errorWin(_('Error Rendering Tab Component'), str);
     };
 
+    Cla.dispatcherMenu = function( dataMenu ) {
+        var modes = {
+            url: function(){
+                Baseliner.addNewTab( dataMenu.url, _(dataMenu.title), dataMenu );
+            },
+            run: function() {
+                Baseliner.runUrl( dataMenu.url );
+            },
+            eval: function() {
+                Baseliner.evalUrl( dataMenu.url );
+            },
+            browserWindow: function() {
+                Baseliner.addNewBrowserWindow( dataMenu.url, _(dataMenu.title) );
+            },
+            iframe: function() {
+                Baseliner.addNewIframe( dataMenu.url, _(dataMenu.title), dataMenu );
+            },
+            comp: function() {
+                Baseliner.addNewTabComp( dataMenu.url, _(dataMenu.title), dataMenu );
+            }
+        }
+
+        if (dataMenu.mode){
+            if ( typeof modes[dataMenu.mode] !== 'function' ){
+                throw new Error('Invalid mode');
+            }
+            modes[dataMenu.mode]();
+        }
+    };
+
     //adds a new tab from a function() type component
     Baseliner.addNewTabComp = function( comp_url, ptitle, params, json_key ){
         var req_params = params != undefined ? params : {};
