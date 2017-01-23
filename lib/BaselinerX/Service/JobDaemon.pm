@@ -20,6 +20,7 @@ has 'proc_list' => ( is=>'rw', isa=>'ArrayRef', default=>sub { [] } );
 
 register 'service.job.daemon' => {
     name    => _locl('Watch for new jobs'),
+    show_in_palette => 0,
     icon => '/static/images/icons/service-job-daemon.svg',
     config  => 'config.job.daemon',
     daemon  => 1,

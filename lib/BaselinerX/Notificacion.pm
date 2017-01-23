@@ -44,6 +44,7 @@ register 'config.comm.email' => {
 register 'service.daemon.email' => {
     name => _locl('Email Daemon'),
     config => 'config.comm.email',
+    show_in_palette => 0,
     handler => sub {
         my $self = shift;
         require Baseliner::Comm::Email;
@@ -54,6 +55,7 @@ register 'service.daemon.email' => {
 register 'service.email.flush' => {
     name => _locl('Email Flush Queue Once'),
     config => 'config.comm.email',
+    show_in_palette => 0,
     handler => sub {
         my $self = shift;
         require Baseliner::Comm::Email;

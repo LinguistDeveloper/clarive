@@ -29,6 +29,7 @@ register 'config.dispatcher' => {
 register 'service.dispatcher' => {
     name    => _locl('Dispatcher Service'),
     config  => 'config.dispatcher',
+    show_in_palette => 0,
     icon => '/static/images/icons/service-dispatcher.svg',
     daemon => 1,
     handler => \&run,

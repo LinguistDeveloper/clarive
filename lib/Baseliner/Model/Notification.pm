@@ -57,6 +57,7 @@ register 'service.daemon.email' => {
     name => _locl('Email Daemon'),
     icon => '/static/images/icons/service-daemon-email.svg',
     config => 'config.comm.email',
+    show_in_palette => 0,
     handler => sub {
         my $self = shift;
         require Baseliner::Comm::Email;

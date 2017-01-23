@@ -70,6 +70,7 @@ register 'service.topic.inactivity_daemon' => {
     name    => _locl('Watch for topics without activity in statuses'),
     icon => '/static/images/icons/service-topic-inactivity.svg',
     config  => 'config.job.daemon',
+    show_in_palette => 0,
     daemon  => 1,
     handler => \&inactivity_daemon,
 };

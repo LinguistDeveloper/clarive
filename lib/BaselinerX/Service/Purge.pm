@@ -55,6 +55,7 @@ register 'config.purge' => {
 register 'service.purge.daemon' => {
     daemon => 1,
     name => _locl('Purge Daemon'),
+    show_in_palette => 0,
     icon => '/static/images/icons/service-purge-daemon.svg',
     scheduled => 1,
     config    => 'config.daemon.purge',
@@ -63,6 +64,7 @@ register 'service.purge.daemon' => {
 
 register 'service.purge.run_once' => {
     handler => \&run_once,
+    show_in_palette => 0,
 };
 
 sub daemon_handler {
