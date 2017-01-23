@@ -765,6 +765,7 @@ sub build_job_contents {
         my @mids = map { $_->{mid} } Util->_array( $self->changesets );
         $jc->{cs_comments} = { map { $_->{mid} => $config->{changeset_comment_field} } grep { $_->{$config->{changeset_comment_field}} } mdb->topic->find({ mid => mdb->in(@mids)})->fields({ _id => 0, $config->{changeset_comment_field} => 1, mid => 1 })->all };
     }
+    $jc->{list_release_cis} //= $self->releases;
     $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
     $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
     $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
