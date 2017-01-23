@@ -2899,7 +2899,7 @@ sub _create_topic_selector_form {
 subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
     _setup();
 
-    my $bl = TestUtils->create_ci('bl', name => 'TEST', bl => 'TEST', moniker => 'TEST');
+    my $bl = TestUtils->create_ci( 'bl', name => 'TEST', bl => 'TEST', moniker => 'TEST' );
     my $project = TestUtils->create_ci_project( bls => [ $bl->mid ] );
 
     my $id_role = TestSetup->create_role();
@@ -2913,34 +2913,40 @@ subtest 'get_menu_deploy: build menu deploy in topic view' => sub {
       TestSetup->create_category( name => 'Changeset', id_rule => $id_changeset_rule, id_status => $status->mid );
 
     my $topic_mid = TestSetup->create_topic(
-        project => $project,
-        status => $status,
-        username => $user->username,
+        project     => $project,
+        status      => $status,
+        username    => $user->username,
         id_category => $id_changeset_category,
-        title  => "Topic"
+        title       => "Topic"
     );
 
-    my $workflow = [ { id_role => $id_role, id_status_from => $status->mid, id_status_to => $status1->mid, job_type => 'promote' } ];
-    mdb->category->update( { id => "$id_changeset_category" }, { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
+    my $workflow =
+      [ { id_role => $id_role, id_status_from => $status->mid, id_status_to => $status1->mid, job_type => 'promote' } ];
+    mdb->category->update( { id => "$id_changeset_category" },
+        { '$set' => { workflow => $workflow }, '$push' => { statuses => $status1->mid } } );
 
     my $controller = _build_controller();
     my $menu = $controller->get_menu_deploy( { topic_mid => $topic_mid, username => $user->username } );
 
     cmp_deeply $menu,
       {
-        demotable => ignore(),
+        demotable  => ignore(),
         deployable => ignore(),
-        menu => [{
-            eval => {
-                id => ignore(),
-                id_project => ignore(),
-                job_type => 'promote',
-                url => '/comp/lifecycle/deploy.js',
-            },
-            icon => "/static/images/icons/arrow-down-short-color.svg",
-            id_status_from => $status->mid,
-            text => ignore(),
-        }],
+        menu       => [
+            {
+                eval => {
+                    id         => ignore(),
+                    id_project => ignore(),
+                    job_type   => 'promote',
+                    url        => '/comp/lifecycle/deploy.js',
+                },
+                icon           => "/static/images/icons/arrow-down-short-color.svg",
+                id_status_from => $status->mid,
+                text           => ignore(),
+                bl_to          => ignore(),
+                id_status_to   => ignore()
+            }
+        ],
         promotable => ignore(),
       };
 };

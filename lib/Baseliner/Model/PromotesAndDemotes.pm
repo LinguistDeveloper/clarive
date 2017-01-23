@@ -198,6 +198,8 @@ sub _build_menus {
                 url        => '/comp/lifecycle/deploy.js',
             },
             id_status_from => $transition->{id_status_from},
+            id_status_to   => $transition->{status_to},
+            bl_to          => $transition->{bl_to},
             icon           => $icons->{ $transition->{job_type} }
           };
     }

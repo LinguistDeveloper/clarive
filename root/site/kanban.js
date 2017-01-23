@@ -121,7 +121,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 el.setHeight( max_height );  // so that the mask have the full length
                 var id_status = c.id_status;
                 if( dests[ id_status ] != true && id_status != id_status_current ) {
-                    var m = el.mask();
+                    el.setStyle('opacity', 0.4);
                     c.drop_available = false;
                 } else {
                     c.drop_available = true;
@@ -133,39 +133,28 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         });
         self.on('beforedrop', function(e){
             var col = e.column;
+            var portlet = e.panel;
+            var mid = portlet.mid;
+            var idCurrentStatus = portlet.id_status;
+            var dests = {};
+            Ext.each(self.workflow[mid], function(workflow) {
+                if (workflow.id_status_from == idCurrentStatus) {
+                    dests[workflow.id_status_to] = true;
+                }
+            });
             Ext.each( self.items.items, function(c) {
                 var el = c.getEl();
-                el.unmask();
                 el.setHeight('auto');
-                //c.doLayout();
+                var statusId = c.id_status;
+                if (dests[statusId] != true && statusId != idCurrentStatus) {
+                    el.setStyle('opacity', 1);
+                }
             });
             // send data to server
             var portlet = e.panel;
-            return portlet.change_status( col, function(res){
-                if( !res.success ) {
-                    Baseliner.warning( _('Kanban'), _(res.msg) );
-                    // send portlet back to where it came from
-                    var old_status = portlet.id_status;
-                    var old_column_id = self.column_by_status[ old_status ];
-                    var old_column = Ext.getCmp( old_column_id );
-                    if( old_column ) {
-                        old_column.add( portlet );
-                        old_column.doLayout();
-                    } else {
-                        portlet.destroy();
-                    }
-                } else {
-                    // update portlet data
-                    var previous_id_status = portlet.id_status;
-                    portlet.id_status = e.column.id_status;
-                }
-            });
-            //return true;
+
+            return portlet.change_status(col);
         });
-        /*
-        self.on('drop', function(e){
-        });
-        */
 
         Baseliner.Kanban.superclass.initComponent.call(this);
     },
@@ -228,8 +217,11 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     );
                 } else {
                     Baseliner.message( _('Success'), res.msg );
-                        if( Ext.isFunction(this.success) ) this.success(res);
-                        self.el.unmask();
+                    if (Ext.isFunction(this.success)) {
+                        this.success(res);
+                    }
+                    self.el.unmask();
+                    portletObj.id_status = newStatus;
                 }
             },
             function(res) {
@@ -274,7 +266,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         var self = this;
         Baseliner.ajaxEval( '/topic/kanban_status', { mid: self.topic_mid, topics: topics }, function(res){
             if( res.success ) {
-                //console.log( res.workflow );
                 var statuses = res.statuses;
                 var workflow = res.workflow;
                 var visible_status = res.visible_status;
@@ -451,7 +442,6 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         var comp = params.comp;
         comp.height = comp.height || 350;
         var title = comp.title || params.title || 'Portlet';
-        //comp.collapsible = true;
         var cols = self.items.items;
         var column_obj = self.findById( cols[col].id );
         var portlet = {
@@ -459,52 +449,97 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             autoHeight: true,
             header: false,
             footer: false,
-            //collapsible: true,
             title: _( title ),
             mid: params.mid,
             id_status: params.id_status,
-            //headerCfg: { style: 'background: #d44' },
             portlet_type: params.portlet_type,
             footerCfg: { hide: true },
-            //url_portlet: params.url_portlet,
             url_max: params.url_max,
-            //tools: Baseliner.portalTools,  // tools are visible when header: true
-            //collapsed: true,
             items: comp
         };
         var portlet_obj = column_obj.add( portlet );
-        portlet_obj.change_status = function(col, cb){
+        portlet_obj.change_status = function(col, cb) {
             var oldStatus = portlet_obj.id_status;
             var newStatus = col.id_status;
-            if ( newStatus != portlet_obj.id_status ){
-                // check if we deploy
-                if( col.bl && col.bl!='*' ) {
-                    var fake_node = { attributes:{ data: {} } };
-                    var params = { topic_mid: portlet_obj.mid, title: _( portlet_obj.title ), _parent_grid: self.id };
-                    Baseliner.ajaxEval( '/topic/view', params, function(topic_panel) {
-                        if(topic_panel.menu_deploy.length > 0){
-                            var node = topic_panel.menu_deploy[0].topic;
-                            if (node['promotable'][col.bl] || node['demotable'][col.bl] || node['deployable'][col.bl]){
-                                Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: node } );
-                                return true;
-                            } else {
-                                self.changeStatusTopic(portlet_obj, newStatus, oldStatus);
+
+            if (newStatus == portlet_obj.id_status) {
+                return;
+            }
+
+            // check if we deploy
+            if (col.bl && col.bl != '*') {
+                Baseliner.ajaxEval('/topic/view', {
+                    topic_mid: portlet_obj.mid,
+                    title: _(portlet_obj.title),
+                    _parent_grid: self.id
+                }, function(topic_panel) {
+                    var node;
+                    var canDeployManually = false;
+
+                    Ext.each(topic_panel.menu_deploy, function(item) {
+                        Ext.each(topic_panel.status_items_menu, function(status) {
+                            if (status.id_status_to == item.status) {
+                                canDeployManually = true;
                             }
-                        } else {
-                            self.changeStatusTopic(portlet_obj, newStatus, oldStatus);
+                        });
+
+                        if (item.bl == col.bl) {
+                            node = item.topic;
+                            return false;
                         }
                     });
-                } else {
-                    Baseliner.ajaxEval( '/topic/change_status', { _handle_res: true, mid: portlet_obj.mid, old_status: oldStatus, new_status: newStatus }, function(res){
-                        Baseliner.message( _('Success'), res.msg );
-                        if( Ext.isFunction(this.success) ) this.success(res);
-                    });
-                    return true;
-                }
+
+                    if (node) {
+                        if (canDeployManually) {
+                            Ext.Msg.show({
+                                title: _('Deployment'),
+                                msg: _('You have permission to change status with no deploy. Do you want to deploy with a job?'),
+                                closable: false,
+                                buttons: {
+                                    ok: _('Yes'),
+                                    no: _('No, change status logically'),
+                                    cancel: _('Cancel')
+                                },
+                                fn: function(btn) {
+                                    if (btn == 'ok') {
+                                        Baseliner.add_tabcomp('/job/create', _('New Job'), {
+                                            node: node
+                                        });
+                                    } else if (btn == 'no') {
+                                        self.changeStatusTopic(portlet_obj, newStatus, oldStatus);
+                                    } else {
+                                        return;
+                                    }
+                                }
+                            });
+                        } else {
+                            Baseliner.add_tabcomp('/job/create', _('New Job'), {
+                                node: node
+                            });
+                        }
+                    } else {
+                        self.changeStatusTopic(portlet_obj, newStatus, oldStatus);
+                    }
+                });
+            } else {
+                Baseliner.ajaxEval('/topic/change_status', {
+                    _handle_res: true,
+                    mid: portlet_obj.mid,
+                    old_status: oldStatus,
+                    new_status: newStatus
+                }, function(res) {
+                    Baseliner.message(_('Success'), res.msg);
+
+                    if (Ext.isFunction(this.success)) {
+                        this.success(res);
+                    }
+                });
+
+                return;
             }
         };
+
         return portlet_obj;
-        //column_obj.doLayout();
     }
 });
 

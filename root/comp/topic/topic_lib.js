@@ -921,6 +921,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 state_to: menu.eval.state_to
             };
             self.menu_deploy.push({
+                bl: menu.bl_to,
+                status: menu.id_status_to,
                 text: menu.text,
                 icon: menu.icon,
                 topic: topic,
