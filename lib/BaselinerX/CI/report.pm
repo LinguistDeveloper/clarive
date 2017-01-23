@@ -833,13 +833,19 @@ sub get_where {
                 }
                 elsif ( $type eq 'status' ) {
                     if ( $val->{value} && $val->{value} ne 'default' ) {
-                        if ( exists $where->{$id} ) {
-                            $where->{$id}->{ $val->{oper} } = $val->{value};
+                        if ( $val->{oper} =~ /^(\$in|\$nin)$/ ) {
+                            my @values = _array_or_commas( $val->{value} );
+                            $cond = { $val->{oper} => [@values] };
                         }
                         else {
-                            $cond = { $val->{oper} => $val->{value} };
-                            $where->{$id} = $cond;
+                            if ( $val->{oper} ) {
+                                $cond = { $val->{oper} => $val->{value} };
+                            }
+                            else {
+                                $cond = $val->{value};
+                            }
                         }
+                        $where->{$id} = $cond;
                     }
                 }
                 elsif ( $type eq 'ci' ) {
@@ -1320,7 +1326,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
                             my $ci_extends;
                             if(exists $selects_ci_columns_collection_extends{$parse_key}){
                                 my @mid_extends = map { $_->{mid} } $ci->related( where => {collection => $selects_ci_columns_collection_extends{$parse_key}});
-                                $ci_extends = ci->new($mid_extends[0]);
+                                $ci_extends = ci->new($mid_extends[0]) if @mid_extends;
                             }
 
                             for my $ci_column (_array $selects_ci_columns{$parse_key}){
