@@ -403,7 +403,7 @@ sub dsl_build {
                 my $error_trap          = $attr->{error_trap};
                 my $trap_timeout        = $attr->{trap_timeout} || 0;
                 my $trap_timeout_action = $attr->{trap_timeout_action} // '';
-                my $trap_max_retry      = $attr->{trap_max_retry} // -1;
+                my $trap_max_retry      = $attr->{trap_max_retry} // 0;
                 my $trap_rollback       = $attr->{trap_rollback} // 1;
 
                 push @dsl, sprintf(<<'EOF', $trap_timeout, $trap_timeout_action, $trap_max_retry, $trap_rollback, $error_trap );
@@ -892,6 +892,7 @@ register 'statement.fail' => {
     text => _locl('FAIL'),
     data => { msg => 'abort here' },
     icon => '/static/images/icons/error_red.svg',
+    form => '/forms/fail.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{

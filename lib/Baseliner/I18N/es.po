@@ -13852,6 +13852,14 @@ msgstr "Excluir contenido"
 msgid "Exclude Content Regex"
 msgstr "Excluir contenido de la expresión regular"
 
+#: root/forms/fail.js
+msgid "Error Message"
+msgstr "Mensaje de error"
+
+#: root/forms/fail.js
+msgid "abort here"
+msgstr "abortar aquí"
+
 #: root/forms/file_foreach.js
 msgid "Path Mode"
 msgstr "Modo de Ruta"
