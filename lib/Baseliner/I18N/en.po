@@ -914,13 +914,12 @@ msgstr ""
 msgid "Could not find revision \"%1\""
 msgstr ""
 
-#: lib/Baseliner/Controller/GitTree.pm lib/Baseliner/Controller/Topic.pm
-#: lib/BaselinerX/Service/CreateJob.pm
+#: lib/Baseliner/Controller/GitTree.pm lib/BaselinerX/Service/CreateJob.pm
 msgid "Job %1 created ok"
 msgstr ""
 
 #: lib/Baseliner/Controller/GitTree.pm lib/Baseliner/Controller/Job.pm
-#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Service/CreateJob.pm
+#: lib/BaselinerX/Service/CreateJob.pm
 msgid "Error creating job: %1"
 msgstr ""
 
@@ -1080,6 +1079,10 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "No job contents"
+msgstr ""
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "The user %1 has created job %2 for %3"
 msgstr ""
 
 #: lib/Baseliner/Controller/Job.pm
@@ -2286,10 +2289,6 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm
 msgid "filter param is required"
-msgstr ""
-
-#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Service/CreateJob.pm
-msgid "The user %1 has created job %2 for %3 bl"
 msgstr ""
 
 #: lib/Baseliner/Controller/Topic.pm root/site/kanban.js
@@ -6280,6 +6279,10 @@ msgstr ""
 
 #: lib/BaselinerX/Service/CreateJob.pm
 msgid "Create a Job"
+msgstr ""
+
+#: lib/BaselinerX/Service/CreateJob.pm
+msgid "The user %1 has created job %2 for %3 bl"
 msgstr ""
 
 #: lib/BaselinerX/Service/DBServices.pm

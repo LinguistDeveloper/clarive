@@ -239,9 +239,11 @@ sub notify_event {
 
     my $ev_reg  = Baseliner::Core::Registry->get($event_key);
 
-    my $topic = $stash->{mid}
-        ? mdb->topic->find_one({ mid => "$stash->{mid}"}, { _txt=>0 })
-        : {};
+    my $topic;
+    if($stash->{mid}){
+        $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}, { _txt=>0 })
+    }
+    $topic = $topic ? $topic : {};
 
     my $config = config_get('config.notifications');
 

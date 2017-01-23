@@ -533,6 +533,9 @@ sub submit : Local {
             my $rule_version_tag     = $p->{rule_version_tag};
             my $rule_version_dynamic = $p->{rule_version_dynamic} && $p->{rule_version_dynamic} eq 'on' ? 1 : 0;
             my $job_stash            = try { _decode_json( $p->{job_stash} ) } catch { undef };
+            my $status_from          = $p->{status_from};
+            my $status_to            = $p->{status_to};
+            my $id_status_from       = $p->{id_status_from};
 
             if ( !Baseliner::Model::Permissions->new->user_has_action( $username, 'action.job.create' ) ) {
                 _fail( _loc( "User %1 doesn't have permissions to create a job", $username ) );
@@ -578,13 +581,36 @@ sub submit : Local {
                 $job_data->{maxstarttime} = Class::Date->new("$job_date $job_time") + ( $config->{expiry_time}{$p->{window_type}} // '1D' )
             }
 
-            event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
-                my $job = ci->job->new( $job_data );
-                $job->save;  # after save, CHECK and INIT run
+            event_new 'event.job.new' => { username => $username, bl => $job_data->{bl} } => sub {
+                my $job = ci->job->new($job_data);
+                $job->save;
+                $job->job_stash(
+                    {
+                        status_from    => $status_from,
+                        status_to      => $status_to,
+                        id_status_from => $id_status_from
+                    },
+                    'merge'
+                );
                 $job_name = $job->name;
-                { jobname => $job_name, mid=>$job->mid, id_job=>$job->jobid };
-            };
+                my $bl       = ci->bl->find_one( { name => $job_data->{bl} } );
+                my $bl_mid   = $bl->{mid};
+                my @projects = map { $_->{mid} } _array( $job->{projects} );
+                my $subject  = _loc( "The user %1 has created job %2 for %3", $username, $job_name, $job_data->{bl} );
+                my $notify   = {
+                    project => \@projects,
+                    bl      => $bl_mid
+                };
 
+                {
+                    jobname => $job_name,
+                    mid     => $job->{mid},
+                    id_job  => $job->{jobid},
+                    subject => $subject,
+                    notify  => $notify
+                };
+
+            };
             $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
         }
     } catch {
