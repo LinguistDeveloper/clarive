@@ -11039,10 +11039,6 @@ msgid "Height"
 msgstr ""
 
 #: root/comp/rules.js
-msgid "Invalid value. Use only 'a-z' and '_'"
-msgstr ""
-
-#: root/comp/rules.js
 msgid "Field with this id already exists"
 msgstr ""
 
@@ -15053,6 +15049,10 @@ msgstr ""
 
 #: root/site/common.js
 msgid "Invalid natural number"
+msgstr ""
+
+#: root/site/common.js
+msgid "Invalid value. Use only \"a-z\" and \"_\" inside the word"
 msgstr ""
 
 #: root/site/dashboard.js

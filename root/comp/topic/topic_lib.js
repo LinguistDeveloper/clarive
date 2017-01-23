@@ -1877,7 +1877,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         if (c.customColumns && Ext.isArray(c.customColumns)) {
             Ext.each(c.customColumns, function(customColumn) {
                 var columnEditor;
-                var columnTemplate;
+
                 if (customColumn.column_type == 'text') {
                     columnEditor = {
                         xtype: 'textfield'
@@ -1887,13 +1887,13 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                         variable: customColumn.variable
                     });
                 }
-                columnTemplate = {
+
+                cols.push({
                     header: customColumn.display_column || customColumn.id_column,
                     dataIndex: c.customColumnsPrefix + customColumn.id_column,
                     editable: true,
                     editor: columnEditor
-                };
-                cols.push(columnTemplate);
+                });
             });
         }
         delete c['columns'];
@@ -2225,8 +2225,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         var r = new self.store.recordType( rec_with_data );
 
         Ext.each(this.customColumns, function(column) {
-            if (self.customData && self.customData[self.name] && self.customData[self.name][r.data.mid]) {
-                r.data[self.customColumnsPrefix + column.id_column] = self.customData[self.name][r.data.mid][column.id_column];
+            if (self.customData && self.customData[r.data.mid]) {
+                r.data[self.customColumnsPrefix + column.id_column] = self.customData[r.data.mid][column.id_column];
             }
         });
 

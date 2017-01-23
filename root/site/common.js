@@ -2773,8 +2773,8 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                 }
                 else {
                     if (record._custom_columns) {
-                        form_data._custom_columns = form_data._custom_columns || {};
-                        form_data['_custom_columns'] = $.extend(record._custom_columns, form_data._custom_columns);
+                        form_data[obj.name + '#custom_columns'] = record._custom_columns[obj.name];
+
                         delete record._custom_columns;
                     }
 
@@ -4940,7 +4940,16 @@ Ext.apply(Ext.form.VTypes, {
         return /^\d*/i.test(v);
     },
     'naturalMask': /[0-9]/,
-    'naturalText': _('Invalid natural number')
+    'naturalText': _('Invalid natural number'),
+
+    'fieldletId': function(v) {
+        if (/^[a-z][a-z0-9_]*$/.test(v)) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    'fieldletIdText': _('Invalid value. Use only "a-z" and "_" inside the word')
 });
 
 Ext.ux.form.XDateField = Ext.extend(Ext.form.DateField, {

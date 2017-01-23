@@ -81,7 +81,9 @@ params:
             combo_store: topic_box_store,
             columns: meta.columns,
             customColumns: Ext.isArray(meta.custom_columns) ? meta.custom_columns : [],
-            customData: Ext.isObject(data._custom_columns) ? data._custom_columns : {},
+            customData: Ext.isObject(data[meta.id_field + '#custom_columns'])
+                ? data[meta.id_field + '#custom_columns']
+                : {},
             mode: 'remote',
             //style: 'margin-bottom: 8px',
             pageSize: ps,

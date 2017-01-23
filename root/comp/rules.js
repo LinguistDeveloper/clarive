@@ -1036,12 +1036,8 @@
                 fieldLabel: _('ID'),
                 name: 'id_field',
                 anchor: '95%',
+                vtype:'fieldletId',
                 validator: function(val) {
-                    var rv = Baseliner.validate_id(val);
-                    if (!rv) {
-                        return _loc("Invalid value. Use only 'a-z' and '_'")
-                    }
-
                     var exists = false;
                     root.eachChild(function(node) {
                         var data = node.attributes.data;
