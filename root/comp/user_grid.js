@@ -332,24 +332,26 @@
                                 form.findField("id").setValue(a.result.user_id);
                                 form.findField("username").getEl().dom.setAttribute('readOnly', true);
                                 win.setTitle(_('Edit user'));
+
                                 if ( group_box.items.items.length ) {
                                     btn_assign_roles_projects.hide();
                                     btn_unassign_roles_projects.hide();
-                                    grid_roles.hide();
-                                    tree_projects.hide();
+
                                     btn_delete_row.hide();
                                     btn_delete_all.hide();
-                                    grid_user_roles_projects.height = 300;
+
+                                    rolesAndProjectContainer.hide();
                                 } else {
                                     btn_assign_roles_projects.show();
                                     btn_unassign_roles_projects.show();
-                                    grid_roles.show();
-                                    tree_projects.show();
+
                                     btn_delete_row.show();
                                     btn_delete_all.show();
-                                    grid_user_roles_projects.height = 150;
 
+                                    rolesAndProjectContainer.show();
                                 }
+
+                                win.doLayout();
                             },
                             failure: function(f, a) {
 
@@ -810,6 +812,32 @@
             passwordText : _('Passwords do not match')
         });
 
+        var rolesAndProjectContainer = new Ext.Container({
+            height: 180,
+            split: true,
+            region: 'north',
+            layout: 'fit',
+            items: [{
+                layout: 'hbox',
+                layoutConfig: {
+                    align: 'stretch'
+                },
+                items: [{
+                    layout: 'fit',
+                    flex: 1,
+                    items: grid_roles
+                }, {
+                    layout: 'fit',
+                    flex: 1,
+                    items: tree_projects
+                }],
+                bbar: [
+                    btn_assign_roles_projects,
+                    btn_unassign_roles_projects
+                ]
+            }]
+        });
+
         var username = '';
         var title = _('Create user');
 
@@ -822,11 +850,11 @@
             if ( rec.get('groups') && rec.get('groups').length > 0 ) {
                 btn_assign_roles_projects.hide();
                 btn_unassign_roles_projects.hide();
-                grid_roles.hide();
-                tree_projects.hide();
+
                 btn_delete_row.hide();
                 btn_delete_all.hide();
-                grid_user_roles_projects.height = 300;
+
+                rolesAndProjectContainer.hide();
             }
         }
 
@@ -851,31 +879,7 @@
             }, {
                 region: 'center',
                 layout: 'border',
-                items: [{
-                    height: 180,
-                    split: true,
-                    region: 'north',
-                    layout: 'fit',
-                    items: [{
-                        layout: 'hbox',
-                        layoutConfig: {
-                            align: 'stretch'
-                        },
-                        items: [{
-                            layout: 'fit',
-                            flex: 1,
-                            items: grid_roles
-                        }, {
-                            layout: 'fit',
-                            flex: 1,
-                            items: tree_projects
-                        }],
-                        bbar: [
-                            btn_asignar_roles_projects,
-                            btn_desasignar_roles_projects
-                        ],
-                    }]
-                }, {
+                items: [rolesAndProjectContainer, {
                     xtype: 'container',
                     split: true,
                     layout: 'fit',
@@ -886,6 +890,7 @@
                 }]
             }]
         });
+
         if (win.height >= window.innerHeight) {
             win.setSize(win.width, window.innerHeight - Cla.constants.MARGIN_BOTTOM_SIZE);
         }
