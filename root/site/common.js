@@ -2766,9 +2766,10 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         this.cascade(function(obj) {
             if (obj.name && obj.get_save_data) {
                 var record = obj.get_save_data();
+                var result;
 
                 if (Ext.isArray(record)) {
-                    form_data[obj.name] = record;
+                    result = record;
                 }
                 else {
                     if (record._custom_columns) {
@@ -2777,8 +2778,15 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                         delete record._custom_columns;
                     }
 
-                    form_data[obj.name] = record.mids ? record.mids : record;
+                    if (Ext.isObject(record) && record.mids) {
+                        result = record.mids;
+                    }
+                    else {
+                        result = record;
+                    }
                 }
+
+                form_data[obj.name] = result;
             }
         });
         for( var k in form_data ) {
