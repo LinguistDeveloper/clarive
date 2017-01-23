@@ -319,8 +319,7 @@ Cla.topic_grid = function(params){
         text: _("Change Status"),
         icon: IC('state'),
         menu: status_menu,
-        disabled: true,
-        hidden: id_report,
+        disabled: true
     });
 
     var add_view = function() {
@@ -395,8 +394,7 @@ Cla.topic_grid = function(params){
     var btn_add = new Baseliner.Grid.Buttons.Add({
         cls: 'ui-btn-create',
         disabled: false,
-        hidden : id_report,
-            handler: function() {
+        handler: function() {
             store_category.load({params:{action: 'create'}});
             add_topic();
 
@@ -646,7 +644,6 @@ Cla.topic_grid = function(params){
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
         cls: 'ui-btn-edit',
         disabled: true,
-        hidden: id_report,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -678,7 +675,7 @@ Cla.topic_grid = function(params){
 %}
     var btn_delete = new Baseliner.Grid.Buttons.Delete({
         disabled: true,
-        hidden: id_report ? true : can_delete,
+        hidden: can_delete,
         handler: function() {
             var sm = grid_topics.getSelectionModel();
             var sel = sm.getSelected();
