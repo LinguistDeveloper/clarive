@@ -4523,6 +4523,18 @@ msgstr ""
 msgid "Could not find diff-tree data for item '%1'"
 msgstr ""
 
+#: lib/BaselinerX/CI/GitRevision.pm
+msgid "Missing parameter repo_dir"
+msgstr "Falta parámetro repo_dir"
+
+#: lib/BaselinerX/CI/GitRevision.pm
+msgid "Missing parameter repo_mid"
+msgstr "Falta parámetro repo_mid"
+
+#: lib/BaselinerX/CI/GitRevision.pm
+msgid "Missing parameter sha"
+msgstr "Falta parámetro sha"
+
 #: lib/BaselinerX/CI/asset.pm
 msgid "Could not insert asset"
 msgstr ""

@@ -83,10 +83,11 @@ sub create_ci_topic {
 
 sub create_ci_GitRepository {
     my $class = shift;
+    my (%params) = @_;
 
-    my $dir = TestGit->create_repo;
+    my $repo_dir = delete $params{repo_dir} || TestGit->create_repo . "/.git";
 
-    return $class->create_ci('GitRepository', repo_dir => "$dir/.git", @_);
+    return $class->create_ci('GitRepository', repo_dir => $repo_dir, %params);
 }
 
 sub clear_registry {

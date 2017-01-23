@@ -734,16 +734,16 @@ subtest 'git: does not create rev ci when exists' => sub {
     _setup();
 
     my $repo_dir = TestGit->create_repo;
-    my $sha      = TestGit->commit($repo_dir);
-
-    TestUtils->create_ci( 'GitRevision', sha => $sha );
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff', repo_dir=> "$repo_dir/.git" );
+    my $sha    = TestGit->commit($repo, message=> 'test');
+    TestUtils->create_ci( 'GitRevision', sha => $sha, repo=> $repo->mid );
 
     my $controller = _build_controller();
 
     my $stash = {
         git_config => {
             gitcgi => '../local/libexec/git-core/git-http-backend',
-            home   => $repo_dir
+            home   => realpath( $repo->repo_dir . '/../' )
         }
     };
 
