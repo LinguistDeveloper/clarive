@@ -1,12 +1,12 @@
 package Baseliner::Controller::UserGroup;
 use Moose;
+BEGIN { extends 'Catalyst::Controller' }
+
+use Try::Tiny;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Try::Tiny;
-use v5.10;
 
-BEGIN { extends 'Catalyst::Controller' }
 use experimental 'autoderef', 'switch';
 
 register 'action.admin.user_groups' => { name => 'User groups Admin', };

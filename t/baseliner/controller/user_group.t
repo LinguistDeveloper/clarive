@@ -147,7 +147,6 @@ subtest 'duplicate: duplicates a user group' => sub {
 
     is @{ $c->stash->{json}{data} }, 2;
     is $c->stash->{json}{totalCount}, 2;
-
 };
 
 subtest 'update: fails when missing action' => sub {
@@ -183,7 +182,6 @@ subtest 'update (add): add a user group' => sub {
 
     is @{ $c->stash->{json}{data} }, 1;
     is $c->stash->{json}{totalCount}, 1;
-
 };
 
 subtest 'update (add): add a user group fails if groupname duplicated' => sub {
@@ -371,7 +369,6 @@ subtest 'update (roles_projects): assigns project security to group' => sub {
     $ci_group = ci->new( $ci_group->mid );
 
     is_deeply( $ci_group->project_security, { $role => { 'project' => [ $prj->mid ] } }, 'test_name' );
-
 };
 
 subtest 'update (delete_roles_projects): unassigns project security to group' => sub {
@@ -406,7 +403,6 @@ subtest 'update (delete_roles_projects): unassigns project security to group' =>
     $ci_group = ci->new( $ci_group->mid );
 
     is_deeply( $ci_group->project_security, {} );
-
 };
 
 subtest 'update (delete_roles_projects): fails if no group id' => sub {
@@ -442,16 +438,13 @@ sub _setup {
     );
 
     TestUtils->register_ci_events();
-
-    mdb->master->drop;
-    mdb->master_rel->drop;
-    mdb->master_doc->drop;
+    TestUtils->cleanup_cis();
 }
 
 sub _setup_security {
     my $ci_prj  = TestUtils->create_ci( 'project', name => 'test' );
     my $ci_user = TestUtils->create_ci( 'user',    name => 'test' );
-    my $role    = TestUtils->create_role('Test role 1');
+    my $role    = TestSetup->create_role(role => 'Test role 1');
 
     $ci_prj->save();
     $ci_user->save();

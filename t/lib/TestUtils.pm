@@ -53,11 +53,6 @@ sub cleanup_roles {
     mdb->role->remove({},{multiple=>1});
 }
 
-sub create_role {
-    my ($name,$id) = @_;
-    mdb->role->insert({ id => $id || 1, name => $name || 'Test role' });
-}
-
 sub reload_module {
     my $class = shift;
     my ($module) = @_;
