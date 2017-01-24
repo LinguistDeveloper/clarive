@@ -26,7 +26,7 @@ register 'config.job' => {
         { id=>'maxstarttime', label => _locl('MaxStartDate'), type=>'text', },
         { id=>'endtime', label => _locl('EndDate'), type=>'text' },
         { id=>'status', label => _locl('Status'), type=>'text', default=>'READY' },
-        { id=>'mask', label => _locl('Job Naming Mask'), type=>'text', default=>'%s.%s-%08d' },
+        { id=>'mask', label => _locl('Job Naming Mask'), type=>'text', default=>'${prefix}.${bl}-${seq}' },
         { id=>'runner', label => _locl('Registry Entry to run'), type=>'text', default=>sub { Clarive->config->{job_runner} || 'service.job.runner.rule' } },
         { id=>'default_chain_id', label => _locl('Default Pipeline ID'), type=>'text', default=>1 },
         { id=>'comment', label => _locl('Comment'), type=>'text' },

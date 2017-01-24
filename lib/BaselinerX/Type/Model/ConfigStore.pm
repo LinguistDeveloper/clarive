@@ -163,8 +163,8 @@ sub get {
                     item => $item->{id}
                 }
             );
-            $new_value = $self->variable_parse_config( key=>$key, ns=>$p{ns}, bl=>$p{bl}, value=>$new_value );
-            $new_value = $self->variable_parse( value=>$new_value, vars=>$p{vars} );
+            #$new_value = $self->variable_parse_config( key=>$key, ns=>$p{ns}, bl=>$p{bl}, value=>$new_value );
+            #$new_value = $self->variable_parse( value=>$new_value, vars=>$p{vars} );
             $data->{ $data_key } = $new_value;
 
             # callbacks

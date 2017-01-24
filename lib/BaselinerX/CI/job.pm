@@ -237,9 +237,13 @@ sub _create {
     my $job_seq = mdb->seq('job');
     $self->jobid( $job_seq );
 
-    # setup name
-    my $name = $self->job_name || $config->{name}
-        || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
+    my $mask = $config->{mask};
+    my $seq  = sprintf '%08d', $job_seq;
+
+    my $name =
+         $self->job_name
+      || $config->{name}
+      || $self->gen_job_name( { mask => $config->{mask}, seq => $seq, type => $type, %$master_row } );
 
     Util->_log("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
 
@@ -406,9 +410,11 @@ sub _check_and_init {
 
 sub gen_job_name {
     my $self = shift;
-    my $p = shift;
+    my $p    = shift;
+
     my $prefix = $p->{type} eq 'promote' || $p->{type} eq 'static' ? 'N' : 'B';
-    return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
+    $p->{prefix} = $prefix;
+    return Util->parse_vars( $p->{mask}, $p );
 }
 
 sub running_statuses {

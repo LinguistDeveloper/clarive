@@ -611,6 +611,36 @@ subtest 'reschedule: concatenates comments, and the last comment is in the first
     is $job->{comments}, "Second comment\nFirst comment";
 };
 
+subtest 'gen_job_name: applies mask to job name' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
+
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.job.mask', value => 'Set New Mask' );
+
+    my $job_ci = TestSetup->create_job( changesets => [$changeset] );
+
+    is $job_ci->name, 'Set New Mask';
+};
+
+subtest 'gen_job_name: applies mask to job name with vars' => sub {
+    _setup();
+
+    my $project   = TestUtils->create_ci_project();
+    my $id_role   = TestSetup->create_role();
+    my $user      = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset = TestSetup->create_topic( is_changeset => 1, username => $user->username );
+
+    BaselinerX::Type::Model::ConfigStore->new->set( key => 'config.job.mask', value => '${prefix}-${mid}' );
+
+    my $job_ci = TestSetup->create_job( changesets => [$changeset] );
+
+    is $job_ci->name, 'N-' . $job_ci->mid;
+};
+
 done_testing;
 
 sub _setup {
