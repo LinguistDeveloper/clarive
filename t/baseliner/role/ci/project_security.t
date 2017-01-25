@@ -10,6 +10,21 @@ use TestSetup;
 
 use_ok 'Baseliner::Role::CI::ProjectSecurity';
 
+subtest 'roles_projects: returns projects grouped by roles' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $rows = $user->roles_projects;
+
+    is @$rows, 1;
+
+    is_deeply $rows->[0]->{role}->{id}, $id_role;
+    is $rows->[0]->{projects}->[0]->mid, $project->mid;
+};
+
 subtest 'toggle_roles_projects: assigns new roles and projects' => sub {
     _setup();
 

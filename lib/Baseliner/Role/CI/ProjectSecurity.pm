@@ -4,6 +4,34 @@ with 'Baseliner::Role::CI::Internal';
 
 use Baseliner::Utils qw(_array _unique);
 
+sub roles_projects {
+    my $self = shift;
+
+    my @rows;
+    foreach my $id_role ( keys %{ $self->project_security } ) {
+        next unless my $role = mdb->role->find_one( { id => $id_role } );
+
+        my @projects;
+        foreach my $dimension ( keys %{ $self->project_security->{$id_role} } ) {
+            my @cis = ci->search_cis( mid => mdb->in( $self->project_security->{$id_role}->{$dimension} ) );
+
+            foreach my $ci (@cis) {
+                next unless $ci->active;
+
+                push @projects, $ci;
+            }
+        }
+
+        push @rows,
+          {
+            role     => $role,
+            projects => \@projects
+          };
+    }
+
+    return \@rows;
+}
+
 sub toggle_roles_projects {
     my $self = shift;
     my (%params) = @_;

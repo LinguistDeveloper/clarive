@@ -281,8 +281,7 @@ msgstr "Ver CIs"
 
 #: lib/Baseliner/Controller/CI.pm root/comp/catalog/manual_deploy.js
 #: root/comp/role_grid.js root/comp/topic/topic_admin.js
-#: root/comp/user_actions.mas root/comp/user_grid.js
-#: root/comp/user_group_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/site/lifecycle-graph.js
 msgid "Role"
 msgstr "Rol"
@@ -1055,10 +1054,6 @@ msgid "Job %1 rollback scheduled"
 msgstr "Pase %1 marcha atrás programada"
 
 #: lib/Baseliner/Controller/Job.pm
-msgid "Job %1 does not need rollback"
-msgstr "Pase %1 no necesita marcha atrás"
-
-#: lib/Baseliner/Controller/Job.pm
 msgid "User %1 does not have permissions to action %2"
 msgstr "El usuario %1 no tiene permisos para la acción %2"
 
@@ -1230,9 +1225,8 @@ msgstr ""
 #: lib/BaselinerX/CI/report.pm root/comp/configlist/grid.mas
 #: root/comp/daemon_grid.js root/comp/job_new.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/rules.js
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js root/comp/user_info.mas
-#: root/forms/if_var_condition.js root/site/common.js
+#: root/comp/topic/topic_admin.js root/comp/user_group_grid.js
+#: root/comp/user_info.mas root/forms/if_var_condition.js root/site/common.js
 msgid "All"
 msgstr "Todos"
 
@@ -1500,8 +1494,8 @@ msgid "Admin Rules"
 msgstr "Administrar reglas"
 
 #: lib/Baseliner/Controller/Rule.pm root/comp/monitor_grid.js
-#: root/comp/rule_new.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/email/generic_rule.html root/site/model.js
+#: root/comp/rule_new.js root/comp/rules.js root/email/generic_rule.html
+#: root/site/model.js
 msgid "Rule"
 msgstr "Regla"
 
@@ -1561,6 +1555,12 @@ msgstr "Regla importada %1"
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Rule %1 deleted"
 msgstr "Regla %1 borrada"
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid ""
+"The rule of type `%1` already exists with name `%2`, please introduce "
+"another name"
+msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Rule %1 saved"
@@ -1635,6 +1635,10 @@ msgstr "Error probando construcción DSL: %1"
 #: lib/Baseliner/Controller/Rule.pm
 msgid "id_rule is not passed"
 msgstr "no se ha pasado id_rule"
+
+#: lib/Baseliner/Controller/Rule.pm
+msgid "Rule with id %1 not found"
+msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Simulation of modification of rule statements"
@@ -1902,8 +1906,8 @@ msgid "Semaphore request inactive"
 msgstr "Petición de semáforo inactiva"
 
 #: lib/Baseliner/Controller/Slot.pm root/comp/job_calendar_editor.js
-msgid "Job Slots"
-msgstr "Ventanas de Pase"
+msgid "Calendaring"
+msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
 msgid "View Job Calendar"
@@ -1924,8 +1928,7 @@ msgstr "Administrar Calendario de Pases"
 msgid "Calendar"
 msgstr "Calendario"
 
-#: lib/Baseliner/Controller/Slot.pm root/comp/user_grid.js
-#: root/comp/user_group_grid.js
+#: lib/Baseliner/Controller/Slot.pm
 msgid "Namespace"
 msgstr "Ámbito"
 
@@ -2051,6 +2054,8 @@ msgstr "Estado"
 #: root/site/common.js root/site/model.js
 #: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
 #: root/comp/revision/grid.mas root/comp/rules.js root/comp/scheduler_grid.js
+#: root/comp/lifecycle/workspace_new.js root/comp/revision/grid.mas
+#: root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/site/common.js root/site/model.js
 msgid "Create"
 msgstr "Crear"
@@ -2125,8 +2130,7 @@ msgstr "Nombre"
 msgid "E-mail"
 msgstr "Correo Electrónico"
 
-#: lib/Baseliner/Controller/Topic.pm root/comp/user_grid.js
-#: root/comp/user_info.mas
+#: lib/Baseliner/Controller/Topic.pm root/comp/user_info.mas
 msgid "Phone Number"
 msgstr "Teléfono"
 
@@ -2752,7 +2756,8 @@ msgstr "No se ha podido encontrar la clave '%1' en el registro"
 #: root/comp/topic/topic_lib_grid.js root/dashlets/filtered_topics.html
 #: root/dashlets/my_topics.html root/email/generic_post.html
 #: root/email/generic_topic.html root/fields/templates/config/grid_editor.js
-#: root/forms/link_revision.js root/forms/topic_create.js root/site/common.js
+#: root/fields/templates/js/grid_editor.js root/forms/link_revision.js
+#: root/forms/topic_create.js root/site/common.js
 msgid "Title"
 msgstr "Título"
 
@@ -3214,14 +3219,6 @@ msgstr "LOG mensaje"
 #: lib/Baseliner/Model/Rules.pm root/comp/lifecycle/repo.js root/comp/repl.js
 msgid "%1"
 msgstr "%1"
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Get date"
-msgstr "Obtener fecha"
-
-#: lib/Baseliner/Model/Rules.pm
-msgid "Date %1 is not a valid date: %2"
-msgstr "La fecha %1 no es una fecha válida: %2"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "%1 posted a comment on %2: %3"
@@ -4586,6 +4583,18 @@ msgstr ""
 msgid "Could not find diff-tree data for item '%1'"
 msgstr ""
 
+#: lib/BaselinerX/CI/GitRevision.pm
+msgid "Missing parameter repo_dir"
+msgstr ""
+
+#: lib/BaselinerX/CI/GitRevision.pm
+msgid "Missing parameter repo_mid"
+msgstr ""
+
+#: lib/BaselinerX/CI/GitRevision.pm
+msgid "Missing parameter sha"
+msgstr ""
+
 #: lib/BaselinerX/CI/UserGroup.pm
 msgid "User %1 does not exist"
 msgstr "Usuario %1 no existe"
@@ -4838,7 +4847,7 @@ msgstr "Repositorio"
 msgid "Files"
 msgstr "Ficheros"
 
-#: lib/BaselinerX/CI/job.pm root/comp/job_new.js root/comp/job_new_comp.js
+#: lib/BaselinerX/CI/job.pm root/comp/job_new.js
 msgid "Missing job contents"
 msgstr "Falta rellenar el contenido del pase"
 
@@ -5486,6 +5495,12 @@ msgstr "Nemónico"
 #: root/comp/user_group_grid.js root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
+#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
+#: root/comp/rule_new.js root/comp/scheduler_grid.js
+#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/comp/user_actions.mas
+#: root/comp/user_info.mas root/comp/user_infoactions.mas
+#: root/fields/system/js/list_tasks.js root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/explorer.js
@@ -5820,13 +5835,8 @@ msgstr "Ver monitor de pases"
 msgid "Jobs"
 msgstr "Pases"
 
-#: lib/BaselinerX/Job.pm
-msgid "Create a new Job"
-msgstr "Nuevo Pase"
-
-#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/lifecycle/deploy.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_lib.js root/site/kanban.js
+#: lib/BaselinerX/Job.pm root/comp/job_new.js root/comp/lifecycle/deploy.js
+#: root/comp/monitor_grid.js root/comp/topic/topic_lib.js root/site/kanban.js
 msgid "New Job"
 msgstr ""
 
@@ -6100,7 +6110,7 @@ msgstr "Cambios"
 msgid "bl"
 msgstr "entorno"
 
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/user_grid.js
+#: lib/BaselinerX/Reports/listado_jobs.pm
 #: root/fields/templates/config/generic_fields.js
 msgid "System"
 msgstr "Sistema"
@@ -6817,6 +6827,14 @@ msgstr ""
 msgid "Footprint elements"
 msgstr "Elementos de la huella"
 
+#: lib/BaselinerX/Service/GenericServices.pm root/forms/get_date.js
+msgid "Get date"
+msgstr "Obtener fecha"
+
+#: lib/BaselinerX/Service/GenericServices.pm
+msgid "Date %1 is not a valid date: %2"
+msgstr "La fecha %1 no es una fecha válida: %2"
+
 #: lib/BaselinerX/Service/Init.pm
 msgid "Init Job Home"
 msgstr "Iniciar Pase home"
@@ -6931,10 +6949,6 @@ msgid "Pause a Job"
 msgstr "Pausar un Pase"
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "event purge daemon frequency (secs)"
-msgstr "frecuencia del demonio de purga de eventos (segs)"
-
-#: lib/BaselinerX/Service/Purge.pm
 msgid "Number of days to keep job files"
 msgstr "Número de días a mantener los ficheros de pases"
 
@@ -7019,12 +7033,32 @@ msgid "Purge Daemon"
 msgstr "Purgar Demonio"
 
 #: lib/BaselinerX/Service/Purge.pm
-msgid "Purging %1 auth events"
-msgstr "Purgando %1 eventos de autentica´ción"
+msgid "Checking purge daemon configuration"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Sleeping for %1 seconds"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Not purging now. Purging between %1 and %2"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Not purging until %1"
+msgstr ""
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Purging %1 ok events"
+msgstr ""
 
 #: lib/BaselinerX/Service/Purge.pm
 msgid "Purging %1 ko events"
 msgstr "Purgando %1 eventos incorrectos"
+
+#: lib/BaselinerX/Service/Purge.pm
+msgid "Purging %1 auth events"
+msgstr "Purgando %1 eventos de autentica´ción"
 
 #: lib/BaselinerX/Service/RenameItems.pm
 msgid "Rename Baseline Items and Files"
@@ -7496,27 +7530,26 @@ msgstr "Elementos del pase"
 #: root/ci/DBDest.js root/ci/balix_agent.js root/ci/dbi_connection.js
 #: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/ssh_agent.js
 #: root/ci/web_cluster.js root/comp/dashboard_job.html
-#: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
-#: root/comp/monitor_grid.js root/comp/role_detail.js root/comp/user_grid.js
-#: root/comp/user_info.mas root/email/approval_job.html
-#: root/email/generic_post.html root/email/generic_rule.html
-#: root/email/generic_topic.html root/forms/asset_file.js
-#: root/forms/eval_remote.js root/forms/link_revision.js
-#: root/forms/mkpath_remote.js root/forms/remove_file.js
-#: root/forms/rest_request.js root/forms/retrieve_remote.js
-#: root/forms/script_local.js root/forms/script_remote.js
-#: root/forms/ship_remote.js root/forms/sync_remote.js
-#: root/forms/test_server_connect.js root/forms/topic_status_deprecated.js
-#: root/forms/web_request.js root/reports/listado_jobs.js root/site/common.js
-#: root/site/model.js
+#: root/comp/lifecycle/workspace_new.js root/comp/monitor_grid.js
+#: root/comp/role_detail.js root/comp/user_grid.js root/comp/user_info.mas
+#: root/email/approval_job.html root/email/generic_post.html
+#: root/email/generic_rule.html root/email/generic_topic.html
+#: root/forms/asset_file.js root/forms/eval_remote.js
+#: root/forms/link_revision.js root/forms/mkpath_remote.js
+#: root/forms/remove_file.js root/forms/rest_request.js
+#: root/forms/retrieve_remote.js root/forms/script_local.js
+#: root/forms/script_remote.js root/forms/ship_remote.js
+#: root/forms/sync_remote.js root/forms/test_server_connect.js
+#: root/forms/topic_status_deprecated.js root/forms/web_request.js
+#: root/reports/listado_jobs.js root/site/common.js root/site/model.js
 msgid "User"
 msgstr "Usuario"
 
 #: root/ci/DBDest.js root/ci/clax_agent.js root/ci/dbi_connection.js
 #: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/user.js
-#: root/comp/lifecycle/workspace_new.js root/comp/user_grid.js
-#: root/forms/ldap_search.js root/forms/rest_request.js
-#: root/forms/web_request.js root/site/login.js root/site/tabfu.js
+#: root/comp/lifecycle/workspace_new.js root/forms/ldap_search.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/login.js
+#: root/site/tabfu.js
 msgid "Password"
 msgstr "Contraseña"
 
@@ -8271,9 +8304,8 @@ msgstr ""
 #: root/comp/role_detail.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/comp/user_group_grid.js root/forms/shortcut.js
-#: root/site/dashboard.js root/site/explorer.js root/site/model.js
-#: root/site/prefs.js
+#: root/forms/shortcut.js root/site/dashboard.js root/site/explorer.js
+#: root/site/model.js root/site/prefs.js
 msgid "Save"
 msgstr "Guardar"
 
@@ -8302,8 +8334,7 @@ msgstr "Error de escritura al catálogo"
 #: root/comp/notifications.js root/comp/role_detail.js
 #: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/comp/user_group_grid.js root/comp/user_info.mas
-#: root/site/common.js root/site/explorer.js
+#: root/comp/user_info.mas root/site/common.js root/site/explorer.js
 msgid "Close"
 msgstr "Cerrar"
 
@@ -8453,9 +8484,8 @@ msgstr "Éxito: %1"
 #: root/comp/config/config_grid.mas root/comp/config/config_main.mas
 #: root/comp/configlist/grid.mas root/comp/feature_grid.mas
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js root/comp/lifecycle/deploy.js
-#: root/comp/lifecycle/tasks.js root/comp/log_grid.js
-#: root/comp/message_grid.js root/comp/monitor_grid.js
+#: root/comp/lifecycle/deploy.js root/comp/lifecycle/tasks.js
+#: root/comp/log_grid.js root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rules.js
 #: root/comp/scheduler_grid.js root/comp/show_email.js
@@ -8478,11 +8508,11 @@ msgstr ""
 msgid "There are invalid fields in the form or variables."
 msgstr ""
 
-#: root/comp/ci-editor.js root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/log_grid.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/view_file.js root/fields/system/js/list_projects.js
-#: root/forms/log.js root/site/common.js root/site/explorer.js
+#: root/comp/ci-editor.js root/comp/job_new.js root/comp/log_grid.js
+#: root/comp/monitor_grid.js root/comp/topic/topic_lib.js
+#: root/comp/topic/topic_lib_grid.js root/comp/view_file.js
+#: root/fields/system/js/list_projects.js root/forms/log.js
+#: root/site/common.js root/site/explorer.js
 msgid "Warning"
 msgstr "Advertencia"
 
@@ -8513,12 +8543,6 @@ msgstr ""
 #: root/comp/ci-editor.js
 msgid "Error opening CI %1: %2"
 msgstr ""
-
-#: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
-#: root/comp/ci-viewer.js root/comp/revision/grid.mas
-#: root/comp/revision/grid_live.mas
-msgid "Item"
-msgstr "Elemento"
 
 #: root/comp/ci-grid.js root/comp/ci-gridtree.js root/comp/ci-viewer-tree.js
 #: root/comp/ci-viewer.js root/comp/job_new.js
@@ -8765,8 +8789,7 @@ msgid "Configuration Items"
 msgstr "Elementos de Configuración"
 
 #: root/comp/config/config_panel.mas root/comp/configlist/edit_value.mas
-#: root/comp/job_new.js root/comp/job_new_comp.js root/site/login.js
-#: root/site/tabfu.js
+#: root/comp/job_new.js root/site/login.js root/site/tabfu.js
 msgid "Reset"
 msgstr "Limpiar"
 
@@ -8797,7 +8820,7 @@ msgstr "Nueva Clave de Config"
 #: root/comp/configlist/edit_value.mas root/comp/configlist/resolve_value.mas
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 #: root/comp/job_calendar_slot_edit.js root/comp/job_new.js
-#: root/comp/job_new_comp.js
+#: root/comp/monitor_grid.js
 msgid "Failure"
 msgstr "Error"
 
@@ -9031,10 +9054,9 @@ msgid "Feature"
 msgstr "Característica"
 
 #: root/comp/feature.js root/comp/job_calendar_slot_edit.js
-#: root/comp/job_new.js root/comp/job_new_comp.js
-#: root/comp/lifecycle/report_edit.js root/comp/monitor_grid.js
-#: root/comp/scheduler_grid.js root/comp/view_file.js
-#: root/dashlets/topics_burndown_config.js
+#: root/comp/job_new.js root/comp/lifecycle/report_edit.js
+#: root/comp/monitor_grid.js root/comp/scheduler_grid.js
+#: root/comp/view_file.js root/dashlets/topics_burndown_config.js
 #: root/dashlets/topics_period_burndown_config.js root/email/generic_post.html
 #: root/site/common.js root/site/timeline-graph.js
 msgid "Date"
@@ -9256,11 +9278,9 @@ msgstr "Ficheros JES"
 msgid "JES Spool"
 msgstr "Spool JES"
 
-#: root/comp/job_calendar_editor.js root/comp/label_admin.js
-#: root/comp/notifications.js root/fields/system/html/field_priority.html
-#: root/fields/system/js/field_priority.js
-msgid "Priority"
-msgstr "Prioridad"
+#: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
+msgid "Precedence"
+msgstr "Precedencia"
 
 #: root/comp/job_calendar_editor.js root/comp/job_calendar_grid.js
 msgid "Global"
@@ -9281,10 +9301,6 @@ msgstr "[Seleccione calendario]"
 #: root/comp/job_calendar_grid.js
 msgid "Calendar Name"
 msgstr "Nombre del Calendario"
-
-#: root/comp/job_calendar_grid.js
-msgid "Precedence"
-msgstr "Precedencia"
 
 #: root/comp/job_calendar_grid.js
 msgid "Creation Mode"
@@ -9373,6 +9389,10 @@ msgid "Activate Slot"
 msgstr "Activar Ventana"
 
 #: root/comp/job_calendar_slot_edit.js
+msgid "Weekday"
+msgstr ""
+
+#: root/comp/job_calendar_slot_edit.js
 msgid "Starts at"
 msgstr "Hora inicio"
 
@@ -9381,12 +9401,12 @@ msgid "Ends at"
 msgstr "Hora fin"
 
 #: root/comp/job_calendar_slot_edit.js
-msgid "Edit Job Slot for %1"
-msgstr "Editar Ventana de Pase para %1"
+msgid "Edit Calendar Slot for %1"
+msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
-msgid "Edit Job Slot"
-msgstr "Editar Ventana de Pase"
+msgid "Edit Calendar Slot"
+msgstr ""
 
 #: root/comp/job_calendar_slots.js
 msgid "new slot"
@@ -9400,7 +9420,7 @@ msgstr "Urgente"
 msgid "Logfile Open Error"
 msgstr "Error al abrir fichero de log"
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/monitor_grid.js
 msgid "no calendar window"
 msgstr "fuera de ventana"
 
@@ -9416,7 +9436,7 @@ msgstr ""
 msgid "Transition"
 msgstr "Transición"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/scheduler_grid.js
+#: root/comp/job_new.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_lib.js root/forms/create_job.js root/site/model.js
 msgid "Searching..."
 msgstr "Buscando"
@@ -9433,18 +9453,17 @@ msgstr "Cadena"
 msgid "No job pipelines available"
 msgstr ""
 
-#: root/comp/job_new.js
+#: root/comp/job_new.js root/comp/monitor_grid.js
 msgid "Create a job outside of the available time slots."
 msgstr "Chequee si quiere crear un pase fuera de ventana."
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/log_grid.js
-#: root/comp/monitor_grid.js root/comp/topic/topic_lib_grid.js
-#: root/email/generic_post.html root/forms/create_job.js root/site/common.js
+#: root/comp/job_new.js root/comp/log_grid.js root/comp/monitor_grid.js
+#: root/comp/topic/topic_lib_grid.js root/email/generic_post.html
+#: root/forms/create_job.js root/site/common.js
 msgid "Comments"
 msgstr "Comentarios"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/monitor_grid.js
-#: root/comp/scheduler_grid.js
+#: root/comp/job_new.js root/comp/monitor_grid.js root/comp/scheduler_grid.js
 msgid "Time"
 msgstr "Hora"
 
@@ -9452,7 +9471,7 @@ msgstr "Hora"
 msgid "Error generating calendar windows: %1"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Could not reload calendar"
 msgstr "No es posible recargar el calendario"
 
@@ -9460,7 +9479,7 @@ msgstr "No es posible recargar el calendario"
 msgid "No calendar windows available for selected date"
 msgstr ""
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Remove Job Item"
 msgstr "Eliminar Elemento de Pase"
 
@@ -9468,15 +9487,15 @@ msgstr "Eliminar Elemento de Pase"
 msgid "Relationship"
 msgstr "Relación"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Job Item"
 msgstr "Elemento de Pase"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/view_diff.js
+#: root/comp/job_new.js root/comp/view_diff.js
 msgid "Last Updated"
 msgstr "Última Actualización"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Job Contents"
 msgstr "Contenido del Pase"
 
@@ -9518,8 +9537,8 @@ msgstr ""
 
 #: root/comp/job_new.js
 msgid ""
-"En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
-"campo observaciones"
+"It's mandatory to add comments explaining why this job is outside any time "
+"slots"
 msgstr ""
 
 #: root/comp/job_new.js root/comp/role_grid.js
@@ -9542,7 +9561,7 @@ msgstr "Error Desconocido"
 msgid "Connection Error"
 msgstr "Error de Conexión"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js root/comp/log_grid.js
+#: root/comp/job_new.js root/comp/log_grid.js
 msgid "Form Error"
 msgstr "Error en el Formulario"
 
@@ -9554,15 +9573,15 @@ msgstr "Más Información..."
 msgid "Add Job Items"
 msgstr "Elementos del Pase"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Blocked"
 msgstr "Bloqueado"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "Package cannot be added to job"
 msgstr "No se ha podido añadir paquete al pase"
 
-#: root/comp/job_new.js root/comp/job_new_comp.js
+#: root/comp/job_new.js
 msgid "No records found"
 msgstr "No hay registros"
 
@@ -9600,123 +9619,6 @@ msgstr "Cuándo"
 msgid "Live search requires a minimum of %1 characters."
 msgstr "Para iniciar la búsqueda es necesario un mínimo de %1 caracteres."
 
-#: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
-#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
-msgid "Promote"
-msgstr "Promoción"
-
-#: root/comp/job_new_comp.js root/comp/log_grid.js root/forms/create_job.js
-#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
-msgid "Demote"
-msgstr "Marcha atrás"
-
-#: root/comp/job_new_comp.js
-msgid "Destination Baseline"
-msgstr "Entorno Destino"
-
-#: root/comp/job_new_comp.js
-msgid "Origin Baseline"
-msgstr "Entorno Origen"
-
-#: root/comp/job_new_comp.js
-msgid "Custom Window"
-msgstr "Ventana Personalizada"
-
-#: root/comp/job_new_comp.js
-msgid "Check for job out of window"
-msgstr "Chequee si quiere crear un pase fuera de ventana"
-
-#: root/comp/job_new_comp.js root/site/prefs.js
-msgid "Timezone"
-msgstr "Zona Horaria"
-
-#: root/comp/job_new_comp.js
-msgid "Loading dates..."
-msgstr "Cargando fechas..."
-
-#: root/comp/job_new_comp.js
-msgid "Without Dates"
-msgstr "Sin Fechas"
-
-#: root/comp/job_new_comp.js
-msgid ""
-"There are no allowed dates for the job. Please, select customized window"
-msgstr ""
-"No hay fechas disponibles para el pase. Seleccione una ventana personalizada"
-
-#: root/comp/job_new_comp.js
-msgid "Calendar Errors"
-msgstr "Errores en Calendario"
-
-#: root/comp/job_new_comp.js
-msgid ""
-"There are no allowed windows for the job. Searching returns an exception: %1"
-msgstr ""
-"No hay calendarios disponibles para el pase. La busqueda ha devuelto una "
-"excepcion: %1"
-
-#: root/comp/job_new_comp.js
-msgid "Timeout error ocurred"
-msgstr "Se ha producido un error de timeout"
-
-#: root/comp/job_new_comp.js
-msgid "Updating times..."
-msgstr "Actualizando horas..."
-
-#: root/comp/job_new_comp.js
-msgid "Job time expired"
-msgstr "Hora de pase caducada"
-
-#: root/comp/job_new_comp.js
-msgid "Time off range %1"
-msgstr "Hora fuera de rango %1"
-
-#: root/comp/job_new_comp.js
-msgid ""
-"Job is out of window. Check 'Custom window' if you want a job out of allowed "
-"windows"
-msgstr ""
-"Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase "
-"fuera de las ventanas permitidas"
-
-#: root/comp/job_new_comp.js
-msgid "Invalid time format (00:00-23:59)"
-msgstr "Formato de hora no válido (00:00-23:59)"
-
-#: root/comp/job_new_comp.js
-msgid "Item Type"
-msgstr "Tipo de Elemento"
-
-#: root/comp/job_new_comp.js
-msgid "Location"
-msgstr "Ubicación"
-
-#: root/comp/job_new_comp.js
-msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
-msgstr ""
-"No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
-
-#: root/comp/job_new_comp.js
-msgid ""
-"For the jobs outside of window it is required to add a reason to the comment "
-"field"
-msgstr ""
-"En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
-"campo observaciones"
-
-#: root/comp/job_new_comp.js
-msgid "Job Options"
-msgstr "Opciones del Pase"
-
-#: root/comp/job_new_comp.js root/comp/monitor_grid.js
-#: root/comp/topic/topic_admin.js root/forms/create_job.js
-msgid "Job Type"
-msgstr "Tipo de Pase"
-
-#: root/comp/job_new_comp.js
-msgid "Your user does not have permission to create any job in any environment"
-msgstr "Tu usuario no tiene permisos para crear job en ningún entorno"
-
 #: root/comp/job_stash.js
 msgid "Stash Log"
 msgstr "Log del pase"
@@ -9736,6 +9638,12 @@ msgstr "¿Seguro que quiere borrar le etiqueta seleccionada?"
 #: root/comp/label_admin.js root/fields/templates/config/generic_fields.js
 msgid "Label"
 msgstr "Etiqueta"
+
+#: root/comp/label_admin.js root/comp/notifications.js
+#: root/fields/system/html/field_priority.html
+#: root/fields/system/js/field_priority.js
+msgid "Priority"
+msgstr "Prioridad"
 
 #: root/comp/label_admin.js root/comp/topic/topic_admin.js
 #: root/fields/templates/config/separator.js
@@ -9900,11 +9808,8 @@ msgstr "SQL"
 
 #: root/comp/lifecycle/report_edit.js root/comp/log_grid.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/html/field_title.html
+#: root/comp/topic/topic_lib_grid.js root/fields/system/html/field_title.html
 #: root/fields/templates/config/list_topics_selector.js root/site/tabfu.js
-#: root/comp/user_group_grid.js root/fields/system/html/field_title.html
-#: root/site/tabfu.js
 msgid "Information"
 msgstr "Información"
 
@@ -10027,6 +9932,16 @@ msgstr "Severidad"
 #: root/comp/log_grid.js
 msgid "Execution %1/%2"
 msgstr "Ejecución %1/%2"
+
+#: root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
+msgid "Demote"
+msgstr "Marcha atrás"
+
+#: root/comp/log_grid.js root/forms/create_job.js
+#: root/forms/workflow_transition.js root/forms/workflow_transition_match.js
+msgid "Promote"
+msgstr "Promoción"
 
 #: root/comp/log_grid.js root/comp/monitor_grid.js root/forms/catalog_task.js
 msgid "Execution"
@@ -10374,6 +10289,22 @@ msgstr ""
 msgid "Update"
 msgstr "Actualizar"
 
+#: root/comp/monitor_grid.js
+msgid ""
+"For the jobs outside of window it is required to add a reason to the comment "
+"field"
+msgstr ""
+"En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
+"campo observaciones"
+
+#: root/comp/monitor_grid.js
+msgid "Update time and date of the job"
+msgstr ""
+
+#: root/comp/monitor_grid.js
+msgid "There are no allowed windows for the job"
+msgstr ""
+
 #: root/comp/monitor_grid.js root/site/common.js
 msgid "Rejected"
 msgstr "Rechazado"
@@ -10471,6 +10402,11 @@ msgstr "Código de Estado"
 msgid "Subapplications"
 msgstr "Subapplicaciones"
 
+#: root/comp/monitor_grid.js root/comp/topic/topic_admin.js
+#: root/forms/create_job.js
+msgid "Job Type"
+msgstr "Tipo de Pase"
+
 #: root/comp/monitor_grid.js
 msgid "Last Message"
 msgstr "Mensaje"
@@ -10534,10 +10470,6 @@ msgstr "Fecha de inicio de la ejecución"
 #: root/comp/monitor_grid.js
 msgid "RUN End Date"
 msgstr "Fecha final de ejecución"
-
-#: root/comp/monitor_grid.js
-msgid "There are no allowed windows for the job"
-msgstr ""
 
 #: root/comp/notifications.js root/comp/rule_new.js
 msgid "Event"
@@ -10941,6 +10873,10 @@ msgstr "Falta el nombre de la regla"
 
 #: root/comp/rule_new.js
 msgid "Rule saved successfully"
+msgstr ""
+
+#: root/comp/rule_new.js
+msgid "Rule warning window"
 msgstr ""
 
 #: root/comp/rules.js
@@ -11751,7 +11687,11 @@ msgstr ""
 msgid "Form Rule"
 msgstr "Regla de Formulario"
 
-#: root/comp/topic/topic_admin.js root/site/model.js
+#: root/comp/topic/topic_admin.js
+msgid "Select Form Rule"
+msgstr ""
+
+#: root/comp/topic/topic_admin.js
 msgid "Defined in the Workflow Tab"
 msgstr "Definido en la pestaña de Flujo de trabajo"
 
@@ -11801,18 +11741,15 @@ msgstr "seleccione un estado..."
 msgid "From Status"
 msgstr "Estado Origen"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Available Roles"
 msgstr "Roles disponibles"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Delete row"
 msgstr "Borrar fila"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Are you sure you want to delete the row selected?"
 msgstr "¿Seguro que quiere borrar la fila?"
 
@@ -11836,8 +11773,7 @@ msgstr "Seleccione al menos un rol y estado destino"
 msgid "By project"
 msgstr "Por proyecto"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Available Projects"
 msgstr "Proyectos disponibles"
 
@@ -12145,62 +12081,6 @@ msgstr "Timeline"
 msgid "Invalid report meta for id %1"
 msgstr ""
 
-#: root/comp/user_grid.js root/comp/user_group_grid.js
-msgid "Assign roles/projects"
-msgstr "Asignar roles/proyectos"
-
-#: root/comp/user_grid.js
-msgid "You must save the user before"
-msgstr "Tienes que grabar el usuario primero"
-
-#: root/comp/user_grid.js root/comp/user_group_grid.js
-msgid "Unassign roles/projects"
-msgstr "Desasignar roles/proyectos"
-
-#: root/comp/user_grid.js root/comp/user_group_grid.js
-msgid "User doesn't exist"
-msgstr "El usuario no existe"
-
-#: root/comp/user_grid.js root/comp/user_group_grid.js
-msgid "Passwords do not match"
-msgstr "Contraseñas no encontradas"
-
-#: root/comp/user_grid.js
-msgid "Edit user"
-msgstr "Editar usuario"
-
-#: root/comp/user_grid.js root/comp/user_group_grid.js
-msgid "Delete All"
-msgstr "Borrar Todos"
-
-#: root/comp/user_grid.js root/comp/user_group_grid.js root/comp/user_info.mas
-msgid "Roles/Projects User"
-msgstr "Roles/Proyectos de usuario"
-
-#: root/comp/user_grid.js
-msgid "Groups"
-msgstr "Grupos"
-
-#: root/comp/user_grid.js
-msgid "Account Type"
-msgstr "Tipo de cuenta"
-
-#: root/comp/user_grid.js
-msgid "Regular"
-msgstr "Regular"
-
-#: root/comp/user_grid.js root/site/tabfu.js
-msgid "Confirm Password"
-msgstr "Confirmar contraseña"
-
-#: root/comp/user_grid.js root/comp/user_info.mas
-msgid "Email address"
-msgstr "Correo electrónico"
-
-#: root/comp/user_grid.js
-msgid "Create user"
-msgstr "Crear usuario"
-
 #: root/comp/user_grid.js root/site/main.js root/site/prefs.js
 msgid "Preferences"
 msgstr "Preferencias"
@@ -12222,18 +12102,6 @@ msgid "User Group Administration"
 msgstr "Administración de grupos de usuarios"
 
 #: root/comp/user_group_grid.js
-msgid "You must save the user group before"
-msgstr "Debes guardar el grupo antes"
-
-#: root/comp/user_group_grid.js
-msgid "Edit usergroup"
-msgstr "Editar grupo"
-
-#: root/comp/user_group_grid.js
-msgid "Group"
-msgstr "Grupo"
-
-#: root/comp/user_group_grid.js
 msgid "Are you sure you want to delete the user group %1"
 msgstr "Estás seguro de que quieres eliminar el grupo %1"
 
@@ -12241,13 +12109,25 @@ msgstr "Estás seguro de que quieres eliminar el grupo %1"
 msgid "User groups"
 msgstr "Grupos de usuarios"
 
+#: root/comp/user_group_grid.js
+msgid "Group"
+msgstr "Grupo"
+
 #: root/comp/user_info.mas
 msgid "Actions User"
 msgstr "Acciones de usuario"
 
 #: root/comp/user_info.mas
+msgid "Roles/Projects User"
+msgstr "Roles/Proyectos de usuario"
+
+#: root/comp/user_info.mas
 msgid "Watch all actions"
 msgstr "Ver todas las acciones"
+
+#: root/comp/user_info.mas
+msgid "Email address"
+msgstr "Correo electrónico"
 
 #: root/comp/view_commits_history.js
 msgid "Commits history of branch"
@@ -13885,6 +13765,14 @@ msgstr "Excluir contenido"
 msgid "Exclude Content Regex"
 msgstr "Excluir contenido de la expresión regular"
 
+#: root/forms/fail.js
+msgid "Error Message"
+msgstr ""
+
+#: root/forms/fail.js
+msgid "abort here"
+msgstr ""
+
 #: root/forms/file_foreach.js
 msgid "Path Mode"
 msgstr "Modo de Ruta"
@@ -13928,6 +13816,10 @@ msgstr "Excluir rutas"
 #: root/forms/get_date.js
 msgid "Date (or blank for CURRENT date)"
 msgstr ""
+
+#: root/forms/get_date.js root/site/prefs.js
+msgid "Date Format"
+msgstr "Formato de Fecha"
 
 #: root/forms/git_create_branch.js
 msgid "Move to new sha if branch exists?"
@@ -15634,6 +15526,10 @@ msgid "Select Roles"
 msgstr "Seleccionar Roles"
 
 #: root/site/model.js
+msgid "Select Rule"
+msgstr ""
+
+#: root/site/model.js
 msgid "Select CI Role"
 msgstr "Seleccione el Rol CI"
 
@@ -15714,12 +15610,12 @@ msgid "Default Format for Current Language"
 msgstr "Formato por Defecto para Idioma Actual"
 
 #: root/site/prefs.js
-msgid "Date Format"
-msgstr "Formato de Fecha"
-
-#: root/site/prefs.js
 msgid "Time Format"
 msgstr "Formato de Hora"
+
+#: root/site/prefs.js
+msgid "Timezone"
+msgstr "Zona Horaria"
 
 #: root/site/prefs.js
 msgid "Server Timezone (%1)"
@@ -15846,6 +15742,10 @@ msgstr "Contraseña antigua"
 #: root/site/tabfu.js
 msgid "New Password"
 msgstr "Nueva Contraseña"
+
+#: root/site/tabfu.js
+msgid "Confirm Password"
+msgstr "Confirmar contraseña"
 
 #: root/site/tabfu.js
 msgid "Aceptar"
@@ -16080,8 +15980,23 @@ msgstr "destino"
 #~ msgid "event purge daemon frequency (secs)"
 #~ msgstr "frecuencia del demonio de purga de eventos (segs)"
 
+#~ msgid "Job %1 does not need rollback"
+#~ msgstr "Pase %1 no necesita marcha atrás"
+
+#~ msgid "Job Slots"
+#~ msgstr "Ventanas de Pase"
+
 #~ msgid "Create a new Job"
 #~ msgstr "Nuevo Pase"
+
+#~ msgid "event purge daemon frequency (secs)"
+#~ msgstr "frecuencia del demonio de purga de eventos (segs)"
+
+#~ msgid "Edit Job Slot for %1"
+#~ msgstr "Editar Ventana de Pase para %1"
+
+#~ msgid "Edit Job Slot"
+#~ msgstr "Editar Ventana de Pase"
 
 #~ msgid "Destination Baseline"
 #~ msgstr "Entorno Destino"
@@ -16643,9 +16558,11 @@ msgstr "destino"
 
 #~ msgid "group"
 #~ msgstr "grupo"
+#~ msgid "Assign roles/projects"
+#~ msgstr "Asignar roles/proyectos"
 
-#~ msgid "host"
-#~ msgstr "host"
+#~ msgid "You must save the user before"
+#~ msgstr "Tienes que grabar el usuario primero"
 
 #~ msgid "os"
 #~ msgstr "s.o."
@@ -18967,33 +18884,35 @@ msgstr "destino"
 #~ msgstr ""
 #~ "Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío "
 #~ "para HOY"
+#~ msgid "Unassign roles/projects"
+#~ msgstr "Desasignar roles/proyectos"
 
-#~ msgid "Use these categories"
-#~ msgstr "Usar categorías"
+#~ msgid "User doesn't exist"
+#~ msgstr "El usuario no existe"
 
-#~ msgid "Available fields"
-#~ msgstr "Campos disponibles"
+#~ msgid "Passwords do not match"
+#~ msgstr "Contraseñas no encontradas"
 
-#~ msgid "Rol"
-#~ msgstr "Rol"
+#~ msgid "Edit user"
+#~ msgstr "Editar usuario"
 
-#~ msgid "Open life cicle"
-#~ msgstr "Abrir ciclo de vida"
+#~ msgid "Delete All"
+#~ msgstr "Borrar Todos"
 
-#~ msgid "Error: Role already exists"
-#~ msgstr "Error: El rol ya existe"
+#~ msgid "Groups"
+#~ msgstr "Grupos"
 
-#~ msgid "'Preformatted Text'"
-#~ msgstr "Texto con Preformato"
+#~ msgid "Account Type"
+#~ msgstr "Tipo de cuenta"
 
-#~ msgid "Date time format"
-#~ msgstr "Formato fecha-hora"
+#~ msgid "Regular"
+#~ msgstr "Regular"
 
-#~ msgid "Class selection"
-#~ msgstr "Selección por Clase"
+#~ msgid "Create user"
+#~ msgstr "Crear usuario"
 
-#~ msgid "The project %1 has %2 user(s) assigned, delete this project?"
-#~ msgstr "El proyeto %1 tiene %2 usuarios asignados, ¿desea borrarlo?"
+#~ msgid "You must save the user group before"
+#~ msgstr "Debes guardar el grupo antes"
 
-#~ msgid "step"
-#~ msgstr "paso"
+#~ msgid "Edit usergroup"
+#~ msgstr "Editar grupo"

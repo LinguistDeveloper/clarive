@@ -16,7 +16,7 @@ register 'menu.admin.user_groups' => {
     url_comp => '/usergroup/grid',
     actions  => ['action.admin.user_groups'],
     title    => 'User groups',
-    index    => 80,
+    index    => 81,
     icon     => '/static/images/icons/users.svg'
 };
 
@@ -339,13 +339,41 @@ sub update : Local {
     return;
 }
 
+sub roles_projects : Local : Does('ACL') : ACL('action.admin.user_groups') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $id_user_group = $p->{id};
+
+    my $usergroup = ci->UserGroup->search_ci( mid => "$id_user_group" );
+    die 'usergroup not found' unless $usergroup;
+
+    my @rows;
+    foreach my $row ( @{ $usergroup->roles_projects } ) {
+        push @rows,
+          {
+            id          => $row->{role}->{id},
+            id_role     => $row->{role}->{id},
+            role        => $row->{role}->{role},
+            description => $row->{role}->{description},
+            projects    => [ map { { name => $_->name, icon => $_->icon } } @{ $row->{projects} } ],
+        };
+    }
+
+    $c->stash->{json} = { data => \@rows };
+    $c->forward('View::JSON');
+
+    return;
+}
+
 sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.user_groups') {
     my ( $self, $c ) = @_;
 
     my $p = $c->request->parameters;
 
     my $action           = $p->{action};
-    my $id_group          = $p->{id};
+    my $id_group         = $p->{id};
     my @projects_checked = _unique _array $p->{projects_checked};
     my @roles_checked    = _unique _array $p->{roles_checked};
 
@@ -362,6 +390,8 @@ sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.user_groups'
 
     $c->stash->{json} = { success => \1, msg => 'ok' };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub delete_roles : Local : Does('ACL') : ACL('action.admin.user_groups') {
@@ -376,12 +406,14 @@ sub delete_roles : Local : Does('ACL') : ACL('action.admin.user_groups') {
     my $usergroup = ci->UserGroup->search_ci( mid => "$id_group" );
     die 'usergroup not found' unless $usergroup;
 
-    $usergroup->delete_roles(roles => \@roles_checked);
+    $usergroup->delete_roles( roles => \@roles_checked );
 
     # TODO cache
 
     $c->stash->{json} = { success => \1, msg => 'ok' };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub actions_list : Local {

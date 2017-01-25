@@ -12,7 +12,7 @@ use DateTime::TimeZone qw(all_names);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
-use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique _warn);
+use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique _warn _encode_json);
 
 use experimental 'switch', 'autoderef';
 
@@ -103,7 +103,9 @@ sub info : Local {
 
 sub infodetail : Local {
     my ( $self, $c ) = @_;
+
     my $p        = $c->request->parameters;
+    my $id_user = $p->{id};
     my $username = $p->{username};
 
     my $authorized = 1;
@@ -128,7 +130,7 @@ sub infodetail : Local {
             $dir = -1;
         }
 
-        my $user = ci->user->find( { username => $username } )->next;
+        my $user = ci->user->find( { '$or' => [{mid => $id_user}, {username => $username }] } )->next;
         my @roles;
         if ( $user->{project_security} ) {
             @roles = keys $user->{project_security};
@@ -565,6 +567,39 @@ sub update : Local {
     $c->forward('View::JSON');
 }
 
+sub roles_projects : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $id_user = $p->{id};
+
+    my $user = ci->user->search_ci( mid => "$id_user" );
+    die 'user not found' unless $user;
+
+    my $is_user_admin = $self->_is_user_admin($c);
+    my $own_user = $user->username && $user->username eq $c->username;
+
+    die 'access denied' unless $is_user_admin || $own_user;
+
+    my @rows;
+    foreach my $row ( @{ $user->roles_projects } ) {
+        push @rows,
+          {
+            id          => $row->{role}->{id},
+            id_role     => $row->{role}->{id},
+            role        => $row->{role}->{role},
+            description => $row->{role}->{description},
+            projects    => [ map { { name => $_->name, icon => $_->icon } } @{ $row->{projects} } ],
+        };
+    }
+
+    $c->stash->{json} = { data => \@rows };
+    $c->forward('View::JSON');
+
+    return;
+}
+
 sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.users') {
     my ( $self, $c ) = @_;
 
@@ -592,6 +627,8 @@ sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.users') {
 
     $c->stash->{json} = { success => \1, msg => 'ok' };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub delete_roles : Local : Does('ACL') : ACL('action.admin.users') {
@@ -616,6 +653,8 @@ sub delete_roles : Local : Does('ACL') : ACL('action.admin.users') {
 
     $c->stash->{json} = { success => \1, msg => 'ok' };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub actions_list : Local {

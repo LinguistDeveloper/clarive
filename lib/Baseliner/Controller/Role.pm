@@ -21,7 +21,7 @@ register 'menu.admin.role' => {
     title    => _locl('Roles'),
     url_comp => '/role/grid',
     actions  => ['action.admin.role'],
-    index    => 81,
+    index    => 82,
     icon     => Util->icon_path('role')
 };
 register 'menu.admin.user_role_separator' => { separator => 1, index => 85 };
