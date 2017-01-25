@@ -672,6 +672,76 @@ subtest 'all_fields: returns category fields filtering out not readable' => sub 
     ok !grep {$_->{id_field} eq 'description'} @$fields;
 };
 
+subtest 'get_where: builds correct IN where for status' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+    my $where  = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'children' => [
+                        {
+                            'options'  => [ 'In QA', 'NEW',    'In PreProd', 'In DEV' ],
+                            'value'    => [ 'id_qa', 'id_new', 'id_pre',     'id_dev' ],
+                            'children' => [],
+                            'where'    => 'status',
+                            'oper'     => '$in',
+                            'text'     => 'In QA, New, In PreProd, In Dev',
+                            'type'     => 'value',
+                            'field'    => 'status',
+                        }
+                    ],
+                    'text'      => 'Status',
+                    'category'  => 'Changeset',
+                    'meta_type' => 'status',
+                    'id_field'  => 'status',
+                    'type'      => 'value'
+                }
+            ],
+        }
+    );
+
+    is_deeply $where, { status => { '$in' => [ 'id_qa', 'id_new', 'id_pre', 'id_dev' ] } };
+};
+
+subtest 'get_where: builds correct NIN where for status' => sub {
+    _setup();
+
+    my $report = TestUtils->create_ci('report');
+    my $where  = $report->get_where(
+        {
+            'dynamic_filter' => {},
+            'name_category'  => 'Changeset',
+            'filters_where'  => [
+                {
+                    'children' => [
+                        {
+                            'options'  => [ 'In QA', 'NEW',    'In PreProd', 'In DEV' ],
+                            'value'    => [ 'id_qa', 'id_new', 'id_pre',     'id_dev' ],
+                            'children' => [],
+                            'where'    => 'status',
+                            'oper'     => '$nin',
+                            'text'     => 'In QA, New, In PreProd, In Dev',
+                            'type'     => 'value',
+                            'field'    => 'status',
+                        }
+                    ],
+                    'text'      => 'Status',
+                    'category'  => 'Changeset',
+                    'meta_type' => 'status',
+                    'id_field'  => 'status',
+                    'type'      => 'value'
+                }
+            ],
+        }
+    );
+
+    is_deeply $where, { status => { '$nin' => [ 'id_qa', 'id_new', 'id_pre', 'id_dev' ] } };
+};
+
 done_testing;
 
 sub _setup {
