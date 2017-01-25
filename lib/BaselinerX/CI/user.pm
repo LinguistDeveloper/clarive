@@ -7,6 +7,7 @@ use Hash::Merge;
 use experimental 'autoderef';
 
 with 'Baseliner::Role::CI::Internal';
+with 'Baseliner::Role::CI::ProjectSecurity';
 
 has api_key             => qw(is rw isa Any);
 has email               => qw(is rw isa Any);

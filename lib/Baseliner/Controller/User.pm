@@ -578,41 +578,11 @@ sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.users') {
     my $user = ci->user->search_ci( mid => "$id_user" );
     die 'user not found' unless $user;
 
-    my @dimensions = map { Util->to_base_class($_) } Util->packages_that_do('Baseliner::Role::CI::Project');
-
-    my $projects_by_dimensions = {};
-    foreach my $project (@projects_checked) {
-        my $ci = eval { ci->new($project) };
-        next unless $ci && $ci->DOES('Baseliner::Role::CI::Project');
-
-        my $dimension = Util->to_base_class( ref $ci );
-        next unless grep { $dimension eq $_ } @dimensions;
-
-        push @{ $projects_by_dimensions->{$dimension} }, $project;
-    }
-
-    my $project_security = $user->project_security;
-
-    foreach my $id_role (@roles_checked) {
-        next unless mdb->role->find_one( { id => $id_role }, { _id => 1 } );
-
-        foreach my $dimension ( keys %$projects_by_dimensions ) {
-            if ( $action eq 'assign' ) {
-                $project_security->{$id_role}->{$dimension} =
-                  [ _unique _array( $project_security->{$id_role}->{$dimension} ), _array( $projects_by_dimensions->{$dimension} ) ];
-            }
-            elsif ( $action eq 'unassign' ) {
-                my %to_remove = map { $_ => 1 } _array( $projects_by_dimensions->{$dimension} );
-
-                $project_security->{$id_role}->{$dimension} = [ grep { !$to_remove{$_} } _array $project_security->{$id_role}->{$dimension} ];
-                delete $project_security->{$id_role}->{$dimension} unless _array $project_security->{$id_role}->{$dimension};
-            }
-        }
-
-        delete $project_security->{$id_role} unless %{ $project_security->{$id_role} };
-    }
-
-    $user->update( project_security => $project_security );
+    $user->toggle_roles_projects(
+        action   => $action,
+        projects => \@projects_checked,
+        roles    => \@roles_checked
+    );
 
     my $username = $user->username;
     cache->remove(qr/:$username:/);
@@ -636,15 +606,7 @@ sub delete_roles : Local : Does('ACL') : ACL('action.admin.users') {
     my $user = ci->user->search_ci( mid => "$id_user" );
     die 'user not found' unless $user;
 
-    my $project_security = $user->project_security;
-
-    foreach my $id_role (@roles_checked) {
-        next unless mdb->role->find_one( { id => $id_role }, { _id => 1 } );
-
-        delete $project_security->{$id_role};
-    }
-
-    $user->update( project_security => $project_security );
+    $user->delete_roles(roles => \@roles_checked);
 
     my $username = $user->username;
     cache->remove(qr/:$username:/);

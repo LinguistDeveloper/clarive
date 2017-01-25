@@ -339,6 +339,51 @@ sub update : Local {
     return;
 }
 
+sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.user_groups') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action           = $p->{action};
+    my $id_group          = $p->{id};
+    my @projects_checked = _unique _array $p->{projects_checked};
+    my @roles_checked    = _unique _array $p->{roles_checked};
+
+    my $usergroup = ci->UserGroup->search_ci( mid => "$id_group" );
+    die 'usergroup not found' unless $usergroup;
+
+    $usergroup->toggle_roles_projects(
+        action   => $action,
+        projects => \@projects_checked,
+        roles    => \@roles_checked
+    );
+
+    # TODO cache
+
+    $c->stash->{json} = { success => \1, msg => 'ok' };
+    $c->forward('View::JSON');
+}
+
+sub delete_roles : Local : Does('ACL') : ACL('action.admin.user_groups') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action        = $p->{action};
+    my $id_group      = $p->{id};
+    my @roles_checked = _unique _array $p->{roles_checked};
+
+    my $usergroup = ci->UserGroup->search_ci( mid => "$id_group" );
+    die 'usergroup not found' unless $usergroup;
+
+    $usergroup->delete_roles(roles => \@roles_checked);
+
+    # TODO cache
+
+    $c->stash->{json} = { success => \1, msg => 'ok' };
+    $c->forward('View::JSON');
+}
+
 sub actions_list : Local {
     my ( $self, $c ) = @_;
 

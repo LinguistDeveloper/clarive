@@ -3,6 +3,7 @@ use Baseliner::Moose;
 
 with 'Baseliner::Role::CI::Internal';
 with 'Baseliner::Role::CI::Group';
+with 'Baseliner::Role::CI::ProjectSecurity';
 
 use Baseliner::Utils qw(_array _fail _unique _loc);
 
