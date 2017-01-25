@@ -1170,6 +1170,7 @@ register 'statement.perl.for' => {
 register 'statement.code.server' => {
     text           => _locl('Server CODE'),
     data           => {code => ''},
+    need_confirm   => 1,
     type           => 'loop',
     icon           => '/static/images/icons/statement-code-server.svg',
     holds_children => 0,
@@ -1194,6 +1195,7 @@ register 'statement.code.server' => {
 
 register 'statement.perl.code' => {
     text => _locl('CODE (Perl)'), data => { code=>'' },
+    need_confirm   => 1,
     type => 'loop',
     icon => '/static/images/icons/statement-perl-code.svg',
     holds_children => 0,

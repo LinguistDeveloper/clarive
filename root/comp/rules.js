@@ -601,6 +601,13 @@
             var rule_card = tabpanel.activeTab;
             if (rule_card) rule_card.focus();
         });
+        win.on('beforeclose', function() {
+            if (win.confirmMessage) {
+                askForConfirm(item, win);
+                return false;
+            }
+            return true;
+        });
         item.on('destroy', function(){
             if( !Ext.isFunction(foo) ) foo = function(d){
                 node.getOwnerTree().is_dirty=true;
@@ -928,9 +935,11 @@
                         var save_form = function(){
                             if(form.is_valid()){
                                 form.data = form.getValues();
+                                win.purgeListeners();
                                 form.destroy();
                             }
                         };
+                        var originalValues;
                         var form = new Baseliner.FormPanel({
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
                             labelWidth: 150,
@@ -939,14 +948,34 @@
                             labelSeparator: '',
                             autoScroll: true,
                             tbar: [
-                                '->',
-                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/close.svg', handler: function(){ form.destroy() } },
-                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.svg', handler: function(){ save_form() } }
+                                '->', {
+                                    xtype: 'button',
+                                    text: _('Cancel'),
+                                    icon: IC('close'),
+                                    handler: function() {
+                                        askForConfirm(form,win);
+                                    },
+                                }, {
+                                    xtype: 'button',
+                                    text: _('Save'),
+                                    icon: IC('save'),
+                                    handler: function() {
+                                        save_form()
+                                    }
+                                }
                             ],
                             bodyCssClass: 'rule-op-edit-form',
-                            items: comp
+                            items: comp,
+                            listeners: {
+                                afterrender: function() {
+                                    originalValues = form.getValues();
+                                }
+                            }
                         });
-                        show_win( node, form );
+                        var win = show_win(node, form, {
+                            "confirmMessage": res.params.need_confirm
+                        });
+                        win.originalValues = originalValues;
                     });
                 } else {
                     var node_data = Ext.apply( res.config, node.attributes.data );
@@ -2069,6 +2098,23 @@
         });
         return close_this;
     });
+
+    function askForConfirm(form, win) {
+        if (JSON.stringify(form.getValues()) !== JSON.stringify(win.originalValues) ) {
+            Ext.Msg.confirm(_('Confirmation'),
+                String.format(_('Content has changed, but has not been saved. Leave without saving?')),
+                function(btn) {
+                    if (btn == 'yes') {
+                        delete win.confirmMessage;
+                        win.close();
+                    }
+                }
+            );
+        } else {
+            delete win.confirmMessage;
+            win.close();
+        }
+    };
 
     Baseliner.edit_check( panel, true );  // block window closing from the beginning
     panel.print_hook = function(){
