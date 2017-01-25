@@ -360,7 +360,6 @@ sub update : Local {
     my $p                        = $c->request->parameters;
     my $action                   = $p->{action};
     my $projects_checked         = $p->{projects_checked};
-    my $projects_parents_checked = $p->{projects_parents_checked};
     my $roles_checked            = $p->{roles_checked};
     my $project;
 
@@ -556,155 +555,104 @@ sub update : Local {
                 };
             }
         } ## end when ( 'delete' )
-        when ('delete_roles_projects') {
-            try {
-                my $user_name = $p->{username};
-                my $rs;
-
-                my @colls = map { Util->to_base_class($_) }
-                    Util->packages_that_do('Baseliner::Role::CI::Project');
-                my $orig_ps = ci->user->find( { username => $user_name } )
-                    ->next->{project_security};
-
-                if ($roles_checked) {
-                    if ($projects_checked) {
-                        my @user_projects;
-                        my @ns_projects = _unique _array $projects_checked;
-                        foreach my $role ( _array $roles_checked) {
-                            my $rs_user;
-                            my @where = map {
-                                { "project_security.$role.$_" =>
-                                        { '$in' => \@ns_projects } }
-                            } @colls;
-                            $rs_user = ci->user->find_one(
-                                {   username => $user_name,
-                                    "project_security.$role" =>
-                                        { '$exists' => 1 },
-                                    '$or' => \@where
-                                }
-                            );
-
-                            foreach my $coll (@colls) {
-                                push @user_projects,
-                                    map { $role . '/' . $coll . '/' . $_ }
-                                    _array $rs_user->{project_security}
-                                    ->{$role}->{$coll};
-                            }
-                        }
-
-                        my %tmp;
-                        @tmp{@ns_projects} = ();
-
-                        my @user_projects_erased = grep {
-                            $_
-                                =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                            my $pid = $+{pid};
-                            exists $tmp{$pid}
-                        } @user_projects;
-
-                        foreach my $p_id_ns (@user_projects_erased) {
-                            $p_id_ns
-                                =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                            my $pid  = $+{pid};
-                            my $pcol = $+{collection};
-                            my $role = $+{urole};
-                            my @tmp  = @{ $orig_ps->{$role}{$pcol} };
-                            my @new_items;
-                            for ( my $i = 0; $i < scalar @tmp; $i++ ) {
-                                if ( $tmp[$i] ne $pid ) {
-                                    push @new_items, $tmp[$i];
-                                }
-                            }
-                            if (@new_items) {
-                                $orig_ps->{$role}{$pcol} = \@new_items;
-                            }
-                            else {
-                                delete $orig_ps->{$role}{$pcol};
-                                my @values = values $orig_ps->{$role};
-                                delete $orig_ps->{$role} if !@values;
-                            }
-                        }
-
-                    }
-                    else {
-                        #delete all projects with $role for $user_name
-                        delete @$orig_ps{ _array $roles_checked};
-                    }
-                }
-                else {
-
-                    my @user_projects;
-                    my $user
-                        = ci->user->find( { username => $user_name } )->next;
-                    my @roles = keys $user->{project_security};
-                    foreach my $role (@roles) {
-                        foreach my $coll (@colls) {
-                            push @user_projects,
-                                map { $role . '/' . $coll . '/' . $_ }
-                                _array $user->{project_security}->{$role}
-                                ->{$coll};
-                        }
-                    }
-
-                    my @ns_projects = _unique _array $projects_checked;
-                    my %tmp;
-                    @tmp{@ns_projects} = ();
-
-                    my @user_projects_erased = grep {
-                        my $pid;
-                        if ( $_ =~ /(?<urole>.+)\/(?<ucol>.+)\/(?<pid>.+)/ ) {
-                            $pid = $+{pid};
-                        }
-                        exists $tmp{$pid}
-                    } @user_projects;
-
-                    foreach my $p_id_ns (@user_projects_erased) {
-                        $p_id_ns
-                            =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                        my $pid  = $+{pid};
-                        my $pcol = $+{collection};
-                        my $role = $+{urole};
-                        my @tmp  = @{ $orig_ps->{$role}{$pcol} };
-                        my @new_items;
-                        for ( my $i = 0; $i < scalar @tmp; $i++ ) {
-                            if ( $tmp[$i] ne $pid ) {
-                                push @new_items, $tmp[$i];
-                            }
-                        }
-                        if (@new_items) {
-                            $orig_ps->{$role}{$pcol} = \@new_items;
-                        }
-                        else {
-                            delete $orig_ps->{$role}{$pcol};
-                            my @values = values $orig_ps->{$role};
-                            delete $orig_ps->{$role} if !@values;
-                        }
-                    }
-                }
-
-         # regenerate project security for all users TODO work with my ci only
-                my $user_ci = ci->user->search_ci( username => $user_name );
-
-                $user_ci->update( project_security => $orig_ps );
-
-                #$ci->save;
-
-                $c->stash->{json}
-                    = { msg => _loc('User modified'), success => \1 };
-            }
-            catch {
-                $c->stash->{json} = {
-                    success => \0,
-                    msg     => _loc( 'Error modifying User: %1', shift() )
-                };
-            }
-        }
     }
+
     cache->remove(qr/:$p->{username}:/);
     cache->remove( { d => 'security' } );
     cache->remove( { d => "topic:meta" } );
     cache->remove( { d => "topic" } );
 
+    $c->forward('View::JSON');
+}
+
+sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.users') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action           = $p->{action};
+    my $id_user          = $p->{id};
+    my @projects_checked = _unique _array $p->{projects_checked};
+    my @roles_checked    = _unique _array $p->{roles_checked};
+
+    my $user = ci->user->search_ci( mid => "$id_user" );
+    die 'user not found' unless $user;
+
+    my @dimensions = map { Util->to_base_class($_) } Util->packages_that_do('Baseliner::Role::CI::Project');
+
+    my $projects_by_dimensions = {};
+    foreach my $project (@projects_checked) {
+        my $ci = eval { ci->new($project) };
+        next unless $ci && $ci->DOES('Baseliner::Role::CI::Project');
+
+        my $dimension = Util->to_base_class( ref $ci );
+        next unless grep { $dimension eq $_ } @dimensions;
+
+        push @{ $projects_by_dimensions->{$dimension} }, $project;
+    }
+
+    my $project_security = $user->project_security;
+
+    foreach my $id_role (@roles_checked) {
+        next unless mdb->role->find_one( { id => $id_role }, { _id => 1 } );
+
+        foreach my $dimension ( keys %$projects_by_dimensions ) {
+            if ( $action eq 'assign' ) {
+                $project_security->{$id_role}->{$dimension} =
+                  [ _unique _array( $project_security->{$id_role}->{$dimension} ), _array( $projects_by_dimensions->{$dimension} ) ];
+            }
+            elsif ( $action eq 'unassign' ) {
+                my %to_remove = map { $_ => 1 } _array( $projects_by_dimensions->{$dimension} );
+
+                $project_security->{$id_role}->{$dimension} = [ grep { !$to_remove{$_} } _array $project_security->{$id_role}->{$dimension} ];
+                delete $project_security->{$id_role}->{$dimension} unless _array $project_security->{$id_role}->{$dimension};
+            }
+        }
+
+        delete $project_security->{$id_role} unless %{ $project_security->{$id_role} };
+    }
+
+    $user->update( project_security => $project_security );
+
+    my $username = $user->username;
+    cache->remove(qr/:$username:/);
+    cache->remove( { d => 'security' } );
+    cache->remove( { d => "topic:meta" } );
+    cache->remove( { d => "topic" } );
+
+    $c->stash->{json} = { success => \1, msg => 'ok' };
+    $c->forward('View::JSON');
+}
+
+sub delete_roles : Local : Does('ACL') : ACL('action.admin.users') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action        = $p->{action};
+    my $id_user       = $p->{id};
+    my @roles_checked = _unique _array $p->{roles_checked};
+
+    my $user = ci->user->search_ci( mid => "$id_user" );
+    die 'user not found' unless $user;
+
+    my $project_security = $user->project_security;
+
+    foreach my $id_role (@roles_checked) {
+        next unless mdb->role->find_one( { id => $id_role }, { _id => 1 } );
+
+        delete $project_security->{$id_role};
+    }
+
+    $user->update( project_security => $project_security );
+
+    my $username = $user->username;
+    cache->remove(qr/:$username:/);
+    cache->remove( { d => 'security' } );
+    cache->remove( { d => "topic:meta" } );
+    cache->remove( { d => "topic" } );
+
+    $c->stash->{json} = { success => \1, msg => 'ok' };
     $c->forward('View::JSON');
 }
 

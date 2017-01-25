@@ -641,6 +641,95 @@ subtest 'infodetail: gets projects with icon' => sub {
     like $data->{projects}->[0]->{name}, qr/$nature_icon/;
 };
 
+subtest 'toggle_roles_projects: assigns new roles and projects' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci('project');
+    my $id_role     = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $id_role2 = TestSetup->create_role;
+    my $project2 = TestUtils->create_ci('project');
+    my $area2 = TestUtils->create_ci('area');
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                action           => 'assign',
+                id               => $user->mid,
+                roles_checked    => [ $id_role2, 999, $id_role2 ],
+                projects_checked => [ 999, $project2->mid, $project2->mid, $area2->mid ]
+            }
+        },
+        username => 'root'
+    );
+    $controller->toggle_roles_projects($c);
+
+    $user = ci->new($user->{mid});
+
+    is_deeply $user->project_security,
+      {
+        $id_role => {
+            project => [ $project->mid ]
+        },
+        $id_role2 => {
+            project => [ $project2->mid ],
+            area    => [ $area2->mid ]
+        }
+      };
+};
+
+subtest 'toggle_roles_projects: unassigns roles and projects' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci('project');
+    my $id_role     = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                action           => 'unassign',
+                id               => $user->mid,
+                roles_checked    => [ $id_role ],
+                projects_checked => [ $project->mid ]
+            }
+        },
+        username => 'root'
+    );
+    $controller->toggle_roles_projects($c);
+
+    $user = ci->new($user->{mid});
+
+    is_deeply $user->project_security, {};
+};
+
+subtest 'delete_roles: deletes roles' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci('project');
+    my $id_role     = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id            => $user->mid,
+                roles_checked => [$id_role],
+            }
+        },
+        username => 'root'
+    );
+    $controller->delete_roles($c);
+
+    $user = ci->new($user->{mid});
+
+    is_deeply $user->project_security, {};
+};
+
 done_testing;
 
 sub _build_c {
