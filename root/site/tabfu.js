@@ -1909,7 +1909,7 @@ Baseliner.print = function(opts, share) {
     add_css( dw, '/site/boot.css' );
     add_css( dw, '/static/ext/resources/css/ext-all.css');
     add_css( dw, '/static/ext/examples/ux/css/ux-all.css');
-    add_css( dw, '/static/site.css' );
+    add_css( dw, "/static/themes/clarive-flat/style.css"  ); /*fix link appearance in monitor html print*/
     add_css( dw, '/static/gritter/css/jquery.gritter.css' );
 
     add_css( dw, "/static/datepickerplus/datepickerplus.css" );
