@@ -4,12 +4,6 @@ define(
         '/static/widget/user_assigned_roles_and_projects.js',
     ],
     function(rolesAndProjectsWidget, assignedRolesAndProjectsWidget) {
-        Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-            Ext.applyIf(this.options, {
-                submitEmptyText: false
-            });
-        });
-
         function buildFormPanel() {
             var blankImage = new Ext.BoxComponent({
                 autoEl: {
@@ -107,7 +101,6 @@ define(
                                     items: [{
                                         fieldLabel: _('User'),
                                         name: 'username',
-                                        emptyText: 'User',
                                         allowBlank: false,
                                         xtype: 'textfield'
                                     }]
@@ -157,7 +150,6 @@ define(
                                         xtype: 'textfield',
                                         fieldLabel: _('Password'),
                                         name: 'pass',
-                                        emptyText: '********',
                                         inputType: 'password'
                                     }, ]
                                 }, {
@@ -168,7 +160,6 @@ define(
                                         xtype: 'textfield',
                                         fieldLabel: _('Confirm Password'),
                                         name: 'pass_cfrm',
-                                        emptyText: '********',
                                         inputType: 'password',
                                         validator: function(value) {
                                             var password = formPanel.getForm().findField('pass').getValue();
@@ -185,12 +176,10 @@ define(
                                 anchor: '97%',
                                 fieldLabel: _('Name'),
                                 name: 'realname',
-                                emptyText: 'Full name',
                                 xtype: 'textfield'
                             }, {
                                 fieldLabel: _('Alias'),
                                 name: 'alias',
-                                emptyText: 'Alias',
                                 xtype: 'textfield'
                             }, {
                                 layout: 'column',
@@ -213,7 +202,6 @@ define(
                                     items: [{
                                         fieldLabel: _('Phone Number'),
                                         name: 'phone',
-                                        emptyText: 'xx-xxx-xx-xx',
                                         xtype: 'textfield'
                                     }]
                                 }]
@@ -221,7 +209,6 @@ define(
                                 anchor: '97%',
                                 fieldLabel: _('Email address'),
                                 name: 'email',
-                                emptyText: 'usuario@dominio.com',
                                 vtype: 'email',
                                 xtype: 'textfield'
                             },
@@ -316,7 +303,7 @@ define(
                 layout: 'border',
                 items: [{
                     region: 'north',
-                    height: 250,
+                    height: 260,
                     layout: 'fit',
                     items: [
                         userFormPanel

@@ -106,7 +106,6 @@ define(
                                     items: [{
                                         fieldLabel: _('Group'),
                                         name: 'groupname',
-                                        emptyText: 'Group',
                                         allowBlank: false,
                                         xtype: 'textfield'
                                     }]
