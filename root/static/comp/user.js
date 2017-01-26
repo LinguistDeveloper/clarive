@@ -244,6 +244,10 @@ define(
             });
             userFormPanel.on('usersaved', function(id) {
                 win.setUserId(id)
+
+                if (listeners['save']) {
+                    listeners['save']();
+                }
             });
 
             rolesAndProjectsContainer.on('togglerolesprojects', function(action, roles, projects) {
@@ -358,7 +362,11 @@ define(
             win.doLayout();
         };
 
+        var listeners = {};
         return {
+            on: function(ev, callback) {
+                listeners[ev] = callback;
+            },
             show: function(rec) {
                 addEdit(rec);
             }

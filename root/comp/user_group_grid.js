@@ -81,6 +81,10 @@
         handler: function() {
             require(['/static/comp/user_group.js'], function(comp) {
                 comp.show();
+
+                comp.on('save', function() {
+                    store.reload();
+                });
             });
         }
     });
@@ -97,6 +101,10 @@
 
                 require(['/static/comp/user_group.js'], function(comp) {
                     comp.show(sel);
+
+                    comp.on('save', function() {
+                        store.reload();
+                    });
                 });
             } else {
                 Baseliner.message(_('ERROR'), _('Select at least one row'));

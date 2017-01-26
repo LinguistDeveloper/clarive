@@ -140,6 +140,10 @@ define(
             });
             userGroupFormPanel.on('usergroupsaved', function(id) {
                 win.setUserGroupId(id)
+
+                if (listeners['save']) {
+                    listeners['save']();
+                }
             });
 
             rolesAndProjectsContainer.on('togglerolesprojects', function(action, roles, projects) {
@@ -243,7 +247,11 @@ define(
             win.doLayout();
         };
 
+        var listeners = {};
         return {
+            on: function(ev, callback) {
+                listeners[ev] = callback;
+            },
             show: function(rec) {
                 addEdit(rec);
             }
