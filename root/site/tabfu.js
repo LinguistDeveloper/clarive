@@ -1911,7 +1911,6 @@ Baseliner.print = function(opts, share) {
     add_css( dw, '/static/ext/examples/ux/css/ux-all.css');
     add_css( dw, "/static/themes/clarive-flat/style.css"  ); /*fix link appearance in monitor html print*/
     add_css( dw, '/static/gritter/css/jquery.gritter.css' );
-
     add_css( dw, "/static/datepickerplus/datepickerplus.css" );
     add_css( dw, "/static/pagedown/pagedown.css" );
     add_css( dw, "/static/cleditor/jquery.cleditor.css" );
@@ -1929,10 +1928,9 @@ Baseliner.print = function(opts, share) {
     add_css( dw, '/static/fullcalendar/fullcalendar.css'  );
     add_css( dw, '/static/fullcalendar/fullcalendar.print.css' );
     add_css( dw, '/static/gridtree/css/treegrid.css'  );
-    add_css( dw, "/static/final.css"  );
+    add_css( dw, "/static/sprites.css"  );
     add_css( dw, "/static/c3/c3.css"  );
 
-    add_css( dw, '/static/final.css' );
 
     dw.body.style.overflow = 'auto';
     dw.body.style['-webkit-print-color-adjust'] = 'exact';

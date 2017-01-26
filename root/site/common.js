@@ -132,7 +132,6 @@ Baseliner.errorWin = function( p_title, p_html ) {
 Baseliner.js_reload = function(msg) {
     // if you reload globals.js, tabs lose their info, and hell breaks loose
     Baseliner.loadFile( '/static/themes/clarive-flat/style.css', 'css' );
-    Baseliner.loadFile( '/static/final.css', 'css' );
     Cla.use([
         '/i18n/js',
         '/site/common.js',
