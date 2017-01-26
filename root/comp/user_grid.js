@@ -191,7 +191,7 @@
             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the user') + ' <b>' + sel.data.username + '</b>?',
             function(btn){
                 if(btn=='yes') {
-                    Baseliner.ajaxEval( '/user/update?action=delete',
+                    Baseliner.ajaxEval( '/user/delete',
                         { id: sel.data.id,
                           username: sel.data.username
                         },

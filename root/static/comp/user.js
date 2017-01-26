@@ -7,7 +7,7 @@ define(
         Ext.apply(Ext.form.VTypes, {
             password: function(val, field) {
                 if (field.initialPassField) {
-                    return val == pExt.getCmp(field.initialPassField).getValue();
+                    return val == Ext.getCmp(field.initialPassField).getValue();
                 }
                 return true;
             },
@@ -47,26 +47,25 @@ define(
                 width: 70,
                 handler: function() {
                     var form = formPanel.getForm();
-                    var action = form.getValues()['id'] != '-1' ? 'update' : 'add';
 
                     if (!form.isValid()) {
                         return false;
                     }
 
                     form.submit({
-                        params: {
-                            action: action,
-                            type: 'user'
-                        },
                         success: function(f, a) {
                             formPanel.fireEvent('usersaved', a.result.user_id);
 
                             Baseliner.message(_('Success'), a.result.msg);
                         },
-                        failure: function(f, a) {
+                        failure: function(f, action) {
+                            if (action.result && action.result.errors) {
+                                return;
+                            }
+
                             Ext.Msg.show({
                                 title: _('Information'),
-                                msg: a.result.msg,
+                                msg: action.result.msg,
                                 buttons: Ext.Msg.OK,
                                 icon: Ext.Msg.INFO
                             });
@@ -101,8 +100,7 @@ define(
                         columnWidth: 0.90,
                         items: [{
                                 xtype: 'hidden',
-                                name: 'id',
-                                value: -1
+                                name: 'id'
                             }, {
                                 layout: 'column',
                                 defaults: {
@@ -345,12 +343,12 @@ define(
                         rolesAndProjectsContainer.hide();
                         assignedRolesAndProjectsContainer.hideBBar();
                     } else {
-                        rolesAndProjectsContainer.enable();
+                        rolesAndProjectsContainer.enableAll();
                         rolesAndProjectsContainer.show();
                         assignedRolesAndProjectsContainer.showBBar();
                     }
 
-                    assignedRolesAndProjectsContainer.enable();
+                    assignedRolesAndProjectsContainer.enableAll();
                     assignedRolesAndProjectsContainer.show();
 
                     this.setTitle(_('Edit user'));

@@ -135,7 +135,7 @@ define(function() {
 
         var assignRolesAndProjectsButton = new Ext.Toolbar.Button({
             text: _('Assign roles/projects'),
-            icon: '/static/images/icons/key_add.svg',
+            icon: IC('key-add'),
             cls: 'x-btn-text-icon ui-comp-users-edit-window-assign-roles',
             disabled: true,
             handler: function() {
@@ -148,7 +148,7 @@ define(function() {
 
         var unassignRolesAndProjectsButton = new Ext.Toolbar.Button({
             text: _('Unassign roles/projects'),
-            icon: '/static/images/icons/key_delete.svg',
+            icon: IC('key-delete'),
             cls: 'x-btn-text-icon ui-comp-users-unassign-roles',
             disabled: true,
             handler: function() {
@@ -195,7 +195,24 @@ define(function() {
                     assignRolesAndProjectsButton,
                     unassignRolesAndProjectsButton
                 ]
-            }]
+            }],
+            enableAll: function() {
+                rolesAndProjectsContainer.enable();
+                rolesGrid.cascade(function(el) {
+                    el.setDisabled(false);
+                });
+                projectsTree.cascade(function(el) {
+                    el.setDisabled(false);
+                });
+            }
+        });
+
+        rolesAndProjectsContainer.disable();
+        rolesGrid.cascade(function(el) {
+            el.setDisabled(true);
+        });
+        projectsTree.cascade(function(el) {
+            el.setDisabled(true);
         });
 
         return rolesAndProjectsContainer;

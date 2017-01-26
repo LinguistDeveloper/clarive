@@ -48,7 +48,7 @@ define(function() {
 
         var deleteRowButton = new Ext.Toolbar.Button({
             text: _('Delete row'),
-            icon: '/static/images/icons/delete_red.svg',
+            icon: IC('delete-grid-row'),
             cls: 'x-btn-text-icon',
             disabled: true,
             handler: function() {
@@ -69,7 +69,7 @@ define(function() {
 
         var deleteAllButton = new Ext.Toolbar.Button({
             text: _('Delete All'),
-            icon: '/static/images/icons/del_all.svg',
+            icon: IC('delete-grid-all-rows'),
             cls: 'x-btn-text-icon',
             handler: function() {
                 var roles = assignedRolesAndProjectsGrid.getAllRoles();
@@ -166,7 +166,18 @@ define(function() {
             },
             loadFor: function(userId) {
                 assignedRolesAndProjectsGrid.loadFor(userId);
+            },
+            enableAll: function() {
+                assignedRolesAndProjectsContainer.enable();
+                assignedRolesAndProjectsGrid.cascade(function(el) {
+                    el.setDisabled(false);
+                });
             }
+        });
+
+        assignedRolesAndProjectsContainer.disable();
+        assignedRolesAndProjectsGrid.cascade(function(el) {
+            el.setDisabled(true);
         });
 
         return assignedRolesAndProjectsContainer;
