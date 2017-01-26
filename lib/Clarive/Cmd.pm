@@ -3,6 +3,7 @@ use Mouse;
 use v5.10;
 
 use Class::Load qw(is_class_loaded try_load_class load_class);
+use List::MoreUtils qw(uniq);
 
 has app => qw(is ro required 1),
             handles=>[qw/
@@ -259,8 +260,7 @@ sub locate_all_commands {
         push @cmd_files, glob "$lib/Clarive/Cmd/*";
     }
 
-    for my $cmd_file ( sort { uc $a cmp uc $b } @cmd_files ) {
-
+    for my $cmd_file ( sort { uc $a cmp uc $b } uniq @cmd_files ) {
         next if -d $cmd_file;
 
         my ($cmd) = $cmd_file =~ /Clarive\/Cmd\/(.*).pm$/;
@@ -295,11 +295,9 @@ sub list_subcommands {
 
     $cmd //= $self->command_name;
 
-    my @subcommands;
+    try_load_class( $class );
 
-    if( ! is_class_loaded( $class ) ) {
-        try_load_class( $class );
-    }
+    my @subcommands;
 
     {
         no strict 'refs';
@@ -323,7 +321,6 @@ sub load_package_for_command {
     my $package;
 
     for my $cmd ( grep { length } @cmds ) {
-
         my $pkg = $cmd // $self->command_name;
         $pkg =~ s{\/+}{::}g;
         $pkg = 'Clarive::Cmd::' . $pkg;
