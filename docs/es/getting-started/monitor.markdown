@@ -5,6 +5,7 @@ icon: television
 ---
 
 El monitor muestra la lista de [pases](concepts/job) que han sido creados y que el usuario puede ver en función de sus permisos.
+Se puede modificar la forma en la que se crean los nombres de los pases modificando la variable congif.job.mask [Config Job Mask](how-to/config-job-mask).
 
 Los siguientes botones se encuentran disponibles arriba de la lista de pases:
 

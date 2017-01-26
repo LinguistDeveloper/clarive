@@ -5,6 +5,7 @@ icon: television
 ---
 
 The monitor show the list of [jobs](concepts/job) that have been created and the status of the jobs.
+You can change how the names appear in monitor modifying the variable config.job.mask [Config Job Mask](how-to/config-job-mask).
 
 The following actions buttons are available above the list of Jobs:
 
