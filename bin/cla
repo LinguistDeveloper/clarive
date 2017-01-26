@@ -31,6 +31,8 @@ export NODE_MODULES="$LOCALDIR/lib/node_modules"
 export PERLHOME=""
 export PERL_CPANM_OPT=""
 
+export PERL_INLINE_DIRECTORY="$CLARIVE_BASE/local/lib/_Inline"
+
 if [ "$1" == "exec" ]; then
     shift
 

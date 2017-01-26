@@ -2,8 +2,6 @@ package Clarive::Code::JS;
 use Moose;
 BEGIN { extends 'Clarive::Code::Base' }
 
-BEGIN { $ENV{PERL_INLINE_DIRECTORY} = "$ENV{CLARIVE_BASE}/local/lib/_Inline" }
-
 use Try::Tiny;
 use Scalar::Util qw(blessed);
 use JavaScript::Duktape 1.0;
