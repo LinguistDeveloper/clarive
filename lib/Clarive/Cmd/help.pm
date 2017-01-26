@@ -2,24 +2,22 @@ package Clarive::Cmd::help;
 use Mouse;
 BEGIN { extends 'Clarive::Cmd' }
 
-use Path::Class;
-use List::MoreUtils qw(uniq);
-use v5.10;
-
 our $CAPTION = 'This help';
 
 sub run {
-    my ($self, %opts)=@_;
+    my ( $self, %opts ) = @_;
 
     my $cmd = ref $opts{''} ? $opts{''}->[0] : $opts{''};
 
-    if( $cmd ) {
+    if ($cmd) {
         $cmd =~ s{-.*$}{}g;
 
-        my $pkg = $self->load_package_for_command( $cmd );
+        my $pkg = $self->load_package_for_command($cmd);
+        die "ERROR: command $cmd not found\n" unless $pkg;
 
         $pkg->show_help;
-    } else {
+    }
+    else {
         # cla -h
 
         Clarive::Cmd->show_cla_help;
@@ -27,4 +25,3 @@ sub run {
 }
 
 1;
-__DATA__
