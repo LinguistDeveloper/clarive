@@ -51,6 +51,11 @@ sub run_dump {
     my $mongo = $self->app->opts->{mongo};
     ( my $host = $mongo->{client}{host} // '' ) =~ s{mongodb://}{}g;
     my $dbname = $mongo->{dbname};
+
+    if (system 'which mongodump') {
+        die "Command `mongodump` is not available. Make sure it is in the PATH\n";
+    }
+
     Util->_log( "Dumping data from mongo, db=$dbname, host=$host..." );
     my $cmd = join ' ', 'mongodump', '-h', $host, '-d', $dbname;
     if( ! $self->all ) {
