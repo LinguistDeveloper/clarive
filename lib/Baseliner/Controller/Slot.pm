@@ -476,7 +476,7 @@ sub build_job_window : Path('/job/build_job_window') {
         }
         @ns = _unique @ns;
 
-        my ($hour_store, @rel_cals) = $self->check_dates($date, $bl, @ns);
+        my ($hour_store, @rel_cals) = Baseliner::Model::Calendar->new->check_dates($date, $bl, @ns);
 
         # build statistics
         my %stats;
@@ -561,7 +561,7 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         }
 
         my @ns = _array $p->{ns};
-        my ($hour_store, @rel_cals) = $self->check_dates($date, $bl, @ns);
+        my ($hour_store, @rel_cals) =Baseliner::Model::Calendar->new->check_dates($date, $bl, @ns);
 
         $c->stash->{json} = {success=>\1, data => $hour_store };
     } catch {
@@ -570,34 +570,6 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
         $c->stash->{json} = {success=>\0, msg=>$error, data => $error };
     };
     $c->forward('View::JSON');
-}
-
-sub check_dates {
-    my ($self, $date, $bl, @ns) = @_;
-    my @rel_cals = mdb->calendar->find(
-        {
-            ns=> { '$in' => [ @ns, '/', 'Global', undef ] },
-            bl=> { '$in' => [ $bl, '*'] }
-        })->all;
-
-    my @ns_cals = map { $_->{ns} } @rel_cals;
-
-    # produce the hour list for matching calendars
-    my $hours = @ns_cals
-            ? $self->merge_calendars( ns=>mdb->in(@ns_cals), bl=>$bl, date=>$date )
-            : {};
-    # remove X
-    while( my ($k,$v) = each %$hours ) {
-        delete $hours->{$k} if $v->{type} eq 'X';
-        delete $hours->{$k} if $v->{type} eq 'B';
-    }
-    # get it ready for a combo simplestore
-    my $hour_store = [ map {
-        my $server_date = Class::Date->new( $date->ymd . ' ' .  $hours->{$_}{hour}, _tz() );
-        [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type}, $server_date->strftime('%Y-%m-%d %k:%M %z') ]
-    } sort keys %$hours ];
-
-    return $hour_store, @rel_cals;
 }
 
 ### Private Methods
@@ -677,103 +649,6 @@ sub week_of {
     my $slots = $self->db_to_slots( $id_cal, base=>1 );
     $slots = $slots->week_of( substr( "$week", 0, 10 ) );
     return $slots;
-}
-
-sub merge_calendars {
-    my ($self,%p) = @_;
-
-    my $bl = $p{bl};
-    my $now = Class::Date->new( _dt() );
-    my $date = $p{date} || $now;
-    $date = Class::Date->new( $date ) if ref $date ne 'Class::Date' ;
-
-    # if today, start hours at now
-    my $start_hour = $now->ymd eq $date->ymd ? sprintf("%02d%02d", $now->hour , $now->minute) : '';
-
-    my $where = { active => mdb->true };
-    $where->{bl} = ['*'];
-    $where->{ns} = $p{ns} if $p{ns}; # [ 'xxxx.nature/yyyy', '/'  ]
-    push $where->{bl} , $p{bl} if $p{bl};
-    $where->{bl} = mdb->in( $where->{bl} );
-
-    my @cals = mdb->calendar->find($where)
-        ->sort({ seq=>1 })
-        ->sort({ day => 1 })
-        ->sort({ start_time => 1 })->all;
-
-    my @slots_cal;
-    for my $cal (@cals) {
-        my $id_cal = $cal->{id};
-        my @win_cals = mdb->joins(
-            calendar => { id=>$id_cal },
-            id => id_cal =>
-            calendar_window => {} );
-
-        my $slots = Calendar::Slots->new();
-        for my $win ( _array @win_cals ) {
-            my $name = "$cal->{name} ($win->{type})==>" . ( $win->{day} + 1 );
-            if ( $win->{start_date} ) {
-                my $d = Class::Date->new( $win->{start_date} );
-                $slots->slot(
-                    date  => substr( $d->string, 0, 10 ),
-                    start => $win->{start_time},
-                    end   => $win->{end_time},
-                    name  => $name,
-                    data => { cal => $cal->{name}, type => $win->{type} }
-                );
-            } else {
-                $slots->slot(
-                    weekday => $win->{day} + 1,
-                    start   => $win->{start_time},
-                    end     => $win->{end_time},
-                    name    => $name,
-                    data    => { cal => $cal->{name}, type => $win->{type}, seq => $cal->{seq} }
-                );
-            }
-        }
-        push @slots_cal, $slots;
-    }
-
-    # prepare the date and weekday filters
-    my $date_w = $date->wday -1;
-    $date_w <= 0  and $date_w += 7;
-    my $date_s = $date->strftime('%Y%m%d');
-    my %list;
-    _debug "TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
-
-    # loop all slots in all calendars - calendars are sorted by the SEQ field
-    for my $s ( map { $_->sorted } @slots_cal ) {
-       next if $s->type eq 'date' && $s->when ne $date_s;   # skip if does not apply to this date
-       next if $s->type eq 'weekday' && $s->when ne $date_w; # skip if not apply to this weekday
-
-       # loop minute-by-minute
-       for( $s->start .. $s->end-1 ) {
-         my $time = sprintf('%04d',$_);
-         next if $s->data->{type} eq 'B'; # skip if slot is undefined
-         next if $start_hour && $time < $start_hour;  # don't show today time if it's passed already
-         next if substr( $time, 2,2) > 59 ; # skip if >= 60
-         next if $time == 2400;  # no 24:00 in returned list
-         # now choose which slot to use for this minute
-         #   giving higher precedence to the ASCII value of TYPE letter
-         #     X > U > N - using ord for ascii values
-         $s->data->{seq} //= $DEFAULT_SEQ;
-         if( ! exists $list{$time}
-             || ord $s->data->{type} > ord $list{ $time }->{type}
-             || $s->data->{seq} > $list{ $time }->{seq}
-             ) {
-            $list{$time} = {
-                type => $s->data->{type},
-                cal  => $s->data->{cal},
-                seq  => $s->data->{seq},
-                hour => sprintf( '%s:%s', substr( $time, 0, 2 ), substr( $time, 2, 2 ) ),
-                name => sprintf( "%s (%s)", $s->data->{cal}, $s->data->{type} ),
-                start => $s->start,
-                end   => $s->end,
-            };
-         }
-       }
-    }
-    \%list;
 }
 
 sub addDaysToDateTime {
