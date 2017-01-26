@@ -4,16 +4,6 @@ define(
         '/static/widget/user_assigned_roles_and_projects.js',
     ],
     function(rolesAndProjectsWidget, assignedRolesAndProjectsWidget) {
-        Ext.apply(Ext.form.VTypes, {
-            password: function(val, field) {
-                if (field.initialPassField) {
-                    return val == Ext.getCmp(field.initialPassField).getValue();
-                }
-                return true;
-            },
-            passwordText: _('Passwords do not match')
-        });
-
         Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
             Ext.applyIf(this.options, {
                 submitEmptyText: false
@@ -164,11 +154,10 @@ define(
                                         anchor: '100%'
                                     },
                                     items: [{
+                                        xtype: 'textfield',
                                         fieldLabel: _('Password'),
                                         name: 'pass',
-                                        id: 'pass',
                                         emptyText: '********',
-                                        xtype: 'textfield',
                                         inputType: 'password'
                                     }, ]
                                 }, {
@@ -176,13 +165,20 @@ define(
                                         anchor: '100%'
                                     },
                                     items: [{
+                                        xtype: 'textfield',
                                         fieldLabel: _('Confirm Password'),
                                         name: 'pass_cfrm',
                                         emptyText: '********',
                                         inputType: 'password',
-                                        vtype: 'password',
-                                        initialPassField: 'pass',
-                                        xtype: 'textfield'
+                                        validator: function(value) {
+                                            var password = formPanel.getForm().findField('pass').getValue();
+
+                                            if (password == value) {
+                                                return true;
+                                            }
+
+                                            return 'Password do not match';
+                                        }
                                     }]
                                 }]
                             }, {
