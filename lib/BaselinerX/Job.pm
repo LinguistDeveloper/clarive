@@ -18,32 +18,47 @@ register 'config.job.daemon' => {
 };
 
 register 'config.job' => {
-    metadata=> [
-        { id=>'jobid', label => _locl('Job ID'), type=>'text', width=>200 },
-        { id=>'name', label => _locl('Job Name'), type=>'text', width=>180 },
-        { id=>'starttime', label => _locl('StartDate'), type=>'text', },
-        { id=>'username', label => _locl('Create'), type=>'text', },
-        { id=>'maxstarttime', label => _locl('MaxStartDate'), type=>'text', },
-        { id=>'endtime', label => _locl('EndDate'), type=>'text' },
-        { id=>'status', label => _locl('Status'), type=>'text', default=>'READY' },
-        { id=>'mask', label => _locl('Job Naming Mask'), type=>'text', default=>'${prefix}.${bl}-${seq}' },
-        { id=>'runner', label => _locl('Registry Entry to run'), type=>'text', default=>sub { Clarive->config->{job_runner} || 'service.job.runner.rule' } },
-        { id=>'default_chain_id', label => _locl('Default Pipeline ID'), type=>'text', default=>1 },
-        { id=>'comment', label => _locl('Comment'), type=>'text' },
-        { id=>'check_rfc', label => _locl('Check RFC on creation'), type=>'text', default=>0 },
-        { id=>'step', label => _locl('Which phase of the job, pre, post or run'), default => 'RUN' },
-        { id=>'normal_window', label => _locl('Normal Window Name'), default => 'N' },
-        { id=>'emer_window', label => _locl('Emergency Window Name'), default => 'U' },
-        { id=>'expiry_time', label => _locl('Time to expiry a job in hours'), type=>'hash', default=>'{ N=>"1D", U=>"1h" }' },
-        { id=>'approval_expiry_time', label => _locl('Time to expiry a job in approval state'), default=>'1D' },
-        { id=>'approval_delay', label => _locl('Delay after start running job to allow approval'), default=>'0h' },
-        { id=>'demote_to_bl', label => _locl('1 to offer demote to each bl in destination state'), default=>'0' },
-        { id=>'changeset_comment_field', label => _locl('Changeset field to use as comment in monitor'), default=>'' }
+    metadata => [
+        { id => 'jobid',        label => _locl('Job ID'),       type => 'text', width   => 200 },
+        { id => 'name',         label => _locl('Job Name'),     type => 'text', width   => 180 },
+        { id => 'starttime',    label => _locl('StartDate'),    type => 'text', },
+        { id => 'username',     label => _locl('Create'),       type => 'text', },
+        { id => 'maxstarttime', label => _locl('MaxStartDate'), type => 'text', },
+        { id => 'endtime',      label => _locl('EndDate'),      type => 'text' },
+        { id => 'status',       label => _locl('Status'),       type => 'text', default => 'READY' },
+        { id => 'mask', label => _locl('Job Naming Mask'), type => 'text', default => '${prefix}.${bl}-${seq}' },
+        {
+            id      => 'runner',
+            label   => _locl('Registry Entry to run'),
+            type    => 'text',
+            default => sub { Clarive->config->{job_runner} || 'service.job.runner.rule' }
+        },
+        { id => 'default_chain_id', label => _locl('Default Pipeline ID'),   type => 'text', default => 1 },
+        { id => 'comment',          label => _locl('Comment'),               type => 'text' },
+        { id => 'check_rfc',        label => _locl('Check RFC on creation'), type => 'text', default => 0 },
+        { id => 'step',          label => _locl('Which phase of the job, pre, post or run'), default => 'RUN' },
+        { id => 'normal_window', label => _locl('Normal Window Name'),                       default => 'N' },
+        { id => 'emer_window',   label => _locl('Emergency Window Name'),                    default => 'U' },
+        {
+            id      => 'expiry_time',
+            label   => _locl('Time to expiry a job in hours'),
+            type    => 'hash',
+            default => '{ N=>"1D", U=>"1h" }'
+        },
+        { id => 'approval_expiry_time', label => _locl('Time to expiry a job in approval state'), default => '1D' },
+        { id => 'approval_delay', label => _locl('Delay after start running job to allow approval'), default => '0h' },
+        { id => 'demote_to_bl', label => _locl('1 to offer demote to each bl in destination state'), default => '0' },
+        {
+            id      => 'changeset_comment_field',
+            label   => _locl('Changeset field to use as comment in monitor'),
+            default => ''
+        }
     ],
-    relationships => [ { id=>'natures', label => _locl('Technologies'), type=>'list', config=> 'config.tech' },
-        { id=>'releases', label => _locl('Releases'), type=>'list', config=> 'config.release' },
-        { id=>'apps', label => _locl('Applications'), type=>'list', config=> 'config.app' },
-        { id=>'rfcs', label => _locl('RFCs'), type=>'list', config=>'config.rfc' }
+    relationships => [
+        { id => 'natures',  label => _locl('Technologies'), type => 'list', config => 'config.tech' },
+        { id => 'releases', label => _locl('Releases'),     type => 'list', config => 'config.release' },
+        { id => 'apps',     label => _locl('Applications'), type => 'list', config => 'config.app' },
+        { id => 'rfcs',     label => _locl('RFCs'),         type => 'list', config => 'config.rfc' }
     ],
 };
 
