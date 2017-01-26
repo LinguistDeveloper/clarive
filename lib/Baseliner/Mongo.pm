@@ -24,7 +24,7 @@ has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>
        for my $retry (1..$max){
            my $cli = try {
                local $Baseliner::logger = undef;  # if we're in a job, dont' try to write to db in _log()
-               _log sprintf "Mongo: new connection to db `%s`",$self->mongo_db_name;
+               _debug sprintf "Mongo: new connection to db `%s`",$self->mongo_db_name;
                return MongoDB::MongoClient->new({ %{ $self->mongo_client }, dt_type=>'DateTime' });
            } catch {
                my $err = shift;
