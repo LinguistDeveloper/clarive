@@ -9,6 +9,8 @@ use Baseliner::Sugar;
 
 use experimental 'autoderef', 'switch';
 
+with 'Baseliner::Role::ControllerValidator';
+
 register 'action.admin.user_groups' => { name => 'User groups Admin', };
 
 register 'menu.admin.user_groups' => {
@@ -110,230 +112,83 @@ sub infodetail : Local {
     return;
 }
 
-sub update : Local {
+sub update : Local : Does('ACL') : ACL('action.admin.user_groups') {
     my ( $self, $c ) = @_;
+
+    return
+      unless my $validated_params = $self->validate_params(
+        $c,
+        id        => { isa => 'Str',               default => '' },
+        groupname => { isa => 'Str' },
+        users     => { isa => 'Str|ArrayRef[Str]', default => [] }
+      );
+
+    my $mid = delete $validated_params->{id};
+    $validated_params->{name} = $validated_params->{groupname};
+
+    my $exists = ci->UserGroup->find_one(
+        {
+            groupname => $validated_params->{groupname},
+            $mid ? ( mid => { '$ne' => $mid } ) : ()
+        }
+    );
+
+    if ($exists) {
+        $c->stash->{json} = {
+            success => \0,
+            msg     => _loc('Validation failed'),
+            errors  => { groupname => _loc('User group name already exists') }
+        };
+    }
+    else {
+        try {
+            my $usergroup;
+            if ($mid) {
+                try { $usergroup = ci->new($mid) };
+                die 'User group not found' unless $usergroup;
+
+                $usergroup->update($validated_params);
+            }
+            else {
+                $usergroup = ci->UserGroup->new( bl => '*', active => '1', %$validated_params );
+            }
+
+            $usergroup->save;
+            $usergroup->set_users( _array $validated_params->{users} );
+
+            $c->stash->{json} = { success => \1, msg => _loc('User group saved'), user_id => $usergroup->mid };
+        }
+        catch {
+            my $error = shift;
+
+            $c->stash->{json} = { success => \0, msg => _loc( 'Error saving user group' ) };
+        };
+    }
+
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub delete : Local : Does('ACL') : ACL('action.admin.user_groups') {
+    my ($self, $c) = @_;
+
     my $p = $c->request->parameters;
 
-    my $action = $p->{action} // _fail( _loc("Missing action") );
+    try {
+        my $group_id = $p->{id} // _fail( _loc("Missing id") );
+        my $group = ci->new($group_id);
 
-    my $projects_checked         = $p->{projects_checked};
-    my $projects_parents_checked = $p->{projects_parents_checked};
-    my $roles_checked            = $p->{roles_checked};
-    my $project;
+        ci->delete($group_id);
 
-    given ($action) {
-        when ('add') {
-
-            try {
-                _fail( _loc("Missing groupname") ) if !$p->{groupname};
-
-                my $row = ci->UserGroup->find( { groupname => $p->{groupname}, active => mdb->true } )->next;
-
-                if ( !$row ) {
-                    my $group_mid;
-
-                    my $ci_data = {
-                        name      => $p->{groupname},
-                        bl        => '*',
-                        groupname => $p->{groupname},
-                        active    => '1'
-                    };
-
-                    my $ci = ci->UserGroup->new(%$ci_data);
-
-                    $ci->gen_project_security( $projects_checked, $roles_checked );
-                    $group_mid = $ci->save;
-                    $ci->set_users( _array( $p->{users} ) );
-                    $c->stash->{json} = { msg => _loc('User group added'), success => \1, user_id => $group_mid };
-
-                } else {
-                    $c->stash->{json} = {
-                        msg => _loc('Group name already exists.  Specify another group name'),
-                        success => \0
-                    };
-                }
-            }
-            catch {
-                $c->stash->{json} = { msg => _loc( 'Error adding User group: %1', shift() ), success => \0 };
-            }
-        }
-        when ('update') {
-
-            try {
-                my $type_save    = $p->{type} // _fail( _loc("Missing update type") );
-                my $usergroup_id = $p->{id}   // _fail( _loc("Missing group mid") );
-                my $usergroup = ci->UserGroup->search_ci( mid => $usergroup_id );
-
-                _fail( _loc("Group not found") ) if !$usergroup;
-
-                if ( $type_save eq 'group' ) {
-                    my $old_groupname = $usergroup->groupname;
-
-                    if ( $old_groupname ne $p->{groupname} ) {
-                        my $usergroup_ci = ci->UserGroup->find_one( { groupname => $p->{groupname} } );
-
-                        if ($usergroup_ci) {
-                            _fail( _loc("Group name already exists.  Specify another group name") );
-                        }
-                    }
-
-                    $usergroup->update( active => $p->{active} ) if $p->{active};
-                    $usergroup->update( name => $p->{groupname}, groupname => $p->{groupname} );
-                    $usergroup->save;
-                    $usergroup->set_users( _array( $p->{users} ) );
-
-                    $c->stash->{json} = { msg => _loc('User group modified'), success => \1, user_id => $usergroup_id };
-                } else {
-                    _debug 'Re-generating group project security...';
-                    $usergroup->gen_project_security( $projects_checked, $roles_checked );
-                    $usergroup->save;
-                    $usergroup->set_users( _array( $p->{users} ) );
-
-                    $c->stash->{json} = { msg => _loc('User group modified'), success => \1, group_id => $p->{id} };
-                }
-            }
-            catch {
-                $c->stash->{json} = { msg => _loc( 'Error modifying user group: %1', shift() ), success => \0 };
-            }
-        }
-        when ('delete') {
-            try {
-                my $group_id = $p->{id} // _fail( _loc("Missing id") );
-                my $group = ci->new($group_id);
-
-                ci->delete($group_id);
-
-                $c->stash->{json} = { success => \1, msg => _loc('User group deleted') };
-            }
-            catch {
-                $c->stash->{json} = { success => \0, msg => _loc( 'Error deleting User group: %1', shift() ) };
-            }
-        } ## end when ( 'delete' )
-        when ('delete_roles_projects') {
-            try {
-                _fail( _loc("Missing id") ) if !$p->{id};
-
-                my $rs;
-                my @colls = map { Util->to_base_class($_) } packages_that_do('Baseliner::Role::CI::Project');
-                my $orig_ps = ci->UserGroup->find_one( { mid => $p->{id} } )->{project_security};
-
-                if ($roles_checked) {
-                    if ($projects_checked) {
-                        my @usergroup_projects;
-                        my @ns_projects = _unique _array $projects_checked;
-
-                        foreach my $role ( _array $roles_checked) {
-                            my $rs_group;
-                            my @where = map { { "project_security.$role.$_" => { '$in' => \@ns_projects } } } @colls;
-
-                            $rs_group = ci->UserGroup->find_one(
-                                { mid => $p->{id}, "project_security.$role" => { '$exists' => 1 }, '$or' => \@where } );
-
-                            foreach my $coll (@colls) {
-                                push @usergroup_projects,
-                                    map { $role . '/' . $coll . '/' . $_ }
-                                    _array $rs_group->{project_security}->{$role}->{$coll};
-                            }
-                        }
-
-                        my %tmp;
-                        @tmp{@ns_projects} = ();
-
-                        my @usergroup_projects_erased = grep {
-                            $_ =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                            my $pid = $+{pid};
-                            exists $tmp{$pid}
-                        } @usergroup_projects;
-
-                        foreach my $p_id_ns (@usergroup_projects_erased) {
-                            $p_id_ns =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                            my $pid  = $+{pid};
-                            my $pcol = $+{collection};
-                            my $role = $+{urole};
-                            my @tmp  = @{ $orig_ps->{$role}{$pcol} };
-                            my @new_items;
-
-                            for ( my $i = 0; $i < scalar @tmp; $i++ ) {
-                                if ( $tmp[$i] ne $pid ) {
-                                    push @new_items, $tmp[$i];
-                                }
-                            }
-
-                            if (@new_items) {
-                                $orig_ps->{$role}{$pcol} = \@new_items;
-                            } else {
-                                delete $orig_ps->{$role}{$pcol};
-                                my @values = values $orig_ps->{$role};
-                                delete $orig_ps->{$role} if !@values;
-                            }
-                        }
-
-                    } else {
-                        #delete all projects with $role for $user_name
-                        delete @$orig_ps{ _array $roles_checked};
-                    }
-                } else {
-
-                    my @usergroup_projects;
-                    my $usergroup = ci->UserGroup->find_one( { mid => $p->{id} } );
-                    my @roles = keys $usergroup->{project_security};
-
-                    foreach my $role (@roles) {
-                        foreach my $coll (@colls) {
-                            push @usergroup_projects,
-                                map { $role . '/' . $coll . '/' . $_ }
-                                _array $usergroup->{project_security}->{$role}->{$coll};
-                        }
-                    }
-
-                    my @ns_projects = _unique _array $projects_checked;
-                    my %tmp;
-
-                    @tmp{@ns_projects} = ();
-
-                    my @usergroup_projects_erased = grep {
-                        my $pid;
-                        if ( $_ =~ /(?<urole>.+)\/(?<ucol>.+)\/(?<pid>.+)/ ) {
-                            $pid = $+{pid};
-                        }
-                        exists $tmp{$pid}
-                    } @usergroup_projects;
-
-                    foreach my $p_id_ns (@usergroup_projects_erased) {
-                        $p_id_ns =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                        my $pid  = $+{pid};
-                        my $pcol = $+{collection};
-                        my $role = $+{urole};
-                        my @tmp  = @{ $orig_ps->{$role}{$pcol} };
-                        my @new_items;
-                        for ( my $i = 0; $i < scalar @tmp; $i++ ) {
-                            if ( $tmp[$i] ne $pid ) {
-                                push @new_items, $tmp[$i];
-                            }
-                        }
-                        if (@new_items) {
-                            $orig_ps->{$role}{$pcol} = \@new_items;
-                        } else {
-                            delete $orig_ps->{$role}{$pcol};
-                            my @values = values $orig_ps->{$role};
-                            delete $orig_ps->{$role} if !@values;
-                        }
-                    }
-                }
-
-                # regenerate project security for all users TODO work with my ci only
-                my $usergroup_ci = ci->new( $p->{id} );
-
-                $usergroup_ci->update( project_security => $orig_ps );
-                $usergroup_ci->set_users( _array( $p->{users} ) );
-
-                $c->stash->{json} = { msg => _loc('User group modified'), success => \1 };
-            }
-            catch {
-                $c->stash->{json} = { success => \0, msg => _loc( 'Error modifying user group: %1', shift() ) };
-            }
-        }
+        $c->stash->{json} = { success => \1, msg => _loc('User group deleted') };
     }
+    catch {
+        my $error = shift;
+
+        $c->stash->{json} = { success => \0, msg => _loc( 'Error deleting User group: %1', $error ) };
+    };
+
     $c->forward('View::JSON');
 
     return;
@@ -511,49 +366,41 @@ sub list : Local : Does('Ajax') {
     return;
 }
 
-sub duplicate : Local {
+sub duplicate : Local : Does('ACL') : ACL('action.admin.user_groups') {
     my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
 
     try {
-        my $r = ci->UserGroup->search_ci( mid => $p->{id_group} );
-        if ($r) {
-            my $usergroup;
-            my $new_usergroup;
-            my $row;
-            my $cont = 2;
+        my $usergroup = ci->UserGroup->search_ci(mid => $p->{id_group});
+        die 'User group not found' unless $usergroup;
 
-            $new_usergroup = "Duplicate of " . $r->name;
-            $row = ci->UserGroup->find( { groupname => $new_usergroup, active => mdb->true } )->next;
+        my $new_groupname_pattern = sprintf 'Duplicate of %s', $usergroup->groupname;
+        my $new_groupname = $new_groupname_pattern;
 
-            while ($row) {
-                $new_usergroup = "Duplicate of " . $r->name . " " . $cont++;
-                $row = ci->UserGroup->find( { groupname => $new_usergroup, active => mdb->true } )->next;
-            }
+        for ( 1 .. 1000 ) {
+            last unless ci->UserGroup->find_one( { groupname => $new_groupname } );
+            die 'Infinite loop when duplicating usergroup' if $_ == 1000;
 
-            if ( !$row ) {
-                my $usergroup_mid;
-                my $ci_data = {
-                    name             => $new_usergroup,
-                    bl               => '*',
-                    active           => '1',
-                    project_security => $r->project_security,
-                };
-
-                my $ci = ci->UserGroup->new(%$ci_data);
-                $usergroup_mid = $ci->save;
-
-                my @users = $r->users();
-                $ci->set_users(@users);
-
-                $c->stash->{json} = { msg => _loc("UserGroup duplicated"), success => \1, user_id => $usergroup_mid };
-            }
-        } else {
-            $c->stash->{json} = { success => \0, msg => _loc("Missing id_group or group not found") };
+            $new_groupname = $new_groupname_pattern . ' ' . ($_ + 1);
         }
+
+        my $ci_data = {
+            bl               => '*',
+            active           => '1',
+            name             => $new_groupname,
+            groupname        => $new_groupname,
+            project_security => $usergroup->project_security,
+        };
+
+        my $ci = ci->UserGroup->new(%$ci_data);
+        $ci->save;
+        $ci->set_users( _array( $usergroup->users ) );
+
+        $c->stash->{json} = { success => \1, msg => _loc('User group duplicated') };
     }
     catch {
-        $c->stash->{json} = { success => \0, msg => _loc( 'Error duplicating userGroup: %1', shift ) };
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating user group') };
     };
 
     $c->forward('View::JSON');

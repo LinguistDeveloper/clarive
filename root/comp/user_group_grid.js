@@ -143,7 +143,7 @@
                     ' <b>' + sel.data.groupname + '</b>?'),
                 function(btn) {
                     if (btn == 'yes') {
-                        Baseliner.ajaxEval('/usergroup/update?action=delete', {
+                        Baseliner.ajaxEval('/usergroup/delete', {
                                 id: sel.data.id,
                                 groupname: sel.data.groupname
                             },

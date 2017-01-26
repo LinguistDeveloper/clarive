@@ -803,6 +803,7 @@ subtest 'update: shows error when user already exists' => sub {
 subtest 'update: updates user' => sub {
     _setup();
 
+    my $usergroup = TestUtils->create_ci( 'UserGroup', groupname => 'group', );
     my $user = TestSetup->create_user( username => 'user' );
 
     my $controller = _build_controller();
@@ -811,7 +812,8 @@ subtest 'update: updates user' => sub {
             params => {
                 id       => $user->mid,
                 username => 'user',
-                realname => 'Real Name'
+                realname => 'Real Name',
+                groups   => [ $usergroup->mid ]
             }
         },
         username => 'root'
@@ -822,6 +824,7 @@ subtest 'update: updates user' => sub {
 
     is $updated_user->mid,      $user->mid;
     is $updated_user->realname, 'Real Name';
+    is_deeply [ map { $_->mid } _array $updated_user->groups ], [ $usergroup->mid ];
 };
 
 subtest 'update: updates user changing username' => sub {

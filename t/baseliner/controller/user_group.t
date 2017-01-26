@@ -35,10 +35,10 @@ subtest 'list: returns complete group list' => sub {
 
     $controller->list($c);
 
-    is $c->stash->{json}{data}[0]->{groupname}, 'group1';
-    is $c->stash->{json}{data}[1]->{groupname}, 'group2';
-    is @{ $c->stash->{json}{data} }, 2;
-    is $c->stash->{json}{totalCount}, 2;
+    is $c->stash->{json}->{data}[0]->{groupname}, 'group1';
+    is $c->stash->{json}->{data}[1]->{groupname}, 'group2';
+    is @{ $c->stash->{json}->{data} }, 2;
+    is $c->stash->{json}->{totalCount}, 2;
 };
 
 subtest 'list: returns complete group members list' => sub {
@@ -58,10 +58,10 @@ subtest 'list: returns complete group members list' => sub {
 
     $controller->list($c);
 
-    is $c->stash->{json}{data}[0]->{user_names}[0], 'test';
-    is $c->stash->{json}{data}[1]->{user_names}[0], 'test';
-    is @{ $c->stash->{json}{data}[0]->{user_names} }, 1;
-    is @{ $c->stash->{json}{data}[1]->{user_names} }, 1;
+    is $c->stash->{json}->{data}[0]->{user_names}[0], 'test';
+    is $c->stash->{json}->{data}[1]->{user_names}[0], 'test';
+    is @{ $c->stash->{json}->{data}[0]->{user_names} }, 1;
+    is @{ $c->stash->{json}->{data}[1]->{user_names} }, 1;
 };
 
 subtest 'list: returns group list with limit -1' => sub {
@@ -81,8 +81,8 @@ subtest 'list: returns group list with limit -1' => sub {
 
     $controller->list($c);
 
-    is @{ $c->stash->{json}{data} }, 2;
-    is $c->stash->{json}{totalCount}, 2;
+    is @{ $c->stash->{json}->{data} }, 2;
+    is $c->stash->{json}->{totalCount}, 2;
 };
 
 subtest 'list: returns user list with limit 1' => sub {
@@ -102,8 +102,8 @@ subtest 'list: returns user list with limit 1' => sub {
 
     $controller->list($c);
 
-    is @{ $c->stash->{json}{data} }, 1;
-    is $c->stash->{json}{totalCount}, 2;
+    is @{ $c->stash->{json}->{data} }, 1;
+    is $c->stash->{json}->{totalCount}, 2;
 };
 
 subtest 'duplicate: fails without id_group' => sub {
@@ -120,7 +120,7 @@ subtest 'duplicate: fails without id_group' => sub {
 
     $controller->duplicate($c);
 
-    is $c->stash->{json}{msg}, 'Missing id_group or group not found';
+    is $c->stash->{json}->{msg}, 'Error duplicating user group';
 };
 
 subtest 'duplicate: duplicates a user group' => sub {
@@ -131,6 +131,8 @@ subtest 'duplicate: duplicates a user group' => sub {
     my $controller = _build_controller();
 
     my $ci_group = TestUtils->create_ci( 'UserGroup', name => 'group1' );
+    $ci_group->set_users($user);
+    $ci_group->save;
 
     my $c = _build_c(
         req      => { params => { id_group => $ci_group->mid } },
@@ -139,27 +141,18 @@ subtest 'duplicate: duplicates a user group' => sub {
 
     $controller->duplicate($c);
 
-    is $c->stash->{json}{msg}, 'UserGroup duplicated';
+    my $new_group = ci->UserGroup->search_ci( mid => { '$ne' => $ci_group->mid } );
+
+    is_deeply [ map { $_->mid } _array $new_group->users ], [ $user->mid ];
+
+    is $c->stash->{json}->{msg}, 'User group duplicated';
 
     $c = _build_c( username => 'root' );
 
     $controller->list($c);
 
-    is @{ $c->stash->{json}{data} }, 2;
-    is $c->stash->{json}{totalCount}, 2;
-};
-
-subtest 'update: fails when missing action' => sub {
-    _setup();
-
-    my $controller = _build_controller();
-
-    my $c = _build_c(
-        req      => { params => {} },
-        username => 'root'
-    );
-
-    like exception { $controller->update($c) }, qr/Missing action/;
+    is @{ $c->stash->{json}->{data} }, 2;
+    is $c->stash->{json}->{totalCount}, 2;
 };
 
 subtest 'update (add): add a user group' => sub {
@@ -168,20 +161,20 @@ subtest 'update (add): add a user group' => sub {
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req      => { params => { groupname => 'Test', action => 'add' } },
+        req      => { params => { groupname => 'Test' } },
         username => 'root'
     );
 
     $controller->update($c);
 
-    is $c->stash->{json}{msg}, 'User group added';
+    is $c->stash->{json}->{msg}, 'User group saved';
 
     $c = _build_c( username => 'root' );
 
     $controller->list($c);
 
-    is @{ $c->stash->{json}{data} }, 1;
-    is $c->stash->{json}{totalCount}, 1;
+    is @{ $c->stash->{json}->{data} }, 1;
+    is $c->stash->{json}->{totalCount}, 1;
 };
 
 subtest 'update (add): add a user group fails if groupname duplicated' => sub {
@@ -192,58 +185,14 @@ subtest 'update (add): add a user group fails if groupname duplicated' => sub {
     my $ci_group = TestUtils->create_ci( 'UserGroup', name => 'Test' );
 
     my $c = _build_c(
-        req      => { params => { groupname => 'Test', action => 'add' } },
+        req      => { params => { groupname => 'Test' } },
         username => 'root'
     );
 
     $controller->update($c);
 
-    is $c->stash->{json}{msg}, 'Group name already exists.  Specify another group name';
-};
-
-subtest 'update (add): add a user group fails if not groupname' => sub {
-    _setup();
-
-    my $controller = _build_controller();
-
-    my $c = _build_c(
-        req      => { params => { action => 'add' } },
-        username => 'root'
-    );
-
-    $controller->update($c);
-
-    like $c->stash->{json}{msg}, qr/Missing groupname/;
-};
-
-subtest 'update (update): update a user group fails if not update type' => sub {
-    _setup();
-
-    my $controller = _build_controller();
-
-    my $c = _build_c(
-        req      => { params => { action => 'update' } },
-        username => 'root'
-    );
-
-    $controller->update($c);
-
-    like $c->stash->{json}{msg}, qr/Missing update type/;
-};
-
-subtest 'update (update): update a user group fails if not group id' => sub {
-    _setup();
-
-    my $controller = _build_controller();
-
-    my $c = _build_c(
-        req      => { params => { action => 'update', type => 'group' } },
-        username => 'root'
-    );
-
-    $controller->update($c);
-
-    like $c->stash->{json}{msg}, qr/Missing group mid/;
+    like $c->stash->{json}->{msg}, qr/validation failed/i;
+    like $c->stash->{json}->{errors}->{groupname}, qr/User group name already exists/;
 };
 
 subtest 'update (update): update a user group fails if group not found' => sub {
@@ -252,13 +201,13 @@ subtest 'update (update): update a user group fails if group not found' => sub {
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req      => { params => { action => 'update', type => 'group', id => 'non-existent-group-id' } },
+        req      => { params => { id => 'non-existent-group-id', groupname => 'unknown' } },
         username => 'root'
     );
 
     $controller->update($c);
 
-    like $c->stash->{json}{msg}, qr/Group not found/;
+    like $c->stash->{json}->{msg}, qr/Error saving user group/;
 };
 
 subtest 'update (update): update a user group fails if groupname already exists' => sub {
@@ -270,54 +219,60 @@ subtest 'update (update): update a user group fails if groupname already exists'
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req      => { params => { action => 'update', type => 'group', id => $ci_group2->mid, groupname => 'Test' } },
+        req      => { params => { id => $ci_group2->mid, groupname => 'Test' } },
         username => 'root'
     );
 
     $controller->update($c);
 
-    like $c->stash->{json}{msg}, qr/Group name already exists.  Specify another group name/;
+    like $c->stash->{json}->{msg}, qr/validation failed/i;
+    like $c->stash->{json}->{errors}->{groupname}, qr/User group name already exists/;
 };
 
-subtest 'update (update): update a user group actually updates group' => sub {
+subtest 'update: updates user group' => sub {
     _setup();
 
+    my $user = TestSetup->create_user;
     my $ci_group = TestUtils->create_ci( 'UserGroup', name => 'Test' );
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req => { params => { action => 'update', type => 'group', id => $ci_group->mid, groupname => 'Testrenamed' } },
+        req => { params => { id => $ci_group->mid, groupname => 'Testrenamed', users => [$user->mid] } },
         username => 'root'
     );
 
     $controller->update($c);
 
-    like $c->stash->{json}{msg}, qr/User group modified/;
+    $ci_group = $ci_group->search_ci( mid => $ci_group->mid );
+
+    is_deeply [ map { $_->mid } _array $ci_group->users ], [ $user->mid ];
+
+    like $c->stash->{json}->{msg}, qr/User group saved/;
 
     $c = _build_c( username => 'root' );
 
     $controller->list($c);
 
-    is $c->stash->{json}{data}[0]->{groupname}, 'Testrenamed';
+    is $c->stash->{json}->{data}[0]->{groupname}, 'Testrenamed';
 };
 
-subtest 'update (delete): delete fails if no group id' => sub {
+subtest 'delete: fails if no group id' => sub {
     _setup();
 
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req      => { params => { action => 'delete' } },
+        req      => { params => { } },
         username => 'root'
     );
 
-    $controller->update($c);
+    $controller->delete($c);
 
-    like $c->stash->{json}{msg}, qr/Missing id/;
+    like $c->stash->{json}->{msg}, qr/Missing id/;
 };
 
-subtest 'update (delete): actually deletes the group' => sub {
+subtest 'delete: deletes the group' => sub {
     _setup();
 
     my $ci_group  = TestUtils->create_ci( 'UserGroup', name => 'Test' );
@@ -326,98 +281,20 @@ subtest 'update (delete): actually deletes the group' => sub {
     my $controller = _build_controller();
 
     my $c = _build_c(
-        req      => { params => { action => 'delete', id => $ci_group->mid } },
+        req      => { params => { id => $ci_group->mid } },
         username => 'root'
     );
 
-    $controller->update($c);
+    $controller->delete($c);
 
-    like $c->stash->{json}{msg}, qr/User group deleted/;
+    like $c->stash->{json}->{msg}, qr/User group deleted/;
 
     $c = _build_c( username => 'root' );
 
     $controller->list($c);
 
-    is @{ $c->stash->{json}{data} }, 1;
-    is $c->stash->{json}{totalCount}, 1;
-};
-
-subtest 'update (roles_projects): assigns project security to group' => sub {
-    _setup();
-
-    my ( $prj, $user, $role ) = _setup_security();
-    my $controller = _build_controller();
-    my $ci_group = TestUtils->create_ci( 'UserGroup', name => 'Test' );
-
-    my $c = _build_c(
-        req => {
-            params => {
-                action           => 'update',
-                type             => 'roles_projects',
-                id               => $ci_group->mid,
-                projects_checked => [ $prj->mid ],
-                roles_checked    => $role
-            }
-        },
-        username => 'root'
-    );
-
-    $controller->update($c);
-
-    like $c->stash->{json}{msg}, qr/User group modified/;
-
-    $ci_group = ci->new( $ci_group->mid );
-
-    is_deeply( $ci_group->project_security, { $role => { 'project' => [ $prj->mid ] } }, 'test_name' );
-};
-
-subtest 'update (delete_roles_projects): unassigns project security to group' => sub {
-    _setup();
-
-    my ( $prj, $user, $role ) = _setup_security();
-    my $controller = _build_controller();
-    my $ci_group   = TestUtils->create_ci(
-        'UserGroup',
-        name             => 'Test',
-        project_security => { $role => { 'project' => [ $prj->mid ] } }
-    );
-
-    is_deeply( $ci_group->project_security, { $role => { 'project' => [ $prj->mid ] } }, 'test_name' );
-
-    my $c = _build_c(
-        req => {
-            params => {
-                action        => 'delete_roles_projects',
-                type          => 'roles_projects',
-                id            => $ci_group->mid,
-                roles_checked => $role
-            }
-        },
-        username => 'root'
-    );
-
-    $controller->update($c);
-
-    like $c->stash->{json}{msg}, qr/User group modified/;
-
-    $ci_group = ci->new( $ci_group->mid );
-
-    is_deeply( $ci_group->project_security, {} );
-};
-
-subtest 'update (delete_roles_projects): fails if no group id' => sub {
-    _setup();
-
-    my $controller = _build_controller();
-
-    my $c = _build_c(
-        req      => { params => { action => 'delete_roles_projects' } },
-        username => 'root'
-    );
-
-    $controller->update($c);
-
-    like $c->stash->{json}{msg}, qr/Missing id/;
+    is @{ $c->stash->{json}->{data} }, 1;
+    is $c->stash->{json}->{totalCount}, 1;
 };
 
 done_testing;

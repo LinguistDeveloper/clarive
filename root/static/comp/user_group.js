@@ -37,26 +37,25 @@ define(
                 width: 70,
                 handler: function() {
                     var form = formPanel.getForm();
-                    var action = form.getValues()['id'] != '-1' ? 'update' : 'add';
 
                     if (!form.isValid()) {
                         return false;
                     }
 
                     form.submit({
-                        params: {
-                            action: action,
-                            type: 'user'
-                        },
                         success: function(f, a) {
                             formPanel.fireEvent('usergroupsaved', a.result.user_id);
 
                             Baseliner.message(_('Success'), a.result.msg);
                         },
-                        failure: function(f, a) {
+                        failure: function(f, action) {
+                            if (action.result && action.result.errors) {
+                                return;
+                            }
+
                             Ext.Msg.show({
                                 title: _('Information'),
-                                msg: a.result.msg,
+                                msg: action.result.msg,
                                 buttons: Ext.Msg.OK,
                                 icon: Ext.Msg.INFO
                             });
@@ -90,8 +89,7 @@ define(
                         columnWidth: 0.90,
                         items: [{
                                 xtype: 'hidden',
-                                name: 'id',
-                                value: -1
+                                name: 'id'
                             }, {
                                 layout: 'column',
                                 defaults: {
@@ -219,12 +217,12 @@ define(
                     var form = userGroupFormPanel.getForm();
                     form.findField("id").setValue(userGroupId);
 
-                    rolesAndProjectsContainer.enable();
+                    rolesAndProjectsContainer.enableAll();
                     rolesAndProjectsContainer.show();
 
                     assignedRolesAndProjectsContainer.loadFor(userGroupId);
                     assignedRolesAndProjectsContainer.showBBar();
-                    assignedRolesAndProjectsContainer.enable();
+                    assignedRolesAndProjectsContainer.enableAll();
                     assignedRolesAndProjectsContainer.show();
 
                     this.setTitle(_('Edit user group'));
