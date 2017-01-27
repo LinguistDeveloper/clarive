@@ -9,6 +9,9 @@ use TestEnv;
 BEGIN { TestEnv->setup; }
 use TestUtils ':catalyst';
 use TestSetup;
+use Compress::Zlib qw(compress);
+use Encode ();
+use Digest::MD5 qw(md5_base64);
 
 use Capture::Tiny qw(capture);
 use Baseliner::Utils ();
@@ -248,6 +251,57 @@ subtest 'log_file: returns job log for download' => sub {
         'serve_filename' => "job_log-1-$id_job-attachment.txt",
         'serve_body'     => Encode::encode( 'UTF-8', "\x{1F62E}" )
       };
+};
+
+subtest 'log_file: returns job log for download on binary files' => sub {
+    _setup();
+
+    my $id_job = 0 + mdb->seq('job_log_id');
+    my $id_log = mdb->job_log->insert( { id => $id_job, mid => 'job_log-1' } );
+
+    open my $ff, '>', 'test.txt';
+    print $ff Encode::encode( 'UTF-8', "some contents \x{1F62E}\n" );
+    close $ff;
+
+    my $cmd = "tar -czvf test.tar.gz test.txt 2>&1";
+    system($cmd);
+
+    open my $ft, '<', 'test.tar.gz';
+    my $data = join '', <$ft>;
+    close $ft;
+
+    compress($data);
+
+    my $id_asset = mdb->grid_add(
+        $data,
+        filename          => 'logdata',
+        parent_collection => 'log',
+        id_log            => $id_log,
+        parent            => $id_job,
+        parent_mid        => 123,
+    );
+
+    mdb->job_log->update( { id => $id_job }, { '$set' => { data => $id_asset, data_length => length $data } } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { id => $id_job } } );
+
+    $controller->log_file($c);
+
+    open my $fn, '>', 'new_test.tar.gz';
+    print $fn $c->stash->{serve_body};
+    close $fn;
+
+    open( HANDLE, "<", 'test.tar.gz' );
+    my $cksum1 = md5_base64(<HANDLE>);
+    open( HANDLE, "<", 'new_test.tar.gz' );
+    my $cksum2 = md5_base64(<HANDLE>);
+
+    $cmd = "rm test.txt test.tar.gz new_test.tar.gz";
+    system($cmd);
+
+    is $cksum1, $cksum2;
 };
 
 subtest 'logs_json: returns job log as json' => sub {
