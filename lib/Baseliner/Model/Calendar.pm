@@ -19,30 +19,36 @@ sub delete_multi {
 
 sub check_dates {
     my ($self, $date, $bl, @ns) = @_;
+
     my @rel_cals = mdb->calendar->find(
         {
             ns=> { '$in' => [ @ns, '/', 'Global', undef ] },
             bl=> { '$in' => [ $bl, '*'] }
         })->all;
-
     my @ns_cals = map { $_->{ns} } @rel_cals;
     my $hours = @ns_cals
             ? $self->merge_calendars( ns=>mdb->in(@ns_cals), bl=>$bl, date=>$date )
             : {};
 
-    # remove X
-    while( my ($k,$v) = each %$hours ) {
-        delete $hours->{$k} if $v->{type} eq 'X';
-        delete $hours->{$k} if $v->{type} eq 'B';
+    my $tz = _tz();
+    my @hour_store = ();
 
+    for my $hour_key ( sort keys %$hours ) {
+        my $hour = $hours->{$hour_key};
+
+        next if $hour->{type} =~ /X|B/;
+
+        my $server_date = Class::Date->new( $date->ymd . ' ' .  $hour->{hour}, $tz );
+
+        push @hour_store, [
+            $hour->{hour},
+            $hour->{name},
+            $hour->{type},
+            $server_date->strftime('%Y-%m-%d %k:%M %z')
+        ];
     }
-    # get it ready for a combo simplestore
-    my $hour_store = [ map {
-        my $server_date = Class::Date->new( $date->ymd . ' ' .  $hours->{$_}{hour}, _tz() );
-        [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type}, $server_date->strftime('%Y-%m-%d %k:%M %z') ]
-    } sort keys %$hours ];
 
-   return $hour_store, @rel_cals;
+    return \@hour_store, @rel_cals;
 }
 
 sub merge_calendars {
@@ -135,7 +141,7 @@ sub merge_calendars {
          }
        }
     }
-    \%list;
+    return \%list;
 }
 
 

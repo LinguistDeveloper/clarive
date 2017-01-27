@@ -482,7 +482,15 @@ sub build_job_window : Path('/job/build_job_window') {
         my %stats;
         my $prj_list = mdb->in( map { $_->{mid} } @all_projects );
         # TODO loop by project here so we get 1000 from one, 1000 from another...
-        my $rs = ci->job->find({ projects=>$prj_list, bl=>$bl })->sort({ starttime=>-1 })->limit(1000);
+        my $rs = ci->job->find( { projects => $prj_list, bl => $bl } )->sort( { starttime => -1 } )->fields(
+            {
+                bl        => 1,
+                endtime   => 1,
+                starttime => 1,
+                projects  => 1,
+                status    => 1
+            }
+        )->limit(1000);
         while( my $job = $rs->next ) {
             next unless $job->{endtime} && $job->{starttime};
             my $bl = $job->{bl};
