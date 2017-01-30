@@ -7732,7 +7732,7 @@ msgstr ""
 
 #: root/ci/item.js root/dashlets/job_distribution_day_config.js
 #: root/fields/system/html/field_checkbox.html root/site/common.js
-#: root/site/dashboard.js root/site/tabfu.js
+#: root/site/dashboard.js root/site/kanban.js root/site/tabfu.js
 msgid "Yes"
 msgstr ""
 
@@ -9948,7 +9948,8 @@ msgstr ""
 #: root/comp/monitor_grid.js root/comp/notifications.js root/comp/rules.js
 #: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
 #: root/fields/system/js/list_tasks.js root/forms/shortcut.js
-#: root/site/common.js root/site/dashboard.js root/site/model.js
+#: root/site/common.js root/site/dashboard.js root/site/kanban.js
+#: root/site/model.js
 msgid "Cancel"
 msgstr ""
 
@@ -15124,6 +15125,20 @@ msgstr ""
 
 #: root/site/kanban.js
 msgid "Save Current Layout"
+msgstr ""
+
+#: root/site/kanban.js
+msgid "Deployment"
+msgstr ""
+
+#: root/site/kanban.js
+msgid ""
+"You have permission to change status with no deploy. Do you want to deploy "
+"with a job?"
+msgstr ""
+
+#: root/site/kanban.js
+msgid "No, change status logically"
 msgstr ""
 
 #: root/site/lifecycle-graph.js

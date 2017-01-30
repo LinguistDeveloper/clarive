@@ -503,7 +503,9 @@ subtest 'promotes_and_demotes: builds correct variants for changeset' => sub {
                 id         => 'sQA' . $status_in_progress->id_status,
                 url        => ignore(),
             },
-            id_status_from => $status_in_progress->id_status
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_in_progress->id_status,
+            bl_to          => 'QA'
         }
       ];
     cmp_deeply $menu_p,
@@ -517,7 +519,9 @@ subtest 'promotes_and_demotes: builds correct variants for changeset' => sub {
                 id         => 'pPROD' . $status_finished->id_status,
                 url        => ignore(),
             },
-            id_status_from => $status_in_progress->id_status
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_finished->id_status,
+            bl_to          => 'PROD'
         }
       ];
     cmp_deeply $menu_d,
@@ -531,7 +535,9 @@ subtest 'promotes_and_demotes: builds correct variants for changeset' => sub {
                 id         => 'dQA' . $status_new->id_status,
                 url        => ignore(),
             },
-            id_status_from => $status_in_progress->id_status
+            id_status_from => $status_in_progress->id_status,
+            id_status_to   => $status_new->id_status,
+            bl_to          => '*'
         }
       ];
 };

@@ -7844,7 +7844,7 @@ msgstr "No"
 
 #: root/ci/item.js root/dashlets/job_distribution_day_config.js
 #: root/fields/system/html/field_checkbox.html root/site/common.js
-#: root/site/dashboard.js root/site/tabfu.js
+#: root/site/dashboard.js root/site/kanban.js root/site/tabfu.js
 msgid "Yes"
 msgstr "Sí"
 
@@ -10099,7 +10099,8 @@ msgstr "Si, estoy seguro"
 #: root/comp/monitor_grid.js root/comp/notifications.js root/comp/rules.js
 #: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
 #: root/fields/system/js/list_tasks.js root/forms/shortcut.js
-#: root/site/common.js root/site/dashboard.js root/site/model.js
+#: root/site/common.js root/site/dashboard.js root/site/kanban.js
+#: root/site/model.js
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -15310,6 +15311,22 @@ msgstr ""
 msgid "Save Current Layout"
 msgstr ""
 
+#: root/site/kanban.js
+msgid "Deployment"
+msgstr "Despliegue"
+
+#: root/site/kanban.js
+msgid ""
+"You have permission to change status with no deploy. Do you want to deploy "
+"with a job?"
+msgstr ""
+"Tienes permisos para cambiar de estado sin despliegue. ¿Quieres lanzar un "
+"pase?"
+
+#: root/site/kanban.js
+msgid "No, change status logically"
+msgstr "No, cambiar estado de manera lógica"
+
 #: root/site/lifecycle-graph.js
 msgid "With Labels"
 msgstr "Con Etiquetas"
@@ -15878,8 +15895,14 @@ msgstr "destino"
 #~ msgid "Auto Refresh"
 #~ msgstr "Refresco Auto"
 
+#~ msgid "No, deploy logically"
+#~ msgstr "No, desplegar lógicamente"
+
 #~ msgid "$title"
 #~ msgstr "$title"
+
+#~ msgid "Do you want to deploy with a job?"
+#~ msgstr "¿Quieres desplegar con un pase?"
 
 #~ msgid "event purge daemon frequency (secs)"
 #~ msgstr "frecuencia del demonio de purga de eventos (segs)"
