@@ -46,7 +46,7 @@ params:
                 width: 20,
                 dataIndex: 'id',
                 renderer: function() {
-                    return '<img style="float:right" src="/static/images/icons/tag.gif" />';
+                    return '<img style="float:right" src="/static/images/icons/tag.svg" />';
                 }
             }, {
                 header: _('Name'),
@@ -66,7 +66,7 @@ params:
                 dataIndex: 'mid',
                 renderer: function(v, meta, rec, rowIndex) {
                     var html = '<a href="javascript:Baseliner.delete_revision_row(\'' + revision_grid.id + '\', \'' + v + '\')">';
-                    html += '<img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>';
+                    html += '<img style="float:middle" height=16 src="/static/images/icons/close.svg" /></a>';
                     return html;
                 }
             }
@@ -114,8 +114,62 @@ params:
         });
     };
 
-    revision_grid.on('afterrender', function() {
-        // TODO no loader from mids yet
+    var addCIToStore = function(mid,name) {
+        if( revision_store.find('mid', mid ) > -1 ) {
+            Baseliner.message( _('Revision'), _('Revision %1 has already been selected', name ) );
+            return;
+        }
+        var d = { name: name, id: mid, mid: mid };
+        var r = new revision_store.recordType( d, mid );
+
+        revision_store.add( r );
+        revision_store.commitChanges();
+    }
+
+    var addCI = function(name, node_data) {
+        var ci = node_data.ci;
+        var mid = node_data.mid;
+
+        if (node_data.repo_dir != undefined) {
+            ci.data.repo_dir = node_data.repo_dir
+        };
+
+        if (typeof ci.data.sha === 'undefined') {
+            if (typeof ci.sha !== 'undefined') {
+                ci.data.sha = ci.sha;
+            } else {
+                ci.data.sha = node_data.sha;
+            }
+        }
+
+        if (mid == undefined && (ci == undefined || ci.role != 'Revision')) {
+            Baseliner.message(_('Error'), _('Node is not a revision'));
+        } else if (mid != undefined) {
+            // TODO
+        } else if (ci != undefined) {
+            Baseliner.ajaxEval('/ci/attach_revisions', {
+                name: ci.name,
+                'class': ci['class'],
+                ns: ci.ns,
+                ci_json: Ext.util.JSON.encode(ci.data),
+                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
+                topic_mid: topic_data.topic_mid,
+                branch: node_data.branch,
+                repo_dir: node_data.repo_dir
+            }, function(res) {
+                if (res.success) {
+                    addCIToStore(res.mid, ci.name);
+                } else {
+                    Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
+                }
+            });
+        }
+    };
+
+    revision_grid.on( 'afterrender', function(){
+        //if( c.value != undefined ) {
+            // TODO no loader from mids yet
+        //}
         var read_only = Baseliner.eval_boolean(meta.readonly);
 
         if (!read_only) {
@@ -130,59 +184,56 @@ params:
                     var attr = n.attributes;
                     var node_data = attr.data || {};
                     var ci = node_data.ci;
-                    if (node_data.repo_dir !== undefined) {
-                        ci.data.repo_dir = node_data.repo_dir;
+                    if( ci ) {
+                        addCI( attr.text, node_data );
                     }
+                    else {
+                        if( node_data.ci_new ) {
+                            var ci_new = node_data.ci_new;
+                            var coll = ci_new.collection;
+                            var form_data = ci_new.form_data;
+                            var name = attr.text;
 
-                    if (typeof ci.data.sha === 'undefined') {
-                        if (typeof ci.sha !== 'undefined') {
-                            ci.data.sha = ci.sha;
-                        } else {
-                            ci.data.sha = node_data.sha;
+                            Cla.ajax_json( '/ci/edit', { action:'add', collection: coll, name: name, form_data: form_data }, function(comp) {
+                                comp.on('save', function( req, res ){
+                                    var mid = res.mid;
+                                    if( mid ) {
+                                        addCIToStore( mid, req.form_data.name);
+                                    }
+                                    win.close();
+                                });
+                                var win = new Cla.Window({ modal: true, items:[comp], layout:'fit', width: 850, height: 500 });
+                                win.show();
+                            });
                         }
-                    }
-
-                    var mid = node_data.mid;
-                    if (mid === undefined && (ci === undefined || ci.role !== 'Revision')) {
-                        Baseliner.message(_('Error'), _('Node is not a revision'));
-                    } else if (mid !== undefined) {
-                        // TODO
-                    } else if (ci !== undefined) {
-                        Baseliner.ajaxEval('/ci/attach_revisions', {
-                            name: ci.name,
-                            'class': ci['class'],
-                            ns: ci.ns,
-                            ci_json: Ext.util.JSON.encode(ci.data),
-                            repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
-                            topic_mid: topic_data.topic_mid,
-                            branch: ci.data.branch,
-                            repo_dir: node_data.repo_dir
-                        }, function(res) {
-                            if (res.success) {
-                                var mid = res.mid;
-                                if (revision_store.find('mid', mid) > -1) {
-                                    Baseliner.message(_('Revision'), _('Revision %1 has already been selected', ci.name));
-                                    return;
+                        else if (node_data.repo_mid && node_data.ns) {
+                            Baseliner.ajaxEval('/ci/attach_revisions', {
+                                name: ci.name,
+                                'class': ci['class'],
+                                ns: ci.ns,
+                                ci_json: Ext.util.JSON.encode(ci.data),
+                                repo: node_data.click ? node_data.click.repo_mid : node_data.repo_mid,
+                                topic_mid: topic_data.topic_mid,
+                                branch: ci.data.branch,
+                                repo_dir: node_data.repo_dir
+                            }, function(res) {
+                                if (res.success) {
+                                    if (res.success) {
+                                        addCIToStore(res.mid, attr.text);
+                                    }
+                                } else {
+                                    Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
                                 }
-                                var d = {
-                                    name: attr.text,
-                                    id: mid,
-                                    mid: mid
-                                };
-                                var r = new revision_store.recordType(d, mid);
-
-                                revision_store.add(r);
-                                revision_store.commitChanges();
-                            } else {
-                                Ext.Msg.alert(_('Error'), _('Error adding revision %1: %2', ci.name, res.msg));
-                            }
-                        });
+                            });
+                        }
+                        else {
+                            Baseliner.message(_('Error'), _('Node is not a Revision CI'));
+                        }
                     }
                     return (true);
                 }
             });
         }
-
     });
 
     return [

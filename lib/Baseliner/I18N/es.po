@@ -1333,7 +1333,7 @@ msgstr "Secuencias"
 msgid "Development"
 msgstr "Desarrollo"
 
-#: lib/Baseliner/Controller/REPL.pm root/comp/repl.js
+#: lib/Baseliner/Controller/REPL.pm root/comp/repl.js root/comp/rules.js
 msgid "REPL"
 msgstr "REPL"
 
@@ -10481,7 +10481,7 @@ msgstr "Refrescar"
 msgid "Maximize"
 msgstr "Maximizar"
 
-#: root/comp/repl.js root/comp/view_diff.js
+#: root/comp/repl.js root/comp/rules.js root/comp/view_diff.js
 msgid "Raw"
 msgstr "Ver Original"
 
@@ -11096,10 +11096,6 @@ msgstr "Cortar"
 #: root/comp/rules.js
 msgid "Copy Shortcut"
 msgstr "Copiar Acceso Directo"
-
-#: root/comp/rules.js
-msgid "DSL"
-msgstr "DSL"
 
 #: root/comp/rules.js
 msgid "Import Here"
@@ -13200,17 +13196,21 @@ msgstr "Campo %1 reiniciado debido a un cambio en %2"
 msgid "Select field %1 first or reload"
 msgstr "Seleccione el campo %1 primero o recargue"
 
-#: root/fields/system/js/list_revisions.js root/site/model.js
-msgid "Node is not a revision"
-msgstr "No es una revisión"
-
 #: root/fields/system/js/list_revisions.js
 msgid "Revision %1 has already been selected"
 msgstr "La revisión %1 ya ha sido seleccionada"
 
 #: root/fields/system/js/list_revisions.js root/site/model.js
+msgid "Node is not a revision"
+msgstr "No es una revisión"
+
+#: root/fields/system/js/list_revisions.js root/site/model.js
 msgid "Error adding revision %1: %2"
 msgstr ""
+
+#: root/fields/system/js/list_revisions.js
+msgid "Node is not a Revision CI"
+msgstr "El nodo no es una revisión CI"
 
 #: root/fields/system/js/list_tasks.js
 msgid "Create tasks"
@@ -15963,6 +15963,9 @@ msgstr "destino"
 
 #~ msgid "Invalid value. Use only 'a-z' and '_'"
 #~ msgstr "Valor no válido. Use sólo 'a-z' y '_'"
+
+#~ msgid "DSL"
+#~ msgstr "DSL"
 
 #~ msgid "Select rule"
 #~ msgstr "Selecciona regla"

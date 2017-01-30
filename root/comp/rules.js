@@ -1404,11 +1404,11 @@
                 },
                 icon: IC('paste')
             }, {
-                text: _('DSL'),
+                text: _('Run'),
                 handler: function(item) {
                     dsl_node(node)
                 },
-                icon: IC('edit')
+                icon: IC('play')
             }, {
                 text: _('Export'),
                 handler: function(item) {
@@ -1452,7 +1452,7 @@
         };
         var btn_save_tree = new Ext.Button({ cls: 'ui-comp-rule-view-save', text: _('Save'), icon:'/static/images/icons/save.svg', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ tooltip: _('Refresh'), icon:'/static/images/icons/refresh.svg', handler: function(){ rule_load(btn_refresh_tree) } });
-        var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.svg', handler: function() { rule_tree.rule_dsl() } });
+        var btn_dsl = new Ext.Button({ text: _('Run'), icon:'/static/images/icons/play.svg', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
             if( this.checked ) {
                 rule_tree.blame_time = this.tdiff;
@@ -1722,19 +1722,40 @@
                     var stash_txt = new Ext.form.TextArea({ region:'west', split:true, width: 140, value: rule_tree.last_stash || res.data_yaml });
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
                     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-                    var dsl_cons = new Ext.form.TextArea({ title:_('Output'), style:style_cons });
-                    var dsl_stash = new Ext.form.TextArea({ title:_('Stash'), style:style_cons });
+                    var dsl_cons = new Ext.form.TextArea({ style:style_cons });
+                    var dsl_cons_tab = new Ext.Panel({ layout:'fit', title:_('Output'), items: dsl_cons,
+                        tbar: [
+                                Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function() {
+                                    var ww = window.open('about:blank', '_blank' );
+                                    ww.document.title = _('REPL');
+                                    ww.document.write( '<pre>' + dsl_cons.getValue() + '</pre>' );
+                                    ww.document.close();
+                                })
+                        ]
+                    });
+                    var dsl_stash = new Ext.form.TextArea({ style:style_cons });
+                    var dsl_stash_tab = new Ext.Panel({ layout:'fit', title:_('Stash'), items: dsl_stash,
+                        tbar: [
+                                Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function() {
+                                    var ww = window.open('about:blank', '_blank' );
+                                    ww.document.title = _('REPL');
+                                    ww.document.write( '<pre>' + dsl_stash.getValue() + '</pre>' );
+                                    ww.document.close();
+                                })
+                        ]
+                    });
                     var dsl_run = function(){
                         dsl_cons.setValue( '' );
                         dsl_stash.setValue( '' );
                         Baseliner.ajaxEval( '/rule/dsl_try', { stash: stash_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
-                            Baseliner.message( 'DSL', _('Finished OK') );
+                            Baseliner.message( 'Rule Runner', _('Finished OK') );
                             document.getElementById( dsl_cons.getId() ).style.color = "#10c000";  // green
                             var out = res.output != undefined ? res.output : '';
                             dsl_cons.setValue( out );
                             dsl_stash.setValue( res.stash_yaml );
                         }, function(res){
-                            Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
+                            var msg = Baseliner.escapeHtmlEntities( res.msg );
+                            Baseliner.message( 'Rule Runner', _('Error during DSL execution: %1', msg ), { time: 4000 } );
                             var el_cons = document.getElementById( dsl_cons.getId() );
                             if(!el_cons) return;
                             el_cons.style.color = "#f54";  // red
@@ -1744,18 +1765,36 @@
                         });
                     };
                     var win = new Baseliner.Window({
-                        layout: 'border', width: 1024, height: 650, maximizable: true,
-                        title: _('DSL: %1', name ),
-                        tbar: [ { text:_('Run'), icon:'/static/images/icons/play.svg', handler: dsl_run } ],
+                        layout: 'border',
+                        width: 1024,
+                        height: 650,
+                        maximizable: true,
+                        title: _('DSL: %1', name),
+                        tbar: [{
+                            text: _('Run'),
+                            icon: '/static/images/icons/play.svg',
+                            handler: dsl_run
+                        }],
                         keys: [{
-                            key:[10,13],
+                            key: [10, 13],
                             ctrl: true,
                             fn: dsl_run
                         }],
                         items: [
-                           stash_txt,
-                           { region:'center', xtype:'panel', height: 400, items: dsl_txt  },
-                           { xtype:'tabpanel', items: [dsl_cons, dsl_stash], activeTab:0, plugins: [ new Ext.ux.panel.DraggableTabs()], region:'south', split: true, height: 200 }
+                            stash_txt, {
+                                region: 'center',
+                                xtype: 'panel',
+                                height: 400,
+                                items: dsl_txt
+                            }, {
+                                xtype: 'tabpanel',
+                                items: [dsl_cons_tab, dsl_stash_tab],
+                                activeTab: 0,
+                                plugins: [new Ext.ux.panel.DraggableTabs()],
+                                region: 'south',
+                                split: true,
+                                height: 200
+                            }
                         ]
                     });
                     win.on('beforeclose', function(){

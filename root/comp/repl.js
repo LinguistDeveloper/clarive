@@ -617,7 +617,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:IC('debug-view'),
+                icon: IC('play'),
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },
@@ -625,7 +625,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             outButton,
             {   xtype: 'button',
                 text: _('Save'),
-                icon:IC('save'),
+                icon: IC('save'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Ext.Msg.prompt('Name', 'Save as:', function(btn, text){

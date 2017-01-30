@@ -213,14 +213,16 @@ Baseliner.message = function(title, msg, config){
     }
 
     msg = Baseliner.error_msg( msg );
+
+    if( msg && msg.length > 500 ) {
+        msg = msg.substring(0,500) + '(...)' ;
+    }
+
     var id = $.gritter.add( Ext.apply({
         title: title, text: msg, fade: true, 'class': 'baseliner-message',
         time: 2200,
         image: '/static/images/icons/about.svg'
     }, config));
-    /*
-    setTimeout( function(){ $.gritter.remove( id, { fade: true }); }, timeout);
-    */
 };
 
 Baseliner.warning = function(title, msg ){
@@ -1373,19 +1375,32 @@ Baseliner.show_revision = function(mid) {
     Baseliner.ajaxEval('/ci/url', {
         mid: mid
     }, function(res) {
-        var title = res.url.title;
-        var sha = res.url.rev_num;
-        var branch = title == sha ? sha : res.url.branch;
-        var params = {
-            repo_dir: res.url.repo_dir,
-            rev_num: res.url.rev_num,
-            branch: branch,
-            controller: res.url.controller,
-            sha: res.url.rev_num,
-            repo_mid: res.url.repo_mid
-        };
-        var url =  title == sha ? "/comp/view_commits_history.js" : res.url.url;
-        Baseliner.add_tabcomp( url, title, params );
+        var title, url, sha, branch, params = {};
+
+        if (res.url) {
+            if (res.url.controller) {
+                title = res.url.title;
+                sha = res.url.rev_num;
+                branch = title == sha ? sha : res.url.branch;
+                params = res.url.params || {
+                    mid: res.url.mid || mid,
+                    repo_dir: res.url.repo_dir,
+                    rev_num: res.url.rev_num,
+                    branch: branch,
+                    controller: res.url.controller,
+                    sha: res.url.rev_num,
+                    repo_mid: res.url.repo_mid
+                };
+            }
+
+            url = title == sha ? "/comp/view_commits_history.js" : res.url.url;
+
+            if (res.url.type == 'browser') {
+                window.open(res.url.url, "_blank");
+            } else {
+                Baseliner.add_tabcomp(url, title, params);
+            }
+        }
     });
 };
 

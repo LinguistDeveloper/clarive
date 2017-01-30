@@ -1321,7 +1321,7 @@ msgstr ""
 msgid "Development"
 msgstr ""
 
-#: lib/Baseliner/Controller/REPL.pm root/comp/repl.js
+#: lib/Baseliner/Controller/REPL.pm root/comp/repl.js root/comp/rules.js
 msgid "REPL"
 msgstr ""
 
@@ -10326,7 +10326,7 @@ msgstr ""
 msgid "Maximize"
 msgstr ""
 
-#: root/comp/repl.js root/comp/view_diff.js
+#: root/comp/repl.js root/comp/rules.js root/comp/view_diff.js
 msgid "Raw"
 msgstr ""
 
@@ -10938,10 +10938,6 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Copy Shortcut"
-msgstr ""
-
-#: root/comp/rules.js
-msgid "DSL"
 msgstr ""
 
 #: root/comp/rules.js
@@ -13025,16 +13021,20 @@ msgstr ""
 msgid "Select field %1 first or reload"
 msgstr ""
 
-#: root/fields/system/js/list_revisions.js root/site/model.js
-msgid "Node is not a revision"
-msgstr ""
-
 #: root/fields/system/js/list_revisions.js
 msgid "Revision %1 has already been selected"
 msgstr ""
 
 #: root/fields/system/js/list_revisions.js root/site/model.js
+msgid "Node is not a revision"
+msgstr ""
+
+#: root/fields/system/js/list_revisions.js root/site/model.js
 msgid "Error adding revision %1: %2"
+msgstr ""
+
+#: root/fields/system/js/list_revisions.js
+msgid "Node is not a Revision CI"
 msgstr ""
 
 #: root/fields/system/js/list_tasks.js
