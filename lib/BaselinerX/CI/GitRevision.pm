@@ -176,6 +176,7 @@ sub create_or_update {
     my $repo_dir = $p->{repo_dir} || _fail( _loc('Missing parameter repo_dir') );
     my $repo_mid = $p->{repo_mid} || _fail( _loc('Missing parameter repo_mid') );
     my $sha      = $p->{sha}      || _fail( _loc('Missing parameter sha') );
+    my $name     = $p->{name};
 
     my $rev = ci->GitRevision->find_one( { sha => "$sha", repo => $repo_mid } );
 
@@ -187,11 +188,14 @@ sub create_or_update {
         my $g = Girl::Repo->new( path => $repo_dir );
         my $commit = $g->commit($sha);
 
-        my $title = $commit->message;
-        my $sha_short = substr( $sha, 0, 8 );
+        if ( !$name ) {
+            my $title = $commit->message;
+            my $sha_short = substr( $sha, 0, 8 );
+            $name = "[$sha_short] $title";
+        }
 
         my $ci = BaselinerX::CI::GitRevision->new(
-            name    => "[$sha_short] $title",
+            name    => $name,
             moniker => $sha,
             sha     => $sha,
             repo    => $repo_mid,

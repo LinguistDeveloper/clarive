@@ -243,6 +243,27 @@ subtest 'create_or_update: creates new revision from branch' => sub {
     is $new_revision->{name}, $name;
 };
 
+subtest 'create_or_update: creates new revision with name parameter' => sub {
+    _setup();
+
+    my $repo = TestUtils->create_ci_GitRepository( name => 'repo', revision_mode => 'diff' );
+    my $sha = TestGit->commit($repo, message => 'initial');
+    TestGit->create_branch( $repo, branch => 'test' );
+
+    my $sha_short = substr( $sha, 0, 8 );
+    my $name = "[test] initial";
+
+    my $rev_mid = BaselinerX::CI::GitRevision->create_or_update(
+        { repo_dir => $repo->repo_dir, repo_mid => $repo->mid, sha => 'test', name=>'test' } );
+
+    my $new_revision = ci->GitRevision->find_one({mid=>$rev_mid});
+
+    is $new_revision->{repo}, $repo->mid;
+    is $new_revision->{sha}, 'test';
+    is $new_revision->{moniker}, 'test';
+    is $new_revision->{name}, 'test';
+};
+
 subtest 'create_or_update: loads existing revision' => sub {
     _setup();
 
