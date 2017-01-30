@@ -13,6 +13,73 @@ use TestSetup;
 
 use_ok 'BaselinerX::CI::report';
 
+subtest 'run: returns correct data' => sub {
+    _setup();
+
+    my $topic_mid = TestSetup->_create_topic( title => 'my topic' );
+    my $topic_data = mdb->topic->find_one( { mid => $topic_mid } );
+    my $username = $topic_data->{username};
+
+    my $report = TestUtils->create_ci('report');
+    $report->report_update(
+        {
+            action   => 'update',
+            username => $username,
+            data     => {
+                name           => 'Test',
+                permissions    => 'private',
+                recursivelevel => '2',
+                rows           => 50,
+                selected       => [
+                    {
+                        children => [
+                            {
+                                children => [],
+                                data     => {
+                                    id_category   => $topic_data->{id_category},
+                                    name_category => $topic_data->{name_category},
+                                },
+                                type => 'categories_field'
+                            }
+                        ],
+                        query => {
+                            $topic_data->{id_category} => {
+                                id_category   => [ $topic_data->{id_category} ],
+                                name_category => [ $topic_data->{name_category} ],
+                                relation      => []
+                            }
+                        },
+                        text => 'Categories',
+                        type => 'categories'
+                    },
+                    {
+                        children => [
+                            {
+                                category => $topic_data->{name_category},
+                                text     => "$topic_data->{name_category}: Title",
+                                type     => 'select_field',
+                                id_field => 'title'
+                            }
+                        ],
+                        text => 'Fields',
+                        type => 'select'
+                    }
+                ]
+            }
+        }
+    );
+    my %report_params = (
+        id_category_report => $topic_data->{id_category},
+        start              => 0,
+        username           => $username
+    );
+
+    my %data = $report->run(%report_params);
+
+    is $data{1}{topic_mid},     $topic_mid;
+    is $data{1}{category_name}, $topic_data->{name_category};
+};
+
 subtest 'report_update: deletes report' => sub {
     _setup();
 
