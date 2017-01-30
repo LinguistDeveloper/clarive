@@ -36,7 +36,7 @@ my $display_field = $meta->{display_field};
     <tr>
       <th colspan="2" style="padding: 10px 0 10px 0">
         <h5 style="border-bottom: 1px solid #bbb"> <% _loc($meta->{name_field}) %>
-%         if( $table->{topics} && $$meta{datatable} ne 'never' && @{ $table->{topics} } > 0  ) {
+%         if( $table->{topics} && (!$$meta{datatable} || $$meta{datatable} ne 'never') && @{ $table->{topics} } > 0  ) {
            <div style="float:right; cursor:pointer">
              <img src="/static/images/icons/cog.svg" alt="<% _loc('Show/Hide Search Options') %>"
                       onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
@@ -116,11 +116,11 @@ my $display_field = $meta->{display_field};
 <script>
     (function(){
         try {  // to support legacy
-% if( $$meta{datatable} eq 'always' ) {
+% if( $$meta{datatable}  && $$meta{datatable} eq 'always' ) {
     Baseliner.datatable('#<% $iid %>',{ pageLength: <% $$meta{paging_datatable} || 10 %> });
-% } elsif( $$meta{datatable} eq 'paging' && @{$table->{topics}} > ($$meta{paging_datatable}||10) ) {
+% } elsif( $$meta{datatable}  && $$meta{datatable} eq 'paging' && @{$table->{topics}} > ($$meta{paging_datatable}||10) ) {
     Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true, pageLength: <% $$meta{paging_datatable} || 10 %> });
-% } elsif( $$meta{datatable} ne 'never' ) {
+% } elsif( !$$meta{datatable} || $$meta{datatable} ne 'never' ) {
     Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true, pageLength: <% $$meta{paging_datatable} || 10 %> }, function(){
         Baseliner.datatable_toggle('#<% $iid %>',false);  // false => hide now
     });
