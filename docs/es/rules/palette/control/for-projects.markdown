@@ -1,7 +1,7 @@
 ---
 title: FOR proyecto con cambios DO
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Ejecuta operaciones anidadas para cada proyecto que contienen tópicos de categorías de tipo Cambio.

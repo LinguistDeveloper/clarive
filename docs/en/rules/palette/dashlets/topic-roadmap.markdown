@@ -1,7 +1,7 @@
 ---
 title: Topic roadmap
 index: 5000
-icon: roadmap
+icon: dashlet-topic-roadmap
 ---
 
 Shows a grid with the topic roadmap.

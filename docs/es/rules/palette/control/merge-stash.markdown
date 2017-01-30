@@ -1,7 +1,7 @@
 ---
 title: MERGE valor INTO stash
 index: 5000
-icon: let
+icon: statement-let
 ---
 
 Combina el valor dado en la configuración del elemento con el valor que tiene en el stash.

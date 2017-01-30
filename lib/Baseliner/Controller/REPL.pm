@@ -46,7 +46,7 @@ register 'menu.development.cache_clear' => {
     url_run  => '/cache_clear',
     title    => _locl('Wipe Cache'),
     action   => 'action.development.cache_clear',
-    icon     => '/static/images/icons/wipe_cache.svg',
+    icon     => '/static/images/icons/wipe-cache.svg',
     index      => 30,
 };
 
@@ -63,7 +63,7 @@ register 'menu.development.ext_examples' => {
     url_iframe => '/static/ext/examples/index.html',
     title      => _locl('ExtJS Examples'),
     action     => 'action.development.ext_examples',
-    icon     => '/static/images/icons/extjs_example.svg',
+    icon     => '/static/images/icons/extjs-example.svg',
     index      => 1000,
 };
 register 'menu.development.sequences' => {

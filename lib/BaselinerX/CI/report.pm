@@ -39,11 +39,11 @@ sub root_reports {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ),
-            icon    => '/static/images/icons/report_default.svg',
+            icon    => '/static/images/icons/report-default.svg',
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/report_default.svg',
+                    icon    => '/static/images/icons/report-default.svg',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,
@@ -292,7 +292,7 @@ sub my_searches {
             {
                 mid     => $folder->mid,
                 text    => $name,
-                icon    => '/static/images/icons/report_default.svg',
+                icon    => '/static/images/icons/report-default.svg',
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
@@ -307,7 +307,7 @@ sub my_searches {
                 ],
                 data    => {
                     click   => {
-                        icon    => '/static/images/icons/report_default.svg',
+                        icon    => '/static/images/icons/report-default.svg',
                         url     => '/comp/lifecycle/report_run.js',
                         type    => 'eval',
                         title   => $name,
@@ -348,11 +348,11 @@ sub public_searches {
         push @public,{
             mid     => $folder->mid,
             text    => sprintf( '%s (%s)', $folder->name, $folder->owner ),
-            icon    => '/static/images/icons/report_default.svg',
+            icon    => '/static/images/icons/report-default.svg',
             menu    => [ ],
             data    => {
                 click   => {
-                    icon    => '/static/images/icons/report_default.svg',
+                    icon    => '/static/images/icons/report-default.svg',
                     url     => '/comp/lifecycle/report_run.js',
                     type    => 'eval',
                     title   => $folder->name,
@@ -474,7 +474,7 @@ sub all_fields {
             push @children,
               {
                 text => $category->{name},
-                icon => '/static/images/icons/topic.svg',
+                icon => '/static/images/icons/ci-report-selected-category.svg',
                 data => {
                     'id_category'   => $category->{id},
                     'name_category' => $category->{name},
@@ -492,7 +492,7 @@ sub all_fields {
                 leaf      => \0,
                 draggable => \0,
                 expanded  => \1,
-                icon      => '/static/images/icons/topic_one.png',
+                icon      => '/static/images/icons/ci-report-category.svg',
                 children  => \@children
             }
           );
@@ -514,7 +514,7 @@ sub all_fields {
                             my ( $prefix, $data_key ) = split( /\./, $key, 2 );
                             {
                                 text     => $key,
-                                icon     => '/static/images/icons/field-add.svg',
+                                icon     => '/static/images/icons/ci-report-add-field.svg',
                                 id_field => $prefix,
                                 data_key => $data_key,
                                 type     => 'select_field',
@@ -558,7 +558,7 @@ sub _category_fields {
           {
             text               => _loc( $fieldlet->{name_field} ),
             id_field           => $fieldlet->{id_field},
-            icon               => '/static/images/icons/field-add.svg',
+            icon               => '/static/images/icons/ci-report-add-field.svg',
             type               => 'select_field',
             meta_type          => $fieldlet->{meta_type},
             collection         => $fieldlet->{collection},

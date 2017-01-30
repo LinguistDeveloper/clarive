@@ -1,6 +1,6 @@
 ---
 title: Servicios genéricos
 index: 200
-icon: wrench
+icon: service-config
 expanded: 0
 ---

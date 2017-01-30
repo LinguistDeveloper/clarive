@@ -1,7 +1,7 @@
 ---
 title: Last jobs by app
 index: 5000
-icon: report_default
+icon: dashlet-job-last
 ---
 
 Shows the last jobs ordered by application

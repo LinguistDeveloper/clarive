@@ -1,7 +1,7 @@
 ---
 title: IF variable no es igual a valor THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Al contrario que el componente [if-var](rules/palette/control/if-var), en este caso se procesa el bloque anidado si el valor **no** es igual al valor almacenado en el stash.

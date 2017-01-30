@@ -1,7 +1,7 @@
 ---
 title: FOR eval
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Repite las operaciones anidadas tantas veces como se indica en una lista; el valor del stash se define para cada elemento de la lista.

@@ -1,7 +1,7 @@
 ---
 title: Sleep for a number of seconds
 index: 5000
-icon: job
+icon: service-job-sleep
 ---
 
 The process sleeps for a specified number of seconds.

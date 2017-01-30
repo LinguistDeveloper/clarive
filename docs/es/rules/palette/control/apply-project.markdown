@@ -1,7 +1,7 @@
 ---
 title: APPLY proyecto
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Carga las variables de configuración de un [proyecto](concepts/project) al [stash](concepts/stash).

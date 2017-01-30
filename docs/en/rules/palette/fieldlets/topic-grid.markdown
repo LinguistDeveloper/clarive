@@ -1,7 +1,7 @@
 ---
 title: Topic grid
 index: 5000
-icon: grid
+icon: fieldlet-topic-grid
 ---
 
 Allows to add any topic into a grid to the form.

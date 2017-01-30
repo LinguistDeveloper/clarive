@@ -30,25 +30,25 @@ your operating system from the following locations:
 
 #### Windows
 
-[Windows 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.2.4-signed.msi)
+[Windows 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.2.4-signed.msi)
 
 #### Mac OS X
 
-[Mac OS X <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.2.4.tgz)
+[Mac OS X <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.2.4.tgz)
 
 #### Linux
 
-- [RHEL 5 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.4.tgz)
-- [RHEL 6 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.4.tgz)
-- [RHEL 7 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.4.tgz)
-- [SUSE 11 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.2.4.tgz)
-- [SUSE 12 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.2.4.tgz)
-- [Debian 7 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.2.4.tgz)
-- [Ubuntu 12.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.4.tgz)
-- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
-- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
-- [Ubuntu 14.10 Clang 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1410-clang-3.2.4.tgz)
-- [Legacy Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz)
+- [RHEL 5 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.4.tgz)
+- [RHEL 6 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.4.tgz)
+- [RHEL 7 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.4.tgz)
+- [SUSE 11 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.2.4.tgz)
+- [SUSE 12 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.2.4.tgz)
+- [Debian 7 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.2.4.tgz)
+- [Ubuntu 12.04 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.4.tgz)
+- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
+- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
+- [Ubuntu 14.10 Clang 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1410-clang-3.2.4.tgz)
+- [Legacy Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz)
 
 ## Mongo Server Configuration
 
@@ -310,7 +310,7 @@ read operation. Valid values are:
     nearest
 
 For core documentation on read preference see
-[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />] (http://docs.mongodb.org/manual/core/read-preference/)
+[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/window-new.svg' />] (http://docs.mongodb.org/manual/core/read-preference/)
 
 This may be set in a connection string with the readPreference option.
 
@@ -325,7 +325,7 @@ parameter. If the read_pref_mode is 'primary', then read_pref_tag_sets must not
 be supplied.
 
 For core documentation on read preference see
-[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />] (http://docs.mongodb.org/manual/core/read-preference/)
+[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/window-new.svg' />] (http://docs.mongodb.org/manual/core/read-preference/)
 
 This may be set in a connection string with the readPreferenceTags option. If
 given, the value must be key/value pairs joined with a ":". Multiple pairs must

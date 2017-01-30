@@ -1,7 +1,7 @@
 ---
 title: Email messages
 index: 5000
-icon: envelope
+icon: dashlet-email
 ---
 
 Shows the inbox email messages in the dashboard.

@@ -5,19 +5,24 @@
     var REPL_CONFIGURATION = {
         lang: [{
             text: 'JS Server',
-            lang: 'js-server'
+            lang: 'js-server',
+            icon: 'repl-lang-js'
         }, {
             text: 'Perl',
-            lang: 'perl'
+            lang: 'perl',
+            icon: 'repl-lang-perl'
         }, {
             text: 'JS Client',
-            lang: 'js-client'
+            lang: 'js-client',
+            icon: 'repl-lang-js-client'
         }, {
             text: 'CSS',
             lang: 'css',
+            icon: 'repl-lang-css',
             checked: true
         }, {
             text: 'SQL',
+            icon: 'repl-lang-sql',
             lang: 'sql'
         }],
         out: [{
@@ -115,7 +120,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             }
 
             tree.root.collapseChildNodes();
-            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:IC('folder_explore') });
+            var results = tree.root.appendChild({ text: 'Search Results: ' + v, leaf: false, url: '', icon:IC('folder-explore') });
             results.expand();
             tree.root.eachChild( function(n) {
                 var url = n.attributes.url;
@@ -275,7 +280,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
                 ww.document.close();
             }),
             '->',
-            Baseliner.button('Collapse', IC('arrow_down'), function(b) { outputTabPanel.collapse(true); } )
+            Baseliner.button('Collapse', IC('arrow-down-color'), function(b) { outputTabPanel.collapse(true); } )
         ],
         region: 'south'
     });
@@ -479,7 +484,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
             var language = REPL_CONFIGURATION.lang_map[lang];
             langButton.setText(_('Lang: %1', '<b>' + language.text + '</b>'));
-            langButton.setIcon(IC('' + language.lang + ''));
+            langButton.setIcon(IC('' + language.icon + ''));
             langButton.lang = lang;
 
             aceditor.focus();
@@ -553,7 +558,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     var langButton = new Ext.Button({
         text: _('Lang'),
-        icon: IC('register_view'),
+        icon: IC('register-view'),
         cls: 'x-btn-text-icon',
         menu: langMenu
     });
@@ -582,7 +587,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
 
     var outButton = new Ext.Button({
         text: _('Output'),
-        icon: IC('register_view'),
+        icon: IC('register-view'),
         cls: 'x-btn-text-icon',
         menu: outMenu
     });
@@ -612,7 +617,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:IC('debug_view'),
+                icon:IC('debug-view'),
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },
@@ -636,7 +641,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             },
             {   xtype: 'button',
                 text: _('Export all to file'),
-                icon:IC('drive_go'),
+                icon:IC('drive-go'),
                 cls: 'x-btn-text-icon',
                 handler: function(){
                     Baseliner.ajaxEval('/repl/save_to_file',{},function(res){

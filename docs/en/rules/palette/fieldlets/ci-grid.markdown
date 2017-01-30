@@ -1,7 +1,7 @@
 ---
 title: CI Grid
 index: 5000
-icon: grid
+icon: fieldlet-ci-grid
 ---
 
 Allows to introduce a CI grid in the form.

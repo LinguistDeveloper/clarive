@@ -133,7 +133,7 @@
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { properties.collapse(true) } )
+            Baseliner.button('Collapse', IC('arrow-down-color'), function(b) { properties.collapse(true) } )
         ],
         region: 'south'
     });
@@ -158,7 +158,7 @@
             });
             properties.add( output );
             properties.setActiveTab( output );
-            properties.changeTabIcon( '/static/images/icons/moredata.svg' );
+            properties.changeTabIcon( '/static/images/icons/job-full-log.svg' );
             properties.expand();
         }else{*/
             Baseliner.ajaxEval('/comp/view_file.js', {
@@ -173,7 +173,7 @@
                 comp.closable = true;
                 properties.add(comp);
                 properties.setActiveTab(comp);
-                properties.changeTabIcon('/static/images/icons/moredata.svg');
+                properties.changeTabIcon(IC('job-full-log'));
                 properties.expand();
             });
         //}
@@ -279,7 +279,7 @@
                 }
             }),
             '->',
-            Baseliner.button('Collapse', '/static/images/icons/arrow_down.svg', function(b) { properties.collapse(true) } )
+            Baseliner.button('Collapse', IC('arrow-down-color'), function(b) { properties.collapse(true) } )
         ],
         region: 'south'
     });

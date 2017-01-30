@@ -62,7 +62,7 @@
             bl_combo,
             '->',
             {   xtype:'button',
-                icon: '/static/images/icons/drop-yes.svg',
+                icon: IC('drop-ok'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     // Save the form

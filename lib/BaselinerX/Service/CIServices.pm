@@ -8,7 +8,7 @@ with 'Baseliner::Role::Service';
 register 'service.ci.invoke' => {
     name => _locl('Invoke CI methods'),
     form => '/forms/ci_invoke.js',
-    icon => '/static/images/icons/class.svg',
+    icon => '/static/images/icons/service-ci-invoke.svg',
     job_service  => 1,
     handler => \&ci_invoke,
 };
@@ -16,21 +16,21 @@ register 'service.ci.invoke' => {
 register 'service.ci.create' => {
     name => _locl('Create CI'),
     form => '/forms/ci_create.js',
-    icon => '/static/images/icons/class.svg',
+    icon => '/static/images/icons/service-ci-create.svg',
     handler => \&ci_create,
 };
 
 register 'service.ci.load_related' => {
     name => _locl('Load related CIs'),
     form => '/forms/ci_related.js',
-    icon => '/static/images/icons/class.svg',
+    icon => '/static/images/icons/service-ci-related.svg',
     handler => \&ci_related,
 };
 
 register 'service.ci.load' => {
     name => _locl('Load CI data'),
     form => '/forms/ci_load.js',
-    icon => '/static/images/icons/class.svg',
+    icon => '/static/images/icons/service-ci-load.svg',
     handler => \&ci_load,
 };
 

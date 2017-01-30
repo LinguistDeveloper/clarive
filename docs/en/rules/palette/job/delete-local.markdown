@@ -1,7 +1,7 @@
 ---
 title: Delete Local Directory
 index: 5000
-icon: file
+icon: service-fileman-rm
 ---
 
 Removes given directory recursively.

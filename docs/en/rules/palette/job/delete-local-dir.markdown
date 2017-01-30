@@ -1,7 +1,7 @@
 ---
 title: Delete Local File
 index: 5000
-icon: file
+icon: service-fileman-rmtree
 ---
 
 Removes given file.

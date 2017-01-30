@@ -68,7 +68,7 @@
         tbar: [ '<% _loc('Search') %>: ', ' ', searchField,
             {
                 text: '<% _loc('Install') %>',
-                icon:'/static/images/icons/downloads_favicon.svg',
+                icon:'/static/images/icons/downloads-favicon.svg',
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -84,7 +84,7 @@
             },
             new Ext.Toolbar.Button({
                 text: '<% _loc('Details') %>',
-                icon:'/static/images/chromium/databaseTable.svg',
+                icon: IC('feature-database-table'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -105,7 +105,7 @@
             },
             new Ext.Toolbar.Button({
                 text: '<% _loc('Turn Off') %>',
-                icon:'/static/images/icons/del_all.svg',
+                icon: IC('delete-grid-all-rows'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();

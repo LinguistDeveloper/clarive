@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+	.st1{fill:#4FBC78;}
+</style>
+<title>drive</title>
+<path class="st0" d="M1,7v8h14V7H1z M4,8h1v1H4V8z M2,8h1v1H2V8z M14,12H2v-2h12V12z"/>
+<polygon class="st1" points="11,3 8,7 5,3 7,3 7,1 9,1 9,3 "/>
+</svg>

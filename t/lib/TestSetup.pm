@@ -180,7 +180,7 @@ sub create_rule_pipeline {
                             },
                             {
                                 "attributes" => {
-                                    "icon"           => "/static/images/icons/if.svg",
+                                    "icon"           => "/static/images/icons/if-green.svg",
                                     "palette"        => 0,
                                     "on_drop_js"     => undef,
                                     "holds_children" => 1,

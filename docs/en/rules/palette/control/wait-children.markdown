@@ -1,7 +1,7 @@
 ---
 title: WAIT for children
 index: 5000
-icon: time
+icon: statement-parallel-wait
 ---
 
 Waits for all forked (parallel) processes to finish if they were

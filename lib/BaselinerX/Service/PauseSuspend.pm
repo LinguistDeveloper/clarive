@@ -11,7 +11,7 @@ with 'Baseliner::Role::Service';
 register 'service.job.pause' => {
     name => _locl('Pause a Job'),
     job_service  => 1,
-    icon=>'/static/images/icons/job.svg',
+    icon=>'/static/images/icons/service-job-pause.svg',
     form => '/forms/pause_job.js',
     handler => \&run_pause, };
 

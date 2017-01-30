@@ -1,7 +1,7 @@
 ---
 title: SET VAR a CI
 index: 5000
-icon: let
+icon: statement-let
 ---
 
 Crea un nueva variable en el stash y referencia el valor de la misma a una instancia CI.

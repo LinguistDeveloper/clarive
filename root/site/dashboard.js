@@ -195,7 +195,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         id_export_menu : id_export_menu
                     });
                     var btn_html = {
-                        icon: '/static/images/icons/html.svg',
+                        icon: IC('logo-html'),
                         current_dashlet: dashlet.id,
                         text: _('HTML'),
                         handler: function() {
@@ -204,7 +204,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         }
                     };
                     var btn_yaml = {
-                        icon: '/static/images/icons/yaml.svg',
+                        icon: IC('logo-yaml'),
                         current_dashlet: dashlet.id,
                         text: _('YAML'),
                         handler: function() {
@@ -213,7 +213,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                         }
                     };
                     var btn_csv = {
-                        icon: '/static/images/icons/csv.svg',
+                        icon: IC('logo-csv'),
                         current_dashlet: dashlet.id,
                         text: _('CSV'),
                         handler: function() {

@@ -158,7 +158,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
         this.on('afterrender', function(){
             $.cleditor.buttons.fullscreen = {
                 name: 'fullscreen',
-                image: '../../images/icons/fullscreen-24.svg',
+                image: '../../images/icons/fullscreen-arrows.svg',
                 tooltip: 'full screen',
                 title: "Full Screen",
                 command: "fullscreen",

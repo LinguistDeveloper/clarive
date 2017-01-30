@@ -26,7 +26,8 @@ register 'config.catalog.settings' => {
 register 'statement.catalog.if.var' => {
     text => _locl('Catalog - IF var THEN'),
     type => 'if',
-    icon => '/static/images/icons/catalogue.svg',
+    show_in_palette => 0,
+    icon => '/static/images/icons/statement-catalog-if.svg',
     form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
     dsl => sub {
@@ -47,6 +48,7 @@ register 'statement.catalog.if.var' => {
 register 'statement.catalog.folder' => {
     text => _locl('Folder'),
     data => { },
+    show_in_palette => 0,
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
     form => '/forms/catalog_folder.js',
@@ -164,6 +166,7 @@ register 'statement.catalog.service' => {
     data => { },
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
+    show_in_palette => 0,
     form => '/forms/catalog_service.js',
     filter => 1,
     dsl => sub {
@@ -187,6 +190,7 @@ register 'statement.catalog.task_group' => {
     data => { },
     icon => '/static/images/icons/catalogue.svg',
     holds_children => 1,
+    show_in_palette => 0,
     filter => 0,
     dsl => sub {
         my ($self, $n , %p) = @_;
@@ -226,6 +230,7 @@ register 'statement.catalog.task' => {
     text => _locl('Task'),
     data => { },
     icon => '/static/images/icons/catalogue.svg',
+    show_in_palette => 0,
     holds_children => 1,
     form => '/forms/catalog_task.js',
     filter => 1,
@@ -248,7 +253,8 @@ register 'statement.catalog.task' => {
 register 'statement.catalog.step' => {
     text => _locl('CATALOG STEP'),
     description=> _locl('a task step section: MENU,WIZZARD,RUN...'),
-    icon => '/static/images/icons/catalogue.svg',
+    icon => '/static/images/icons/statement-catalog-step.svg',
+    show_in_palette => 0,
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -262,6 +268,7 @@ register 'statement.catalog.step' => {
 ####################### SERVICES
 
 register 'service.catalog.service' => {
+    show_in_palette => 0,
     handler=>sub{
         my ( $self, $c, $config ) = @_;
 
@@ -334,13 +341,14 @@ register 'service.catalog.service' => {
             }
         }
     },
-    icon        => '/static/images/icons/catalogue.svg'
+    icon        => '/static/images/icons/service-catalog-service.svg'
 };
 
 
 register 'service.catalog.task' => {
     parse_vars=>0,
-    icon        => '/static/images/icons/catalogue.svg' ,
+    show_in_palette => 0,
+    icon        => '/static/images/icons/service-catalog-task.svg' ,
     handler=>sub{
         my ( $self, $c, $config ) = @_;
 
@@ -582,7 +590,8 @@ register 'service.catalog.task' => {
 
 register 'service.catalog.task_group' => {
     parse_vars => 0,
-    icon        => '/static/images/icons/catalogue.svg',
+    icon        => '/static/images/icons/service-catalog-group.svg',
+    show_in_palette => 0,
     handler=>sub{
         my ( $self, $c, $config ) = @_;
 
@@ -637,8 +646,9 @@ register 'service.catalog.task_group' => {
 
 register 'service.catalog.form' => {
     name => _locl('Form'),
-    icon => '/static/images/icons/catalogue.svg',
+    icon => '/static/images/icons/service-catalog-form.svg',
     form => '/forms/catalog_form.js',
+    show_in_palette => 0,
     parse_vars => 0,
     handler => sub{
         my ( $self, $c, $config ) = @_;

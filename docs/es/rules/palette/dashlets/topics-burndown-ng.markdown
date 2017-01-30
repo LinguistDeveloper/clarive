@@ -1,7 +1,7 @@
 ---
 title: Timeline NG de tópicos
 index: 5000
-icon: chart_line
+icon: dashlet-topic-ng
 ---
 
 Muestra una línea de tendencia con los tópicos reales y las previsiones.

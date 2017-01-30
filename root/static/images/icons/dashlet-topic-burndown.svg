@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Layer_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#404040;}
+	.st1{fill:#756493;}
+</style>
+<rect x="4.9" y="5.9" transform="matrix(0.4598 -0.888 0.888 0.4598 -5.1453 9.4796)" class="st0" width="0.7" height="6.2"/>
+<rect x="4.9" y="6" transform="matrix(0.7639 0.6453 -0.6453 0.7639 7.1227 -1.1997)" class="st0" width="0.7" height="6.2"/>
+<circle class="st1" cx="2.7" cy="12.1" r="1.6"/>
+<rect x="10.9" y="2.6" transform="matrix(0.7559 0.6546 -0.6546 0.7559 7.1562 -5.6857)" class="st0" width="0.7" height="8.3"/>
+<circle class="st1" cx="14.5" cy="2.8" r="1.6"/>
+<rect x="10.6" y="3.3" transform="matrix(-0.199 0.98 -0.98 -0.199 19.3884 -3.0756)" class="st0" width="0.7" height="6.2"/>
+<circle class="st1" cx="14.4" cy="7.1" r="1.6"/>
+<circle class="st1" cx="7.8" cy="6.2" r="1.6"/>
+<circle class="st1" cx="1.6" cy="7.3" r="1.6"/>
+<circle class="st1" cx="8.2" cy="10.5" r="1.6"/>
+</svg>

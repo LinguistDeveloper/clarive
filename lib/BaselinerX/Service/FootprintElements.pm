@@ -13,6 +13,7 @@ with 'Baseliner::Role::Service';
 ## COMPILA
 register 'service.job.footprint' => {
     name    => _locl( 'Footprint elements' ),
+    icon => '/static/images/icons/service-job-footprint.svg',
     job_service  => 1,
     handler => sub {
         my ( $self, $c ) = @_;

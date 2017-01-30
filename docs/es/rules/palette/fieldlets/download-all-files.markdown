@@ -1,7 +1,7 @@
 ---
 title: Descargar todos los ficheros
 index: 5000
-icon: download
+icon: fieldlet-download-all
 ---
 
 Añade una opción en el tópico para que el usuario se pueda descargar todos los ficheros adjuntos al tópico en un archivo comprimido.

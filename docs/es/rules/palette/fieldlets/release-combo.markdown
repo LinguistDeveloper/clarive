@@ -1,7 +1,7 @@
 ---
 title: Desplegable de releases
 index: 5000
-icon: combo_box
+icon: fieldlet-system-release
 ---
 
 Añade al tópico una lista desplegable de tópicos de categorías de tipo Release.

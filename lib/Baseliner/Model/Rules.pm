@@ -590,7 +590,7 @@ register 'statement.if.condition' => {
 
 register 'statement.if.else' => {
     text => _locl('ELSE'),
-    icon => '/static/images/icons/else.svg',
+    icon => '/static/images/icons/statement-if-else.svg',
     type => 'if',
     nested => 1,   # avoids a "current_task" before
     data => {},
@@ -607,7 +607,7 @@ register 'statement.if.else' => {
 
 register 'statement.if.elsif' => {
     text => _locl('ELSIF condition THEN'),
-    icon => '/static/images/icons/if_else.svg',
+    icon => '/static/images/icons/statement-if-elsif.svg',
     type => 'if',
     nested => 1,
     data => { condition =>'1' },
@@ -748,7 +748,7 @@ register 'statement.delete.trap_action' => {
 register 'statement.parallel.wait' => {
     text => _locl('WAIT for children'),
     form => '/forms/wait_for_children.js',
-    icon => '/static/images/icons/slot.svg',
+    icon => '/static/images/icons/statement-parallel-wait.svg',
     holds_children => 0,
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -861,7 +861,7 @@ register 'statement.do_while' => {
 register 'statement.step' => {
     text => _locl('JOB STEP'),
     description=> _locl('a job step section: PRE,RUN,POST...'),
-    icon => '/static/images/icons/job.svg',
+    icon => '/static/images/icons/statement-step.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -879,7 +879,7 @@ register 'statement.sub' => {
     on_drop_js => q{
         node.attributes.sub_name = new_id_for_task("SUB");
     },
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/statement-sub.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -891,8 +891,8 @@ register 'statement.sub' => {
 register 'statement.fail' => {
     text => _locl('FAIL'),
     data => { msg => 'abort here' },
-    icon => '/static/images/icons/error_red.svg',
     form => '/forms/fail.js',
+    icon => '/static/images/icons/statement-fail.svg',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -903,7 +903,7 @@ register 'statement.fail' => {
 
 register 'statement.shortcut' => {
     text => _locl('Task Shortcut'),
-    icon => '/static/images/icons/shortcut.svg',
+    icon => '/static/images/icons/statement-shortcut.svg',
     form => '/forms/shortcut.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
@@ -933,7 +933,7 @@ register 'statement.shortcut' => {
 register 'statement.log' => {
     text => _locl('LOG message'),
     data => { text => 'Message', level=>'info' },
-    icon => '/static/images/icons/log.svg',
+    icon => '/static/images/icons/statement-log.svg',
     form => '/forms/log.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
@@ -948,6 +948,7 @@ register 'statement.log' => {
 
 register 'service.echo' => {
     data => { msg => '', args=>{}, arr=>[] },
+    icon => '/static/images/icons/service-echo.svg',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $data->{hello} = $data->{msg} || 'world';
@@ -958,6 +959,7 @@ register 'service.echo' => {
 
 register 'service.fail' => {
     data => { msg => 'dummy fail' },
+    icon => '/static/images/icons/service-fail.svg',
     handler=>sub{
         my ($self, $c, $data ) = @_;
         Baseliner::Utils::_fail( $data->{msg} || 'dummy fail' );
@@ -1102,7 +1104,7 @@ register 'statement.project.block' => {
 register 'statement.perl.eval' => {
     text => _locl('EVAL'), data => { code=>'' },
     form => '/forms/stmt_eval.js',
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/statement-perl-eval.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1118,7 +1120,7 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => _locl('DO'), data => { code=>'' },
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/statement-perl-do.svg',
     form => '/forms/stmt_eval.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1134,7 +1136,7 @@ register 'statement.perl.do' => {
 
 register 'statement.perl.group' => {
     text => _locl('GROUP'),data => { },
-    icon => '/static/images/icons/cog_gears.svg',
+    icon => '/static/images/icons/statement-perl-group.svg',
     dsl => sub {
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -1152,7 +1154,7 @@ register 'statement.perl.group' => {
 register 'statement.perl.for' => {
     text => _locl('FOR eval'), data => { varname=>'x', code=>'()' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/statement-perl-for.svg',
     form => '/forms/stmt_for.js',
     dsl => sub {
         my ($self, $n, %p ) = @_;
@@ -1169,7 +1171,7 @@ register 'statement.code.server' => {
     text           => _locl('Server CODE'),
     data           => {code => ''},
     type           => 'loop',
-    icon           => '/static/images/icons/cog_perl.svg',
+    icon           => '/static/images/icons/statement-code-server.svg',
     holds_children => 0,
     form           => '/forms/server_code.js',
     dsl            => sub {
@@ -1193,7 +1195,7 @@ register 'statement.code.server' => {
 register 'statement.perl.code' => {
     text => _locl('CODE (Perl)'), data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/icons/cog_perl.svg',
+    icon => '/static/images/icons/statement-perl-code.svg',
     holds_children => 0,
     form => '/forms/stmt_eval.js',
     dsl => sub {
@@ -1340,7 +1342,7 @@ register 'statement.if.rollback' => {
 
 register 'statement.include' => {
     text            => _locl('INCLUDE rule'),
-    icon            => '/static/images/icons/cog_perl.svg',
+    icon            => '/static/images/icons/statement-include.svg',
     form            => '/forms/rule_list.js',
     holds_children  => 0,
     show_in_palette => 0,
@@ -1358,7 +1360,7 @@ register 'statement.include' => {
 
 register 'statement.call' => {
     text => _locl('CALL rule'),
-    icon => '/static/images/icons/cog.svg',
+    icon => '/static/images/icons/statement-call.svg',
     form           => '/forms/rule_list.js',
     holds_children => 0,
     data           => { id_rule => '', },

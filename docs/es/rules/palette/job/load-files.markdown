@@ -1,7 +1,7 @@
 ---
 title: Cargar ficheros/elementos al stash
 index: 5000
-icon: file
+icon: service-fileman-foreach
 ---
 
 Asigna a una variable [stash](concepts/stash) configurada por el usuario, todos los ficheros y elementos encontrados de acuerdo a las opciones que el usuario introduzca en la configuración de este elemento.

@@ -15,7 +15,7 @@
 <div id="boot">
     <div class="container_24" style="padding-top:12px;padding-left:10px;">
         <div class="grid_24">
-            <h2>Job: <%$namejob%> (<a href="javascript:Baseliner.add_tabcomp('/job/log/list?mid=<%$mid%>', _('<%$namejob%>'), { tab_icon: '/static/images/icons/moredata.svg' } );"> <% _loc('Full log') %> </a>)</h2>
+            <h2>Job: <%$namejob%> (<a href="javascript:Baseliner.add_tabcomp('/job/log/list?mid=<%$mid%>', _('<%$namejob%>'), { tab_icon: '/static/images/icons/job-full-log.svg' } );"> <% _loc('Full log') %> </a>)</h2>
         </div>
 
         <div class="grid_11">
@@ -136,7 +136,7 @@
 </%perl>
                     <tr>
                         <td><b><% _loc( 'Job Items') %></b></td>
-                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?mid=<%$mid%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.svg' } );"><% _loc("Items") %>&nbsp;<img border=0 class="force_size_in_icon" src='/static/images/icons/moredata.svg'/></a></b></td>
+                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?mid=<%$mid%>', _('Elements <%$namejob%>'), { tab_icon: '/static/images/icons/job-full-log.svg' } );"><% _loc("Items") %>&nbsp;<img border=0 class="force_size_in_icon" src='/static/images/icons/moredata.svg'/></a></b></td>
                     </tr>
 <%perl>
     my $tot_tecnologias;
@@ -191,7 +191,7 @@
                     $first = 0;
                 }
 </%perl>
-                        <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?mid=<%$mid%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.svg' } );"><% $service->{description} || $service->{service} %></a></b></td>
+                        <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?mid=<%$mid%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/job-full-log.svg' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
                         <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}} .' '. _loc('sec') %></b></td>
 
@@ -235,7 +235,7 @@
                         } else if( obj.more!='' && obj.more!=undefined && obj.data ) {
                             var img;
                             if( obj.more=='zip' ) {
-                               img = '/static/images/icons/mime/file_extension_zip.svg';
+                               img = '/static/images/icons/file-extension/file-extension-zip.svg';
                             } else {
                                img = '/static/images/icons/save.svg';
                         }
@@ -246,10 +246,10 @@
                                 if( data_name==undefined || data_name.length<1 ) {
                                    data_name = "Log Data " + obj.id;
                                 }
-                                ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + obj.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/moredata.svg'/></a> " + datalen ;
+                                ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + obj.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/job-full-log.svg'/></a> " + datalen ;
                             }
                             else if( obj.file!=undefined && obj.file!='' && obj.data ) { // alternative file
-                                ret += "<a href='/job/log/highlight/" + obj.id + "' target='_blank'><img border=0 src='/static/images/icons/page_new.svg'></a> "
+                                ret += "<a href='/job/log/highlight/" + obj.id + "' target='_blank'><img border=0 src='/static/images/icons/page-new.svg'></a> "
                                 ret += "&nbsp;<a href='/job/log/download_data?id=" + obj.id + "&file_name=" + obj.file + "' target='FrameDownload'><img border=0 src='/static/images/icons/save.svg'/></a> " + datalen ;
                             }
                         }
@@ -326,7 +326,7 @@
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value = ' <% _loc("Rollback Failed") %>';
-             icon = 'error_red.svg';
+             icon = 'error.svg';
         }
         if( status == 'APPROVAL' ) {
             value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", <% _loc('Approvals') %>, status );

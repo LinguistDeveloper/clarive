@@ -1,7 +1,7 @@
 ---
 title: Campo de tiempo
 index: 5000
-icon: time
+icon: fieldlet-time
 ---
 
 Permite añadir una lista desplegable con las horas y minutos del día en intervalos de 15 minutos.

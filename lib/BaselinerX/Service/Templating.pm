@@ -6,12 +6,11 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/edit.svg';
 
 register 'service.templating.transform' => {
     name => _locl('Transform Template'),
     form => '/forms/template_transform.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-templating-transform.svg',
     job_service  => 1,
     handler => \&template_transform,
 };

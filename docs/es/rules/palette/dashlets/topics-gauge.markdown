@@ -1,7 +1,7 @@
 ---
 title: Medidor de tópicos
 index: 5000
-icon: gauge
+icon: dashlet-topic-gauge
 ---
 
 Muestra un medidor dividido en tres partes donde muestran los tópicos y su 'urgencia'.

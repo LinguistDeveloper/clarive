@@ -1,7 +1,7 @@
 ---
 title: Windows service
 index: 5000
-icon: wrench
+icon: service-scripting-windows
 ---
 
 Allow to control Windows services in remote control. The parameters to be configured are:

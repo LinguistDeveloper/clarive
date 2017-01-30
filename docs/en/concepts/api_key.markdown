@@ -1,7 +1,7 @@
 ---
 title: API Key
 index: 5000
-icon: lock_small
+icon: lock
 ---
 
 An application programming interface key (API key) is a code passed in by external commands calling Clarive API (application programming interface) to identify the calling user.

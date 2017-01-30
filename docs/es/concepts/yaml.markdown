@@ -1,7 +1,7 @@
 ---
 title: YAML
 index: 5000
-icon: yaml
+icon: logo-yaml
 ---
 
 YAML es un formato tipado legible por personas usado para la serialización de datos
@@ -82,8 +82,8 @@ de los datos, especialmente CIs, en un fichero del sistema.
 
 Lee más acerca del formato en:
 
-- [https://en.wikipedia.org/wiki/YAML <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/YAML)
-- [http://yaml.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://yaml.org/)
+- [https://en.wikipedia.org/wiki/YAML <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/YAML)
+- [http://yaml.org/ <img class='ext-link' src='static/images/icons/window-new.svg' />](http://yaml.org/)
 
 También, puedes jugar con YAML en el [REPL](devel/repl) de Clarive o en
 esta herramienta online:

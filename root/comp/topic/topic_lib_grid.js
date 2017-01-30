@@ -29,7 +29,7 @@ Cla.open_grid_from_field = function(el,mid,category,field_title){
     var el = $(el);
     var topics = [];
     $(el).find('.topic-row').each(function(){ topics.push($(this).attr('mid')); });
-    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon: IC('topic_out'), topic_list: topics });
+    Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('%1: %2 #%3', field_title, category, mid), { clear_filter: 1, tab_icon: IC('topic-out'), topic_list: topics });
 };
 
 Baseliner.open_monitor_query = function(q){
@@ -611,7 +611,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_html = {
-        icon: '/static/images/icons/html.svg',
+        icon: IC('logo-html'),
         text: _('HTML'),
         handler: function() {
             form_report_submit({ url: '/topic/report_html' });
@@ -619,7 +619,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_yaml = {
-        icon: '/static/images/icons/yaml.svg',
+        icon: IC('logo-yaml'),
         text: _('YAML'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_yaml' });
@@ -627,7 +627,7 @@ Cla.topic_grid = function(params){
     };
 
     var btn_csv = {
-        icon: '/static/images/icons/csv.svg',
+        icon: IC('logo-csv'),
         text: _('CSV'),
         handler: function() {
             form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload'});
@@ -657,7 +657,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_clear_state = new Ext.Button({
-        icon: '/static/images/icons/reset-grey.svg',
+        icon: IC('grid-reset-values'),
         tooltip: _('Reset Grid Columns'),
         iconCls: 'x-btn-icon',
         handler: function(){
@@ -752,7 +752,7 @@ Cla.topic_grid = function(params){
     });
 
     var btn_custom = new Ext.Button({
-        icon: '/static/images/icons/table_edit.svg',
+        icon: '/static/images/icons/table-edit.svg',
         iconCls: 'x-btn-icon',
         enableToggle: true,
         pressed: false,
@@ -1084,7 +1084,7 @@ Cla.topic_grid = function(params){
         actions_html.push("<span id='boot' style='background: transparent'>");
 
         var ref_html = function(dir, refs){
-            var img = dir =='in' ? 'referenced_in' : 'references_out';
+            var img = dir =='in' ? 'referenced-in' : 'references-out';
             var ret = [];
             // open children
             ret.push("<span class='label info-column' style='cursor:pointer;' href='javascript:void(0);'" +
@@ -1101,7 +1101,7 @@ Cla.topic_grid = function(params){
         }
         if (rec.data.numcomment) {
             swGo = true;
-            actions_html.push("<span style='float: left; color: #808080'><img src='/static/images/icons/comment_blue.svg' class='x-topic-lib-inline-icon'/> ");
+            actions_html.push("<span style='float: left; color: #808080'><img src='/static/images/icons/topic-comment.svg' class='x-topic-lib-inline-icon'/> ");
             actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
             actions_html.push("</span>");
         }

@@ -1,6 +1,6 @@
 ---
 title: IF Role IS
-icon: if
+icon: statement-if
 ---
 
 Create workflow depending on role of user.

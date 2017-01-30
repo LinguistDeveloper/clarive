@@ -1,7 +1,7 @@
 ---
 title: Botones
 index: 5000
-icon: pills
+icon: fieldlet-pills
 ---
 
 Añade un indicador donde escoger uno de los elementos de las opciones. Parecido a una serie de checkbox pero permitiendo solo una única opción

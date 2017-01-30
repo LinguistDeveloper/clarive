@@ -50,7 +50,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 [{
 "attributes": {
     "palette": false,
-    "icon": "/static/images/icons/if.svg",
+    "icon": "/static/images/icons/statement-if.svg",
     "disabled": false,
     "on_drop_js": null,
     "key": "statement.if.var",
@@ -70,7 +70,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 },
 "children": [{
     "attributes": {
-        "icon": "/static/images/icons/user_delete.svg",
+        "icon": "/static/images/icons/user-delete.svg",
         "palette": false,
         "disabled": false,
         "active": 1,
@@ -84,7 +84,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
     "children": []
 }, {
     "attributes": {
-        "icon": "/static/images/icons/user_delete.svg",
+        "icon": "/static/images/icons/user-delete.svg",
         "palette": false,
         "disabled": false,
         "active": 1,
@@ -103,7 +103,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 }, {
 "attributes": {
     "palette": false,
-    "icon": "/static/images/icons/if.svg",
+    "icon": "/static/images/icons/statement-if.svg",
     "disabled": false,
     "on_drop_js": null,
     "key": "statement.if.else",
@@ -120,7 +120,7 @@ Esta regla es un ejemplo de la estructura básica para validar un usuario median
 },
 "children": [{
     "attributes": {
-        "icon": "/static/images/icons/user_add.svg",
+        "icon": "/static/images/icons/user-add.svg",
         "palette": false,
         "disabled": false,
         "active": 1,

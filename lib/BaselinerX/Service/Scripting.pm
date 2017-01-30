@@ -10,12 +10,11 @@ use Baseliner::Utils;
 use Baseliner::CI;
 use Baseliner::Sugar;
 
-our $ICON_DEFAULT = '/static/images/icons/cog_java.svg';
 
 register 'service.scripting.local' => {
     name => _locl('Run a local script'),
     form => '/forms/script_local.js',
-    icon => $ICON_DEFAULT,
+    icon =>'/static/images/icons/service-scripting-local.svg',
     job_service  => 1,
     handler => \&run_local,
 };
@@ -23,7 +22,7 @@ register 'service.scripting.local' => {
 register 'service.scripting.remote' => {
     name => _locl('Run a remote script'),
     form => '/forms/script_remote.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-scripting-remote.svg',
     job_service  => 1,
     handler => \&run_remote,
 };
@@ -32,7 +31,7 @@ register 'service.scripting.remote_eval' => {
     name => _locl('Eval Remote'),
     form => '/forms/eval_remote.js',
     data => { server=>'', code=>'' },
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-scripting-eval.svg',
     job_service  => 1,
     handler => \&run_eval,
 };

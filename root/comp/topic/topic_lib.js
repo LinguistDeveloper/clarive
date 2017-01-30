@@ -208,10 +208,10 @@ Baseliner.topic_name = function(args) {
         // set default icons
         if( icon==undefined ) {
             if( args.is_changeset > 0  ) {
-                icon = '/static/images/icons/package-white.svg';
+                icon = IC('topic-changeset');
             }
             else if( args.is_release > 0  ) {
-                icon = '/static/images/icons/release-white.svg';
+                icon = IC('topic-release');
             }
         }
 
@@ -674,7 +674,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, title, id_com, cb_or_parent_i
     });
     var btn_submit = new Ext.Button({
         xtype: 'button',
-        icon:'/static/images/icons/comment_new.svg',
+        icon:'/static/images/icons/comment-new.svg',
         text: _('Add Comment'),
         handler: function(){
             var text, content_type;
@@ -868,7 +868,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         self.btn_comment = new Ext.Toolbar.Button({
             text: _('Add Comment'),
-            icon:'/static/images/icons/comment_new.svg',
+            icon:'/static/images/icons/comment-new.svg',
             cls: 'x-btn-icon-text ui-btn-comment-add',
             hidden: !self.permComment,
             handler: function() {
@@ -1029,7 +1029,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         self.btn_graph = new Ext.Toolbar.Button({
-            icon:'/static/images/icons/ci-grey.svg',
+            icon: IC('graph-ci-related'),
             cls: 'x-btn-icon',
             tooltip: _('Show CI Graph'),
             hidden: self.permGraph==undefined?true:!self.permGraph,

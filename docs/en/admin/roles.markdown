@@ -49,8 +49,8 @@ All available actions are displayed in the left panel, Actions attributed to the
 are displayed in the left pane. A Group of actions or a specific action can be added by
 selecting and dragging the action of group from the left pane to the right pane.
 
-- `Remove Selection` <img src="/static/images/icons/delete_red.svg" /> - Removes the currently selected action from the Role.
-- `Remove All` <img src="/static/images/icons/del_all.svg" /> - Removes all selections.
+- `Remove Selection` <img src="/static/images/icons/delete-grid-row.svg" /> - Removes the currently selected action from the Role.
+- `Remove All` <img src="/static/images/icons/delete-grid-all-rows.svg" /> - Removes all selections.
 
 
 ## Users that Have a Role

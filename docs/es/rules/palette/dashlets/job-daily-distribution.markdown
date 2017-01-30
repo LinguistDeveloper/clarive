@@ -1,7 +1,7 @@
 ---
 title: Linea temporal de jobs
 index: 5000
-icon: chart_line
+icon: dashlet-job-day
 ---
 
 Muestra los trabajos en una línea temporal de distribución.

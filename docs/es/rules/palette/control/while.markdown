@@ -1,6 +1,6 @@
 ---
 title: WHILE condition
-icon: loop
+icon: statement-loop
 ---
 
 El control WHILE permite iterar un bloque de código mientras la condición o condiciones indicadas se cumplan.

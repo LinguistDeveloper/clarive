@@ -1,7 +1,7 @@
 ---
 title: EVAL
 index: 5000
-icon: cog_perl
+icon: statement-perl-eval
 ---
 
 Ejecuta código PERL e identifica los errores durante la ejecución almacenando el valor de retorno en la variable *data_key* del [stash](concepts/stash).

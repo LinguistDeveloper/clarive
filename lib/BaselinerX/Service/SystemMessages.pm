@@ -14,7 +14,7 @@ register 'service.job.system_messages' => {
     name => _locl('System Messages'),
     job_service  => 1,
     form => '/forms/system_messages.js',
-    icon => "/static/images/icons/sms.svg",
+    icon => "/static/images/icons/service-job-sms.svg",
     handler => \&run_create, };
 
 sub run_create {

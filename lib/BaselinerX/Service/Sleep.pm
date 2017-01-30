@@ -11,7 +11,7 @@ register 'service.job.sleep' => {
     name        => _locl('Sleep for a number of seconds'),
     job_service => 1,
     form        => '/forms/sleep_job.js',
-    icon        => '/static/images/icons/job.svg',
+    icon        => '/static/images/icons/service-job-sleep.svg',
     handler     => \&run_sleep,
 };
 

@@ -1,7 +1,7 @@
 ---
 title: Milestones
 index: 5000
-icon: milestone
+icon: fieldlet-milestones
 ---
 
 Permite añadir un plan con fechas para poder realizar un seguimiento del estado del proyecto.

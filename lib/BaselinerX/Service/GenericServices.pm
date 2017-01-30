@@ -8,7 +8,7 @@ with 'Baseliner::Role::Service';
 register 'service.get_date' => {
     data    => { date => '' },
     form    => '/forms/get_date.js',
-    icon    => '/static/images/icons/calendar.svg',
+    icon    => '/static/images/icons/service-get-date.svg',
     name    => _locl('Get date'),
     handler => \&get_date,
 };

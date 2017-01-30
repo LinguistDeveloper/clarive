@@ -1,7 +1,7 @@
 ---
 title: State
 index: 5000
-icon: lock_small
+icon: fieldlet-system-status
 ---
 
 Allows to define the state.

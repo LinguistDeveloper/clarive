@@ -52,7 +52,7 @@ subtest 'compile: compiles rule' => sub {
         rule_tree => [
             {
                 "attributes"=> {
-                    "icon"=> "/static/images/icons/cog_perl.svg",
+                    "icon"=> "/static/images/icons/statement-code-server.svg",
                     "key"=> "statement.code.server",
                     "text"=> "Server CODE",
                     "id"=> "rule-ext-gen38276-1456842988061",
@@ -92,7 +92,7 @@ subtest 'compile: compiles rule with version id' => sub {
         rule_tree => [
             {
                 "attributes"=> {
-                    "icon"=> "/static/images/icons/cog_perl.svg",
+                    "icon"=> "/static/images/icons/statement-code-server.svg",
                     "key"=> "statement.code.server",
                     "text"=> "Server CODE",
                     "id"=> "rule-ext-gen38276-1456842988061",
@@ -132,7 +132,7 @@ subtest 'compile: uses non-empty dsl instead of loading a rule' => sub {
         rule_tree => [
             {
                 "attributes"=> {
-                    "icon"=> "/static/images/icons/cog_perl.svg",
+                    "icon"=> "/static/images/icons/statement-code-server.svg",
                     "key"=> "statement.code.server",
                     "text"=> "Server CODE",
                     "id"=> "rule-ext-gen38276-1456842988061",

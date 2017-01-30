@@ -1,7 +1,7 @@
 ---
 title: Crear CI
 index: 5000
-icon: class
+icon: service-ci-create
 ---
 
 Servicio que permite crear un nuevo CI con los atributos especificados.

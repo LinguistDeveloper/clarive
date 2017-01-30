@@ -1,7 +1,7 @@
 ---
 title: Separador de campos
 index: 5000
-icon: separator
+icon: fieldlet-separator
 ---
 
 Añade una linea horizontal de manera que separa diferentes secciones de un formulario.

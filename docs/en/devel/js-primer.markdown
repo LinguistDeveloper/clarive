@@ -155,7 +155,7 @@ For writing multi-line strings that can also be templated (ie. that have variabl
 Clarive implments the Ecmascript ES6 templating literals
 standard.
 
-[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+[https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals <img class='ext-link' src='static/images/icons/window-new.svg' />](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
 
 This is done by enclosing your string between backticks:
 
@@ -210,7 +210,7 @@ exit 1;
 ### Heredocs
 
 Templated strings can be extremely powerful, so *heredocs*
-(or [here-documents <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/Here_document)),
+(or [here-documents <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/Here_document)),
 a simpler, multi-line string format is also implemented.
 
 The advantage of using heredocs is that it avoids having to
@@ -382,7 +382,7 @@ var foo = hs.compile(tt);
 print( foo({ mom: "Johanna"}) );
 ```
 
-For more info, read the [Handlebars.js library reference <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://handlebarsjs.com/)
+For more info, read the [Handlebars.js library reference <img class='ext-link' src='static/images/icons/window-new.svg' />](http://handlebarsjs.com/)
 
 ### Underscore
 
@@ -395,7 +395,7 @@ var _ = require('underscore');
 _.each([1,2], function(x){ print(x) });
 ```
 
-For more info, read the [Underscore library reference <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://underscorejs.org/)
+For more info, read the [Underscore library reference <img class='ext-link' src='static/images/icons/window-new.svg' />](http://underscorejs.org/)
 
 ## Not implemented in Clarive
 
@@ -422,7 +422,7 @@ with the language.
 For more in depth learning of the JavaScript language, actually called **Ecmascript**,
 we recommend the following reference:
 
-- The Mozilla JavaScript guide: [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)
-- JavaScript "The Good Parts" book [http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf)
+- The Mozilla JavaScript guide: [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide <img class='ext-link' src='static/images/icons/window-new.svg' />](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)
+- JavaScript "The Good Parts" book [http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf <img class='ext-link' src='static/images/icons/window-new.svg' />](http://bdcampbell.net/javascript/book/javascript_the_good_parts.pdf)
 
 

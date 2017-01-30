@@ -1,7 +1,7 @@
 ---
 title: IF EXISTS nature THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Checks if changeset meets defined nature and if so process nested op.

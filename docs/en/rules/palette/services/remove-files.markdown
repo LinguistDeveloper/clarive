@@ -1,7 +1,7 @@
 ---
 title: Remove Attached Files
 index: 5000
-icon: topic
+icon: service-topic-remove
 ---
 
 Service that removes the assets attached from a [topic](concepts/topic). Form to configure has the following fields:

@@ -71,7 +71,7 @@
     var render_icon = function(value,metadata,rec,rowIndex,colIndex,store) {
         var active = rec.data.active;
         if( active!=undefined && !active ) {
-            value = '/static/images/icons/inactive.svg';
+            value = '/static/images/icons/catalog-inactive.svg';
         }
         return Baseliner.render_icon( value, metadata, rec, rowIndex, colIndex, store );
     }
@@ -112,7 +112,7 @@
         });
     });
     store_types.load();
-    var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/new.svg', cls: 'x-btn-text-icon' });
+    var button_add = new Ext.Button({ text: _('Add'), menu: menu_add , icon: '/static/images/icons/catalog-new.svg', cls: 'x-btn-text-icon' });
     var button_del = Baseliner.button(_('Delete'), '/static/images/icons/delete.svg', function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ;
@@ -141,7 +141,7 @@
     } );
 
     // YAML editor
-    var button_raw = Baseliner.button(_('YAML'), '/static/images/icons/yaml.svg', function(){
+    var button_raw = Baseliner.button(_('YAML'), IC('logo-yaml'), function(){
         var sel = sm.getSelected();
         if( sel == undefined ) return ;
         var sel_save_url = sel.data.url_save;
@@ -197,7 +197,7 @@
     });
     var button_by_type = new Ext.Button({
        text: _('Type'),
-       icon: '/static/images/icons/catalog.svg',
+       icon: IC('catalog'),
        cls: 'x-btn-text-icon',
        pressed: true,
        enableToggle: true,

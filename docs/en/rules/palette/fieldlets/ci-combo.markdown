@@ -1,7 +1,7 @@
 ---
 title: CI combo
 index: 5000
-icon: combo_box
+icon: fieldlet-system-cis
 ---
 
 Allows to introduce a combo box with CIs in the form.

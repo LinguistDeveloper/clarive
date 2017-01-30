@@ -1,7 +1,7 @@
 ---
 title: HTML
 index: 5000
-icon: html
+icon: dashlet-html
 ---
 
 Permite mostrar código HTML interpretado en un dashboard.

@@ -1,7 +1,7 @@
 ---
 title: Eval Remote
 index: 5000
-icon: cog_java
+icon: service-scripting-eval
 ---
 
 Agent related to server evaluates given code, showing an error message in

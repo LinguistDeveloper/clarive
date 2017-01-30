@@ -234,7 +234,7 @@
         return ret;
     };
     var render_status_arrow = function(value,meta,rec,rowIndex,colIndex,store){
-        return '<img src="/static/images/icons/arrow_right_black.svg" />';
+        return '<img src="/static/images/icons/arrow-right.svg" />';
     };
 
     var grid_status = new Ext.grid.GridPanel({
@@ -1336,7 +1336,7 @@
 
 
     var btn_choose_projects = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/add_new_form_16.svg',
+        icon:'/static/images/icons/form-add.svg',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

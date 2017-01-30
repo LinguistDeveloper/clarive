@@ -152,7 +152,7 @@
     cls: 'x-btn-text-icon',
     disabled: false,
     menu: [{  text: _('Export'),
-                icon:'/static/images/icons/downloads_favicon.svg',
+                icon:'/static/images/icons/downloads-favicon.svg',
                 cls: 'x-btn-text-icon',
                  handler: function() {
                     Baseliner.ajaxEval( '/configlist/save', {}, function(resp) {
@@ -165,7 +165,7 @@
                 }
         },
         { text: _('CSV'),
-    icon:'/static/images/icons/csv.svg',
+    icon: IC('logo-csv'),
     cls: 'x-btn-text-icon',
     handler: function() {
         var self = this;

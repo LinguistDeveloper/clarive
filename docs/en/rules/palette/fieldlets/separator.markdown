@@ -1,7 +1,7 @@
 ---
 title: Separator
 index: 5000
-icon: separator
+icon: fieldlet-separator
 ---
 
 Allows to introduce a separator in the form.

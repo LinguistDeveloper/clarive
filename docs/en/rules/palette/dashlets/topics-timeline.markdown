@@ -1,7 +1,7 @@
 ---
 title: Topics timeline
 index: 5000
-icon: chart_curve
+icon: dashlet-topic-dateline
 ---
 
 Shows a timeline with the number of topics.

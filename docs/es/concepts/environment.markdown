@@ -1,7 +1,7 @@
 ---
 title: Entornos
 index: 5000
-icon: baseline
+icon: ci-bl
 ---
 
 En DevOps, un entorno se define típicamente como un lugar donde se despliegan

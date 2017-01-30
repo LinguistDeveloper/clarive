@@ -55,8 +55,9 @@ register 'config.comm.email' => {
 
 register 'service.daemon.email' => {
     name => _locl('Email Daemon'),
-    icon => '/static/images/icons/daemon.svg',
+    icon => '/static/images/icons/service-daemon-email.svg',
     config => 'config.comm.email',
+    show_in_palette => 0,
     handler => sub {
         my $self = shift;
         require Baseliner::Comm::Email;
@@ -66,7 +67,7 @@ register 'service.daemon.email' => {
 
 register 'service.email.flush' => {
     name => _locl('Flush Email Queue Once'),
-    icon => '/static/images/icons/envelope.svg',
+    icon => '/static/images/icons/service-email-flush.svg',
     config => 'config.comm.email',
     handler => sub {
         my $self = shift;

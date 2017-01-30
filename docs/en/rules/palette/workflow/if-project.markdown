@@ -1,6 +1,6 @@
 ---
 title: IF Project IS
-icon: if
+icon: statement-if
 ---
 
 Create workflow depending on topic project

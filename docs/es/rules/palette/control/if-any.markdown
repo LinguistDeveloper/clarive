@@ -1,7 +1,7 @@
 ---
 title: IF ANY naturaleza THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 Comprueba si el *changeset* tiene definida una naturaleza y si cumple cualquiera de las operaciones anidadas.
 

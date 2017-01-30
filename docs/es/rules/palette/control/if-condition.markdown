@@ -1,7 +1,7 @@
 ---
 title: IF condición THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Comprueba la condición y si es afirmativa el flujo continua con los procesos anidados.

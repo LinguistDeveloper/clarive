@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 20.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:#404040;}
+	.st2{fill:none;stroke:#404040;stroke-miterlimit:10;}
+</style>
+<title>page-edit</title>
+<rect class="st0" width="16" height="16"/>
+<rect x="8.3" y="9.2" transform="matrix(0.6863 -0.7274 0.7274 0.6863 -4.1871 10.6781)" class="st1" width="4" height="2"/>
+<polygon class="st1" points="7.5,13.2 7.9,11.3 9.4,12.6 "/>
+<rect x="11.7" y="7" transform="matrix(0.6863 -0.7274 0.7274 0.6863 -1.9959 11.4614)" class="st1" width="1.1" height="2"/>
+<path class="st1" d="M15,6h-4V1h2L15,6z"/>
+<g>
+	<path class="st1" d="M13,2l1,3v9H2V2H13 M13,1H1v14h14V5L13,1z"/>
+</g>
+<line class="st2" x1="3" y1="5.4" x2="9.8" y2="5.4"/>
+<line class="st2" x1="3" y1="7.5" x2="10.2" y2="7.5"/>
+<line class="st2" x1="3" y1="9.4" x2="8" y2="9.4"/>
+<line class="st2" x1="3" y1="11.2" x2="7.1" y2="11.2"/>
+</svg>

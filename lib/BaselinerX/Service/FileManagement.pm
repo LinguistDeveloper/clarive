@@ -8,12 +8,11 @@ use Try::Tiny;
 use experimental 'autoderef';
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/file.svg';
 
 register 'service.fileman.foreach' => {
     name => _locl('Load files/items into stash'),
     form => '/forms/file_foreach.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-foreach.svg',
     job_service  => 1,
     handler => \&run_load_files,
 };
@@ -36,7 +35,7 @@ register 'statement.fileman.foreach' => {
 
 register 'service.fileman.tar' => {
     name => _locl('Tar Local Files'),
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-tar.svg',
     form => '/forms/tar_local.js',
     job_service  => 1,
     handler => \&run_tar,
@@ -45,7 +44,7 @@ register 'service.fileman.tar' => {
 register 'service.fileman.zip' => {
     name => _locl('Zip Local Files'),
     form => '/forms/zip_local.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-zip.svg',
     job_service  => 1,
     handler => \&run_zip,
 };
@@ -53,7 +52,7 @@ register 'service.fileman.zip' => {
 register 'service.fileman.tar_nature' => {
     name => _locl('Tar Nature Files'),
     form => '/forms/tar_local_nature.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-tar-nature.svg',
     job_service  => 1,
     handler => \&run_tar_nature,
 };
@@ -61,7 +60,7 @@ register 'service.fileman.tar_nature' => {
 register 'service.fileman.zip_nature' => {
     name => _locl('Zip Nature Files'),
     form => '/forms/zip_local_nature.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-zip-nature.svg',
     job_service  => 1,
     handler => \&run_zip_nature,
 };
@@ -69,7 +68,7 @@ register 'service.fileman.zip_nature' => {
 register 'service.fileman.zip' => {
     name => _locl('Zip Files'),
     form => '/forms/zip_files.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-zip.svg',
     job_service  => 1,
     handler => \&run_zip,
 };
@@ -77,14 +76,14 @@ register 'service.fileman.zip' => {
 register 'service.fileman.ship' => {
     name => _locl('Ship a File Remotely'),
     form => '/forms/ship_remote.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-ship.svg',
     job_service  => 1,
     handler => \&run_ship,
 };
 
 register 'service.fileman.retrieve' => {
     name => _locl('Retrieve a Remote File'),
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-retrieve.svg',
     form => '/forms/retrieve_remote.js',
     job_service  => 1,
     handler => \&run_retrieve,
@@ -92,7 +91,7 @@ register 'service.fileman.retrieve' => {
 
 register 'service.fileman.sync_remote' => {
     name        => _locl('Sync Local and Remote Directories'),
-    icon        => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-sync.svg',
     form        => '/forms/sync_remote.js',
     job_service => 1,
     handler     => \&run_sync_remote,
@@ -100,7 +99,7 @@ register 'service.fileman.sync_remote' => {
 
 register 'service.fileman.mkpath_remote' => {
     name        => _locl('Create Remote Directory'),
-    icon        => $ICON_DEFAULT,
+    icon        => '/static/images/icons/service-fileman-mkpath.svg',
     form        => '/forms/mkpath_remote.js',
     job_service => 1,
     handler     => \&run_mkpath_remote,
@@ -109,7 +108,7 @@ register 'service.fileman.mkpath_remote' => {
 register 'service.fileman.store' => {
     name => _locl('Store Local File'),
     form => '/forms/store_file.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-store.svg',
     job_service  => 1,
     handler => \&run_store,
 };
@@ -117,21 +116,21 @@ register 'service.fileman.store' => {
 register 'service.fileman.write' => {
     name => _locl('Write Local File'),
     form => '/forms/write_file.js',
-    icon => $ICON_DEFAULT,
+   icon => '/static/images/icons/service-fileman-write.svg',
     job_service  => 1,
     handler => \&run_write,
 };
 
 register 'service.fileman.rm' => {
     name => _locl('Delete Local File'),
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-rm.svg',
     job_service  => 1,
     handler => \&run_rm,
 };
 
 register 'service.fileman.rmtree' => {
     name => _locl('Delete Local Directory'),
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-rmtree.svg',
     job_service  => 1,
     handler => \&run_rmtree,
 };
@@ -139,7 +138,7 @@ register 'service.fileman.rmtree' => {
 register 'service.fileman.parse_config' => {
     name => _locl('Parse a Config File'),
     form => '/forms/parse_config.js',
-    icon => '/static/images/icons/detail.svg',
+    icon => '/static/images/icons/service-fileman-parse.svg',
     job_service  => 1,
     handler => \&run_parse_config,
 };
@@ -147,7 +146,7 @@ register 'service.fileman.parse_config' => {
 register 'service.fileman.write_config' => {
     name => _locl('Write a Config File'),
     form => '/forms/write_config.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-fileman-config.svg',
     job_service  => 1,
     handler => \&run_write_config,
 };

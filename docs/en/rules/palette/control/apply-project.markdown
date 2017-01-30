@@ -1,7 +1,7 @@
 ---
 title: APPLY PROJECT
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Load config variables from the ci project to the stash for the proper environment.

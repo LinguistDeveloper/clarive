@@ -1,7 +1,7 @@
 ---
 title: FOR projects with changes DO
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Execute nested ops for each project that have changeset.

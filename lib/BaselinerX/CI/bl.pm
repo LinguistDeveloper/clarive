@@ -7,7 +7,7 @@ with 'Baseliner::Role::CI::Internal';
 has bl          => qw(is rw isa Any default *);
 has seq         => qw(is rw isa Any default 100);
 
-sub icon { '/static/images/icons/baseline.svg' }
+sub icon { '/static/images/icons/ci-bl.svg' }
 sub collection { 'bl' }
 sub has_bl { 0 }
 

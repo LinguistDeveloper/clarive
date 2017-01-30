@@ -1,7 +1,7 @@
 ---
 title: Topics burndown NG
 index: 5000
-icon: chart_line
+icon: dashlet-topic-ng
 ---
 
 Show a trending line with the real topics and the predicition.

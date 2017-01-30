@@ -53,7 +53,7 @@
 
     var button_grant = new Ext.Button({
         text: _('Grant'),
-        icon:'/static/images/icons/start.svg',
+        icon: IC('start'),
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -69,7 +69,7 @@
 
     var button_cancel = new Ext.Button({
         text: _('Cancel'),
-        icon:'/static/images/icons/stop.svg',
+        icon:IC('stop'),
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -85,7 +85,7 @@
 
     var button_purge = new Ext.Button({
         text: _('Purge'),
-        icon:'/static/images/icons/error.svg',
+        icon: IC('warning'),
         cls: 'x-btn-text-icon',
         handler: function() {
             var sm = grid_queue.getSelectionModel();
@@ -119,7 +119,7 @@
 
     var button_deactivate = new Ext.Button({
         text: _('Deactivate'),
-        icon:'/static/images/icons/lightbulb_off.svg',
+        icon:'/static/images/icons/lightbulb-off.svg',
         cls: 'x-btn-text-icon',
         handler: function() { sem_req_activate(0); }
     });
@@ -131,7 +131,7 @@
         });
      };
      var button_add = new Ext.Button({
-        icon:'/static/images/icons/add-green.svg',
+        icon: IC('sem-add'),
         cls: 'x-btn-text-icon',
         handler: function() {
             Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
@@ -142,7 +142,7 @@
     });
 
     var button_del = new Ext.Button({
-        icon:'/static/images/icons/delete_green.svg',
+        icon: IC('sem-delete'),
         cls: 'x-btn-text-icon',
         handler: function() {  }
     });
@@ -175,10 +175,10 @@
     var render_sem_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
         var slots = rec.data.slots;
         var up = '<a href="#" onclick="javascript:Baseliner.sem_mod(\'add\', \''+ rec.data.key +'\', \''+rec.data.bl+'\' )">'
-                + '<img src="/static/images/icons/arrow-up.svg"></img></a>';
+                + '<img src="/static/images/icons/arrow-up-color.svg"></img></a>';
         var down = slots > -1
             ? '<a href="#" onclick="javascript:Baseliner.sem_mod(\'del\', \''+ rec.data.key +'\', \''+rec.data.bl+'\')">'
-                + '<img src="/static/images/icons/arrow-down.svg"></img></a>'
+                + '<img src="/static/images/icons/arrow-down-color.svg"></img></a>'
             : '';
         return up + down;
     };
@@ -192,13 +192,13 @@
     var render_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( rec.data.status != 'waiting' ) return '';
         var up = rowIndex == 0
-            ? '<img src="/static/images/icons/arrow-up.svg" style="visibility: hidden"></img>'
+            ? '<img src="/static/images/icons/arrow-up-color.svg" style="visibility: hidden"></img>'
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'up\', \''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex-1).id+'\' )">'
-                + '<img src="/static/images/icons/arrow-up.svg"></img></a>';
+                + '<img src="/static/images/icons/arrow-up-color.svg"></img></a>';
         var down = rowIndex == store_queue.getCount() -1
             ? ''
             : '<a href="#" onclick="javascript:Baseliner.queue_move(\'down\',\''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex+1).id +'\')">'
-            + '<img src="/static/images/icons/arrow-down.svg"></img></a>';
+            + '<img src="/static/images/icons/arrow-down-color.svg"></img></a>';
         return up + down;
     };
 
@@ -217,7 +217,7 @@
         else if( value == 'cancelled' )
             img = '<img src="/static/images/icons/stop.svg" alt="'+value+'"/>';
         else if( value == 'killed' )
-            img = '<img src="/static/images/icons/error_red.svg" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/error.svg" alt="'+value+'"/>';
         return img;
     };
 
@@ -316,11 +316,11 @@
         bbar: [
             _('Legend') + ': ',
             '<img class="icon_standar_size" src="/static/images/icons/busy.svg" />', _('Waiting'),
-            '<img class="icon_standar_size" src="/static/images/icons/small_loading_static.svg" />', _('Busy'),
+            '<img class="icon_standar_size" src="/static/images/icons/loading-static.svg" />', _('Busy'),
             '<img class="icon_standar_size" src="/static/images/icons/start.svg" />', _('Granted'),
             '<img class="icon_standar_size" src="/static/images/icons/stop.svg" />', _('Cancelled'),
             '<img src="/static/images/icons/active.svg" />', _('Done'),
-            '<img class="icon_standar_size" src="/static/images/icons/error_red.svg" />', _('Killed')
+            '<img class="icon_standar_size" src="/static/images/icons/error.svg" />', _('Killed')
         ],
         view: gview,
         viewConfig: {

@@ -1,7 +1,7 @@
 ---
 title: IF ROLLBACK
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Checks the status of rollback stash variable and process nested op if

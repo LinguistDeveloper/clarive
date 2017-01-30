@@ -21,7 +21,7 @@ Actions defined are:
 - <img src="/static/images/icons/edit.svg" /> **Edit** - Edit selected rule.
 - <img src="/static/images/icons/delete.svg" /> **Delete** - Delete selected rule.
 - <img src="/static/images/icons/catalog-folder.svg" /> **Tree view** - Organise the rules based on the type.
-- <img src="/static/images/icons/restart_new.svg" /> **Activate** - Activate selected rule.
+- <img src="/static/images/icons/restart-new.svg" /> **Activate** - Activate selected rule.
 - <img src="/static/images/icons/wrench.svg" /> **Tools** - <img src="/static/images/icons/import.svg" /> Import or <img src="/static/images/icons/export.svg" /> Export the rule to other Clarive system in [YAML](concepts/yaml) format.
 
 ### Rule tree
@@ -38,7 +38,7 @@ Area where selected rule is displayed as a tree, it has an **action tab with som
 - <img src="/static/images/icons/expandall.svg" /> **Expand all** : Expands every single rule in any job step.
 - <img src="/static/images/icons/collapseall.svg" /> **Collapse all** - Collapse every rule and step, just viewing start point.
 - <img src="/static/images/icons/slot.svg" /> **Version** - Expands all history versions from the rule selected. The output shows date, time and user who saved the rule.
-- <img src="/static/images/icons/html.svg" /> **HTML** - Displays in another navigator tab, op properties values and configuration from every op included in the selected rule.
+- <img src="/static/images/icons/logo-html.svg" /> **HTML** - Displays in another navigator tab, op properties values and configuration from every op included in the selected rule.
 - <img src="/static/images/icons/workflow.svg" /> **Flowchart** - Displays tree of the rule
 
 ### Palette

@@ -1,7 +1,7 @@
 ---
 title: Attach files
 index: 5000
-icon: file
+icon: fieldlet-attach-file
 ---
 
 Allows to attach files in the form.

@@ -1,7 +1,7 @@
 ---
 title: Rollback All Transactions
 index: 5000
-icon: repo
+icon: service-db-rollback
 ---
 
 Rollback all transactions from database.

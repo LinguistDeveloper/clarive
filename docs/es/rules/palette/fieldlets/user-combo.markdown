@@ -1,7 +1,7 @@
 ---
 title: Desplegable de usuarios
 index: 5000
-icon: combo_box
+icon: fieldlet-system-users
 ---
 
 Permite introducir un combo donde las opciones son los usuarios existentes en la herramienta.

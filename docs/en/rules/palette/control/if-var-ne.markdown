@@ -1,7 +1,7 @@
 ---
 title: IF var ne value THEN
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Checks if the value of specific stash variable is different from a defined value and if so, executes nested tasks.

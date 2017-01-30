@@ -1,7 +1,7 @@
 ---
 title: Eliminar directorio local
 index: 5000
-icon: file
+icon: service-fileman-rm
 ---
 
 Elimina de manera recursivo el directorio dado en la configuración del elemento.

@@ -1,7 +1,7 @@
 ---
 title: Barra de progreso
 index: 5000
-icon: progressbar
+icon: fieldlet-progressbar
 ---
 
 Muestra una barra de progreso en el tópico.

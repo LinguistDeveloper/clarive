@@ -1,7 +1,7 @@
 ---
 title: Mostrar elementos
 index: 5000
-icon: job
+icon: service-job-footprint
 ---
 
 Lista todos los archivos actualizados con los siguientes datos:

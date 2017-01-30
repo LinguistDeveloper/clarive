@@ -1,7 +1,7 @@
 ---
 title: Campo de texto
 index: 5000
-icon: field
+icon: fieldlet-text
 ---
 
 Permite añadir un texto en el tópico.

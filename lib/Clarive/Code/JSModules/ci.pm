@@ -53,7 +53,7 @@ sub generate {
               if is_class_loaded($package);
 
             $obj //= {};
-            my $icon       = $obj->{icon}              || '/static/images/icons/ci.svg';
+            my $icon       = $obj->{icon}              || '/static/images/icons/ci-itemset.svg';
             my $attributes = delete( $obj->{has} )     || {};
             my $methods    = delete( $obj->{methods} ) || {};
             my @method_names = keys %$methods;

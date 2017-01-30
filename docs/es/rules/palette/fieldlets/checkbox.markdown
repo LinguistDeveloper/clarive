@@ -1,7 +1,7 @@
 ---
 title: Casilla de verificación
 index: 5000
-icon: admin_request
+icon: fieldlet-checkbox
 ---
 
 Añade una casilla de verificación al formulario.

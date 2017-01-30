@@ -1,7 +1,7 @@
 ---
 title: Lista de tópicos
 index: 400
-icon: report
+icon: dashlet-topic-list
 ---
 
 Muestra una lista de tópicos.

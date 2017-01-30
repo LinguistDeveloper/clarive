@@ -1,7 +1,7 @@
 ---
 title: TRY declaración
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Intenta ejecutar las operaciones anidadas.

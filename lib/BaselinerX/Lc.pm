@@ -77,7 +77,7 @@ sub lc_for_project {
           {
             node => 'Releases',
             draggable => \0,
-            icon => '/static/images/icons/release_explorer.svg',
+            icon => '/static/images/icons/release-explorer.svg',
             url => '/lifecycle/tree_project_releases',
             type => 'component',
             has_query => 1,
@@ -166,7 +166,7 @@ sub lc_for_project {
                   active  => 1,
                   draggable => \0,
                   leaf    => \1,
-                  icon    => '/static/images/icons/error.svg',
+                  icon    => '/static/images/icons/warning.svg',
                   data    => { id_repo => $id_repo }
                 };
 
@@ -226,7 +226,7 @@ sub lc_for_project {
           active  => 1,
           draggable => \0,
           leaf    => \1,
-          icon    => '/static/images/icons/error.svg',
+          icon    => '/static/images/icons/warning.svg',
         };
     }
 

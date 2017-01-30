@@ -1,7 +1,7 @@
 ---
 title: Calculated numberfield
 index: 5000
-icon: number
+icon: fieldlet-calculated-number
 ---
 
 Allows to calculate a value with operations between fields

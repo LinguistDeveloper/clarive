@@ -1,7 +1,7 @@
 ---
 title: CI Graph
 index: 5000
-icon: ci-grey
+icon: dashlet-ci-graph
 ---
 
 Shows a CI Graph in the dashboard.

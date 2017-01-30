@@ -181,9 +181,9 @@ sub _build_menus {
     my ($transitions) = @_;
 
     my $icons = {
-        static  => '/static/images/icons/arrow_right.svg',
-        promote => '/static/images/icons/arrow_down_short.svg',
-        demote  => '/static/images/icons/arrow_up_short.svg',
+        static  => '/static/images/icons/arrow-right-color.svg',
+        promote => '/static/images/icons/arrow-down-short-color.svg',
+        demote  => '/static/images/icons/arrow-up-short-color.svg',
     };
 
     my @menus;

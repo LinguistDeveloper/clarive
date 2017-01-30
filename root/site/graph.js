@@ -657,7 +657,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         });
         self.btn_st = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/spacetree.svg',
+            icon: '/static/images/icons/graph-tree.svg',
             text: _('SpaceTree'), handler: function(){ self.load_st(); }
         });
         self.btn_rg = new Ext.Button({
@@ -669,7 +669,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
         // TODO Sunburst has issues, disabled for now
         self.btn_sunburst = new Ext.Button({
             allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            icon: '/static/images/icons/spacetree.svg',
+            icon: '/static/images/icons/graph-tree.svg',
             text: _('Sunburst'), handler: function(){ self.load_sunburst(); }
         });
         self.btn_d3g = new Ext.Button({

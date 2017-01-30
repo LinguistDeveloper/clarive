@@ -1,7 +1,7 @@
 ---
 title: Link a git revision to the changesets in title
 index: 5000
-icon: git
+icon: service-git-link
 ---
 
 Configured revision is added to the desired topic field, topic is found through

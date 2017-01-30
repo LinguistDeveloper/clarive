@@ -26,25 +26,25 @@ Primero, descargue los binarios de la instalación de MongoDB para su sistema op
 
 #### Windows
 
-- [Windows 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.2.4-signed.msi)
+- [Windows 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.2.4-signed.msi)
 
 #### Mac OS X
 
-- [Mac OS X <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.2.4.tgz)
+- [Mac OS X <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.2.4.tgz)
 
 #### Linux
 
-- [RHEL 5 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.4.tgz)
-- [RHEL 6 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.4.tgz)
-- [RHEL 7 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.4.tgz)
-- [SUSE 11 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.2.4.tgz)
-- [SUSE 12 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.2.4.tgz)
-- [Debian 7 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.2.4.tgz)
-- [Ubuntu 12.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.4.tgz)
-- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
-- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
-- [Ubuntu 14.10 Clang 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1410-clang-3.2.4.tgz)
-- [Legacy Linux 64-bit <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz)
+- [RHEL 5 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.4.tgz)
+- [RHEL 6 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.4.tgz)
+- [RHEL 7 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.4.tgz)
+- [SUSE 11 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.2.4.tgz)
+- [SUSE 12 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.2.4.tgz)
+- [Debian 7 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.2.4.tgz)
+- [Ubuntu 12.04 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.4.tgz)
+- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
+- [Ubuntu 14.04 Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.4.tgz)
+- [Ubuntu 14.10 Clang 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1410-clang-3.2.4.tgz)
+- [Legacy Linux 64-bit <img class='ext-link' src='static/images/icons/window-new.svg' />](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz)
 
 ## Configuración del servidor Mongo
 
@@ -285,7 +285,7 @@ operación de lectura. Los valores válidos son:
     nearest
 
 Para más información acerca de esta propiedad, ver:
-[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://docs.mongodb.org/manual/core/read-preference/)
+[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/window-new.svg' />](http://docs.mongodb.org/manual/core/read-preference/)
 
 Esto se puede establecer desde la cadena de conexión con la opción 'readPreference'.
 
@@ -297,7 +297,7 @@ El parámetro *read_pref_tag_sets* es una lista ordenada de conjuntos de etiquet
 La aplicación de *read_pref_tag_sets* varía dependiendo de la propiedad *read_pref_mode*. Si el *read_pref_mode* es 'primary', entonces *read_pref_tag_sets* no se debe definir.
 
 Para más información acerca de esta propiedad, ver:
-[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://docs.mongodb.org/manual/core/read-preference/)
+[http://docs.mongodb.org/manual/core/read-preference/ <img class='ext-link' src='static/images/icons/window-new.svg' />](http://docs.mongodb.org/manual/core/read-preference/)
 
 Esto se puede establecer en la cadena de conexión con la opción 'readPreferenceTags'. Si
 viene dado, el valor debe ser pares clave/valor unidas con un ":". Para pares múltiples deben, éstos deben de estar separados por una coma.

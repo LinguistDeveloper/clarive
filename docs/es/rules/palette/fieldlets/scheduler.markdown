@@ -1,7 +1,7 @@
 ---
 title: Planificador
 index: 5000
-icon: clock
+icon: fieldlet-scheduler
 ---
 
 Permite añadir una tabla como planificadora de eventos.

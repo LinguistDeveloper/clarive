@@ -6,12 +6,11 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/detail.svg';
 
 register 'service.parsing.parse_files' => {
     name => _locl('Parse Files'),
     form => '/forms/parse_files.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/service-parse-files.svg',
     job_service  => 1,
     handler => \&parse_files,
 };

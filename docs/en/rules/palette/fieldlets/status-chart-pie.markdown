@@ -1,7 +1,7 @@
 ---
 title: Status chart pie
 index: 5000
-icon: chart_pie
+icon: fieldlet-status-chart-pie
 ---
 
 Allows to show a status chart pie

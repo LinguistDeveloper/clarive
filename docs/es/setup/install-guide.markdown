@@ -17,7 +17,7 @@ Los prerrequisitos para la instalación de Clarive están especificados en las [
 
 Los ficheros de instalación de Clarive están disponibles en:
 
-[http://www.clarive.com/install <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://www.clarive.com/install)
+[http://www.clarive.com/install <img class='ext-link' src='static/images/icons/window-new.svg' />](http://www.clarive.com/install)
 
 En caso de que no encuentre una versión compatible con su sistema operativo, póngase en contacto con nosotros a través de: `support@clarive.com`.
 
@@ -31,7 +31,7 @@ Clarive se ejecuta sobre una base de datos, en este caso MongoDB.
 
 MongoDB puede ser descargado desde la siguiente página web:
 
-[https://www.mongodb.org/downloads <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://www.mongodb.org/downloads)
+[https://www.mongodb.org/downloads <img class='ext-link' src='static/images/icons/window-new.svg' />](https://www.mongodb.org/downloads)
 
 Seleccione la versión estable 3.0.
 

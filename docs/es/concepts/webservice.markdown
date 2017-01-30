@@ -1,7 +1,7 @@
 ---
 title: Servicio Web
 index: 5000
-icon: webservice
+icon: rule-webservice
 ---
 
 En Clarive, un webservice es un tipo de [regla](concepts/rule) que pueden ser

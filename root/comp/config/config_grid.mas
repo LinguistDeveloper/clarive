@@ -107,7 +107,7 @@
         tbar: [ searchField,
             new Ext.Toolbar.Button({
                 text: _('View'),
-                icon:'/static/images/icons/drop-yes.svg',
+                icon: IC('drop-ok'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();
@@ -121,7 +121,7 @@
             }),
             new Ext.Toolbar.Button({
                 text: '<% _loc('Delete') %>',
-                icon:'/static/images/icons/del_all.svg',
+                icon: IC('delete-grid-all-rows'),
                 cls: 'x-btn-text-icon',
                 handler: function() {
                     var sm = grid.getSelectionModel();

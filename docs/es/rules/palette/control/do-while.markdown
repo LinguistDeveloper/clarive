@@ -1,6 +1,6 @@
 ---
 title: DO-WHILE condition
-icon: loop
+icon: statement-loop
 ---
 
 El operador DO-WHILE itera el bloque de código indicado mientras la condición especificada se cumpla.

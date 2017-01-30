@@ -1,7 +1,7 @@
 ---
 title: Title
 index: 5000
-icon: lock_small
+icon: fieldlet-system-title
 ---
 
 Allows to add a title field.

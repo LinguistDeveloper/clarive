@@ -1,7 +1,7 @@
 ---
 title: Write local file
 index: 5000
-icon: file
+icon: service-fileman-write
 ---
 
 Write a new file in local machine.

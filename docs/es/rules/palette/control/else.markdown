@@ -1,7 +1,7 @@
 ---
 title: ELSE
 index: 5000
-icon: else
+icon: statement-if-else
 ---
 
 Ejecuta las operaciones anidadas como un único bloque.

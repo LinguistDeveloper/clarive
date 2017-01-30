@@ -1,7 +1,7 @@
 ---
 title: Checkout Job Baseline
 index: 5000
-icon: changesets
+icon: service-changeset-bl
 ---
 
 Copies current environment items for the involved job project to working repository `<job_dir>/<project>`.

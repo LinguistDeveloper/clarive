@@ -1,7 +1,7 @@
 ---
 title: Status changes
 index: 5000
-icon: chart_pie
+icon: fieldlet-status-changes
 ---
 
 Allows to show the change history of the topic

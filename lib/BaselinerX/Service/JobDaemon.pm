@@ -20,7 +20,8 @@ has 'proc_list' => ( is=>'rw', isa=>'ArrayRef', default=>sub { [] } );
 
 register 'service.job.daemon' => {
     name    => _locl('Watch for new jobs'),
-    icon => '/static/images/icons/daemon.svg',
+    show_in_palette => 0,
+    icon => '/static/images/icons/service-job-daemon.svg',
     config  => 'config.job.daemon',
     daemon  => 1,
     handler => \&job_daemon,
@@ -28,6 +29,7 @@ register 'service.job.daemon' => {
 
 register 'service.job.dummy' => {
     name => _locl('A Dummy Job'),
+    icon => '/static/images/icons/service-job-dummy.svg',
     handler => sub {
         my ($self,$c)=@_;
         _log "DUMMY";

@@ -58,12 +58,12 @@
             tbar: [ _('Search')+': ', ' ', searchField,
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/icons/add-green.svg',
+                    icon: IC('add-sign'),
                     cls: 'x-btn-text-icon',
                     handler: function(){ alert('add') }                }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/icons/del_all.svg',
+                    icon: IC('delete-grid-all-rows'),
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

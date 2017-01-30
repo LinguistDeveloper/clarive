@@ -1,7 +1,7 @@
 ---
 title: Añadir una revisión git a tópicos de tipo Cambio
 index: 5000
-icon: git
+icon: service-git-link
 ---
 
 La configuración de la revisión se añade al campo del tópico deseado, el tópico se encuentra a través del titulo introducido en el formulario.

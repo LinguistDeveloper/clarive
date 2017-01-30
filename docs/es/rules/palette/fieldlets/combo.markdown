@@ -1,7 +1,7 @@
 ---
 title: Desplegable
 index: 5000
-icon: combo_box
+icon: fieldlet-combo
 ---
 
 Introduce un combo desplegable en el formulario con valores personalizados.

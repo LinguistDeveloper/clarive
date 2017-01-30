@@ -226,15 +226,15 @@ subtest '_size_unit: human readable format' => sub {
 subtest 'job_icon: builds and icon from status' => sub {
     is (Util->job_icon ('RUNNING'),'gears.gif');
     is (Util->job_icon ('READY'),'busy.svg');
-    is (Util->job_icon ('APPROVAL'),'user_delete.svg');
+    is (Util->job_icon ('APPROVAL'),'user-delete.svg');
     is (Util->job_icon ('FINISHED'),'active.svg');
     is (Util->job_icon ('FINISHED','1'),'close.svg');
-    is (Util->job_icon ('IN-EDIT'),'log_w_1.svg');
+    is (Util->job_icon ('IN-EDIT'),'job-status-in-edit.svg');
     is (Util->job_icon ('WAITING'),'busy.svg');
-    is (Util->job_icon ('PAUSED'),'control_pause.svg');
-    is (Util->job_icon ('TRAPPED_PAUSED'),'control_pause.svg');
+    is (Util->job_icon ('PAUSED'),'control-pause.svg');
+    is (Util->job_icon ('TRAPPED_PAUSED'),'control-pause.svg');
     is (Util->job_icon ('CANCELLED'),'close.svg');
-    is (Util->job_icon (),'error_red.svg');
+    is (Util->job_icon (),'error.svg');
 };
 
 subtest '_cut: joins paths' => sub {

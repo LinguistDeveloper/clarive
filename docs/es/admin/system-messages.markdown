@@ -1,7 +1,7 @@
 ---
 title: Mensajes del sistema
 index: 5000
-icon: sms
+icon: service-job-sms
 ---
 
 Los mensajes del sistema son notificaciones globales

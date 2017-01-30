@@ -1,7 +1,7 @@
 ---
 title: Estados y transiciones
 index: 5000
-icon: status
+icon: state
 ---
 
 Un estado es un [CI](concepts/ci) que representa el estado de un elemento (tópico, trabajo, etc...) en un punto especifico del [Flujo de trabajo](concepts/workflow). Un elemento puede estar en un único estado a la vez.

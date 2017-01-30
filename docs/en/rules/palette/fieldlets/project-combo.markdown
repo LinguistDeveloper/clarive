@@ -1,7 +1,7 @@
 ---
 title: Project combo
 index: 5000
-icon: combo_box
+icon: fieldlet-system-projects
 ---
 
 Allows to introduce a combo box with the projects in the form.

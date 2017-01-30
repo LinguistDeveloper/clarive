@@ -1,7 +1,7 @@
 ---
 title: FAIL
 index: 5000
-icon: log_e
+icon: statement-fail
 ---
 
 Process dies with an specified message.

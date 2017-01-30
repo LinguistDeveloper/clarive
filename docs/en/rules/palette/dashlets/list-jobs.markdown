@@ -1,7 +1,7 @@
 ---
 title: List jobs
 index: 5000
-icon: report_default
+icon: dashlet-job-list
 ---
 
 Lists the jobs and their status in a ordered list

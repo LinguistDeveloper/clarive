@@ -1,7 +1,7 @@
 ---
 title: CALL regla
 index: 5000
-icon: cog
+icon: statement-call
 ---
 
 Incluye una regla específica dentro del flujo.

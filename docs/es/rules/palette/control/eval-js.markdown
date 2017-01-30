@@ -1,7 +1,7 @@
 ---
 title: EVAL JavaScript
 index: 5000
-icon: cog_java
+icon: statement-js-eval
 ---
 
 Ejecuta código Javascript, en caso de utilizar variables, las almacena en un nuevo [stash](concepts/stash).

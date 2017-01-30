@@ -45,17 +45,17 @@
         var arr = [];
         arr.push( String.format('<a href="javascript:Baseliner.event_data(\'{0}\', {1})"><img src="/static/images/icons/application.svg" /></a>', grid.id, rowIndex ) );
         if( rec.data.type == 'rule' ) {
-            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application_go.svg" /></a>', grid.id, rowIndex ) );
-            arr.push( String.format('<a href="javascript:Baseliner.event_output(\'{0}\', {1})"><img src="/static/images/icons/application_edit.svg" /></a>', grid.id, rowIndex ) );
+            arr.push( String.format('<a href="javascript:Baseliner.event_dsl(\'{0}\', {1})"><img src="/static/images/icons/application-go.svg" /></a>', grid.id, rowIndex ) );
+            arr.push( String.format('<a href="javascript:Baseliner.event_output(\'{0}\', {1})"><img src="/static/images/icons/application-edit.svg" /></a>', grid.id, rowIndex ) );
         }
         return arr.join(' ');
     };
 
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = value == 'ok' ? '/static/images/icons/active.svg' :
-                   value == 'ko' ? '/static/images/icons/error_red.svg' :
-                   value == 'new' ? '/static/images/icons/busy.svg' :
-                   '/static/images/icons/unknown.svg' ;
+        var icon = value == 'ok' ? IC('event-status-ok') :
+                   value == 'ko' ? IC('event-status-ko') :
+                   value == 'new' ? IC('event-status-new') :
+                   IC('event-status-unknown') ;
 
         return String.format('<img style="float:left" src="{0}" /><span style="font-weight:bold;">{1}</span>', icon, value );
     };
@@ -135,7 +135,7 @@
             { icon:'/static/images/icons/refresh.svg', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
             { icon:'/static/images/icons/delete.svg', handler: del_event ,
             text:_('Delete')},
-            { icon:'/static/images/icons/restart_new.svg', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
+            { icon:'/static/images/icons/restart-new.svg', handler: function(){ event_status_change('new') }, text:_('Reset event status') }
         ],
         bbar: ptool
     });

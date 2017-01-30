@@ -224,7 +224,7 @@ Baseliner.message = function(title, msg, config){
 };
 
 Baseliner.warning = function(title, msg ){
-    Baseliner.message( title, msg, { image: '/static/images/icons/error.svg', time: 3000 } );
+    Baseliner.message( title, msg, { image: IC('warning'), time: 3000 } );
 };
 
 Baseliner.message_gray = function(title, format){
@@ -390,7 +390,7 @@ Cla.ci_loc = function(cls){
     return trans;
 }
 
-// from /root/static/images/icons/mime/*
+// from /root/static/images/icons/file-extension/*
 var extensions_available = {
 "3gp":0, "7z":0, "ace":0, "ai":0, "aif":0, "aiff":0, "amr":0, "asf":0, "asx":0, "bat":0, "bin":0,
 "bmp":0, "bup":0, "cab":0, "cbr":0, "cda":0, "cdl":0, "cdr":0, "chm":0, "dat":0, "divx":0, "dll":0,
@@ -415,7 +415,7 @@ Baseliner.render_extensions = function(value,metadata,rec,rowIndex,colIndex,stor
     value = value.toLowerCase();
     var extension = extensions_available[ value ];
     if( extension == undefined ) value = 'bin'; // no icon available
-    return _("<img src='%1' alt='%2'>", "/static/images/icons/mime/file_extension_" + value + ".svg", value );
+    return _("<img src='%1' alt='%2'>", "/static/images/icons/file-extension/file-extension-" + value + ".svg", value );
 }
 
 // JsonStore with Error Handling
@@ -513,7 +513,7 @@ Baseliner.new_jsonstore = function(params) {
 Baseliner.button = function(text,icon,handler){
     return new Ext.Button({
        text: text,
-       icon: icon || '/static/images/icons/revision_create.svg',
+       icon: icon || '/static/images/icons/revision-create.svg',
        cls: 'x-btn-text-icon',
        handler: handler || function(){}
     });
@@ -521,7 +521,7 @@ Baseliner.button = function(text,icon,handler){
 
 Baseliner.img_button = function(icon,handler){
     return new Ext.Button({
-       icon: icon || '/static/images/icons/revision_create.svg',
+       icon: icon || '/static/images/icons/revision-create.svg',
        cls: 'x-btn-icon',
        handler: handler || function(){}
     });
@@ -764,7 +764,7 @@ Baseliner.array_field = function( args ) {
             })(),
             tbar: [{
                 text: _('Add'),
-                icon: '/static/images/icons/add-green.svg',
+                icon: IC('add-sign'),
                 cls: 'x-btn-text-icon',
                 handler: function () {
                     var ___record = Ext.data.Record.create([{
@@ -780,7 +780,7 @@ Baseliner.array_field = function( args ) {
                 }
             }, {
                 text: _('Delete'),
-                icon: '/static/images/icons/del_all.svg',
+                icon: IC('delete-grid-all-rows'),
                 cls: 'x-btn-text-icon',
                 handler: function (e) {
                     var __selectedRecord = fgrid.getSelectionModel().getSelected();
@@ -1232,7 +1232,7 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Activate'),
-            icon:'/static/images/icons/start.svg',
+            icon:IC('start'),
             cls: 'x-btn-text-icon',
             disabled: true
         }, config);
@@ -1244,7 +1244,7 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Deactivate'),
-            icon:'/static/images/icons/stop.svg',
+            icon: IC('stop'),
             disabled: true,
             cls: 'x-btn-text-icon'
         }, config);
@@ -1266,8 +1266,8 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
 //Baseliner.loadFile('/static/pdfjs/build/pdf.js', 'js' );
 Baseliner.PDFJS = function(config){
     var self = this;
-    var prev = new Ext.Button({ icon: '/static/images/icons/arrow_left_black.svg' });
-    var next = new Ext.Button({ icon: '/static/images/icons/arrow_right_black.svg' });
+    var prev = new Ext.Button({ icon: IC('arrow-left') });
+    var next = new Ext.Button({ icon: IC('arrow-right') });
   var page_num = new Ext.form.TextField({ width:'30', readOnly:true  });
   var page_count = new Ext.form.TextField({ width:'30', readOnly:true });
 
@@ -1465,7 +1465,7 @@ Baseliner.Window = Ext.extend( Ext.Window, {
         if( Baseliner.main_toolbar ) {
             self.min_obj = new Ext.Button({
                 xtype: 'button',
-                icon: '/static/images/icons/window_min.svg',
+                icon: '/static/images/icons/window-min.svg',
                 tooltip: self.title,
                 handler: function(){
                     self.show();
@@ -1757,13 +1757,13 @@ Baseliner.CPANDownloader = Ext.extend( Ext.Panel, {
            fields: ['name', 'archive', 'abstract', 'version', 'author',
                     'url', 'date', 'release', 'size' ]
        });
-       var ic = '/static/images/icons/downloads_favicon.svg';
+       var ic = '/static/images/icons/downloads-favicon.svg';
        this.btns = {
            download: new Ext.Button({ text:_('Download'), icon: ic, handler: function(){ self.download() } }),
            get: new Ext.Button({ text:_('Get'), icon: ic, hidden: true, handler: function(){ self.get() } }),
            del: new Ext.Button({ text:_('Delete'), icon: '/static/images/icons/delete.svg',
                hidden: true, handler: function(){ self.del() } }),
-           install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database_save.svg',
+           install: new Ext.Button({ text:_('Install'), icon: '/static/images/icons/database-save.svg',
                hidden: true, handler: function(){ self.install() } })
        };
 
@@ -4119,7 +4119,7 @@ Baseliner.UploadFilesPanel = Ext.extend(Ext.Panel, {
             if (asset_mid != undefined) {
                 value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, asset_mid, self.url_download);
             } else {
-                var icon = IC('catalog-folder.png');
+                var icon = IC('catalog-folder.svg');
                 value = String.format('<img  style="vertical-align:middle" src="{0}" alt="edit" /><span style="margin-left: 4px;"><b>{1}</span>', icon, value);
             }
             value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' + value + '</div>';
@@ -4546,7 +4546,7 @@ Baseliner.request_approval = function(mid,id_grid){
         });
         var btn_reject = new Ext.Button({
             text: _('Reject'),
-            icon: '/static/images/icons/del_all.svg',
+            icon: IC('delete-grid-all-rows'),
             handler: function(){
                 var comments = user_comments.getValue();
                 if( comments.length == 0 ) {
@@ -4563,7 +4563,7 @@ Baseliner.request_approval = function(mid,id_grid){
         //var bom = new Baseliner.BOM({ mid: mid, hidden: true });
         var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments ] });
         tab_approve.on('afterrender', function(){
-            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.svg' );
+            tab_approve.changeTabIcon( user_comments, IC('topic-comment') );
         });
         var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit',
             title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'),
@@ -5279,22 +5279,22 @@ Baseliner.getJobStatusIcon = function(status, rollback) {
         case 'READY':
             return 'busy.svg';
         case 'APPROVAL':
-            return 'user_delete.svg';
+            return 'user-delete.svg';
         case 'FINISHED':
-            return (rollback != 1) ? 'active.svg' : 'error-7-16.svg';
+            return (rollback != 1) ? 'active.svg' : 'error.svg';
         case 'IN-EDIT':
-            return 'log_w_1.svg';
+            return 'job-status-in-edit.svg';
         case 'WAITING':
             return 'busy.svg';
         case 'PAUSED':
-            return 'control_pause.svg';
+            return 'control-pause.svg';
         case 'TRAPPED':
-            return 'control_pause.svg';
+            return 'control-pause.svg';
         case 'TRAPPED_PAUSED':
-            return 'control_pause.svg';
+            return 'control-pause.svg';
         case 'CANCELLED':
             return 'close.svg';
         default:
-            return 'error-7-16.svg';
+            return 'error.svg';
     }
 };

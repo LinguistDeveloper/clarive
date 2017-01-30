@@ -1,7 +1,7 @@
 ---
 title: Crear nuevo tópico
 index: 5000
-icon: topic
+icon: service-topic-create
 ---
 
 Permite crear un nuevo tópico en Clarive en función a los parámetros recibidos.

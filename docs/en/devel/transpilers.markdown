@@ -77,7 +77,7 @@ foo.speak(); // The dog says woof.
 ```
 
 For more information, checkout the Babel documentation
-at [https://babeljs.io/docs/learn-es2015/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://babeljs.io/docs/learn-es2015/)
+at [https://babeljs.io/docs/learn-es2015/ <img class='ext-link' src='static/images/icons/window-new.svg' />](https://babeljs.io/docs/learn-es2015/)
 
 ## TypeScript
 
@@ -103,8 +103,8 @@ print( greeter.greet() );
 
 For more information:
 
-- [http://www.typescriptlang.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://www.typescriptlang.org/)
-- [https://en.wikipedia.org/wiki/TypeScript <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/TypeScript)
+- [http://www.typescriptlang.org/ <img class='ext-link' src='static/images/icons/window-new.svg' />](http://www.typescriptlang.org/)
+- [https://en.wikipedia.org/wiki/TypeScript <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/TypeScript)
 
 ## CoffeeScript
 
@@ -140,8 +140,8 @@ tom.move()
 
 For more info:
 
-- [https://en.wikipedia.org/wiki/CoffeeScript <img class='ext-link' src='static/images/icons/new_window_link.svg' />](https://en.wikipedia.org/wiki/CoffeeScript)
-- [http://coffeescript.org/ <img class='ext-link' src='static/images/icons/new_window_link.svg' />](http://coffeescript.org/)
+- [https://en.wikipedia.org/wiki/CoffeeScript <img class='ext-link' src='static/images/icons/window-new.svg' />](https://en.wikipedia.org/wiki/CoffeeScript)
+- [http://coffeescript.org/ <img class='ext-link' src='static/images/icons/window-new.svg' />](http://coffeescript.org/)
 
 ## Creating Transpilers
 

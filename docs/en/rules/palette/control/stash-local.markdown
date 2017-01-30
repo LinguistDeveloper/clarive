@@ -1,7 +1,7 @@
 ---
 title: STASH LOCAL
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Execute nested ops but assigning stash to a local stash.

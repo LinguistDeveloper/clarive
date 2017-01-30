@@ -1,7 +1,7 @@
 ---
 title: Enviar una notificación
 index: 5000
-icon: job
+icon: service-send-notification
 ---
 Servicio para enviar notificaciones. El formulario para configurar tiene los siguientes campos:
 

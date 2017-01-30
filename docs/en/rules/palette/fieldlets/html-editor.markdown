@@ -1,7 +1,7 @@
 ---
 title: HTML Editor
 index: 5000
-icon: html
+icon: fieldlet-html-editor
 ---
 
 Allows to introduce a HTML code in the form.

@@ -1,7 +1,7 @@
 ---
 title: Grid de CIs
 index: 5000
-icon: grid
+icon: fieldlet-ci-grid
 ---
 
 Permite añadir una tabla de CIs en el formulario.

@@ -1,7 +1,7 @@
 ---
 title: Cargar elementos de Naturaleza
 index: 5000
-icon: changesets
+icon: service-changeset-natures
 ---
 
 Comprueba para cada elemento de tipo [proyecto](concepts/project) a que naturaleza pertenece.

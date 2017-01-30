@@ -1,7 +1,7 @@
 ---
 title: APPLY NATURE
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 If nature applies to changeset, load config variables from the ci nature to the stash.

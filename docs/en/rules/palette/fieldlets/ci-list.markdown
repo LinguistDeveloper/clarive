@@ -1,7 +1,7 @@
 ---
 title: CI List
 index: 5000
-icon: grid
+icon: fieldlet-ci-list
 ---
 
 Allows to introduce a CI list in the form.

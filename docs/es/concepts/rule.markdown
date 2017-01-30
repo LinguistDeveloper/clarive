@@ -14,6 +14,6 @@ Una regla puede ser de varios tipos:
 - <img src='static/images/icons/dashboard.svg' /> Dashboard
 - <img src='static/images/icons/job.svg' /> Cadena de pase
 - <img src='static/images/icons/report.svg' /> Informe
-- <img src='static/images/icons/webservice.svg' /> Flujo de trabajo
+- <img src='static/images/icons/rule-webservice.svg' /> Flujo de trabajo
 
 Para conocer en detalle el funcionamiento de las reglas, se puede consultar la ayuda relacionada con [las reglas](rules/rule-concepts).

@@ -50,7 +50,7 @@
         '->',
         {   xtype: 'button',
             text: _('Reload'),
-            icon:'static/images/icons/reload.svg',
+            icon:'static/images/icons/log-jes-reload.svg',
             cls: 'x-btn-text-icon',
             handler: function(){ treeLoader.load(root); }
         }];
@@ -61,14 +61,14 @@
         '->',
         {   xtype: 'button',
             text: _('Previous'),
-            icon:'static/images/icons/arrow_left.svg',
+            icon:IC('arrow-left-color'),
             cls: 'x-btn-text-icon',
             handler: function(){
             }
         },
         {   xtype: 'button',
             text: _('Next'),
-            icon:'static/images/icons/arrow_right.svg',
+            icon: IC('arrow-right-color'),
             cls: 'x-btn-text-icon',
             handler: function(){
             }

@@ -1,7 +1,7 @@
 ---
 title: LOG Mensaje
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 Muestra un mensaje en el log del pase.

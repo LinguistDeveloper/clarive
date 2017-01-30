@@ -1,6 +1,6 @@
 ---
 title: IF ANY bl THEN
-icon: if
+icon: statement-if
 ---
 
 If environment is matched then condition becames true

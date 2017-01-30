@@ -1,7 +1,7 @@
 ---
 title: DELETE clave hash
 index: 5000
-icon: if
+icon: statement-if
 ---
 
 Elimina una variable específica del hash.

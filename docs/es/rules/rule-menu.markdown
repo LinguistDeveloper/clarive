@@ -21,7 +21,7 @@ Las acciones que se pueden realizar son:
 - <img src="/static/images/icons/edit.svg" /> **Editar** - Edita la configuración general de la regla seleccionada.
 - <img src="/static/images/icons/delete.svg" /> **Borrar** - Elimina la regla seleccionada.
 - <img src="/static/images/icons/catalog-folder.svg" /> **Vista árbol** - Organiza las reglas basadas en su tipología.
-- <img src="/static/images/icons/restart_new.svg" /> **Activar/Desactivar** - Activa o desactiva la regla seleccionada.
+- <img src="/static/images/icons/restart-new.svg" /> **Activar/Desactivar** - Activa o desactiva la regla seleccionada.
 - <img src="/static/images/icons/wrench.svg" /> **Herramientas** - <img src="/static/images/icons/import.svg" /> Importa or <img src="/
 static/images/icons/export.svg" /> Exporta la regla seleccionada en formato YAML para ser utilizado en otros sistemas Clarive.
 
@@ -41,9 +41,8 @@ Se trata del área donde se muestra la estructura de la regla como un árbol. En
 - <img src="/static/images/icons/expandall.svg" /> **Expandir todo** - Expande todos los componentes de la regla.
 - <img src="/static/images/icons/collapseall.svg" /> **Colapsa todo** - Colapsa todos los componentes de la regla.
 - <img src="/static/images/icons/slot.svg" /> **Versión** - Expande toda el historial de versiones de la regla. Muestra las fechas, la hora y el usuario que guardó la regla.
-- <img src="/static/images/icons/html.svg" /> **HTML** - Muestra la regla en una página HTML
+- <img src="/static/images/icons/logo-html.svg" /> **HTML** - Muestra la regla en una página HTML
 - <img src="/static/images/icons/workflow.svg" /> **Diagrama de flujo** - Muestra el árbol de la regla.
-
 
 ### Paleta
 

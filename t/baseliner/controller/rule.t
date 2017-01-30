@@ -1052,7 +1052,7 @@ subtest 'default: call a rule as json webservice' => sub {
         rule_tree => [
             {
                 "attributes" => {
-                    "icon" => "/static/images/icons/cog_perl.svg",
+                    "icon" => "/static/images/icons/statement-code-server.svg",
                     "key"  => "statement.code.server",
                     "text" => "Server CODE",
                     "id"   => "rule-ext-gen38276-1456842988061",

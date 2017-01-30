@@ -66,7 +66,7 @@ sub tree_topic_get_files : Local {
                     id_topic     => $id_topic,
                     sw_get_files => \1
                 },
-                icon       => '/static/images/icons/delete_red.svg',
+                icon       => '/static/images/icons/delete-grid-row.svg',
                 leaf       => \0,
                 expandable => \1
                 };
@@ -310,8 +310,8 @@ sub topic_contents : Local {
         my $is_release = $_->{category}{is_release};
         my $is_changeset = $_->{category}{is_changeset};
 
-        my $icon = $is_release ? '/static/images/icons/release_lc.svg'
-            : $is_changeset ? '/static/images/icons/changeset_lc.svg' :'/static/images/icons/topic.svg' ;
+        my $icon = $is_release ? '/static/images/icons/release-lc.svg'
+            : $is_changeset ? '/static/images/icons/changeset-lc.svg' :'/static/images/icons/topic.svg' ;
 
         my @menu_related = $self->menu_related();
 
@@ -479,7 +479,7 @@ sub list_repo_contents : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error_red.svg',
+            icon => '/static/images/icons/error.svg',
             leaf=>\1,
             expandable => \0
         };
@@ -562,7 +562,7 @@ sub branches : Local {
               {
                 text       => substr( $msg, 0, 255 ),
                 data       => {},
-                icon       => '/static/images/icons/error_red.svg',
+                icon       => '/static/images/icons/error.svg',
                 leaf       => \1,
                 expandable => \0
               };
@@ -603,7 +603,7 @@ sub changeset : Local {
                     my $msg = _loc('Error loading changes for provider %1: %2', $provider, $err);
                     _error( $msg );
                     push @tree, {
-                        icon => '/static/images/icons/error.svg',
+                        icon => '/static/images/icons/warning.svg',
                         text => substr($msg,0,80),
                         leaf => \1,
                     };
@@ -702,7 +702,7 @@ sub changeset : Local {
             };
             my $node = {
                 url  => '/lifecycle/topic_contents',
-                icon => '/static/images/icons/changeset_lc.svg',
+                icon => '/static/images/icons/changeset-lc.svg',
                 text => $topic->{title},
                 leaf => \1,
                 menu => $menu,
@@ -770,7 +770,7 @@ sub changeset : Local {
                 #_warn $menu;
                 my $node = {
                     url  => '/lifecycle/topic_contents',
-                    icon => '/static/images/icons/release_lc.svg',
+                    icon => '/static/images/icons/release-lc.svg',
                     text => $rel->{title},
                     leaf => \0,
                     menu => $menu,
@@ -807,7 +807,7 @@ sub changeset : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error_red.svg',
+            icon => '/static/images/icons/error.svg',
             leaf=>\1,
             expandable => \0
         };
@@ -1024,7 +1024,7 @@ sub tree : Local {
         $c->stash->{json} = [{
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error_red.svg',
+            icon => '/static/images/icons/error.svg',
             leaf=>\1,
             expandable => \0
         }];
@@ -1112,7 +1112,7 @@ sub tree_workspaces : Local {
     for my $node ( map {$wks->{$_}} sort { $a<=>$b } keys %{$wks||{}} ) {
         ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
         $node->{text} //= $node->{name};
-        $node->{icon} //= '/static/images/icons/connected.svg';
+        $node->{icon} //= '/static/images/icons/connect.svg';
         push @tree, $node;
     }
     $c->stash->{json} = \@tree;

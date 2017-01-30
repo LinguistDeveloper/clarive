@@ -14,7 +14,7 @@ Clarive's architecture consists of the following general elements:
 * Staging-Build server(s)
 * Communication agent(s)
 
-<img src="/static/images/docs/arch1.png" class="img_help" />
+<img src="/static/images/schema/arch1.png" class="img_help" />
 
 ## Automation Server
 
@@ -43,7 +43,7 @@ similar to that of a client application, but from any system on the network.
 Realising the process of building and deploying applications, Clarive needs
 to communicate with servers on the network: with proprietary agents or via SSH.
 
-<img src="/static/images/docs/arch2.png" class="img_help" />
+<img src="/static/images/schema/arch2.png" class="img_help" />
 
 Clarive agents are compatible with any UNIX, Linux or Windows technology.
 

@@ -1,7 +1,7 @@
 ---
 title: Lista de jobs
 index: 5000
-icon: report
+icon: dashlet-job-list
 ---
 
 Muestra una lista con los jobs ejecutados.

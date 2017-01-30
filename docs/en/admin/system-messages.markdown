@@ -1,7 +1,7 @@
 ---
 title: System Messages
 index: 5000
-icon: sms
+icon: service-job-sms
 ---
 
 System messages are system-wide notifications

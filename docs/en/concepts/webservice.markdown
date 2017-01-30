@@ -1,7 +1,7 @@
 ---
 title: Webservice
 index: 5000
-icon: webservice
+icon: rule-webservice
 ---
 
 In Clarive, a webservice is a type of [rule](concepts/rule) that can be called from outside Clarive. 

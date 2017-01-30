@@ -1,7 +1,7 @@
 ---
 title: Pagedown editor
 index: 5000
-icon: html
+icon: fieldlet-pagedown
 ---
 
 Allows to add elements in Markdown language.

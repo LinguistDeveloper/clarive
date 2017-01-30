@@ -1,7 +1,7 @@
 ---
 title: Servidor CODE
 index: 5000
-icon: cog_perl
+icon: statement-code-server
 ---
 
 Ejecuta un bloque de código PERL o JavaScript y asigna el valor de retorno a la 

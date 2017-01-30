@@ -1,6 +1,6 @@
 ---
 title: IF var condition THEN
-icon: if
+icon: statement-if
 ---
 
 Permite el uso de múltiples condiciones dentro de un paso condicional.

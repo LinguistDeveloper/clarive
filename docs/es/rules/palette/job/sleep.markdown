@@ -1,7 +1,7 @@
 ---
 title: Pausar por un número de segundos
 index: 5000
-icon: time
+icon:  service-job-sleep
 ---
 
 El proceso se duerme por el número de segundos especificados.

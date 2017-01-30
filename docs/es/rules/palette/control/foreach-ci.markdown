@@ -1,7 +1,7 @@
 ---
 title: FOREACH CI
 index: 5000
-icon: loop
+icon: statement-loop
 ---
 
 

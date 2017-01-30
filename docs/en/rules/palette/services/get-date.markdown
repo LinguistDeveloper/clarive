@@ -1,6 +1,6 @@
 ---
 title: Get Date
-icon: calendar
+icon: service-get-date
 ---
 
 Service that return a date in a given format. Form to configure has the following fields:

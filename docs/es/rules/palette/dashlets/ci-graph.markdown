@@ -1,7 +1,7 @@
 ---
 title: Gráfico de un CI
 index: 5000
-icon: ci-grey
+icon: dashlet-ci-graph
 ---
 
 Muestra un gráfico de relación entre CIs.
