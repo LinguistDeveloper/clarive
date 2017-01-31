@@ -1902,7 +1902,6 @@ Baseliner.print = function(opts, share) {
     add_css( dw, '/static/fullcalendar/fullcalendar.print.css' );
     add_css( dw, '/static/gridtree/css/treegrid.css'  );
     add_css( dw, "/static/final.css"  );
-    add_css( dw, "/static/sprites.css"  );
     add_css( dw, "/static/c3/c3.css"  );
 
     add_css( dw, '/static/final.css' );
