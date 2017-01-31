@@ -14889,10 +14889,6 @@ msgid "Missing UploadPanel url"
 msgstr "Falta la barra de direcciones"
 
 #: root/site/common.js root/site/prefs.js
-msgid "Drop files here to upload"
-msgstr "Arrastre los ficheros aquí para subirlos"
-
-#: root/site/common.js root/site/prefs.js
 msgid "Upload File"
 msgstr "Subir Fichero"
 
@@ -15798,6 +15794,9 @@ msgstr "origen"
 #: root/site/timeline-graph.js
 msgid "to"
 msgstr "destino"
+
+#~ msgid "Drop files here to upload"
+#~ msgstr "Arrastre los ficheros aquí para subirlos"
 
 #~ msgid "DESA"
 #~ msgstr "DESA"

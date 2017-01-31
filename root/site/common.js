@@ -3993,11 +3993,6 @@ Baseliner.UploadPanel = Ext.extend( Ext.Panel, {
             self.uploader = new qq.FileUploader({
                 element: self.el.dom,
                 action: self.url,
-                template: '<div class="qq-uploader">' +
-                    '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
-                    '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-                    '<ul class="qq-upload-list"></ul>' +
-                 '</div>',
                 onComplete: function(fu, filename, res){
                     return self.on_complete(fu,filename,res);
                 },

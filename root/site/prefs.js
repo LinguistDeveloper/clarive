@@ -157,11 +157,6 @@ function uploader_avatar(upload, avatar_username, img_id, opts) {
         element: upload.el.dom,
         action: '/user/avatar_upload/' + avatar_username,
         allowedExtensions: ['png', 'jpg', 'jpeg', 'gif'],
-        template: '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
-            '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-            '<ul class="qq-upload-list"></ul>' +
-            '</div>',
         onComplete: function(fu, filename, res) {
 
 
