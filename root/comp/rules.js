@@ -931,6 +931,19 @@
                         }];
                     }
                     Baseliner.ajaxEval( res.form, { common_options: common_options, data: data || {}, attributes: node.attributes }, function(comp){
+                        function setAnchor(comp){
+                            if (comp.constructor === Array) {
+                                Ext.each(comp, function (obj){
+                                    setAnchor(obj);
+                                });
+                            }
+                            else{
+                                if (!comp.anchor) comp.anchor = '100%';
+                            }
+                        };
+
+                        setAnchor(comp);
+
                         var params = {};
                         var save_form = function(){
                             if(form.is_valid()){
