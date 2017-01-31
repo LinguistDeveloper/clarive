@@ -14709,10 +14709,6 @@ msgid "Missing UploadPanel url"
 msgstr ""
 
 #: root/site/common.js root/site/prefs.js
-msgid "Drop files here to upload"
-msgstr ""
-
-#: root/site/common.js root/site/prefs.js
 msgid "Upload File"
 msgstr ""
 
