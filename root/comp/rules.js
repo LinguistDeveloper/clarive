@@ -941,7 +941,7 @@
                         };
                         var originalValues;
                         var form = new Baseliner.FormPanel({
-                            frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+                            frame: false, forceFit: true, defaults: { msgTarget: 'under' },
                             labelWidth: 150,
                             width: 800, height: 600,
                             labelAlign: 'right',
