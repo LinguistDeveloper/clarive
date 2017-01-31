@@ -545,7 +545,7 @@ sub get_icon {
         '/force.com/images/icons/force.com.ico'            => '/force.com/logo-forcecom.svg',
         '/icons/jboss_icon.png'                            => '/jboss/jboss.svg',
         '/jira/jira.ico'                                   => '/jira/logo-jira.svg',
-        '/static/images/icons/job-full-log.png'            => '/static/images/icons/moredata.svg',
+        '/static/images/icons/moredata.png'                => '/static/images/icons/job-full-log.svg',
         '/static/images/icons/calendar_view_month.png'     => '/static/images/icons/calendar.svg',
         '/nexus/nexus.png'                                 => '/nexus/logo-nexus.svg',
         '/static/images/silk/brick.png'                    => '/nexus/brick.svg',
