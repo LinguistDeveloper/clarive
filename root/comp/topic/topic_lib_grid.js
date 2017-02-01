@@ -1516,15 +1516,11 @@ Cla.topic_grid = function(params){
    // });
 
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if(columnIndex == 0){
-            topicsSelected();
-        }
+        topicsSelected();
     });
 
     grid_topics.on('headerclick', function(grid, columnIndex, e) {
-        if(columnIndex == 0){
-            topicsSelected();
-        }
+        topicsSelected();
     });
 
     grid_topics.on('columnresize', function(ix,newSize){
