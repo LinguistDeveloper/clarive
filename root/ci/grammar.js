@@ -1,10 +1,13 @@
 (function(params){
     if( !params.rec ) params.rec = {};
 
-    var grammar = new Ext.form.TextArea({ fieldLabel:_('Grammar'), name:'grammar',
+    var grammar = new Ext.form.TextArea({
+        fieldLabel: _('Grammar'),
+        name: 'grammar',
         height: 400,
-        value: params.rec.grammar, anchor:'100%',
-        style:'font: 11px Consolas, Courier New, monotype'
+        value: params.rec.grammar,
+        anchor: '100%',
+        style: 'font: 11px Consolas, Courier New, monotype'
     });
 
     var grammar_class = new Baseliner.ComboSingleRemote({

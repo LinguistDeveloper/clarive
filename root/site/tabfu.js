@@ -1021,24 +1021,44 @@ if( Prefs.routing ) {
     };
     Baseliner.error_win_textarea_style = 'font: 12px Consolas,Courier New,monotype';
 
-    Baseliner.ErrorWindow = Ext.extend( Baseliner.Window, {
+    Baseliner.ErrorWindow = Ext.extend(Baseliner.Window, {
         title: _('Error'),
-        height: 300, width: 480,
-        layout:'border',
-        msg:'',
-        initComponent : function(){
+        height: 300,
+        width: 480,
+        layout: 'border',
+        msg: '',
+        initComponent: function() {
             var msg = this.msg;
-            this.title = String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', this.title );
-            this.items = [
-                { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
-                    readOnly: true,
-                      style: { font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif', 'background':'#eee', 'background-image':'none' } ,
-                      value: ""+msg },
-                { xtype:'tabpanel', height: 160, region:'south', split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
-                  collapsed: !Baseliner.DEBUG,  items: [
-                      { xtype:'textarea', title: _('Response'), value: msg, style: Baseliner.error_win_textarea_style }
-                  ]}
-             ]
+            this.title = String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', this.title);
+            this.items = [{
+                xtype: 'textarea',
+                border: false,
+                region: 'center',
+                layout: 'fit',
+                frame: false,
+                readOnly: true,
+                style: {
+                    font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif',
+                    'background': '#eee',
+                    'background-image': 'none'
+                },
+                value: "" + msg
+            }, {
+                xtype: 'tabpanel',
+                height: 160,
+                region: 'south',
+                split: true,
+                activeTab: 0,
+                margins: '2 0 0 0',
+                collapsible: true,
+                collapsed: !Baseliner.DEBUG,
+                items: [{
+                    xtype: 'textarea',
+                    title: _('Response'),
+                    value: msg,
+                    style: Baseliner.error_win_textarea_style
+                }]
+            }]
             Baseliner.ErrorWindow.superclass.initComponent.call(this);
         }
     });
@@ -1064,11 +1084,19 @@ if( Prefs.routing ) {
                 try { e_params = Ext.encode(params); } catch(e){ e_params='[could not encode]' }
             }
         }
-        if( xhr !=undefined && !Ext.isIE ) {
-            if( Ext.isFunction( JSON.stringify ) ) {
-                try { e_xhr = JSON.stringify(xhr); } catch(e){ e_xhr='[could not encode]' }
+        if (xhr != undefined && !Ext.isIE) {
+            if (Ext.isFunction(JSON.stringify)) {
+                try {
+                    e_xhr = JSON.stringify(xhr);
+                } catch (e) {
+                    e_xhr = '[could not encode]'
+                }
             } else {
-                try { e_xhr = Ext.encode(xhr); } catch(e){ e_xhr='[could not encode]' }
+                try {
+                    e_xhr = Ext.encode(xhr);
+                } catch (e) {
+                    e_xhr = '[could not encode]'
+                }
             }
         }
         var emsg = String.format('name: {0}\nmessage: {1}\nline: {2}\ncode: {3}\nfile: {4}\nstack: {5}', eo.name, eo.msg, eo.line, eo.code, eo.file, eo.stack );
