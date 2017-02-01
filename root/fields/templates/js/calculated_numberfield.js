@@ -18,8 +18,7 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     var style = { 'font-size': '16px',
-            'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ),
-            'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
+            'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' )};
     if( Ext.isIE ) style['margin-top'] = '1px';
 
 
@@ -30,7 +29,6 @@ params:
             name: meta.id_field,
             value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ),
             style: style,
-            //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
             allowBlank: Baseliner.eval_boolean(meta.allowBlank),

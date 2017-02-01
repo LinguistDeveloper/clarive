@@ -287,7 +287,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 var col_width = 1 / kvisible;
                 var add_column = function( id_status, name, visible, bl ) {
                    var status_title =
-                       '<div id="boot" style="background:transparent;font-size:8px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">'
+                       '<div id="boot" style="background:transparent;font-size:8px; padding: 4px 4px 4px 4px">'
                        + _(name) + ( !bl || bl=='*' ? '' : '&nbsp;<div class="label" style="font-size: 8px;background-color:#666;">'
                         + bl+'</div>' ) + '</div>';
                    // create columns

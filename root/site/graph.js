@@ -567,12 +567,9 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                 style.height = 21 + 'px';
                 style.cursor = 'pointer';
                 style.color = '#000';
-                //style.backgroundColor = '#1a1a1a';
-                style.fontFamily = 'Tahoma, Consolas, Courier New, Arial, monotype';
                 style.fontSize = '0.8em';
                 style.textAlign= 'left';
                 style.textWrap = 'none';
-                //style.textDecoration = 'underline';
                 style.paddingTop = '3px';
             },
 

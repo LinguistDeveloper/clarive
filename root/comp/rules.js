@@ -485,7 +485,7 @@
                 }
                 var rule_text = node.attributes.text;
                 if(!node.attributes.is_folder){
-                    rule_text = rule_text + String.format('<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
+                    rule_text = rule_text + String.format('<span style="font-size: xx-small; font-weight:bolder;padding:1px 2px;margin-left:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #000;background-color:#eee">{0}</span>',node.attributes.rule_id) +
                     rule_when +
                     String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>', Cla.moment(node.attributes.rule_ts).fromNow()) +
                     String.format('<span style="padding-left: 5px;color:#bbb">by {0}</span>', node.attributes.username);
@@ -1763,8 +1763,11 @@
                     var editor;
                     var stash_txt = new Ext.form.TextArea({ region:'west', split:true, width: 140, value: rule_tree.last_stash || res.data_yaml });
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
-                    var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-                    var dsl_cons = new Ext.form.TextArea({ style:style_cons });
+                    var style_cons = 'background: black; background-image: none; color: #10C000;';
+                    var dsl_cons = new Ext.form.TextArea({
+                        style: style_cons,
+                        cls: 'console'
+                    });
                     var dsl_cons_tab = new Ext.Panel({ layout:'fit', title:_('Output'), items: dsl_cons,
                         tbar: [
                                 Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function() {
@@ -1775,7 +1778,10 @@
                                 })
                         ]
                     });
-                    var dsl_stash = new Ext.form.TextArea({ style:style_cons });
+                    var dsl_stash = new Ext.form.TextArea({
+                        style: style_cons,
+                        cls: 'console'
+                    });
                     var dsl_stash_tab = new Ext.Panel({ layout:'fit', title:_('Stash'), items: dsl_stash,
                         tbar: [
                                 Baseliner.button(_('Raw'), '/static/images/icons/detach.svg', function() {

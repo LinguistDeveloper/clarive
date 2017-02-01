@@ -1,6 +1,6 @@
 (function(params) {
         var stash = new Ext.form.TextArea({
-            style: 'font-family: Consolas, monospace',
+            cls: 'console',
             value: ''
         });
         var load_stash = function() {

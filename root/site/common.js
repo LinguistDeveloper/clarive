@@ -616,10 +616,10 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.cm = new Ext.grid.ColumnModel([{
             dataIndex: self.name,
             width: '100%',
-            renderer: function(v){ return String.format('<span style="font: 12px Consolas, Courier New, monotype">{0}</span>', v) },
+            renderer: function(v){ return String.format('<span class="console" style="font-size: 12px;">{0}</span>', v) },
             editor: new Ext.form.TextField({
                 allowBlank: false,
-                style: 'font-family: Consolas, Courier New, monotype',
+                cls: 'console',
                 renderer: function(v) {  return "a" }
             })
         }]);
@@ -1425,7 +1425,7 @@ Baseliner.loading_panel = function(msg){
             '<div style="position:absolute; left:45%; top:40%; padding:2px; height:auto;">',
             '<center>',
             '<img style="height:52px;width:52px;" src="/static/images/loading/loading.gif" />',
-            '<div style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">',
+            '<div class="console" style="text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999;">',
             '</div>',
             '</center>',
             '</div>' ].join('')
@@ -1512,8 +1512,11 @@ Baseliner.LogWindow = Ext.extend( Baseliner.Window, {
         Baseliner.LogWindow.superclass.constructor.call(this, c);
         var v = c.value;
         if( Ext.isArray( v ) ) v=v.join("\n");
-        this.add( new Ext.form.TextArea({
-            value: v, readOnly:true, style:'font-family:Consolas, Courier New, Courier, mono' }) );
+        this.add(new Ext.form.TextArea({
+            value: v,
+            readOnly: true,
+            cls: 'console'
+        }));
     }
 });
 
@@ -2994,8 +2997,9 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     clearInvalid : Ext.emptyFn
 });
 
-Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
-    style: 'font-size: 13px; font-family: Consolas, Courier New, monotype'
+Baseliner.MonoTextArea = Ext.extend(Ext.form.TextArea, {
+    cls: 'console',
+    style: 'font-size: 13px;'
 });
 
 Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
@@ -4131,7 +4135,7 @@ Baseliner.UploadFilesPanel = Ext.extend(Ext.Panel, {
                 var icon = IC('catalog-folder.svg');
                 value = String.format('<img  style="vertical-align:middle" src="{0}" alt="edit" /><span style="margin-left: 4px;"><b>{1}</span>', icon, value);
             }
-            value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' + value + '</div>';
+            value = '<div class="console" style="height: 20px; font-size: 12px; font-weight: bold; vertical-align: middle;">' + value + '</div>';
             return value;
         };
 

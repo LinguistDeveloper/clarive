@@ -295,7 +295,7 @@ var menu_role = new Ext.Button({
                 { padding: 5})
             ),
             go_api(go.TextBlock,
-              { alignment: go.Spot.Right, font: "Bold 12pt Sans-Serif", stroke: "#42225F" },
+              { alignment: go.Spot.Right, font: "bold 12pt sans-serif", stroke: "#42225F" },
               new go.Binding("text", "key"))
           );
 
@@ -594,7 +594,7 @@ var menu_role = new Ext.Button({
             go_api(go.TextBlock, // group title
                 {
                     alignment: go.Spot.Right,
-                    font: "Bold 12pt Sans-Serif",
+                    font: "bold 12pt sans-serif",
                     stroke: "#42225F"
                 },
                 new go.Binding("text", "key"))

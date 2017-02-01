@@ -76,9 +76,9 @@ qq[<div id="boot" style="background:transparent"><span class="label" style="back
         $data->{color} //= 'transparent';
         "menu.topic.status.$id" => {
             label =>
-qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
+qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px;">$name</span>],
             title =>
-qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
+qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px;">$name</span>],
             index       => $seq++,
             hideOnClick => 0,
 

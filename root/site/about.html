@@ -54,7 +54,7 @@
             <tr>
                 <td valign='top' style="width:30%"><b><% _loc('Site License') %></b></td>
                     <td>
-                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% Util->_dump( $tlc )  %></textarea>
+                        <textarea  class="console" style="height:200px; width:100%;"><% Util->_dump( $tlc )  %></textarea>
                     </td>
             </tr>
         </table>
@@ -72,7 +72,7 @@
             <tr>
                 <td valign='top' style="width:30%"><b><% _loc($_->{name}) %></b></td>
                     <td>
-                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $_->{text} %></textarea>
+                        <textarea  class="console" style="height:200px; width:100%;"><% $_->{text} %></textarea>
                     </td>
             </tr>
 % }
@@ -91,7 +91,7 @@
             <tr>
                 <td valign='top' style="width:30%"><b><% _loc($_->{name}) %></b></td>
                     <td>
-                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $_->{text} %></textarea>
+                        <textarea  class="console" style="height:200px; width:100%;"><% $_->{text} %></textarea>
                     </td>
             </tr>
 % }
@@ -107,7 +107,7 @@
         <table class="table table-bordered">
             <tr>
                 <td>
-                    <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% $third_party %></textarea>
+                    <textarea  class="console" style="height:200px; width:100%;"><% $third_party %></textarea>
                 </td>
             </tr>
         </table>

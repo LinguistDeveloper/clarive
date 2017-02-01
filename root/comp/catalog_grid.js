@@ -149,7 +149,7 @@
             var ta = new Ext.form.TextArea({
                 height: 500,
                 width: 600,
-                style: { 'font-family': 'Consolas, Courier, monotype' },
+                cls:'console',
                 value: res.yaml
             });
             var win = new Ext.Window({

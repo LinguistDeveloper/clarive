@@ -9,10 +9,20 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+ body {
+    font-size: 11px;
+    font-weight: normal;
+}
 
 body a table td tr h1 h2 h3 h4 h5 span li ul {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+
+#bali-loading-text,
+textarea.x-form-field {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
 .x-tree-node, .x-menu-list-item {
     font-size: 12px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -340,7 +350,7 @@ li.x-menu-item-active a.x-menu-item {
 
 /* rgo: basic button text */
 button.x-btn-text {
-    font: normal 11px Arial, sans-serif;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* rgo: basic button no image */
@@ -570,11 +580,10 @@ div.x-menu.x-menu-floating.x-layer {
     border-color:#b0b0b0;
 }
 
-body .x-window .x-window-header-text, body .x-panel-ghost .x-window-header-text {
+body .x-window .x-window-header-text,
+body .x-panel-ghost .x-window-header-text {
     color:#202020;
-    font-family: Calibri, OpenSans, Arial;
-    font-weight: bold;
-    font-size: 13px;
+    font: bold 12px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     text-transform: uppercase;
     line-height: 25px;
 }
@@ -786,9 +795,19 @@ ul.x-tab-strip li {margin-left:3px; }
 .x-tab-strip-top .x-tab-strip-inner {background:transparent none;}
 .x-tab-strip-top .x-tab-strip-active  .x-tab-right { background:#f5f5f5 none; color: white;}
 
-.x-tab-strip-top span.x-tab-strip-text { color: #555; }
-.x-tab-strip-active span.x-tab-strip-text {color:black;}
-.x-tab-strip-over span.x-tab-strip-text { color: #333; }
+.x-tab-strip-top span.x-tab-strip-text {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #555;
+}
+.x-tab-strip-active span.x-tab-strip-text {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: black;
+}
+.x-tab-strip-over span.x-tab-strip-text {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+}
+
 
 /* SHADOWS */
 /*
@@ -1087,7 +1106,7 @@ textarea.x-form-textarea.x-form-field {
 .job_new_main_form_time_column_advice {
    margin-left: 165px;
    font-size: 11px;
-   font-family: Tahoma, Arial;
+   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .surr-win {
@@ -1760,7 +1779,7 @@ input.combo_box_fieldlet {
 }
 
 textarea.x-form-field.job_logfile_textarea {
-    font-family: Consolas, monospace;
+    font-family: 'Consolas', monaco, monospace;
     padding: 0 1px !important;
 }
 
@@ -1832,7 +1851,7 @@ span.x-tab-strip-text.x-panel-inline-icon {
 }
 
 .x-form-invalid-msg {
-    font:normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 }
 
 .x-form-invalid-msg {
@@ -2044,7 +2063,7 @@ span.x-tab-strip-text.x-panel-inline-icon {
 }
 
 .search-item {
-    font: normal 11px tahoma, arial, helvetica, sans-serif;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     padding: 3px 10px 3px 10px;
     border: 1px solid #fff;
     border-bottom: 1px solid #eeeeee;
@@ -2069,20 +2088,20 @@ span.x-tab-strip-text.x-panel-inline-icon {
 }
 
 .search-title {
-    font: bold 10px tahoma, arial, helvetica, sans-serif;
+    font: bold 10px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     white-space: normal;
     width: 600px;
 }
 
 .search-r {
-    font: normal 11px tahoma, arial, helvetica, sans-serif;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     white-space: normal;
     color: #555;
     width: 450px;
 }
 
 .search-l {
-    font: normal 11px tahoma, arial, helvetica, sans-serif;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     white-space: normal;
     color: #555;
     width: 300px;
@@ -2146,7 +2165,7 @@ span.x-tab-strip-text.x-panel-inline-icon {
 td.cal_slot {
     padding: 0;
     border: transparent 1px dashed;
-    font-family: Calibri, OpenSans, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 td.slot-N {
@@ -2282,20 +2301,20 @@ div.x-panel-body .job-calendar {
     background-image: '/static/images/icons/lightbulb.svg'}
 
 pre {
-    font-family: Consolas, Courier New, mono;
+    font-family: 'Consolas', monaco, monospace;
 }
 
 #baseliner-help-win .x-window-body {
     background-color: #fff;
     font-size: 11px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     padding: 5px 5px 5px 5px;
     overflow: auto;
 }
 
 #baseliner-help-win p {
     font-size: 11px;
-    font-family: Verdana, Arial;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     padding: 3px 5px 3px 10px;
     margin: 5px 0px 5px 0px;
     line-height: 15px;
@@ -2313,12 +2332,12 @@ pre {
     font-size: 11px;
     margin: 5px 0px 5px 20px;
     list-style: circle inside;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win li {
     font-size: 11px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win h1 {
@@ -2327,7 +2346,7 @@ pre {
     margin: -5px -5px 0px -5px;
     padding: 10px 3px 10px 3px;
     font-size: 18px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win h2 {
@@ -2335,7 +2354,7 @@ pre {
     font-weight: bold;
     padding: 3px 3px 3px 10px;
     font-size: 14px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win h3 {
@@ -2343,7 +2362,7 @@ pre {
     font-weight: bold;
     margin: 5px 0px 5px 5px;
     font-size: 14px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win h4 {
@@ -2351,7 +2370,7 @@ pre {
     font-style: italic;
     margin: 5px 0px 5px 5px;
     font-size: 14px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win table {
@@ -2364,7 +2383,7 @@ pre {
     padding: 2px 2px 2px 2px;
     border: 1px dashed #ccc;
     font-size: 10px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #baseliner-help-win th {
@@ -2372,7 +2391,7 @@ pre {
     padding: 2px 2px 2px 2px;
     font-weight: bold;
     font-size: 10px;
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .x-form-field-wrap {
@@ -2662,7 +2681,7 @@ body#login-page {
     height: 100%;
     padding: 0;
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-repeat: repeat-x;
     background-image: url(/static/themes/clarive/images/gradient.gif);
 }
@@ -2966,7 +2985,7 @@ body#login-page {
 
 /* REPL style */
 .CodeMirror pre {
-    font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Courier, monospace;
+    font-family:  'DejaVu Sans Mono', Courier New, Courier !important;
     font-size: 12px;
     line-height: 16px;
     height: auto;
@@ -2974,12 +2993,12 @@ body#login-page {
 
 /* fullcalendar font, otherwise it uses body font and ajusts */
 .fc, .fc-event, .fc table {
-    font: normal 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font: normal 12px 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* roadmap dashlet */
 .roadmap-cell-div {
-    font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .roadmap-grid .x-grid3-header {
@@ -3031,7 +3050,7 @@ body#login-page {
 
 #boot .topictag {
     font-size: 9px;
-    font-family: Arial, Helvetica;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background: #998;
     color: #fff;
     padding: 2px 4px 2px 4px;
@@ -3055,8 +3074,8 @@ body#login-page {
 }
 
 .bali-main-menu button {
-    font-family: Calibri, OpenSans, Arial;
-    font-size: 11px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px;
     margin: 0 0 0 4px;
     text-transform: uppercase;
 }
@@ -3092,14 +3111,14 @@ body#login-page {
 .bali-topic-status {
     font-size: 8px;
     text-transform:uppercase;
-    font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .bali-moniker {
     background-color: #f0f9f2;
     border:2px #d4d4d4 solid;
     padding: 3px;
-    font-family: Consolas, Courier New, monotype;
+    font-family: 'Consolas', monaco, monospace;
     text-align:center;
 }
 
@@ -3115,7 +3134,7 @@ body#login-page {
 
 #boot {
     margin: 0;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 13px;
     line-height: 18px;
     color: #333333;
@@ -3123,7 +3142,7 @@ body#login-page {
 }
 
 #boot .dashboard {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 11px;
 }
 
@@ -3168,7 +3187,7 @@ body#login-page {
     font-family: inherit;
     font-weight: bold;
     text-rendering: optimizelegibility;
-    font-family: Courier New, Courier;
+    font-family: Courier New, Courier, mono;
 }
 
 #boot .deleted-code{
@@ -3177,7 +3196,7 @@ body#login-page {
     margin:0;
     font-weight:bold;
     text-rendering:optimizelegibility;
-    font-family: Courier New, Courier;
+    font-family: Courier New, Courier, mono;
 }
 
 #boot .permanent-code{
@@ -3186,7 +3205,7 @@ body#login-page {
     margin:0;
     font-weight:bold;
     text-rendering:optimizelegibility;
-    font-family: Courier New, Courier;
+    font-family: Courier New, Courier, mono;
 }
 
 #boot .line-number{
@@ -3196,7 +3215,7 @@ body#login-page {
     text-align: center;
     font-weight:bold;
     text-rendering:optimizelegibility;
-    font-family: Courier New, Courier;
+    font-family: Courier New, Courier, mono;
     font-size:small;
 }
 
@@ -3253,7 +3272,7 @@ body#login-page {
 
 .forum.status a span {
     text-transform: uppercase;
-    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: xx-small;
     font-weight: bolder;
     color: #555;
@@ -3322,7 +3341,7 @@ body#login-page {
 }
 
 .grid-label {
-    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: xx-small;
     font-weight: bolder;
     float: left;
@@ -3351,7 +3370,7 @@ body#login-page {
     border-left: 1px solid #fff;
     background-color: #fff;
     color: gray;
-    font-family: arial, verdana, times;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 12px;
 }
 
@@ -3364,7 +3383,7 @@ body#login-page {
 .tabla .titulo {
     padding: 5px;
     background-color: #fff;
-    font-family: arial, verdana, times;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     float: left;
     border-right: 1px solid #fff;
     font-weight: bold;
@@ -3433,7 +3452,7 @@ a {
     font-size: 85%;
     width: 100%;
     list-style-type: none;
-    font: normal 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .dashboard-buttons:hover {
@@ -3596,7 +3615,7 @@ div[class*='ui-ci_box-'].search-item img {
     font-weight: normal;
     font-size: 11px;
     color: #999;
-    font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .ext-el-mask {
@@ -3627,7 +3646,7 @@ div[class*='ui-ci_box-'].search-item img {
     border: none;
     color: #999;
     cursor: wait;
-    font: 11px tahoma, arial, helvetica, sans-serif;
+    font: 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
     padding: 50px 75px 25px 25px;
 }
 
@@ -3741,7 +3760,7 @@ img.x-topic-lib-inline-icon[src$='.svg'] {
 
 .x-fieldlet-type-height {
     width: 50px !important;
-    font: normal 12px tahoma, arial, helvetica, sans-serif;
+    font: normal 12px 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .x-form-text.x-superboxselect.x-superboxselect-display-btns .x-superboxselect-item.x-tag.x-superboxselect-item div > img {
@@ -4019,6 +4038,41 @@ div[class*='dashboard-'] .dataTables_wrapper.form-inline.no-footer .dataTables_l
 
 .level-row .x-grid3-td-env-tag .x-grid3-cell-inner.x-grid3-col-env-tag.x-unselectable {
     color: white;
+}
+
+.scheduler-name-renderer {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.x-tip .x-tip-body,
+.x-window-mc {
+    font: normal 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.x-grid3-hd-row td {
+        font: normal 11px/15px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.ext-webkit .x-small-editor .x-form-field ,
+.x-combo-list,
+.gritter-item,
+input[type="text"] {
+    font: normal 12px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+}
+
+textarea.console,
+div.console,
+span.console,
+input.x-form-text.x-form-field.console,
+textarea.x-form-textarea.x-form-field.console,
+.console,
+.ace_editor {
+    font-family: 'Consolas', monaco, monospace !important;
+}
+
+textarea.x-form-textarea.x-form-field.console.x-border-panel {
+    font: normal 13px 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 }
 
 .x-tbar-page-first{

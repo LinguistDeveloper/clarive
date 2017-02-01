@@ -23,7 +23,8 @@
             height: 400,
             value: params.rec.regex,
             anchor: '100%',
-            style: 'font: 11px Consolas, Courier New, monotype'
+            cls: 'console',
+            style: 'font-size: 11px;'
         }
     ]
 })

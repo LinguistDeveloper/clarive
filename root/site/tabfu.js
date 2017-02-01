@@ -1019,7 +1019,6 @@ if( Prefs.routing ) {
         catch(e1) { try { json=eval("("+res+")") } catch(e2) {} }
         return json;
     };
-    Baseliner.error_win_textarea_style = 'font: 12px Consolas,Courier New,monotype';
 
     Baseliner.ErrorWindow = Ext.extend(Baseliner.Window, {
         title: _('Error'),
@@ -1037,8 +1036,9 @@ if( Prefs.routing ) {
                 layout: 'fit',
                 frame: false,
                 readOnly: true,
+                cls: 'console',
                 style: {
-                    font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif',
+                    'font-size': '13px',
                     'background': '#eee',
                     'background-image': 'none'
                 },
@@ -1056,7 +1056,7 @@ if( Prefs.routing ) {
                     xtype: 'textarea',
                     title: _('Response'),
                     value: msg,
-                    style: Baseliner.error_win_textarea_style
+                    cls: 'console'
                 }]
             }]
             Baseliner.ErrorWindow.superclass.initComponent.call(this);
@@ -1105,34 +1105,86 @@ if( Prefs.routing ) {
         var width = 480;
         var height = 300;
         var collapsed = !Baseliner.DEBUG;
-        if( /^(<!DOCTYPE html|<html)/.test(msg) ) {
-            main_field = { xtype:'panel', html: msg, layout:'fit', region:'center', frame:false, readOnly: true };
-            collapsed = true;
-            width = 800;
-            height = 600;
-        } else {
-            main_field = { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
-                    readOnly: true,
-                      style: { font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif', 'background':'#eee', 'background-image':'none' } ,
-                      value: msg };
-        }
-        var win = new Baseliner.Window({
-            title: String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', _('Error') ),
-            height: height, width: width,
-            layout:'border',
-            items:[
-                main_field,
-                { xtype:'tabpanel', height: 160, region:'south',  plugins: [ new Ext.ux.panel.DraggableTabs()], split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
-                  collapsed: collapsed,  items: [
-                      { xtype:'textarea', title: _('Response'), value: xhr.responseText, style: Baseliner.error_win_textarea_style },
-                      { xtype:'panel', title: _('Code'), items: new Baseliner.CodeMirror({ value: xhr.responseText }) },
-                      { xtype:'textarea', title: _('Error'), value: emsg, style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('Params'), value: e_params, style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('XHR'), value: e_xhr, style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('URL'), value: url, style: Baseliner.error_win_textarea_style }
-                  ]}
-             ]
-        });
+    if (/^(<!DOCTYPE html|<html)/.test(msg)) {
+        main_field = {
+            xtype: 'panel',
+            html: msg,
+            layout: 'fit',
+            region: 'center',
+            frame: false,
+            readOnly: true
+        };
+        collapsed = true;
+        width = 800;
+        height = 600;
+    } else {
+        main_field = {
+            xtype: 'textarea',
+            border: false,
+            region: 'center',
+            layout: 'fit',
+            frame: false,
+            readOnly: true,
+            cls: 'console',
+            style: {
+                'font-size': '13px',
+                'background': '#eee',
+                'background-image': 'none'
+            },
+            value: msg
+        };
+    }
+    var win = new Baseliner.Window({
+        title: String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', _('Error')),
+        height: height,
+        width: width,
+        layout: 'border',
+        items: [
+            main_field, {
+                xtype: 'tabpanel',
+                height: 160,
+                region: 'south',
+                plugins: [new Ext.ux.panel.DraggableTabs()],
+                split: true,
+                activeTab: 0,
+                margins: '2 0 0 0',
+                collapsible: true,
+                collapsed: collapsed,
+                items: [{
+                    xtype: 'textarea',
+                    title: _('Response'),
+                    value: xhr.responseText,
+                    cls: 'console'
+                }, {
+                    xtype: 'panel',
+                    title: _('Code'),
+                    items: new Baseliner.CodeMirror({
+                        value: xhr.responseText
+                    })
+                }, {
+                    xtype: 'textarea',
+                    title: _('Error'),
+                    value: emsg,
+                    cls: 'console'
+                }, {
+                    xtype: 'textarea',
+                    title: _('Params'),
+                    value: e_params,
+                    cls: 'console'
+                }, {
+                    xtype: 'textarea',
+                    title: _('XHR'),
+                    value: e_xhr,
+                    cls: 'console'
+                }, {
+                    xtype: 'textarea',
+                    title: _('URL'),
+                    value: url,
+                    cls: 'console'
+                }]
+            }
+        ]
+    });
         win.show();
     };
 

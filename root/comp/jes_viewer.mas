@@ -1,9 +1,10 @@
 (function(){
-    var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-    var text_style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", "Courier"; border-color:black black green black; border-style:none none solid none;';
+    var style_cons = 'background: black; background-image: none; color: #10C000;';
+    var text_style_cons = 'background: black; background-image: none; color: #10C000; border-color:black black green black; border-style:none none solid none;';
     var code = new Ext.form.TextArea({
         name: 'code',
         style: style_cons,
+        cls: 'console',
         width: 700,
         height: 700
         });
@@ -13,6 +14,7 @@
         width: 600,
         labelStyle: style_cons,
         style: text_style_cons,
+        cls: 'console',
         enableKeyEvents: true,
         listeners: {
             'keyup': function(a,b) {
@@ -79,6 +81,7 @@
         items: [ find ],
         region: 'north',
         bodyStyle: style_cons,
+        cls: 'console',
         height: 30,
         labelWidth: 60
         });
