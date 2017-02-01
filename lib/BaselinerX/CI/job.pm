@@ -1364,7 +1364,7 @@ sub finish {
 
     $self->status($status);
     $self->step_status->{ $self->step } = $status;
-    $self->last_finish_status($status);    # saved for POST
+    $self->last_finish_status($status) if $self->step ne 'POST';
     $self->endtime(_now);
     my $milestones = $self->milestones;
     $milestones->{ $self->exec }->{ $self->step }->{end} = _now;
