@@ -142,7 +142,7 @@
 
     // AutoRefresh
     var button_autorefresh = new Ext.Button({ tooltip: _('Refresh'),
-        icon: '/static/images/icons/refresh.svg',
+        icon: IC('monitor-refresh'),
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
