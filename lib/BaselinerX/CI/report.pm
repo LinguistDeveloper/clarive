@@ -1090,6 +1090,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
         foreach my $field (keys $fields){
             if (!exists $_->{$field}) {
                 next if ($field eq '_id' || $field eq '0');
+                next if ($meta_cfg_report{$field} && $meta_cfg_report{$field} eq 'date');
                 $_->{$field} = ' ';
             }else{
                 if ($_->{$field} && $_->{$field}  eq ''){
