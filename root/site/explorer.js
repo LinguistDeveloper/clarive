@@ -1080,9 +1080,16 @@ Baseliner.open_apply_filter_from_release = function(n){
         enableDD: true,
         containerScroll: true,
         rootVisible: false,
-        root: treeRoot
+        root: treeRoot,
+        listeners: {
+            'render': function() {
+                Baseliner.showLoadingMask(win.getEl());
+            },
+            'load': function() {
+                win.getEl().unmask();
+            }
+        }
     });
-
     tree_filters.on('dblclick', function(n, ev){
         Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release, id_report: n.attributes.data.id_report }, function(res){
             Baseliner.ajaxEval( '/comp/lifecycle/report_run.js', {
