@@ -93,7 +93,7 @@ sub ext_menu {
     }
 
     my $data_json = _encode_json($comp_data);
-    if ($comp_data->{mode} eq 'handler'){
+    if ($comp_data->{mode} && $comp_data->{mode} eq 'handler'){
         $ret->{handler} = \"$handler"
     }else{
         $ret->{handler} = \"function(){  Cla.dispatcherMenu($data_json); }";
