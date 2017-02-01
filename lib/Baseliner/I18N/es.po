@@ -923,14 +923,13 @@ msgstr "Añadiendo espacio de nombres %1 al pase"
 msgid "Could not find revision \"%1\""
 msgstr "No se puede encontrar la revisión \"%1\""
 
-#: lib/Baseliner/Controller/GitTree.pm lib/Baseliner/Controller/Topic.pm
-#: lib/BaselinerX/Service/CreateJob.pm
+#: lib/Baseliner/Controller/GitTree.pm lib/BaselinerX/Service/CreateJob.pm
 msgid "Job %1 created ok"
 msgstr "Pase %1 creado"
 
 # features/gitscm/lib/BaselinerX/Controller/GitTree.pm (178)
 #: lib/Baseliner/Controller/GitTree.pm lib/Baseliner/Controller/Job.pm
-#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Service/CreateJob.pm
+#: lib/BaselinerX/Service/CreateJob.pm
 msgid "Error creating job: %1"
 msgstr "Error creando pase: %1"
 
@@ -1093,6 +1092,10 @@ msgstr "El usuario %1 no tiene permisos para crear pases fuera de ventana"
 #: lib/Baseliner/Controller/Job.pm
 msgid "No job contents"
 msgstr "Pase sin contenido"
+
+#: lib/Baseliner/Controller/Job.pm
+msgid "The user %1 has created job %2 for %3"
+msgstr "El usuario %1 ha creado el job %2 para %3"
 
 #: lib/Baseliner/Controller/Job.pm
 msgid "Job %1 created"
@@ -2312,10 +2315,6 @@ msgstr "Fichero %1 no encontrado"
 #: lib/Baseliner/Controller/Topic.pm
 msgid "filter param is required"
 msgstr "Parámetro filter es requerido"
-
-#: lib/Baseliner/Controller/Topic.pm lib/BaselinerX/Service/CreateJob.pm
-msgid "The user %1 has created job %2 for %3 bl"
-msgstr "El usuario %1 ha creado el pase %2 para %3 bl"
 
 #: lib/Baseliner/Controller/Topic.pm root/site/kanban.js
 msgid "No topics available"
@@ -6370,6 +6369,10 @@ msgstr "Aplicaciones: %1. Solicitud de aprobación para el pase %2"
 #: lib/BaselinerX/Service/CreateJob.pm
 msgid "Create a Job"
 msgstr "Crear un pase"
+
+#: lib/BaselinerX/Service/CreateJob.pm
+msgid "The user %1 has created job %2 for %3 bl"
+msgstr "El usuario %1 ha creado el pase %2 para %3 bl"
 
 #: lib/BaselinerX/Service/DBServices.pm
 msgid "Deploy SQL from Nature Items"

@@ -12,6 +12,7 @@ use TestUtils ':catalyst', 'mock_time';
 use Baseliner::Utils qw(_encode_json);
 
 use Capture::Tiny qw(capture);
+use Baseliner::Utils qw(_load);
 
 use_ok 'Baseliner::Controller::Job';
 
@@ -815,6 +816,51 @@ subtest 'submit: returns an error when user does not have permission to create n
             success => \0,
             msg => re(qr/Error creating job: User .*? doesn't have permissions to create a job out of calendar/)
         }
+      };
+};
+
+subtest 'submit: creates a event.job.new with notify' => sub {
+    _setup();
+
+    my $id_rule               = TestSetup->create_rule;
+    my $id_changeset_rule     = _create_changeset_form();
+    my $id_changeset_category = TestSetup->create_category(
+        name         => 'Changeset',
+        is_changeset => '1',
+        id_rule      => $id_changeset_rule,
+    );
+
+    my $project       = TestUtils->create_ci('project');
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.create', }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $changeset_mid = TestSetup->create_topic(
+        id_rule     => $id_changeset_rule,
+        id_category => $id_changeset_category,
+        title       => 'Fix everything',
+        username    => $user->username,
+        project     => $project
+    );
+
+    my $c = mock_catalyst_c(
+        username => $user->username,
+        req => { params => { id_rule => $id_rule, changesets => $changeset_mid, window_type => 'N', bl => 'PROD' } }
+    );
+
+    my $controller = _build_controller();
+
+    capture {
+        $controller->submit($c);
+    };
+
+    my $bl         = ci->bl->find_one( { name => 'PROD' } );
+    my $bl_mid     = $bl->{mid};
+    my $event      = mdb->event->find_one( { event_key => 'event.job.new' } );
+    my $event_data = _load $event->{event_data};
+
+    cmp_deeply $event_data->{notify},
+      {
+        project => [ $project->mid ],
+        bl      => $bl_mid
       };
 };
 
@@ -1717,6 +1763,7 @@ sub _setup {
     mdb->role->drop;
     mdb->job_log->drop;
     mdb->category->drop;
+    mdb->event->drop;
 
     TestUtils->create_ci('bl', name => 'Common', bl => '*');
     TestUtils->create_ci('bl', name => 'PROD', bl => 'PROD');

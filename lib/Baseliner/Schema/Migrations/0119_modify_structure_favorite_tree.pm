@@ -672,7 +672,6 @@ sub get_icon {
         '/static/images/icons/control_equalizer.svg'    => '/static/images/icons/control-equalizer.svg',
         '/static/images/icons/control_pause.svg'        => '/static/images/icons/control-pause.svg',
         '/static/images/icons/cut_edit.svg'             => '/static/images/icons/cut-edit.svg',
-        '/static/images/icons/data_editor.svg'          => '/static/images/icons/data-editor.svg',
         '/static/images/icons/database_refresh.svg'     => '/static/images/icons/database-refresh.svg',
         '/static/images/icons/database_save.svg'        => '/static/images/icons/database-save.svg',
         '/static/images/icons/debug_view.svg'           => '/static/images/icons/debug-view.svg',

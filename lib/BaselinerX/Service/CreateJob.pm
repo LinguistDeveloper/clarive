@@ -49,24 +49,27 @@ sub run_create {
         $job_data->{maxstarttime} = Class::Date->new($job_data->{schedtime}) + $expiry_time;
 
         my $job;
-        event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
-
-            $job = ci->job->new( $job_data );
-            $job->save;  # after save, CHECK and INIT run
-            $job->job_stash( $job_stash, 'merge') if ref $job_stash;
-            # $job->job_stash({   # job stash autosaves into the stash table
-            #     status_from    => $config->{status_from},
-            #     status_to      => $config->{status_to},
-            #     id_status_from => $config->{id_status_from},
-            # }, 'merge');
+        event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl} } => sub {
+            $job = ci->job->new($job_data);
+            $job->save;
+            $job->job_stash( $job_stash, 'merge' ) if ref $job_stash;
             my $job_name = $job->{name};
-            my $subject = _loc("The user %1 has created job %2 for %3 bl", $job_data->{username}, $job_name, $job_data->{bl});
-            my @projects = map {$_->{mid} } _array($job->{projects});
+            my $bl       = ci->bl->find_one( { name => $job_data->{bl} } );
+            my $bl_mid   = $bl->{mid};
+            my $subject =
+              _loc( "The user %1 has created job %2 for %3 bl", $job_data->{username}, $job_name, $job_data->{bl} );
+            my @projects = map { $_->{mid} } _array( $job->{projects} );
             my $notify = {
                 project => \@projects,
-                baseline => $job_data->{bl}
+                bl      => $bl_mid
             };
-            { jobname => $job_name, mid=>$job->{mid}, id_job=>$job->{jobid}, subject => $subject, notify => $notify };
+            {
+                jobname => $job_name,
+                mid     => $job->{mid},
+                id_job  => $job->{jobid},
+                subject => $subject,
+                notify  => $notify
+            };
 
         };
         _log(_loc( "Job %1 created ok", $job->{name} ));

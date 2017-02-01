@@ -1962,53 +1962,6 @@ sub form_build {
         : [];
 }
 
-sub newjob : Local {
-    my ($self, $c ) = @_;
-    my $p = $c->req->params;
-    my $changesets = $p->{changesets} or _throw 'Missing parameter changesets';
-    my $bl = $p->{bl} or _throw 'Missing parameter bl';
-
-    $c->stash->{json} = try {
-        # create job CI
-        my $job;
-        my $job_type = $p->{job_type} || 'static';
-        my $job_data = {
-            bl         => $bl,
-            job_type   => $job_type,
-            username   => $c->username || $p->{username} || `whoami`,
-            comments   => $p->{comments},
-            changesets => $changesets,
-        };
-        event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
-
-            $job = ci->job->new( $job_data );
-            $job->save;  # after save, CHECK and INIT run
-            $job->job_stash({   # job stash autosaves into the stash table
-                status_from    => $p->{status_from},
-                status_to      => $p->{status_to},
-                id_status_from => $p->{id_status_from},
-            }, 'merge');
-            my $job_name = $job->{name};
-            my $subject = _loc("The user %1 has created job %2 for %3 bl", $c->username, $job_name, $job_data->{bl});
-            my @projects = map {$_->{mid} } _array($job->{projects});
-            my $notify = {
-                project => \@projects,
-                baseline => $job_data->{bl}
-            };
-            { jobname => $job_name, mid=>$job->{mid}, id_job=>$job->{jobid}, subject => $subject, notify => $notify };
-
-        };
-        { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
-    } catch {
-        my $err = shift;
-        $err =~ s{ at./.*line.*}{}g;
-        my $msg = _loc( "Error creating job: %1", "$err" );
-        _error( $msg );
-        { success=>\0, msg=>$msg };
-    };
-    $c->forward('View::JSON');
-}
-
 sub kanban_status : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;

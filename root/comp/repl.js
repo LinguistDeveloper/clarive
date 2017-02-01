@@ -27,16 +27,20 @@
         }],
         out: [{
             text: 'YAML',
-            out: 'yaml'
+            out: 'yaml',
+            icon: 'logo-yaml'
         }, {
             text: 'JSON',
-            out: 'json'
+            out: 'json',
+            icon: 'logo-json'
         }, {
             text: 'Table',
-            out: 'table'
+            out: 'table',
+            icon: 'repl-table'
         }, {
             text: 'Data Editor',
-            out: 'data_editor'
+            out: 'data_editor',
+            icon: 'repl-data-editor'
         }],
         theme: [{
             text: 'Eclipse',
@@ -500,7 +504,7 @@ cla.parseVars('${foo}',{ foo: 'bar' });
             var out = REPL_CONFIGURATION.out_map[menu.value];
 
             outButton.setText(_('Output: %1', '<b>' + out.text + '</b>'));
-            outButton.setIcon(IC('' + out.out + ''));
+            outButton.setIcon(IC('' + out.icon + ''));
             outButton.out = out;
 
             aceditor.focus();

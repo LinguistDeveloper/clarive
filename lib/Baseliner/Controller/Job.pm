@@ -450,11 +450,18 @@ sub submit : Local {
             my $job_ci = ci->new( $p->{mid} );
             my $msg = '';
             if( $job_ci->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
-                event_new 'event.job.delete' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  }  => sub {
+                event_new 'event.job.delete' => {
+                    username => $username,
+                    bl       => $job_ci->bl,
+                    mid      => $p->{mid},
+                    id_job   => $job_ci->jobid,
+                    jobname  => $job_ci->name
+                  } => sub {
+
                     # be careful: may be cancelled already
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled');
-                    try { $job_ci->delete } catch { ci->delete( $p->{mid} ) };  # delete should work always
-                };
+                    try { $job_ci->delete } catch { ci->delete( $p->{mid} ) };
+                  };
 
                 try {
                     my $job_logs = mdb->job_log->find( { mid => $p->{mid} } );
@@ -475,21 +482,41 @@ sub submit : Local {
                 };
             }
             elsif( $job_ci->status =~ /RUNNING/ ) {
-                event_new 'event.job.cancel_running' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  } => sub {
-                    mdb->rule_status->insert({ id => $job_ci->jobid, type=>'job', status=>"CANCEL_REQUESTED", username=> $c->username, ts=>_now });
-                    $job_ci->status( 'CANCELLED' );
+                event_new 'event.job.cancel_running' => {
+                    username => $username,
+                    bl       => $job_ci->bl,
+                    mid      => $p->{mid},
+                    id_job   => $job_ci->jobid,
+                    jobname  => $job_ci->name
+                  } => sub {
+                    mdb->rule_status->insert(
+                        {
+                            id       => $job_ci->jobid,
+                            type     => 'job',
+                            status   => "CANCEL_REQUESTED",
+                            username => $username,
+                            ts       => _now
+                        }
+                    );
+                    $job_ci->status('CANCELLED');
                     $job_ci->save;
-                    $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
-                    sub job_submit_cancel_running : Private {};
+                    $job_ci->logger->error( _loc( 'Job cancelled by user %1', $username ) );
+                    sub job_submit_cancel_running : Private { };
                     $c->forward( 'job_submit_cancel_running', $job_ci, $job_name, $username );
-                };
+                  };
                 $msg = "Job %1 cancelled";
             } else {
-                event_new 'event.job.cancel'  => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  } => sub {
-                    $job_ci->status( 'CANCELLED' );
+                event_new 'event.job.cancel' => {
+                    username => $username,
+                    bl       => $job_ci->bl,
+                    mid      => $p->{mid},
+                    id_job   => $job_ci->jobid,
+                    jobname  => $job_ci->name
+                  } => sub {
+                    $job_ci->status('CANCELLED');
                     $job_ci->save;
-                    $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
-                };
+                    $job_ci->logger->error( _loc( 'Job cancelled by user %1', $username ) );
+                  };
                 $msg = "Job %1 cancelled";
             }
             $c->stash->{json} = { success => \1, msg => _loc( $msg, $job_name) };
@@ -506,17 +533,20 @@ sub submit : Local {
             my $rule_version_tag     = $p->{rule_version_tag};
             my $rule_version_dynamic = $p->{rule_version_dynamic} && $p->{rule_version_dynamic} eq 'on' ? 1 : 0;
             my $job_stash            = try { _decode_json( $p->{job_stash} ) } catch { undef };
+            my $status_from          = $p->{status_from};
+            my $status_to            = $p->{status_to};
+            my $id_status_from       = $p->{id_status_from};
 
-            if ( !Baseliner::Model::Permissions->new->user_has_action( $c->username, 'action.job.create' ) ) {
-                _fail( _loc("User %1 doesn't have permissions to create a job", $c->username));
+            if ( !Baseliner::Model::Permissions->new->user_has_action( $username, 'action.job.create' ) ) {
+                _fail( _loc( "User %1 doesn't have permissions to create a job", $username ) );
             }
 
             my $user_can_create_job_no_cal =
-              Baseliner::Model::Permissions->new->user_has_action( $c->username, "action.job.no_cal" );
-            if($p->{check_no_cal} eq 'on' && !$user_can_create_job_no_cal) {
-                _fail( _loc("User %1 doesn't have permissions to create a job out of calendar", $c->username));
-            }
+              Baseliner::Model::Permissions->new->user_has_action( $username, "action.job.no_cal" );
+            if ( $p->{check_no_cal} eq 'on' && !$user_can_create_job_no_cal ) {
+                _fail( _loc( "User %1 doesn't have permissions to create a job out of calendar", $username ) );
 
+            }
             my $contents = $p->{changesets};
             if( !defined $contents ) {
                 # TODO deprecated, use the changesets parameter only
@@ -551,18 +581,40 @@ sub submit : Local {
                 $job_data->{maxstarttime} = Class::Date->new("$job_date $job_time") + ( $config->{expiry_time}{$p->{window_type}} // '1D' )
             }
 
-            event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
-                my $job = ci->job->new( $job_data );
-                $job->save;  # after save, CHECK and INIT run
+            event_new 'event.job.new' => { username => $username, bl => $job_data->{bl} } => sub {
+                my $job = ci->job->new($job_data);
+                $job->save;
+                $job->job_stash(
+                    {
+                        status_from    => $status_from,
+                        status_to      => $status_to,
+                        id_status_from => $id_status_from
+                    },
+                    'merge'
+                );
                 $job_name = $job->name;
-                { jobname => $job_name, mid=>$job->mid, id_job=>$job->jobid };
-            };
+                my $bl       = ci->bl->find_one( { name => $job_data->{bl} } );
+                my $bl_mid   = $bl->{mid};
+                my @projects = map { $_->{mid} } _array( $job->{projects} );
+                my $subject  = _loc( "The user %1 has created job %2 for %3", $username, $job_name, $job_data->{bl} );
+                my $notify   = {
+                    project => \@projects,
+                    bl      => $bl_mid
+                };
 
+                {
+                    jobname => $job_name,
+                    mid     => $job->{mid},
+                    id_job  => $job->{jobid},
+                    subject => $subject,
+                    notify  => $notify
+                };
+
+            };
             $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
         }
     } catch {
         my $err = shift;
-        #$err =~ s{ at./.*line.*}{}g;
         my $msg = _loc("Error creating job: %1", $err ) ;
         _error( $msg );
         $c->stash->{json} = { success => \0, msg=>$msg };
