@@ -491,7 +491,8 @@ sub log_file : Path('/job/log/download_data') {
     my $filename = $file_id . '-' . ( $p->{file_name} || $log->{data_name} || 'attachment.txt' );
 
     $c->stash->{serve_filename} = $filename;
-    $c->stash->{serve_body}     = Encode::encode('UTF-8', $log->{data});
+    $c->stash->{serve_body} =
+      Util->_is_binary( data => $log->{data} ) ? $log->{data} : Encode::encode( 'UTF-8', $log->{data} );
 
     $c->forward('/serve_file');
 }
@@ -532,7 +533,7 @@ sub _load_log_by_job_id {
 
     my $data = $logd->slurp;
     $data = uncompress($data) || $data;
-    $data = Encode::decode('UTF-8', $data );
+    $data = Encode::decode( 'UTF-8', $data ) if !Util->_is_binary( data => $data );
 
     return { %$log, data => $data };
 }
