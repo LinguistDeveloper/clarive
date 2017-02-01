@@ -240,8 +240,7 @@
             padding: 10,
             defaults: {
                allowBlank: false,
-               anchor: '100%',
-               disabled: !can_save,
+               anchor: '100%'
             },
             bodyStyle: {
                 'background-color': 'white',
@@ -290,6 +289,19 @@
                                 if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
                             } else {
                                 fields = res;
+                            }
+                            if (!can_save){
+                                Ext.each(fields, function(field) {
+                                    if (field.name == 'variables') {
+                                        field.btn_add.disabled = true;
+                                        field.btn_copy.disabled = true;
+                                        field.btn_del.disabled = true;
+                                        field.combo_vars.disabled = true;
+                                        field.readOnly = true;
+                                    } else {
+                                        field.disabled = true;
+                                    }
+                                });
                             }
                             fieldset.show();
                             fieldset.add( fields );
