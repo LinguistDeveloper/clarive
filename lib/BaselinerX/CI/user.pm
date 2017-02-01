@@ -239,7 +239,7 @@ method ctime_format( $format='' ) { # return a Class::Date format
     my $pref = $format || $self->time_format_pref;
     my $format = $pref eq 'format_from_local' ? _loc('class_date_time')
         : do {
-            $pref =~ s/hh/%L/g || $pref =~ s/h/%l/g;
+            $pref =~ s/hh/%l/g || $pref =~ s/h/%l/g;
             $pref =~ s/HH/%H/g || $pref =~ s/H/%k/g;
             $pref =~ s/m+/%M/gi;
             $pref =~ s/a/%p/gi;
