@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::0125_update_rule_report_icons;
+package Baseliner::Schema::Migrations::0126_update_rule_report_icons;
 use Baseliner::Schema::Migrations::0119_modify_structure_favorite_tree;
 use Baseliner::Utils qw(_decode_json _array _encode_json _dump);
 use Moose;
