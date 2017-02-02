@@ -3219,7 +3219,7 @@ sub set_projects {
                                                     field      => $id_field,
                                                     old_value      => $project_old ? $project_old : '',
                                                     new_value  => '',
-                                                    text_new      => _loc('%1 deleted %2',$user, $ci_topic->{title}, $name_field),
+                                                    text_new      => _loc('%1 deleted %2',$user, $name_field),
                                                     mid => $ci_topic->{mid},
                                                    } => sub {
                                                     my $subject = _loc("#%1 %2 updated: %3 deleted", $ci_topic->{mid}, $ci_topic->{title}, $name_field );

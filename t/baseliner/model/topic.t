@@ -3956,6 +3956,7 @@ subtest 'set_projects: set value of old project in modify_field event when no ne
     my $event = mdb->event->find_one( { event_key => 'event.topic.modify_field' } );
     my $event_data = _load $event->{event_data};
 
+    is $event_data->{text_new}, 'developer deleted Project Combo';
     is $event_data->{old_value}, 'project:' . $project_old->{mid};
 
 };
