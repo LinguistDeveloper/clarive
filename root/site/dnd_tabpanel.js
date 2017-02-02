@@ -280,7 +280,7 @@ Ext.ux.panel.DraggableTabs.DropTarget = Ext.extend(Ext.dd.DropTarget, {
         }
         larrow.setTop(tabPanelTop + this.tabpanel.arrowOffsetY).setLeft(left + this.tabpanel.arrowOffsetX).show();
 
-        return 'x-dd-drop-ok';
+        return 'x-dd-drop-ok drop-tab-ok';
     }
 /**
   , notifyDrop: function (dd, e, data) {
