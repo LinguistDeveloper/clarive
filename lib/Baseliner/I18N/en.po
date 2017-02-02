@@ -8399,7 +8399,7 @@ msgstr ""
 #: root/comp/label_admin.js root/comp/lifecycle/tasks.js
 #: root/comp/message_grid.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/project_grid.mas root/comp/repl.js
-#: root/comp/role_detail.js root/comp/role_grid.js
+#: root/comp/role_detail.js root/comp/role_grid.js root/comp/rules.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
 #: root/site/common.js root/site/kanban.js root/site/tabfu.js
@@ -11058,6 +11058,10 @@ msgstr ""
 
 #: root/comp/rules.js
 msgid "Export to File"
+msgstr ""
+
+#: root/comp/rules.js
+msgid "Content has changed, but has not been saved. Leave without saving?"
 msgstr ""
 
 #: root/comp/scheduler_grid.js

@@ -9,7 +9,11 @@
     });
 
     var code = new Cla.AceEditor({
-        fieldLabel:_('Code'), anchor:'100%', height: 500, name:'code', value: data.code, mode: 'javascript'
+        fieldLabel: _('Code'),
+        anchor: '100% -30',
+        name: 'code',
+        value: data.code,
+        mode: 'javascript'
     });
 
     lang_combo.on('select',function(){
