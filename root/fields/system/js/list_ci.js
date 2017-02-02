@@ -23,9 +23,16 @@ params:
     var data = params.topic_data;
     var form = params.form.getForm();
 
-    var single_mode = Baseliner.eval_boolean(meta.single_mode) || (!meta.single_mode && meta.list_type && meta.list_type != 'single') ? false : true;
+    var tpl, field, single_mode;
 
-    var tpl, field;
+    if (meta.single_mode) {
+        single_mode = Baseliner.eval_boolean(meta.single_mode);
+    } else if (meta.list_type) {
+        single_mode = meta.list_type != 'single' ? false : true;
+    } else {
+        single_mode = false;
+    }
+
     if (meta.display_mode == 'bl'){
         field = 'values.bl';
     } else if (meta.display_mode == 'moniker'){
