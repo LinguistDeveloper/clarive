@@ -233,6 +233,67 @@ subtest 'compile: does not recompile already compiled rule' => sub {
     is $rule_compiler->compile_status, 'fresh';
 };
 
+subtest 'compile: does not recompile cached rule in database' => sub {
+    _setup();
+
+    my $id_rule = TestSetup->create_rule(
+        rule_tree => [
+            {
+                "attributes" => {
+                    "key"  => "statement.code.server",
+                    "text" => "Server CODE",
+                    "name" => "Server CODE",
+                    "data" => {
+                        "lang" => "perl",
+                        "code" => q{
+                            return 'hello';
+                        }
+                    },
+                }
+            }
+        ]
+    );
+
+    my $rule_compiler = _build_rule_compiler(id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    $rule_compiler->unload;
+
+    mdb->rule->update(
+        { id => $id_rule },
+        {
+            '$set' => {
+                rule_tree => JSON::encode_json(
+                    [
+                        {
+                            "attributes" => {
+                                "key"  => "statement.code.server",
+                                "text" => "Server CODE",
+                                "name" => "Server CODE",
+                                "data" => {
+                                    "lang" => "perl",
+                                    "code" => q{
+                                    return 'bye';
+                                }
+                                },
+                            }
+                        }
+                    ]
+                )
+            }
+        }
+    );
+
+    $rule_compiler = _build_rule_compiler(id_rule => $id_rule, ts => '2016-01-01 00:00:00');
+    $rule_compiler->compile;
+
+    my $package = $rule_compiler->package;
+
+    is $package->run, 'hello';
+
+    $rule_compiler->unload;
+};
+
 subtest 'compile: recompiles modifed rule' => sub {
     _setup();
 

@@ -107,6 +107,7 @@ sub compile {
         if ( my $grid = mdb->grid->find_one( { id_rule => $id_rule } ) ) {
             if ( $grid->info->{ts} && $grid->info->{ts} eq $rule->{ts} ) {
                 _debug("DSL not changed. Loading cached version $pkg...");
+                $dsl = try { mdb->grid_slurp( { id_rule => "$id_rule" } ) };
             }
             else {
                 _debug("DSL has changed. Removing cached version $pkg...");
@@ -116,6 +117,9 @@ sub compile {
 
         if ( !length $dsl ) {
             $dsl = $self->_build_dsl_from_rule( $id_rule, $rule );
+
+            # Make sure there are no duplications
+            mdb->grid->remove( { id_rule => $id_rule } );
 
             _debug("Caching DSL $pkg...");
             mdb->grid_insert( $dsl, id_rule => $id_rule, ts => $rule->{ts} );
