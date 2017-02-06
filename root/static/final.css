@@ -1270,3 +1270,43 @@ ul.x-tab-strip li {
 .x-form-field-wrap .x-form-trigger.x-form-arrow-trigger.x-form-trigger-over {
     background-position: 50% 50% !important;
 }
+
+.x-tbar-page-first{
+  background-image: url(/static/images/icons/page-first.svg) !important;
+}
+
+.x-tbar-page-last{
+  background-image: url(/static/images/icons/page-last.svg) !important;
+}
+
+.x-tbar-page-next{
+  background-image: url(/static/images/icons/page-next.svg) !important;
+}
+
+.x-tbar-page-prev{
+  background-image: url(/static/images/icons/page-prev.svg) !important;
+}
+
+.x-item-disabled .x-tbar-page-first{
+  background-image: url(/static/images/icons/page-first-disabled.svg) !important;
+}
+
+.x-item-disabled .x-tbar-page-last{
+  background-image: url(/static/images/icons/page-last-disabled.svg) !important;
+}
+
+.x-item-disabled .x-tbar-page-next{
+  background-image: url(/static/images/icons/page-next-disabled.svg) !important;
+}
+
+.x-item-disabled .x-tbar-page-prev{
+  background-image: url(/static/images/icons/page-prev-disabled.svg) !important;
+}
+
+.x-tbar-loading{
+  background-image: url(/static/images/icons/refresh.svg) !important;
+}
+
+.x-item-disabled .x-tbar-loading{
+  background-image: url(/static/images/loading/indicator.gif) !important;
+}
