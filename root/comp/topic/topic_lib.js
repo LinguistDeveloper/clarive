@@ -918,7 +918,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 demotable: obj_deploy_items_menu.demotable,
                 deployable: obj_deploy_items_menu.deployable,
                 job_type: menu.eval.job_type,
-                state_to: menu.eval.state_to
+                state_to: menu.eval.state_to,
+                from_topic_view: true
             };
             self.menu_deploy.push({
                 bl: menu.bl_to,
@@ -930,7 +931,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     Baseliner.ajaxEval( '/topic/json', { topic_mid: obj.topic.topic_mid}, function(rec) {
                         var db_status = rec.topic_data.id_category_status;
                         var form_status = obj.topic.id_status_from;
-
+                        if (rec.topic_data.category.is_release) {
+                            obj.topic.is_release = rec.topic_data.category.is_release;
+                            obj.topic.from_topic_view = true;
+                        }
                         // In case of Releases the status can be different, so we ignore this check for them
                         if (!rec.topic_data.category.is_release && db_status != form_status){
                             Ext.Msg.confirm( _('Confirmation'), _('Topic changed status before. Do you  want to refresh the topic?'),

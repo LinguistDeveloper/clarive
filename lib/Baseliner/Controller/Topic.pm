@@ -2295,6 +2295,19 @@ sub grid_count : Local {
     $c->forward('View::JSON');
 }
 
+sub get_projects_from_release : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my $release = ci->new( $p->{mid} );
+    my @projects = map { { id => $_->{mid}, name => $_->{name} } }
+      $release->related( where => { collection => 'project' }, depth => 2, docs_only => 1 );
+
+    $c->stash->{json} = { projects => \@projects };
+    $c->forward('View::JSON');
+    return;
+}
+
 sub get_files : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;

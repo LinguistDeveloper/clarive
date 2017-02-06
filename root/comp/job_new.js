@@ -730,14 +730,80 @@
                 Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error.svg' });
             } else {
                 var project = data.id_project;
-                if ( data.is_release  == 1 ) {
-                    Ext.Msg.confirm( _('Confirmation'), _('Do you want to add all grouped changesets in the same state from all projects?'),
-                    function(btn){
-                        if(btn=='yes') {
-                            project = 'all';
-                        }
-                        add_node(data, project);
-                    } );
+                if (data.is_release == 1) {
+                    if (data.from_topic_view) {
+                        Baseliner.ajaxEval('/topic/get_projects_from_release', {
+                                mid: data.topic_mid,
+                            },
+                            function(res) {
+                                var projectCombo;
+                                var projectComboItems = [];
+                                var releaseProjects = res.projects;
+                                var win;
+                                projectComboItems.push(
+                                    ['all', _('All')]
+                                );
+                                Ext.each(releaseProjects, function(project) {
+                                    projectComboItems.push(
+                                        [project.id, project.name]
+                                    );
+                                });
+                                projectCombo = new Baseliner.ComboDouble({
+                                    name: 'project_release',
+                                    value: 'all',
+                                    data: projectComboItems
+                                });
+                                if (releaseProjects.length > 1) {
+                                    win = new Baseliner.Window({
+                                        title: _('Select a project or all'),
+                                        name: 'projects_selection',
+                                        closeAction: 'destroy',
+                                        resizable: false,
+                                        maximizable: false,
+                                        width: 340,
+                                        layout: {
+                                            type: 'auto',
+                                        },
+                                        items: [{
+                                            xtype: 'form',
+                                            labelAlign: 'right',
+                                            padding: 50,
+                                            trackResetOnLoad: true,
+                                            items: new Ext.Container({
+                                                layout: 'fit',
+                                                items: projectCombo
+                                            })
+                                        }],
+                                        buttons: [{
+                                            text: _('Cancel'),
+                                            handler: function() {
+                                                win.destroy();
+                                            }
+                                        }, {
+                                            text: _('Ok'),
+                                            handler: function() {
+                                                var selectedProject = projectCombo.getValue();
+                                                data.id_project = selectedProject;
+                                                add_node(data, selectedProject);
+                                                win.destroy();
+                                            }
+                                        }]
+                                    });
+                                    win.show();
+                                } else {
+                                    add_node(data, project);
+                                }
+                            })
+                    } else {
+                        Ext.Msg.confirm(_('Confirmation'), _('Do you want to add all grouped changesets in the same state from all projects?'),
+                            function(btn) {
+                                if (btn == 'yes') {
+                                    project = 'all';
+                                }
+                                add_node(data, project);
+                            }
+                        );
+                    }
                 } else {
                     add_node(data,project);
                 }

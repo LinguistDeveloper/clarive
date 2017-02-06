@@ -29,6 +29,42 @@ use Clarive::mdb;
 
 use_ok 'Baseliner::Controller::Topic';
 
+subtest 'get_projects_from_release: gets projects from changesets of a release' => sub {
+    _setup();
+
+    my $project  = TestUtils->create_ci_project( name => 'My project' );
+    my $project2 = TestUtils->create_ci_project( name => 'My other project' );
+    my $id_role  = TestSetup->create_role();
+
+    my $user = TestSetup->create_user( id_role => $id_role, project => $project );
+
+    my $release_mid = TestSetup->create_topic();
+
+    my $changeset_mid  = TestSetup->create_topic();
+    my $changeset_mid2 = TestSetup->create_topic();
+
+    mdb->master_rel->insert( { from_mid => $release_mid,    to_mid => $changeset_mid,  rel_type => 'topic_topic' } );
+    mdb->master_rel->insert( { from_mid => $release_mid,    to_mid => $changeset_mid2, rel_type => 'topic_topic' } );
+    mdb->master_rel->insert( { from_mid => $changeset_mid,  to_mid => $project->mid,   rel_type => 'topic_project' } );
+    mdb->master_rel->insert( { from_mid => $changeset_mid2, to_mid => $project2->mid,  rel_type => 'topic_project' } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c(
+        username => $user->username,
+        req      => { params => { mid => $release_mid } }
+    );
+
+    $controller->get_projects_from_release($c);
+
+    my $related_projects = $c->stash->{json}->{projects};
+
+    is $related_projects->[0]->{name}, $project->{name};
+    is $related_projects->[0]->{id},   $project->{mid};
+    is $related_projects->[1]->{name}, $project2->{name};
+    is $related_projects->[1]->{id},   $project2->{mid};
+};
+
 subtest 'grid: check that customized fields is set correctly into stash' => sub {
     _setup();
 
