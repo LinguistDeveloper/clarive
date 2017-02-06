@@ -1193,10 +1193,6 @@ msgstr ""
 msgid "Log row not found: %1"
 msgstr ""
 
-#: lib/Baseliner/Controller/Log.pm
-msgid "Log data not found: %1"
-msgstr ""
-
 #: lib/Baseliner/Controller/Message.pm
 msgid "Error deleting the message "
 msgstr ""

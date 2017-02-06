@@ -154,15 +154,16 @@ sub run_remote {
         }
         my $path_parsed = $server->parse_vars( $path );
         my $args_parsed = $server->parse_vars( $args );
-        for my $hostname ( _array( $server->hostname ) ) {
-            my $dest = $user . '@' . $hostname;
-            $log->info( _loc( "STARTING remote script %1: '%2'", $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ),
-                { config => $config, dest => $dest });
-        }
+
+        my $stream = _tmp_file;
+
+        my $dest = $user . '@' . $server->hostname;
+        $log->info( _loc( "STARTING remote script %1: '%2'", $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ),
+            data => { config => $config, dest => $dest }, stream => $stream);
 
         my $agent = $server->connect( user=>$user );
         $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
-        $agent->execute( { chdir=>$home, env => $config->{environment} }, $path_parsed, _array($args_parsed) );
+        $agent->execute( { chdir=>$home, env => $config->{environment}, stdout_file => $stream }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
         my $ret = $agent->ret;

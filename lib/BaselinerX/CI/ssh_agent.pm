@@ -238,7 +238,7 @@ sub execute {
     local $SIG{CHLD};
     my %p = ( stderr_to_stdout => 1, );
     my @cmd = map { "$_" } @_ ; # stringify possible Path::Class
-    $p{stdout_file} = _tmp_file;  # send output to tmp file
+    $p{stdout_file} = $opts->{stdout_file} || _tmp_file;  # send output to tmp file
 
     # TODO alternative: send a shell file (or .bat) to remote and execute it?
     my $cmd_quoted;

@@ -2,6 +2,7 @@ package Baseliner::Controller::Log;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 
+use File::Tail;
 use Compress::Zlib qw(uncompress);
 use Try::Tiny;
 use Encode ();
@@ -162,6 +163,9 @@ sub log_rows : Private {
             : ( $data_len > ( 4 * 1024 ) )
                 ? ( $data_name || $self->_select_words($doc->{text},2) ) . ".txt"
                 : '';
+
+        my $stream_available = $doc->{stream} && -f $doc->{stream};
+
         push @rows,
           {
             id       => $doc->{id},
@@ -185,7 +189,7 @@ sub log_rows : Private {
             rule     => $doc->{rule},
             datalen  => $data_len,
             data     => $data,
-            more     => { more=>$more, data_name=> $doc->{data_name}, data=> $data_len ? \1 : \0, file=>$file },
+            more     => { more=>$more, stream => $stream_available, data_name=> $doc->{data_name}, data=> $data_len ? \1 : \0, file=>$file },
           } #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     return ( $job, @rows );
@@ -440,6 +444,71 @@ sub log_data : Path('/job/log/data') {
     $c->res->body( "<pre>" . _html_escape($log->{data}) . "</pre>" );
 }
 
+sub log_stream : Path('/job/log/stream') {
+    my ( $self, $c, $id ) = @_;
+
+    my $p = $c->req->params;
+    $id //= $p->{id};
+
+    my $log = $self->_load_log_by_job_id($id);
+
+    unless ($log->{stream} && -f $log->{stream}) {
+        $c->res->body( 'No stream available' );
+        return;
+    }
+
+    my $stream = <<"EOF";
+    <pre class="output"></pre>
+    <script>
+            var xhr = new XMLHttpRequest();
+            var offset = 0;
+            var pre = document.getElementsByClassName('output')[0];
+
+            xhr.open("POST", "/job/log/stream_events?id=$id", true);
+            xhr.onprogress = function(e) {
+                var newLength = xhr.responseText.length - offset;
+
+                pre.innerHTML = pre.innerHTML + xhr.responseText.substr(offset, newLength);
+                pre.scrollIntoView();
+
+                offset += newLength;
+            };
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.send();
+    </script>
+EOF
+
+    $c->res->body( $stream );
+}
+
+sub log_stream_events : Path('/job/log/stream_events') {
+    my ( $self, $c, $id ) = @_;
+
+    my $p = $c->req->params;
+    $id //= $p->{id};
+
+    my $log = $self->_load_log_by_job_id($id);
+
+    _fail 'No stream available' unless $log->{stream} && -f $log->{stream};
+
+    my $tail = try { File::Tail->new( name => $log->{stream}, maxinterval => 1 ) };
+    _fail 'Stream error' unless $tail;
+
+    $c->res->status(200);
+    $c->res->content_type('text/octet-steam');
+    $c->res->body('');
+
+    my $fh = $c->res->write_fh;
+
+    try {
+        while ( defined( my $line = $tail->read ) ) {
+            $fh->write($line);
+        }
+    };
+
+    $fh->close;
+}
+
 sub log_elements : Path('/job/log/elements') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
@@ -528,12 +597,17 @@ sub _load_log_by_job_id {
     my $log = mdb->job_log->find_one( { id => 0 + $id } );
     _fail _loc('Log row not found: %1', $id) unless $log;
 
+    my $data;
     my $logd = mdb->grid->find_one( { _id => $log->{data} } );
-    _fail _loc('Log data not found: %1', $log->{data}) unless $logd;
 
-    my $data = $logd->slurp;
-    $data = uncompress($data) || $data;
-    $data = Encode::decode( 'UTF-8', $data ) if !Util->_is_binary( data => $data );
+    if ($logd) {
+        $data = try { $logd->slurp };
+
+        if ($data) {
+            $data = uncompress($data) || $data;
+            $data = Encode::decode( 'UTF-8', $data ) if !Util->_is_binary( data => $data );
+        }
+    }
 
     return { %$log, data => $data };
 }

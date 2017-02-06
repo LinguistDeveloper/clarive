@@ -139,7 +139,7 @@ subtest 'run_remote: runs remote command with correct arguments' => sub {
 
     my ( $options, $command, @args ) = $agent->mocked_call_args('execute');
 
-    is_deeply $options, { chdir => undef, env => ['FOO=bar'] };
+    cmp_deeply $options, { chdir => undef, env => ['FOO=bar'], stdout_file => ignore() };
     is $command, 'echo';
     is_deeply \@args, ['hello'];
 
