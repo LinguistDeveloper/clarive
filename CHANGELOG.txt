@@ -1,3 +1,159 @@
+---------------------------------------------- 6.6.3 --------------------------------------------
+[ENHANCEMENTS]
+- #34989 Graceful HUP shutdown of event daemon, no notification forks
+- #35059 Rename "cla bali" to "cla service"
+- #35102 Improve visualization in role configuration window
+- #35196 Create custom editable columns into topic grid (#35089)
+- #35231 Move clarive icons inside of icons folder
+- #35393 Purge improvements
+- #35439 Add icons into Level combo box in Full log Job
+- #35441 Make sure rule names are unique by type
+- #35489 Include progress bars in monitor (#35025)
+- #35676 Save only allow fieldlets by user permissions updating and saving topics
+- #35691 Make title and status not deletable in rules and not draggable from palette
+- #35703 Make test portable and fix warnings
+- #35704 Enhance event notification performance
+- #35716 Use requirejs for script loading
+- #35727 Remove dashboard tab refresh when it is clicked
+- #35740 Operation to synchronize baselines
+- #35741 Change focus color of the search field in dashlets
+- #35742 Make sure color tab color is correct after clicking a category from dashboard
+- #35745 Add option to return relative paths in fileman foreach statement and service
+- #35748 New service to load users form username
+- #36036 Rename Job Slots to Calendaring
+- #35750 Job daemon no_cache only for 1 get, not full job
+- #35774 Add message when deleting job calendar from job calendar grid
+- #35785 Show job status in monitor with uppercase first letter only (#35025)
+- #35788 Changesets and releases with their color coding in monitor
+- #35802 Cleanup white characters
+- #35809 Add return date format to get_date service
+- #35812 Make it possible to get user security dimensions filtered by role
+- #35813 Get user security dimensions filtered by role
+- #35833 Linkable tags and titles in topic html export don't open anything
+- #35897 New css trigger styles for clarive-flat(#35239)
+- #35952 Update clarive trial license date
+- #36005 Turn white to the three dots in Env column in Monitor
+- #36025 Adapt topic permissions to fields which start with underscore
+- #36051 Allow body section in topic_selector fieldlet
+- #36056 Simpler revision drag-drop system
+- #36059 Hide topic views from lifecycle project panel
+- #36069 Change checkbox icon when is not checked
+- #36091 Allow flexible job name mask(#35155)
+- #36132 Move dispatcher menu logic to client side
+- #36160 Show topic grid action buttons in reports
+- #36169 Code server user experience improvements
+- #36231 Change auto-refresh icon in monitor
+- #36250 Change Superbox paging icons to corporative ones
+- #36255 Update favorite icons
+
+[FIXES]
+- #35277 Update CI status when updating topic status (#36008)
+- #35400 Fix various template warnings
+- #35414 Make sure changing REPL settings doesn't affect other opened REPLs
+- #35458 Make sure filter by date is working in monitor columns
+- #35459 In CI Group, make sure the Project icons are correct
+- #35460 Make sure export CSV in reports works correctly (#35715)
+- #35462 Disable open topics with double click from topic_selector grid fieldlet
+- #35473 Make sure users can create a itemset CI
+- #35529 Make sure Fieldlets are always below Status field
+- #35588 Make sure singleMode is working in cis fieldlet with single value type
+- #35603 Compatibility ucm upload field
+- #35674 Category topic grid shows always filters related
+- #35690 Fix padding in HTML headings
+- #35694 Make sure event.job.new notifications are sent (#35590)
+- #35706 Make sure size is configurable in dashlets
+- #35712 Make sure releases are promotable in bind_releases mode (#35568 #35710)
+- #35714 Set user account type to regular by default
+- #35729 Make sure related categories can be specified
+- #35737 Translate confirmation message in delete role
+- #35756 Make sure datefields in reports have correct format specified (#35568 #35710)
+- #35758 Execute rollback without user have to define a key in step (#35751)
+- #35766 Make sure deny edit fieldlet doesn't hide it in topic edit mode
+- #35782 Refresh role bounds list before save (#35776)
+- #35784 Add color in monitor environment column values
+- #35787 Check that topic categories are assigned to the project dimension of the appropriate role
+- #35806 Make saving role bounds permissions faster
+- #35815 Make topics tab switchable
+- #35821 Limit depth when looking for children in topic view
+- #35829 Make sure rule import from file works
+- #35836 Translate total time in job info
+- #35837 Make sure job monitor nature filter has appropriate All selector
+- #35852 Make sure rulebox combo pagination works
+- #35854 Disable dragging for filters in topic grid
+- #35858 Make sure pagination in Superbox works
+- #35864 Add action permissions to rerun jobs and rerun jobs changing status
+- #35871 Limit depth when looking for children in topic get_files
+- #35874 Limit depth when looking for children in topic get_downloadable_files
+- #35876 Fix comment icon position in monitor grid
+- #35905 Grid_editor html content in columns title
+- #35912 Make sure job calendar show slots correctly
+- #35915 Make sure job slots calendar fits into the window
+- #35927 Make sure repository is checked attaching revisions into topics
+- #35928 Make sure revision name attached to a topic is branch name when revision is branch type
+- #35947 Fix error 'cannot read property length of undefined'  in role combo for ci fieldlets
+- #35951 Make sure daemon service works with bali service renamed to "service"
+- #35969 Make sure QuickTips are available throughout the interface
+- #36029 Align Labels with topic title in Topic grid
+- #36034 Make old licenses without nodes definition compatible
+- #36040 Make sure jobs rescheduler show friendly window
+- #36043 Homogenize size in active and inactive calendar slots
+- #36044 Make sure release are shown in monitor grid
+- #36045 Make sure default topics dashboard is accessible when is named 'Topics'
+- #36047 Hide export topics icon to independent grid in empty list_topic fieldlets
+- #36048 Make sure rule not found in call statement returns user friendly message
+- #36050 Control javascript error when hamburger is clicked and user does not have  permission to see lifecycle
+- #36053 Arrow down in disabled combos should have the same background-position
+- #36076 Make sure the cursor is consistent throughout the tab
+- #36084 Enlarge user edit window and include icons in column namespaces
+- #36087 Fix saving in forms
+- #36089 Make sure that topic title does not have \n characters (#35908)
+- #36092 Change style of job log HTML viewer
+- #36096 Make sure connections by default only has been checked in status new (#35720)
+- #36118 Retry fails with max retries in jobs and add form for statement fail (#35923)
+- #36126 Improve kanban transitions for multiple options (#36058)
+- #36151 Fix filter for status in reports (#36085)
+- #36153 Fix alignment icons in drag window
+- #36173 Reduce time in calculating list of available slots in new job window and new mongo indexes (#35882)
+- #36177 Invalid dates in reports (#35887)
+- #36179 Fix warnings in list_topics.html
+- #36187 Show environment in weblogic combo clusters and instances (#36185)
+- #36198 Users can navigate into variable tabs with ci view permission (#36023)
+- #36200 Fix Promote Releases from topic view (#35885)
+- #36207 Fix UI upload files
+- #36213 Service store local file manage binary files correctly
+- #36214 Remove references to sprites.css file
+- #36219 Active topic grid toolbar buttons in row clicking (#36170)
+- #36220 Make sure mask loading appear when apply filter in release
+- #36226 Make sure time shows correctly in hh:mma format
+- #36227 Fix Post Job Step treatment
+- #36228 Make sure singleMode in fieldlet ci_list is calculated correctly (#36192)
+- #36230 Make sure activity is save correctly in area fieldlets (#35151)
+- #36239 Make sure rule dsl is loading from cache if it is valid (#33865)
+- #36241 Update migration name to continue seq numbers
+
+---------------------------------------------- 6.6.2 --------------------------------------------
+[ENHANCEMENTS]
+- #32818 WHILE and DO-WHILE loops
+- #35149 Sync english and spanish help
+- #35481 Ask for a confirmation before refresh a rule without saving changes
+- #35485 Implement web agent for js api
+- #35486 Use corporative-grey background-color in role workflow graphic
+- #35487 Corporative style into header of grids
+- #35495 Implement better web rest request operation
+- #35499 Change collapse all explorer button
+- #35582 Remove status scope from event.topic.delete
+- #35587 Allow multi-language clarive help
+- #35599 Rest request auto parsing with empty content
+- #35600 Add cla.load function in order to allow loading javascript files
+- #35611 Make sure git backend accepts references with special symbols
+
+[FIXES]
+- #35526 Remedy and UCM Fieldlets taken into account in Migration from 6.2
+- #35539 Update english help messed up with spanish files
+- #35581 Allow filter by status in reports
+- #35583 Remove event topic.file_remove
+- #35642 Fix permissions with multiple security dimensions
+
 ---------------------------------------------- 6.6.1 --------------------------------------------
 [ENHANCEMENTS]
 - #34118 Remove SVN Reference in Clarive Core
