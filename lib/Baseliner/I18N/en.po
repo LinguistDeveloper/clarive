@@ -1148,6 +1148,7 @@ msgid "Label added"
 msgstr ""
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Role.pm
+#: lib/Baseliner/Controller/User.pm lib/Baseliner/Controller/UserGroup.pm
 #: lib/Baseliner/Role/ControllerValidator.pm
 msgid "Validation failed"
 msgstr ""
@@ -2003,7 +2004,6 @@ msgid "Missing message id"
 msgstr ""
 
 #: lib/Baseliner/Controller/SystemMessages.pm
-#: lib/Baseliner/Controller/UserGroup.pm
 msgid "Missing action"
 msgstr ""
 
@@ -2036,11 +2036,6 @@ msgstr ""
 #: root/comp/lifecycle/workspace_new.js root/comp/rules.js
 #: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
 #: root/site/common.js root/site/model.js
-#: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
-#: root/comp/revision/grid.mas root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/lifecycle/workspace_new.js root/comp/revision/grid.mas
-#: root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/site/common.js root/site/model.js
 msgid "Create"
 msgstr ""
 
@@ -2558,31 +2553,15 @@ msgid "Missing parameter username"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User added"
+msgid "User name already exists"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User name already exists, introduce another user name"
+msgid "User saved"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "Error adding User: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm lib/Baseliner/Model/Rules.pm
-msgid "User not found"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm
-msgid "User modified"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Could not find ci for user %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Error modifying User: %1"
+msgid "Error saving user: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
@@ -2646,39 +2625,15 @@ msgid "User Groups"
 msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing groupname"
+msgid "User group name already exists"
 msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "User group added"
+msgid "User group saved"
 msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "Group name already exists.  Specify another group name"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Error adding User group: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing update type"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing group mid"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Group not found"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "User group modified"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Error modifying user group: %1"
+msgid "Error saving user group"
 msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
@@ -2690,15 +2645,11 @@ msgid "Error deleting User group: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "UserGroup duplicated"
+msgid "User group duplicated"
 msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing id_group or group not found"
-msgstr ""
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Error duplicating userGroup: %1"
+msgid "Error duplicating user group"
 msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
@@ -3031,6 +2982,10 @@ msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule not found"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "User not found"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -5067,12 +5022,8 @@ msgstr ""
 #: root/comp/project_grid.mas root/comp/repl.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js root/comp/sms.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/site/common.js root/site/model.js
-#: root/comp/project_grid.mas root/comp/repl.js root/comp/revision/grid.mas
-#: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/sms.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js root/site/common.js root/site/model.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js root/site/common.js
+#: root/site/model.js
 msgid "Delete"
 msgstr ""
 
@@ -5412,22 +5363,9 @@ msgstr ""
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
 #: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
-#: root/comp/job_new_comp.js root/comp/lifecycle/tasks.js
-#: root/comp/project_grid.mas root/comp/revision/grid.mas
-#: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
-#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js
-#: root/comp/user_group_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
-#: root/comp/rule_new.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_actions.mas
-#: root/comp/user_info.mas root/comp/user_infoactions.mas
-#: root/fields/system/js/list_tasks.js root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/explorer.js

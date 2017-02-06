@@ -1160,6 +1160,7 @@ msgid "Label added"
 msgstr "Etiqueta añadida"
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Role.pm
+#: lib/Baseliner/Controller/User.pm lib/Baseliner/Controller/UserGroup.pm
 #: lib/Baseliner/Role/ControllerValidator.pm
 msgid "Validation failed"
 msgstr "Fallo en la validación"
@@ -2019,7 +2020,6 @@ msgid "Missing message id"
 msgstr "Falta id de mensaje"
 
 #: lib/Baseliner/Controller/SystemMessages.pm
-#: lib/Baseliner/Controller/UserGroup.pm
 msgid "Missing action"
 msgstr "Falta la acción"
 
@@ -2052,11 +2052,6 @@ msgstr "Estado"
 #: root/comp/lifecycle/workspace_new.js root/comp/rules.js
 #: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
 #: root/site/common.js root/site/model.js
-#: root/comp/job_new_comp.js root/comp/lifecycle/workspace_new.js
-#: root/comp/revision/grid.mas root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/lifecycle/workspace_new.js root/comp/revision/grid.mas
-#: root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/site/common.js root/site/model.js
 msgid "Create"
 msgstr "Crear"
 
@@ -2587,32 +2582,16 @@ msgid "Missing parameter username"
 msgstr "Falta el parámetro username"
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User added"
-msgstr "Usuario grabado"
+msgid "User name already exists"
+msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User name already exists, introduce another user name"
-msgstr "El usuario ya existe, intoduce otro usuario"
+msgid "User saved"
+msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "Error adding User: %1"
-msgstr "Error grabando usuario: %1"
-
-#: lib/Baseliner/Controller/User.pm lib/Baseliner/Model/Rules.pm
-msgid "User not found"
-msgstr "Usuario no encontrado"
-
-#: lib/Baseliner/Controller/User.pm
-msgid "User modified"
-msgstr "Usuario modificado"
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Could not find ci for user %1"
-msgstr "No se ha encontrado ningún ci para el usuario %1"
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Error modifying User: %1"
-msgstr "Error modificando usuario: %1"
+msgid "Error saving user: %1"
+msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
 msgid "User deleted"
@@ -2675,40 +2654,16 @@ msgid "User Groups"
 msgstr "Grupos de usuarios"
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing groupname"
-msgstr "Falta el groupname"
+msgid "User group name already exists"
+msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "User group added"
-msgstr "Grupo agregado"
+msgid "User group saved"
+msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "Group name already exists.  Specify another group name"
-msgstr "El nombre de grupo ya existe.  Especifica otro nombre"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Error adding User group: %1"
-msgstr "Error agregando grupo: %1"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing update type"
-msgstr "Falta el update type"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing group mid"
-msgstr "Falta el mid del grupo"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Group not found"
-msgstr "Grupo no encontrado"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "User group modified"
-msgstr "Grupo modificado"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Error modifying user group: %1"
-msgstr "Error modificando grupo: %1"
+msgid "Error saving user group"
+msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
 msgid "User group deleted"
@@ -2719,16 +2674,12 @@ msgid "Error deleting User group: %1"
 msgstr "Error eliminando grupo: %1"
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "UserGroup duplicated"
-msgstr "Grupo duplicado"
+msgid "User group duplicated"
+msgstr ""
 
 #: lib/Baseliner/Controller/UserGroup.pm
-msgid "Missing id_group or group not found"
-msgstr "Falta el id_group o el grupo no existe"
-
-#: lib/Baseliner/Controller/UserGroup.pm
-msgid "Error duplicating userGroup: %1"
-msgstr "Error duplicando grupo: %1"
+msgid "Error duplicating user group"
+msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
 msgid "Config global baselines"
@@ -3066,6 +3017,10 @@ msgstr "Llamada a una regla Webservice"
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule not found"
 msgstr "Regla no encontrada"
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "User not found"
+msgstr "Usuario no encontrado"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Security"
@@ -5140,12 +5095,8 @@ msgstr "Editar"
 #: root/comp/project_grid.mas root/comp/repl.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js root/comp/sms.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/site/common.js root/site/model.js
-#: root/comp/project_grid.mas root/comp/repl.js root/comp/revision/grid.mas
-#: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
-#: root/comp/sms.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/user_grid.js
-#: root/comp/user_group_grid.js root/site/common.js root/site/model.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js root/site/common.js
+#: root/site/model.js
 msgid "Delete"
 msgstr "Borrar"
 
@@ -5485,22 +5436,9 @@ msgstr "Nemónico"
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
 #: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
-#: root/comp/job_new_comp.js root/comp/lifecycle/tasks.js
-#: root/comp/project_grid.mas root/comp/revision/grid.mas
-#: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
-#: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js
-#: root/comp/user_group_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
-#: root/comp/revision/grid.mas root/comp/role_detail.js root/comp/role_grid.js
-#: root/comp/rule_new.js root/comp/scheduler_grid.js
-#: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_actions.mas
-#: root/comp/user_info.mas root/comp/user_infoactions.mas
-#: root/fields/system/js/list_tasks.js root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
 #: root/fields/templates/config/projects.js root/site/common.js
 #: root/site/explorer.js
@@ -15869,6 +15807,60 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "User added"
+#~ msgstr "Usuario grabado"
+
+#~ msgid "User name already exists, introduce another user name"
+#~ msgstr "El usuario ya existe, intoduce otro usuario"
+
+#~ msgid "Error adding User: %1"
+#~ msgstr "Error grabando usuario: %1"
+
+#~ msgid "User modified"
+#~ msgstr "Usuario modificado"
+
+#~ msgid "Could not find ci for user %1"
+#~ msgstr "No se ha encontrado ningún ci para el usuario %1"
+
+#~ msgid "Error modifying User: %1"
+#~ msgstr "Error modificando usuario: %1"
+
+#~ msgid "Missing groupname"
+#~ msgstr "Falta el groupname"
+
+#~ msgid "User group added"
+#~ msgstr "Grupo agregado"
+
+#~ msgid "Group name already exists.  Specify another group name"
+#~ msgstr "El nombre de grupo ya existe.  Especifica otro nombre"
+
+#~ msgid "Error adding User group: %1"
+#~ msgstr "Error agregando grupo: %1"
+
+#~ msgid "Missing update type"
+#~ msgstr "Falta el update type"
+
+#~ msgid "Missing group mid"
+#~ msgstr "Falta el mid del grupo"
+
+#~ msgid "Group not found"
+#~ msgstr "Grupo no encontrado"
+
+#~ msgid "User group modified"
+#~ msgstr "Grupo modificado"
+
+#~ msgid "Error modifying user group: %1"
+#~ msgstr "Error modificando grupo: %1"
+
+#~ msgid "UserGroup duplicated"
+#~ msgstr "Grupo duplicado"
+
+#~ msgid "Missing id_group or group not found"
+#~ msgstr "Falta el id_group o el grupo no existe"
+
+#~ msgid "Error duplicating userGroup: %1"
+#~ msgstr "Error duplicando grupo: %1"
+
 #~ msgid "Drop files here to upload"
 #~ msgstr "Arrastre los ficheros aquí para subirlos"
 
@@ -15989,9 +15981,6 @@ msgstr "destino"
 #~ msgid "Create a new Job"
 #~ msgstr "Nuevo Pase"
 
-#~ msgid "event purge daemon frequency (secs)"
-#~ msgstr "frecuencia del demonio de purga de eventos (segs)"
-
 #~ msgid "Edit Job Slot for %1"
 #~ msgstr "Editar Ventana de Pase para %1"
 
@@ -16083,9 +16072,6 @@ msgstr "destino"
 
 #~ msgid "Select topic form"
 #~ msgstr "Seleccione formulario"
-
-#~ msgid "Job %1 does not need rollback"
-#~ msgstr "Pase %1 no necesita marcha atrás"
 
 #~ msgid "Rerun Job"
 #~ msgstr "Reiniciar Pase"
@@ -16558,6 +16544,7 @@ msgstr "destino"
 
 #~ msgid "group"
 #~ msgstr "grupo"
+
 #~ msgid "Assign roles/projects"
 #~ msgstr "Asignar roles/proyectos"
 
@@ -18884,6 +18871,7 @@ msgstr "destino"
 #~ msgstr ""
 #~ "Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío "
 #~ "para HOY"
+
 #~ msgid "Unassign roles/projects"
 #~ msgstr "Desasignar roles/proyectos"
 
