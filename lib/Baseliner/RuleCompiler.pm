@@ -80,7 +80,7 @@ sub compile {
                 { '$or' => [  { _id     => mdb->oid($id_rule) }, { id => "$id_rule" }, { rule_name => $id_rule } ] },
                 { _id   => 0, ts => 1 } );
 
-            if ($rule && $rule->{ts} eq $pkg->ts ) {
+            if ( $rule && $pkg && $pkg->ts && $rule->{ts} && $rule->{ts} eq $pkg->ts ) {
                 _debug("Cached rule $id_rule is fresh, no need to recompile");
 
                 $self->compile_status('fresh');

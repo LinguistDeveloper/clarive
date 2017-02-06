@@ -11,9 +11,361 @@ BEGIN { TestEnv->setup }
 use TestSetup;
 
 use Capture::Tiny qw(capture);
-use Baseliner::Utils qw(_load);
+use Baseliner::Utils qw(_load _encode_json);
 
 use_ok 'BaselinerX::CI::job';
+
+subtest 'finish: ok if we rerun a job from PRE after fail in run step but the error has been fixed' => sub {
+    _setup();
+
+    my $project       = TestUtils->create_ci_project();
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.restart', bounds => [ {} ] }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $bl            = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $changeset_mid = TestSetup->create_changeset();
+
+    mdb->rule->insert(
+        {
+            id        => '10',
+            rule_when => 'promote',
+            rule_tree => _encode_json(
+                [
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "CHECK",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "INIT",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "PRE",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "RUN",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "POST",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => [
+                            {
+                                "attributes" => {
+                                    "data" => {
+                                        'operand_a[0]' => 'job.exec',
+                                        'operand_b[0]' => '3',
+                                        'operator[0]'  => 'eq',
+                                        'when'         => 'any'
+                                    },
+                                    "key"    => "statement.if.var_condition",
+                                    "text"   => "IF",
+                                    "name"   => "IF",
+                                    "active" => 1,
+                                    "nested" => "0"
+                                },
+                                "children" => [
+                                    {
+                                        "attributes" => {
+                                            "data"   => { "msg" => "Fail in POST" },
+                                            "key"    => "statement.fail",
+                                            "text"   => "FAIL",
+                                            "name"   => "FAIL",
+                                            "active" => 1,
+                                            "nested" => "0"
+                                        },
+                                        "children" => []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            )
+        }
+    );
+
+    my $job = BaselinerX::CI::job->new( id_rule => '10', changesets => [$changeset_mid] );
+    capture {
+        $job->run;
+        $job->run;
+        $job->run;
+    };
+    my $post_status = $job->{step_status}->{POST};
+    is $post_status, 'ERROR';
+
+    capture {
+        $job->reset( { username => $user->username, step => 'PRE' } );
+        $job->run;
+        $job->run;
+        $job->run;
+    };
+
+    my $post_final_status = $job->{step_status}->{POST};
+    is $post_final_status, 'FINISHED';
+};
+
+subtest 'finish: ok if we rerun a job from POST after fail in run step but the error has been fixed' => sub {
+    _setup();
+
+    my $project       = TestUtils->create_ci_project();
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.restart', bounds => [ {} ] }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $bl            = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $changeset_mid = TestSetup->create_changeset();
+
+    mdb->rule->insert(
+        {
+            id        => '10',
+            rule_when => 'promote',
+            rule_tree => _encode_json(
+                [
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "CHECK",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "INIT",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "PRE",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "RUN",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "POST",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => [
+                            {
+                                "attributes" => {
+                                    "data" => {
+                                        'operand_a[0]' => 'job.exec',
+                                        'operand_b[0]' => '3',
+                                        'operator[0]'  => 'eq',
+                                        'when'         => 'any'
+                                    },
+                                    "key"    => "statement.if.var_condition",
+                                    "text"   => "IF",
+                                    "name"   => "IF",
+                                    "active" => 1,
+                                    "nested" => "0"
+                                },
+                                "children" => [
+                                    {
+                                        "attributes" => {
+                                            "data"   => { "msg" => "Fail in POST" },
+                                            "key"    => "statement.fail",
+                                            "text"   => "FAIL",
+                                            "name"   => "FAIL",
+                                            "active" => 1,
+                                            "nested" => "0"
+                                        },
+                                        "children" => []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            )
+        }
+    );
+
+    my $job = BaselinerX::CI::job->new( id_rule => '10', changesets => [$changeset_mid] );
+    capture {
+        $job->run;
+        $job->run;
+        $job->run;
+    };
+    my $post_status = $job->{step_status}->{POST};
+    is $post_status, 'ERROR';
+
+    capture {
+        $job->reset( { username => $user->username, step => 'POST' } );
+        $job->run;
+    };
+
+    my $post_final_status = $job->{step_status}->{POST};
+    is $post_final_status, 'FINISHED';
+};
+
+subtest 'finish: error if we rerun a job from POST after fail in run step' => sub {
+    _setup();
+
+    my $project       = TestUtils->create_ci_project();
+    my $id_role       = TestSetup->create_role( actions => [ { action => 'action.job.restart', bounds => [ {} ] }, ] );
+    my $user          = TestSetup->create_user( id_role => $id_role, project => $project );
+    my $bl            = TestUtils->create_ci( 'bl', name => 'QA', bl => 'QA' );
+    my $changeset_mid = TestSetup->create_changeset();
+
+    mdb->rule->insert(
+        {
+            id        => '10',
+            rule_when => 'promote',
+            rule_tree => _encode_json(
+                [
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "CHECK",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "INIT",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "PRE",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "RUN",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => [
+                            {
+                                "attributes" => {
+                                    "data"   => { "msg" => "abort here" },
+                                    "key"    => "statement.fail",
+                                    "text"   => "FAIL",
+                                    "name"   => "FAIL",
+                                    "active" => 1,
+                                    "nested" => "0"
+                                },
+                                "children" => []
+                            }
+                        ]
+                    },
+                    {
+                        "attributes" => {
+                            "disabled" => 0,
+                            "active"   => 1,
+                            "key"      => "statement.step",
+                            "text"     => "POST",
+                            "expanded" => 1,
+                            "leaf"     => \0,
+                        },
+                        "children" => []
+                    }
+                ]
+            )
+        }
+    );
+
+    my $job = BaselinerX::CI::job->new( id_rule => '10', changesets => [$changeset_mid] );
+
+    capture {
+        $job->run;
+        $job->run;
+    };
+
+    my $run_final_status = $job->{step_status}->{RUN};
+    is $run_final_status, 'ERROR';
+
+    capture {
+        $job->reset( { username => $user->username, step => 'POST' } );
+        $job->run;
+    };
+
+    my $post_final_status = $job->{step_status}->{POST};
+    is $post_final_status, 'ERROR';
+};
 
 subtest 'trap_action: creates event when status job is changed to trappedpause' => sub {
     _setup();
