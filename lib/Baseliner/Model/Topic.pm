@@ -4419,6 +4419,7 @@ sub get_downloadable_files {
         split /,/, $categories;
 
     my $field = $p->{field} || _throw _loc('Missing field');
+    my $depth = $p->{depth} // 4;
 
     my $topic = ci->new($p->{mid}) || _throw _loc('Missing mid') ;
     my $topic_meta = $topic->get_meta;
@@ -4437,7 +4438,7 @@ sub get_downloadable_files {
         name_category => mdb->in(@cats)
     };
 
-    my @topics = $topic->children( where => $filter, depth => -1 );
+    my @topics = $topic->children( where => $filter, depth => $depth, docs_only => 1 );
     my $available_docs;
 
     for my $related ( @topics ) {
