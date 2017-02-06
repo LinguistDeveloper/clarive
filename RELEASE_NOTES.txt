@@ -1,3 +1,18 @@
+---------------------------------------------- 6.6.3 February 2016 ----------------------------------------------
+- User interface improvements
+- Performance load topic enhancements
+- Service to sync baselines
+- Monitor interface improvements
+- Purge optimization
+
+---------------------------------------------- 6.6.2 December 2016 ----------------------------------------------
+- Performance enhancements
+- Multi-language help
+- Small fixes
+
+---------------------------------------------- 6.6.1 November 2016 ----------------------------------------------
+- User interface improvements
+
 ---------------------------------------------- 6.6 November 2016 ----------------------------------------------
 - Workflow as Rule
 - Permission Bounds
