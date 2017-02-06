@@ -118,6 +118,9 @@ sub compile {
         if ( !length $dsl ) {
             $dsl = $self->_build_dsl_from_rule( $id_rule, $rule );
 
+            # Make sure there are no duplications
+            mdb->grid->remove( { id_rule => $id_rule } );
+
             _debug("Caching DSL $pkg...");
             mdb->grid_insert( $dsl, id_rule => $id_rule, ts => $rule->{ts} );
         }
