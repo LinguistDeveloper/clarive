@@ -740,7 +740,7 @@ sub get_icon {
         '/static/images/icons/release_explorer.svg'     => '/static/images/icons/release-explorer.svg',
         '/static/images/icons/release_lc.svg'           => '/static/images/icons/release-lc.svg',
         '/static/images/icons/rename_items.svg'         => '/static/images/icons/rename-items.svg',
-        '/static/images/icons/report_default.svg'       => '/static/images/icons/repo.svg',
+        '/static/images/icons/report_default.svg'       => '/static/images/icons/report-default.svg',
         '/static/images/icons/repo_default.svg'         => '/static/images/icons/report-default.svg',
         '/static/images/icons/report_dist.svg'          => '/static/images/icons/report-dist.svg',
         '/static/images/icons/report_magnify.svg'       => '/static/images/icons/report-magnify.svg',
@@ -794,6 +794,9 @@ sub get_icon {
         '/static/images/icons/folder-go.svg'             => '/static/images/icons/ci-report-sort.svg',
         '/static/images/icons/field.svg'                 => '/static/images/icons/ci-report-selected-field.svg',
         '/eclipse/eclipse.gif'                           => '/javatools/logo-eclipse.svg',
+        '/static/images/icons/favorite_new.svg'          => '/static/images/icons/favorite.svg',
+        '/static/images/icons/folder-new.svg'            => '/static/images/icons/favorite-folder-collapsed.svg',
+        '/static/images/icons/folder-collapsed.svg'      => '/static/images/icons/favorite-folder-collapsed.svg',
     );
 
     my $found_icon = '';
