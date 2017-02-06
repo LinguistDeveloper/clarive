@@ -640,7 +640,7 @@
     var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
     var refresh_button = new Ext.Button({ tooltip: _('Refresh'),
-        icon: '/static/images/icons/refresh.svg',
+        icon: IC('monitor-refresh'),
         enableToggle: true,
         pressed: false,
         cls: 'x-btn-text-icon',
