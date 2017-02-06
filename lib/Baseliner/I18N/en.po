@@ -1215,7 +1215,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/Notification.pm lib/Baseliner/Controller/Topic.pm
 #: lib/BaselinerX/CI/report.pm root/comp/configlist/grid.mas
-#: root/comp/daemon_grid.js root/comp/monitor_grid.js
+#: root/comp/daemon_grid.js root/comp/job_new.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/rules.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
 #: root/comp/user_info.mas root/forms/if_var_condition.js root/site/common.js
@@ -9284,6 +9284,22 @@ msgid "Topic %1 has already been selected"
 msgstr ""
 
 #: root/comp/job_new.js
+msgid "Select a project or all"
+msgstr ""
+
+#: root/comp/job_new.js root/comp/monitor_grid.js root/comp/notifications.js
+#: root/comp/rules.js root/comp/sem.js root/comp/sms.js
+#: root/comp/topic/topic_drop.js root/fields/system/js/list_tasks.js
+#: root/forms/shortcut.js root/site/common.js root/site/dashboard.js
+#: root/site/kanban.js root/site/model.js
+msgid "Cancel"
+msgstr ""
+
+#: root/comp/job_new.js root/forms/script_local.js root/forms/script_remote.js
+msgid "Ok"
+msgstr ""
+
+#: root/comp/job_new.js
 msgid ""
 "Do you want to add all grouped changesets in the same state from all "
 "projects?"
@@ -9946,14 +9962,6 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Yes, I'm sure"
-msgstr ""
-
-#: root/comp/monitor_grid.js root/comp/notifications.js root/comp/rules.js
-#: root/comp/sem.js root/comp/sms.js root/comp/topic/topic_drop.js
-#: root/fields/system/js/list_tasks.js root/forms/shortcut.js
-#: root/site/common.js root/site/dashboard.js root/site/kanban.js
-#: root/site/model.js
-msgid "Cancel"
 msgstr ""
 
 #: root/comp/monitor_grid.js root/comp/rules.js
@@ -13897,10 +13905,6 @@ msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js
 msgid "Return Codes"
-msgstr ""
-
-#: root/forms/script_local.js root/forms/script_remote.js
-msgid "Ok"
 msgstr ""
 
 #: root/forms/script_local.js root/forms/script_remote.js root/site/common.js
