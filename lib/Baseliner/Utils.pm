@@ -2829,4 +2829,64 @@ sub _get_extension_file {
     return $extension;
 }
 
+my %TERMINAL_COLORS = (
+
+    # Black
+    '0;30' => '#073642',
+
+    # Dark Gray
+    '1;30' => '#002b36',
+
+    # Red
+    '0;31' => '#dc322f',
+
+    # Light Red
+    '1;31' => '#cb4b16',
+
+    # Green
+    '0;32' => '#859900',
+
+    # Light Green
+    '1;32' => '#586e75',
+
+    # Brown/Orange
+    '0;33' => '#b58900',
+
+    # Yellow
+    '1;33' => '#657b83',
+
+    # Blue
+    '0;34' => '#268bd2',
+
+    # Light Blue
+    '1;34' => '#839496',
+
+    # Purple
+    '0;35' => '#d33682',
+
+    # Light Purple
+    '1;35' => '#6c71c4',
+
+    # Cyan
+    '0;36' => '#2aa198',
+
+    # Light Cyan
+    '1;36' => '#93a1a1',
+
+    # Light Gray
+    '0;37' => '#eee8d5',
+
+    # White
+    '1;37' => '#fdf6e3',
+);
+
+sub _html_colorize {
+    my ($line) = @_;
+
+    $line =~ s{\033\[(\d);(\d+)m}{"<span style=\"color:$TERMINAL_COLORS{\"$1;$2\"}\">"}e;
+    $line =~ s{\033\[0m}{"</span>"}e;
+
+    return $line;
+}
+
 1;

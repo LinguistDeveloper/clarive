@@ -7,6 +7,7 @@ use Compress::Zlib qw(uncompress);
 use Try::Tiny;
 use Encode ();
 use JSON ();
+use IO::Socket::INET; # recv
 use Baseliner::Core::Registry;
 use Baseliner::Utils;
 
@@ -457,24 +458,52 @@ sub log_stream : Path('/job/log/stream') {
         return;
     }
 
+    my $conn_id = "$c";
+    $conn_id =~ s{[^A-Za-z0-9]}{}g;
+
     my $stream = <<"EOF";
-    <pre class="output"></pre>
+    <script src="/static/jquery/jquery-1.7.1.min.js"></script>
+    <div style="font-family: monospace; padding: .5em">
+        <div class="output-$conn_id"></div>
+        <img class="loading-$conn_id" src="/static/images/loading/loading-fast.gif" />
+    </div>
     <script>
+        \$(document).ready(function() {
             var xhr = new XMLHttpRequest();
             var offset = 0;
-            var pre = document.getElementsByClassName('output')[0];
+            var output = document.getElementsByClassName('output-$conn_id')[0];
+            var loading = document.getElementsByClassName('loading-$conn_id')[0];
 
             xhr.open("POST", "/job/log/stream_events?id=$id", true);
             xhr.onprogress = function(e) {
                 var newLength = xhr.responseText.length - offset;
 
-                pre.innerHTML = pre.innerHTML + xhr.responseText.substr(offset, newLength);
-                pre.scrollIntoView();
+                output.innerHTML = output.innerHTML + xhr.responseText.substr(offset, newLength);
 
                 offset += newLength;
+
+                loading.scrollIntoView(false);
             };
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhr.send();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    \$('img.loading-$conn_id').hide();
+                }
+            };
+
+            var checkAlive = function() {
+                if (!document.contains(output)) {
+                    xhr.abort();
+                    xhr = null;
+                    return;
+                }
+
+                setTimeout(checkAlive, 1000);
+            };
+
+            setTimeout(checkAlive, 1000);
+        });
     </script>
 EOF
 
@@ -491,7 +520,7 @@ sub log_stream_events : Path('/job/log/stream_events') {
 
     _fail 'No stream available' unless $log->{stream} && -f $log->{stream};
 
-    my $tail = try { File::Tail->new( name => $log->{stream}, maxinterval => 1 ) };
+    my $tail = try { File::Tail->new( name => $log->{stream}, interval => 1, maxinterval => 1, nowait => 1 ) };
     _fail 'Stream error' unless $tail;
 
     $c->res->status(200);
@@ -500,9 +529,30 @@ sub log_stream_events : Path('/job/log/stream_events') {
 
     my $fh = $c->res->write_fh;
 
+    my $io = $c->req->env->{'psgix.io'};
+
+    my @content =
+      map { Util->_html_colorize( _html_escape($_) ) } do { open my $fh, '<', $log->{stream}; <$fh> };
+
+    $fh->write( join '', map { "<div>$_</div>" } @content );
+
     try {
         while ( defined( my $line = $tail->read ) ) {
-            $fh->write($line);
+            if ( length $line ) {
+                $line = _html_escape($line);
+                $line = Util->_html_colorize($line);
+
+                $fh->write("<div>$line</div>");
+            }
+
+            # Hacky way to detect if the client has disconnected
+            my $ret = recv( $io, my $buff, 1, MSG_PEEK | MSG_DONTWAIT );
+            last if defined $ret && !length $ret;
+
+            # When input is there try to read as fast as possible, otherwise wait
+            if ( !length $line ) {
+                sleep 1;
+            }
         }
     };
 

@@ -1291,4 +1291,12 @@ subtest 'to_dur: ' => sub {
     $chk->( $_, Util->to_dur($_) ) for map { int( $_ * 12**( 1 + ( $_ % 10 ) ) ) } 1 .. 1000;
 };
 
+subtest '_html_colorize: convert terminal colors to html colors' => sub {
+    is( Util->_html_colorize(''), '' );
+
+    is( Util->_html_colorize('no color'), 'no color' );
+
+    like( Util->_html_colorize("\033\[1;30mhello\033\[0m"), qr{<span style="color:#[a-f0-9]+">hello</span>} );
+};
+
 done_testing;
