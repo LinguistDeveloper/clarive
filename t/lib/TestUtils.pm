@@ -49,6 +49,10 @@ sub register_ci_events {
     $class->registry->add( 'BaselinerX::CI', 'event.ci.delete', { foo => 'bar' } );
 }
 
+sub cleanup_roles {
+    mdb->role->remove({},{multiple=>1});
+}
+
 sub reload_module {
     my $class = shift;
     my ($module) = @_;

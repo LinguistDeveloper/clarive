@@ -281,7 +281,7 @@ msgstr ""
 
 #: lib/Baseliner/Controller/CI.pm root/comp/catalog/manual_deploy.js
 #: root/comp/role_grid.js root/comp/topic/topic_admin.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/site/lifecycle-graph.js
 msgid "Role"
 msgstr ""
@@ -1148,6 +1148,7 @@ msgid "Label added"
 msgstr ""
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Role.pm
+#: lib/Baseliner/Controller/User.pm lib/Baseliner/Controller/UserGroup.pm
 #: lib/Baseliner/Role/ControllerValidator.pm
 msgid "Validation failed"
 msgstr ""
@@ -1213,7 +1214,7 @@ msgstr ""
 #: lib/BaselinerX/CI/report.pm root/comp/configlist/grid.mas
 #: root/comp/daemon_grid.js root/comp/job_new.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/rules.js
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js root/comp/user_group_grid.js
 #: root/comp/user_info.mas root/forms/if_var_condition.js root/site/common.js
 msgid "All"
 msgstr ""
@@ -1912,7 +1913,7 @@ msgstr ""
 msgid "Calendar"
 msgstr ""
 
-#: lib/Baseliner/Controller/Slot.pm root/comp/user_grid.js
+#: lib/Baseliner/Controller/Slot.pm
 msgid "Namespace"
 msgstr ""
 
@@ -2104,8 +2105,7 @@ msgstr ""
 msgid "E-mail"
 msgstr ""
 
-#: lib/Baseliner/Controller/Topic.pm root/comp/user_grid.js
-#: root/comp/user_info.mas
+#: lib/Baseliner/Controller/Topic.pm root/comp/user_info.mas
 msgid "Phone Number"
 msgstr ""
 
@@ -2124,7 +2124,8 @@ msgstr ""
 msgid "The user %1 does not exist in Clarive"
 msgstr ""
 
-#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Messaging.pm
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Controller/UserGroup.pm
+#: lib/Baseliner/Model/Messaging.pm
 msgid "Missing id"
 msgstr ""
 
@@ -2529,8 +2530,9 @@ msgstr ""
 msgid "User Admin"
 msgstr ""
 
-#: lib/Baseliner/Controller/User.pm root/comp/role_detail.js root/comp/sms.js
-#: root/comp/user_grid.js root/fields/templates/config/listbox.js
+#: lib/Baseliner/Controller/User.pm root/ci/UserGroup.js
+#: root/comp/role_detail.js root/comp/sms.js root/comp/user_grid.js
+#: root/comp/user_group_grid.js root/fields/templates/config/listbox.js
 msgid "Users"
 msgstr ""
 
@@ -2551,31 +2553,15 @@ msgid "Missing parameter username"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User added"
+msgid "User name already exists"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User name already exists, introduce another user name"
+msgid "User saved"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "Error adding User: %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm lib/Baseliner/Model/Rules.pm
-msgid "User not found"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm
-msgid "User modified"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Could not find ci for user %1"
-msgstr ""
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Error modifying User: %1"
+msgid "Error saving user: %1"
 msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
@@ -2632,6 +2618,38 @@ msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
 msgid "Country info success"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User Groups"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group name already exists"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group saved"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "Error saving user group"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group deleted"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "Error deleting User group: %1"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group duplicated"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "Error duplicating user group"
 msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
@@ -2964,6 +2982,10 @@ msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule not found"
+msgstr ""
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "User not found"
 msgstr ""
 
 #: lib/Baseliner/Model/Rules.pm
@@ -4462,6 +4484,10 @@ msgstr ""
 msgid "Missing parameter sha"
 msgstr ""
 
+#: lib/BaselinerX/CI/UserGroup.pm
+msgid "User %1 does not exist"
+msgstr ""
+
 #: lib/BaselinerX/CI/asset.pm
 msgid "Could not insert asset"
 msgstr ""
@@ -4980,7 +5006,8 @@ msgstr ""
 #: root/comp/lifecycle/report_edit.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/site/common.js root/site/model.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js root/site/common.js
+#: root/site/model.js
 msgid "Edit"
 msgstr ""
 
@@ -4995,7 +5022,8 @@ msgstr ""
 #: root/comp/project_grid.mas root/comp/repl.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js root/comp/sms.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/site/common.js root/site/model.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js root/site/common.js
+#: root/site/model.js
 msgid "Delete"
 msgstr ""
 
@@ -5335,7 +5363,7 @@ msgstr ""
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
 #: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
@@ -5693,7 +5721,8 @@ msgid "Job Logs"
 msgstr ""
 
 #: lib/BaselinerX/Job.pm root/comp/message_grid.js root/comp/user_grid.js
-#: root/fields/templates/html/upload_files.html root/site/common.js
+#: root/comp/user_group_grid.js root/fields/templates/html/upload_files.html
+#: root/site/common.js
 msgid "Id"
 msgstr ""
 
@@ -5935,7 +5964,7 @@ msgstr ""
 msgid "bl"
 msgstr ""
 
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/user_grid.js
+#: lib/BaselinerX/Reports/listado_jobs.pm
 #: root/fields/templates/config/generic_fields.js
 msgid "System"
 msgstr ""
@@ -7346,9 +7375,9 @@ msgstr ""
 
 #: root/ci/DBDest.js root/ci/clax_agent.js root/ci/dbi_connection.js
 #: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/user.js
-#: root/comp/lifecycle/workspace_new.js root/comp/user_grid.js
-#: root/forms/ldap_search.js root/forms/rest_request.js
-#: root/forms/web_request.js root/site/login.js root/site/tabfu.js
+#: root/comp/lifecycle/workspace_new.js root/forms/ldap_search.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/login.js
+#: root/site/tabfu.js
 msgid "Password"
 msgstr ""
 
@@ -8103,8 +8132,8 @@ msgstr ""
 #: root/comp/role_detail.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/forms/shortcut.js root/site/dashboard.js
-#: root/site/explorer.js root/site/model.js root/site/prefs.js
+#: root/forms/shortcut.js root/site/dashboard.js root/site/explorer.js
+#: root/site/model.js root/site/prefs.js
 msgid "Save"
 msgstr ""
 
@@ -8133,8 +8162,7 @@ msgstr ""
 #: root/comp/notifications.js root/comp/role_detail.js
 #: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/comp/user_info.mas root/site/common.js
-#: root/site/explorer.js
+#: root/comp/user_info.mas root/site/common.js root/site/explorer.js
 msgid "Close"
 msgstr ""
 
@@ -8212,7 +8240,8 @@ msgstr ""
 #: root/comp/notifications.js root/comp/project_grid.mas
 #: root/comp/role_grid.js root/comp/scheduler_grid.js root/comp/sem.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/view_commits_history.js root/site/tabfu.js
+#: root/comp/user_group_grid.js root/comp/view_commits_history.js
+#: root/site/tabfu.js
 msgid "<Enter your search string>"
 msgstr ""
 
@@ -8227,7 +8256,7 @@ msgstr ""
 #: root/comp/notifications.js root/comp/project_grid.mas
 #: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sem.js root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/view_commits_history.js
+#: root/comp/user_group_grid.js root/comp/view_commits_history.js
 msgid "Search"
 msgstr ""
 
@@ -8398,7 +8427,8 @@ msgstr ""
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rules.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/site/common.js root/site/kanban.js root/site/tabfu.js
+#: root/comp/user_group_grid.js root/site/common.js root/site/kanban.js
+#: root/site/tabfu.js
 msgid "Confirmation"
 msgstr ""
 
@@ -8426,11 +8456,11 @@ msgstr ""
 msgid "rows/page"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/user_group_grid.js root/site/common.js
 msgid "Rows {0} - {1} of {2}"
 msgstr ""
 
-#: root/comp/ci-gridtree.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/user_group_grid.js root/site/common.js
 msgid "There are no rows available"
 msgstr ""
 
@@ -8537,7 +8567,8 @@ msgstr ""
 #: root/comp/notifications.js root/comp/role_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/js/list_tasks.js root/site/common.js root/site/tabfu.js
+#: root/comp/user_group_grid.js root/fields/system/js/list_tasks.js
+#: root/site/common.js root/site/tabfu.js
 msgid "Select at least one row"
 msgstr ""
 
@@ -8686,8 +8717,9 @@ msgstr ""
 #: root/comp/notifications.js root/comp/role_detail.js root/comp/sequences.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/fields/system/html/field_title.html
-#: root/site/explorer.js root/site/kanban.js root/site/tabfu.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js
+#: root/fields/system/html/field_title.html root/site/explorer.js
+#: root/site/kanban.js root/site/tabfu.js
 msgid "Success"
 msgstr ""
 
@@ -8695,8 +8727,9 @@ msgstr ""
 #: root/comp/notifications.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/fields/system/js/list_tasks.js
-#: root/site/common.js root/site/explorer.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js
+#: root/fields/system/js/list_tasks.js root/site/common.js
+#: root/site/explorer.js
 msgid "ERROR"
 msgstr ""
 
@@ -9572,8 +9605,7 @@ msgstr ""
 
 #: root/comp/lifecycle/report_edit.js root/comp/log_grid.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/html/field_title.html
+#: root/comp/topic/topic_lib_grid.js root/fields/system/html/field_title.html
 #: root/fields/templates/config/list_topics_selector.js root/site/tabfu.js
 msgid "Information"
 msgstr ""
@@ -10504,6 +10536,7 @@ msgstr ""
 
 #: root/comp/role_grid.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/user_group_grid.js
 msgid "Duplicate"
 msgstr ""
 
@@ -11493,15 +11526,15 @@ msgstr ""
 msgid "From Status"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Available Roles"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Delete row"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Are you sure you want to delete the row selected?"
 msgstr ""
 
@@ -11525,7 +11558,7 @@ msgstr ""
 msgid "By project"
 msgstr ""
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Available Projects"
 msgstr ""
 
@@ -11825,58 +11858,6 @@ msgstr ""
 msgid "Invalid report meta for id %1"
 msgstr ""
 
-#: root/comp/user_grid.js
-msgid "Assign roles/projects"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "You must save the user before"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Unassign roles/projects"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "User doesn't exist"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Passwords do not match"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Edit user"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Delete All"
-msgstr ""
-
-#: root/comp/user_grid.js root/comp/user_info.mas
-msgid "Roles/Projects User"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Account Type"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Regular"
-msgstr ""
-
-#: root/comp/user_grid.js root/site/tabfu.js
-msgid "Confirm Password"
-msgstr ""
-
-#: root/comp/user_grid.js root/comp/user_info.mas
-msgid "Email address"
-msgstr ""
-
-#: root/comp/user_grid.js
-msgid "Create user"
-msgstr ""
-
 #: root/comp/user_grid.js root/site/main.js root/site/prefs.js
 msgid "Preferences"
 msgstr ""
@@ -11893,12 +11874,36 @@ msgstr ""
 msgid "Avatar"
 msgstr ""
 
+#: root/comp/user_group_grid.js
+msgid "User Group Administration"
+msgstr ""
+
+#: root/comp/user_group_grid.js
+msgid "Are you sure you want to delete the user group %1"
+msgstr ""
+
+#: root/comp/user_group_grid.js
+msgid "User groups"
+msgstr ""
+
+#: root/comp/user_group_grid.js
+msgid "Group"
+msgstr ""
+
 #: root/comp/user_info.mas
 msgid "Actions User"
 msgstr ""
 
 #: root/comp/user_info.mas
+msgid "Roles/Projects User"
+msgstr ""
+
+#: root/comp/user_info.mas
 msgid "Watch all actions"
+msgstr ""
+
+#: root/comp/user_info.mas
+msgid "Email address"
 msgstr ""
 
 #: root/comp/view_commits_history.js
@@ -15486,6 +15491,10 @@ msgstr ""
 
 #: root/site/tabfu.js
 msgid "New Password"
+msgstr ""
+
+#: root/site/tabfu.js
+msgid "Confirm Password"
 msgstr ""
 
 #: root/site/tabfu.js

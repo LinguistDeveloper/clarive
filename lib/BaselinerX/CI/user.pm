@@ -3,8 +3,11 @@ use Baseliner::Moose;
 use Baseliner::Utils;
 use Baseliner::Model::Permissions;
 use Moose::Util::TypeConstraints;
+use Hash::Merge;
 use experimental 'autoderef';
+
 with 'Baseliner::Role::CI::Internal';
+with 'Baseliner::Role::CI::ProjectSecurity';
 
 has api_key             => qw(is rw isa Any);
 has email               => qw(is rw isa Any);
@@ -42,9 +45,24 @@ has account_type => qw(default regular is rw isa), enum [qw(regular system)];
 has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1,
     default=>sub{ [ Util->_array(Clarive->config->{default_lang} // 'en') ] });
 
+has_cis 'groups';
+
+sub rel_type {
+    return { groups=>[ to_mid => 'group_user' ] };
+}
+
+
 sub icon { '/static/images/icons/user.svg' }
 
 sub has_description { 0 }
+
+before save => sub {
+    my ($self, $master_row, $data ) = @_;
+
+    #Update user group security
+
+    $self->gen_group_security() if grep { ref $_ eq 'BaselinerX::CI::UserGroup' } _array($self->groups);
+};
 
 sub workspace_create {
     my ($self,$p) = @_;
@@ -146,6 +164,36 @@ sub save_api_key  {
 
 method gen_project_security {
     my ($projects, $roles) = @_;
+
+    my @groups = $self->parents( where => {collection=>'UserGroup'} );
+
+    if (@groups) {
+        $self->gen_group_security();
+    } else  {
+        $self->gen_user_security($projects, $roles);
+    }
+
+
+}
+
+sub gen_group_security {
+    my ($self) = @_;
+
+    my $project_security = {};
+
+    my @user_groups = grep { ref $_ eq 'BaselinerX::CI::UserGroup' } _array($self->groups);
+
+    my $merge = Hash::Merge->new( );
+
+    for my $group ( @user_groups ) {
+        $project_security = $merge->merge($project_security, $group->project_security);
+    }
+
+    $self->project_security( $project_security );
+}
+
+sub gen_user_security {
+    my ($self, $projects, $roles) = @_;
     if( ref $self ) {
         my @colls = map { Baseliner::Utils::to_base_class($_) } Baseliner::Utils::packages_that_do( 'Baseliner::Role::CI::Project' );
         my $security = {};
@@ -165,7 +213,7 @@ method gen_project_security {
                 push @{$security->{$role}->{$col}}, $_;
             }
         }
-        my $old_project_security = $self->{project_security};
+        my $old_project_security = Util->_clone($self->{project_security});
         my %new_project_security;
         foreach my $r (Baseliner::Utils::_array $roles){
             foreach my $c (keys $security->{$r}){

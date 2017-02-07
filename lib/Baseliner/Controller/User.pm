@@ -12,7 +12,9 @@ use DateTime::TimeZone qw(all_names);
 use Baseliner::IdenticonGenerator;
 use Baseliner::Core::Registry ':dsl';
 use Baseliner::Model::Permissions;
-use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique);
+use Baseliner::Utils qw(_log _debug _error _loc _locl _fail _throw _file _dir _array _unique _warn _encode_json);
+
+with 'Baseliner::Role::ControllerValidator';
 
 use experimental 'switch', 'autoderef';
 
@@ -103,7 +105,9 @@ sub info : Local {
 
 sub infodetail : Local {
     my ( $self, $c ) = @_;
+
     my $p        = $c->request->parameters;
+    my $id_user = $p->{id};
     my $username = $p->{username};
 
     my $authorized = 1;
@@ -128,7 +132,7 @@ sub infodetail : Local {
             $dir = -1;
         }
 
-        my $user = ci->user->find( { username => $username } )->next;
+        my $user = ci->user->find( { '$or' => [{mid => $id_user}, {username => $username }] } )->next;
         my @roles;
         if ( $user->{project_security} ) {
             @roles = keys $user->{project_security};
@@ -355,355 +359,191 @@ sub infoactions : Local {
     $c->forward('View::JSON');
 }
 
-sub update : Local {
+sub update : Local : Does('ACL') : ACL('action.admin.users') {
     my ( $self, $c ) = @_;
-    my $p                        = $c->request->parameters;
-    my $action                   = $p->{action};
-    my $projects_checked         = $p->{projects_checked};
-    my $projects_parents_checked = $p->{projects_parents_checked};
-    my $roles_checked            = $p->{roles_checked};
-    my $project;
 
-    given ($action) {
-        when ('add') {
-            try {
-                my $swOk = 1;
-                my $row
-                    = ci->user->find(
-                    { username => $p->{username}, active => mdb->true } )
-                    ->next;
-                if ( !$row ) {
-                    my $user_mid;
+    return
+      unless my $validated_params = $self->validate_params(
+        $c,
+        id           => { isa => 'Str',               default => '' },
+        username     => { isa => 'Str' },
+        pass         => { isa => 'Str',               default => '' },
+        realname     => { isa => 'Str',               default => '' },
+        alias        => { isa => 'Str',               default => '' },
+        email        => { isa => 'Str',               default => '' },
+        phone        => { isa => 'Str',               default => '' },
+        account_type => { isa => 'Str',               default => 'regular' },
+        groups       => { isa => 'Str|ArrayRef[Str]', default => [] }
+      );
 
-                    my $ci_data = {
-                        name         => $p->{username},
-                        bl           => '*',
-                        username     => $p->{username},
-                        realname     => $p->{realname},
-                        alias        => $p->{alias},
-                        email        => $p->{email},
-                        phone        => $p->{phone},
-                        account_type => $p->{account_type},
-                        active       => '1',
-                        password     => ci->user->encrypt_password( $p->{username}, $p->{pass} )
-                    };
+    my $mid = delete $validated_params->{id};
+    $validated_params->{name} = $validated_params->{username};
+    $validated_params->{password} = ci->user->encrypt_password( $validated_params->{username}, ( $validated_params->{pass} // '' ) );
 
-                    my $ci = ci->user->new(%$ci_data);
-                    $ci->gen_project_security( $projects_checked,
-                        $roles_checked );
-                    $ci->password(
-                        ci->user->encrypt_password(
-                            $p->{username}, $p->{pass}
-                        )
-                    );
-                    $user_mid = $ci->save;
-                    $c->stash->{json} = {
-                        msg     => _loc('User added'),
-                        success => \1,
-                        user_id => $user_mid
-                    };
-
-                }
-                else {
-                    $c->stash->{json} = {
-                        msg => _loc('User name already exists, introduce another user name'),
-                        failure => \1
-                    };
-                }
-            }
-            catch {
-                $c->stash->{json} = {
-                    msg     => _loc( 'Error adding User: %1', shift() ),
-                    failure => \1
-                    }
-            }
+    my $exists = ci->user->find_one(
+        {
+            username => $validated_params->{username},
+            $mid ? ( mid => { '$ne' => $mid } ) : ()
         }
-        when ('update') {
-            try {
-                my $type_save = $p->{type};
-                if ( $type_save eq 'user' ) {
-                    my $user;
-                    my $user_id = $p->{id};
-                    if ( $p->{id} ) {
-                        $user = ci->new( $p->{id} );
-                    }
-                    else {
-                        $user = ci->user->search_ci( name => $p->{username} );
-                        _fail _loc("User not found") if !$user;
-                        $user_id = $user->{mid};
-                    }
-                    my $old_username = $user->{username};
-                    if ( $old_username ne $p->{username} ) {
-                        my $user_ci = ci->user->find_one(
-                            { username => $p->{username} } );
-                        if ($user_ci) {
-                            $c->stash->{json} = {
-                                msg => _loc('User name already exists, introduce another user name'),
-                                failure => \1
-                            };
-                            _fail _loc( "User name already exists, introduce another user name");
-                        }
-                        else {
-                            $user_ci = ci->user->find_one(
-                                { username => $old_username } );
-                            my $user_mid = $user_ci->{mid};
+    );
 
-                            my $ci_data = {
-                                name             => $p->{username},
-                                bl               => '*',
-                                username         => $p->{username},
-                                realname         => $p->{realname},
-                                alias            => $p->{alias},
-                                email            => $p->{email},
-                                phone            => $p->{phone},
-                                account_type     => $p->{account_type},
-                                active           => '1',
-                                password         => ci->user->encrypt_password( $p->{username}, $p->{pass} ),
-                                project_security => $user_ci->{project_security}
-                            };
-
-                            my $ci       = ci->user->new(%$ci_data);
-                            my $user_new = $ci->save;
-
-                            mdb->master_rel->update(
-                                { from_mid => "$$p{id}" },
-                                { '$set'   => { from_mid => $user_new } },
-                                { multiple => 1 }
-                            );
-                            mdb->master_rel->update(
-                                { to_mid   => "$$p{id}" },
-                                { '$set'   => { to_mid => $user_new } },
-                                { multiple => 1 }
-                            );
-                            ci->delete($user_mid);
-                        }
-                    }
-                    else {
-                        $user->update( realname => $p->{realname} )
-                            if $p->{realname};
-
-                        if ( $p->{pass} ) {
-                            $user->update(
-                                password => ci->user->encrypt_password(
-                                    $p->{username}, $p->{pass}
-                                )
-                            );
-                        }
-                        $user->update( alias => $p->{alias} ) if $p->{alias};
-                        $user->update( account_type => $p->{account_type} );
-                        $user->update( email => $p->{email} );
-                        $user->update( phone => $p->{phone} ) if $p->{phone};
-                        $user->update( active => $p->{active} )
-                            if $p->{active};
-                        $user->save;
-                    }
-
-                    $c->stash->{json} = {
-                        msg     => _loc('User modified'),
-                        success => \1,
-                        user_id => $user_id
-                    };
-                }
-                else {
-
-   # regenerate project security for all users TODO work with my ci only: DONE
-                    my $ci = ci->user->search_ci( name => $p->{username} );
-                    _fail _loc('Could not find ci for user %1', $p->{username})
-                        unless $ci;
-                    _debug 'Re-generating user project security...';
-                    $ci->gen_project_security( $projects_checked,
-                        $roles_checked );
-                    $ci->save;
-                    _debug 'Done updating project security.';
-
-                    $c->stash->{json} = {
-                        msg     => _loc('User modified'),
-                        success => \1,
-                        user_id => $p->{id}
-                    };
-                }
-            }
-            catch {
-                $c->stash->{json} = {
-                    msg     => _loc( 'Error modifying User: %1', shift() ),
-                    failure => \1
-                    }
-            }
-        }
-        when ('delete') {
-            try {
-                my $user;
-                my $user_id = $p->{id};
-                if ( length $user_id ) {
-                    $user = ci->new($user_id);
-                }
-                else {
-                    $user = ci->user->find( { username => $p->{username} } );
-                    _fail _loc("User not found") if !$user;
-                    $user_id = $user->{id};
-                } ## end else [ if ( $p->{id} ) ]
-                ci->delete($user_id);
-                $c->stash->{json}
-                    = { success => \1, msg => _loc('User deleted') };
-            } ## end try
-            catch {
-                $c->stash->{json} = {
-                    failure => \1,
-                    msg     => _loc( 'Error deleting User: %1', shift() )
-                };
-            }
-        } ## end when ( 'delete' )
-        when ('delete_roles_projects') {
-            try {
-                my $user_name = $p->{username};
-                my $rs;
-
-                my @colls = map { Util->to_base_class($_) }
-                    Util->packages_that_do('Baseliner::Role::CI::Project');
-                my $orig_ps = ci->user->find( { username => $user_name } )
-                    ->next->{project_security};
-
-                if ($roles_checked) {
-                    if ($projects_checked) {
-                        my @user_projects;
-                        my @ns_projects = _unique _array $projects_checked;
-                        foreach my $role ( _array $roles_checked) {
-                            my $rs_user;
-                            my @where = map {
-                                { "project_security.$role.$_" =>
-                                        { '$in' => \@ns_projects } }
-                            } @colls;
-                            $rs_user = ci->user->find_one(
-                                {   username => $user_name,
-                                    "project_security.$role" =>
-                                        { '$exists' => 1 },
-                                    '$or' => \@where
-                                }
-                            );
-
-                            foreach my $coll (@colls) {
-                                push @user_projects,
-                                    map { $role . '/' . $coll . '/' . $_ }
-                                    _array $rs_user->{project_security}
-                                    ->{$role}->{$coll};
-                            }
-                        }
-
-                        my %tmp;
-                        @tmp{@ns_projects} = ();
-
-                        my @user_projects_erased = grep {
-                            $_
-                                =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                            my $pid = $+{pid};
-                            exists $tmp{$pid}
-                        } @user_projects;
-
-                        foreach my $p_id_ns (@user_projects_erased) {
-                            $p_id_ns
-                                =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                            my $pid  = $+{pid};
-                            my $pcol = $+{collection};
-                            my $role = $+{urole};
-                            my @tmp  = @{ $orig_ps->{$role}{$pcol} };
-                            my @new_items;
-                            for ( my $i = 0; $i < scalar @tmp; $i++ ) {
-                                if ( $tmp[$i] ne $pid ) {
-                                    push @new_items, $tmp[$i];
-                                }
-                            }
-                            if (@new_items) {
-                                $orig_ps->{$role}{$pcol} = \@new_items;
-                            }
-                            else {
-                                delete $orig_ps->{$role}{$pcol};
-                                my @values = values $orig_ps->{$role};
-                                delete $orig_ps->{$role} if !@values;
-                            }
-                        }
-
-                    }
-                    else {
-                        #delete all projects with $role for $user_name
-                        delete @$orig_ps{ _array $roles_checked};
-                    }
-                }
-                else {
-
-                    my @user_projects;
-                    my $user
-                        = ci->user->find( { username => $user_name } )->next;
-                    my @roles = keys $user->{project_security};
-                    foreach my $role (@roles) {
-                        foreach my $coll (@colls) {
-                            push @user_projects,
-                                map { $role . '/' . $coll . '/' . $_ }
-                                _array $user->{project_security}->{$role}
-                                ->{$coll};
-                        }
-                    }
-
-                    my @ns_projects = _unique _array $projects_checked;
-                    my %tmp;
-                    @tmp{@ns_projects} = ();
-
-                    my @user_projects_erased = grep {
-                        my $pid;
-                        if ( $_ =~ /(?<urole>.+)\/(?<ucol>.+)\/(?<pid>.+)/ ) {
-                            $pid = $+{pid};
-                        }
-                        exists $tmp{$pid}
-                    } @user_projects;
-
-                    foreach my $p_id_ns (@user_projects_erased) {
-                        $p_id_ns
-                            =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
-                        my $pid  = $+{pid};
-                        my $pcol = $+{collection};
-                        my $role = $+{urole};
-                        my @tmp  = @{ $orig_ps->{$role}{$pcol} };
-                        my @new_items;
-                        for ( my $i = 0; $i < scalar @tmp; $i++ ) {
-                            if ( $tmp[$i] ne $pid ) {
-                                push @new_items, $tmp[$i];
-                            }
-                        }
-                        if (@new_items) {
-                            $orig_ps->{$role}{$pcol} = \@new_items;
-                        }
-                        else {
-                            delete $orig_ps->{$role}{$pcol};
-                            my @values = values $orig_ps->{$role};
-                            delete $orig_ps->{$role} if !@values;
-                        }
-                    }
-                }
-
-         # regenerate project security for all users TODO work with my ci only
-                my $user_ci = ci->new(
-                    ci->user->find_one( { username => $user_name } )->{mid} );
-
-                $user_ci->update( project_security => $orig_ps );
-
-                #$ci->save;
-
-                $c->stash->{json}
-                    = { msg => _loc('User modified'), success => \1 };
-            }
-            catch {
-                $c->stash->{json} = {
-                    success => \0,
-                    msg     => _loc( 'Error modifying User: %1', shift() )
-                };
-            }
-        }
+    if ($exists) {
+        $c->stash->{json} = {
+            success => \0,
+            msg     => _loc("Validation failed"),
+            errors  => { username => _loc('User name already exists') }
+        };
     }
-    cache->remove(qr/:$p->{username}:/);
+    else {
+        try {
+            my $user;
+            if ($mid) {
+                $user = ci->new($mid);
+                die 'User not found' unless $user;
+
+                $user->update($validated_params);
+            }
+            else {
+                $user = ci->user->new( bl => '*', active => '1', %$validated_params );
+            }
+
+            $user->save;
+
+            $c->stash->{json} = { success => \1, msg => _loc('User saved'), user_id => $user->mid };
+
+            my $username = $user->username;
+            cache->remove(qr/:$username:/);
+            cache->remove( { d => 'security' } );
+            cache->remove( { d => "topic:meta" } );
+            cache->remove( { d => "topic" } );
+        }
+        catch {
+            my $error = shift;
+
+            $c->stash->{json} = { success => \0, msg => _loc( 'Error saving user: %1', $error ) };
+        };
+    }
+
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub delete : Local : Does('ACL') : ACL('action.admin.users') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $id       = $p->{id};
+    my $username = $p->{username};
+
+    try {
+        my $user = ci->user->search_ci( '$or' => [ { mid => $id }, { username => $username } ] );
+        die 'User not found' unless $user;
+
+        $user->delete;
+
+        $c->stash->{json} = { success => \1, msg => _loc('User deleted') };
+    }
+    catch {
+        my $error = shift;
+
+        $c->stash->{json} = { success => \0, msg => _loc( 'Error deleting User: %1', $error ) };
+    };
+
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub roles_projects : Local {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $id_user = $p->{id};
+
+    my $user = ci->user->search_ci( mid => "$id_user" );
+    die 'user not found' unless $user;
+
+    my $is_user_admin = $self->_is_user_admin($c);
+    my $own_user = $user->username && $user->username eq $c->username;
+
+    die 'access denied' unless $is_user_admin || $own_user;
+
+    my @rows;
+    foreach my $row ( @{ $user->roles_projects } ) {
+        push @rows,
+          {
+            id          => $row->{role}->{id},
+            id_role     => $row->{role}->{id},
+            role        => $row->{role}->{role},
+            description => $row->{role}->{description},
+            projects    => [ map { { name => $_->name, icon => $_->icon } } @{ $row->{projects} } ],
+        };
+    }
+
+    $c->stash->{json} = { data => \@rows };
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub toggle_roles_projects : Local : Does('ACL') : ACL('action.admin.users') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action           = $p->{action};
+    my $id_user          = $p->{id};
+    my @projects_checked = _unique _array $p->{projects_checked};
+    my @roles_checked    = _unique _array $p->{roles_checked};
+
+    my $user = ci->user->search_ci( mid => "$id_user" );
+    die 'user not found' unless $user;
+
+    $user->toggle_roles_projects(
+        action   => $action,
+        projects => \@projects_checked,
+        roles    => \@roles_checked
+    );
+
+    my $username = $user->username;
+    cache->remove(qr/:$username:/);
     cache->remove( { d => 'security' } );
     cache->remove( { d => "topic:meta" } );
     cache->remove( { d => "topic" } );
 
+    $c->stash->{json} = { success => \1, msg => 'ok' };
     $c->forward('View::JSON');
+
+    return;
+}
+
+sub delete_roles : Local : Does('ACL') : ACL('action.admin.users') {
+    my ( $self, $c ) = @_;
+
+    my $p = $c->request->parameters;
+
+    my $action        = $p->{action};
+    my $id_user       = $p->{id};
+    my @roles_checked = _unique _array $p->{roles_checked};
+
+    my $user = ci->user->search_ci( mid => "$id_user" );
+    die 'user not found' unless $user;
+
+    $user->delete_roles(roles => \@roles_checked);
+
+    my $username = $user->username;
+    cache->remove(qr/:$username:/);
+    cache->remove( { d => 'security' } );
+    cache->remove( { d => "topic:meta" } );
+    cache->remove( { d => "topic" } );
+
+    $c->stash->{json} = { success => \1, msg => 'ok' };
+    $c->forward('View::JSON');
+
+    return;
 }
 
 sub actions_list : Local {
@@ -904,7 +744,18 @@ sub list : Local : Does('Ajax') {
 
     $cnt = ci->user->find($where)->count();
 
-    my @rows = map { +{ id => $_->{mid}, %{$_} }; } $rs->all;
+    my @rows = ();
+
+    for my $row ( $rs->all ) {
+        my $ci = ci->new( $row->{mid} );
+        my @groups = map { $_->{mid} } $ci->parents( where => { collection => 'UserGroup'});
+
+        push @rows, {
+            id     => $ci->mid,
+            groups => \@groups,
+            %{$row}
+        };
+    }
 
     if ( $p->{only_data} ) {
         $c->stash->{json} = \@rows;
@@ -1166,58 +1017,50 @@ sub _is_role_admin {
     return $permissions->user_has_action( $c->username, 'action.admin.role' );
 }
 
-sub duplicate : Local {
+sub duplicate : Local : Does('ACL') : ACL('action.admin.users') {
     my ( $self, $c ) = @_;
+
     my $p = $c->req->params;
+
     try {
-        my $r = ci->user->find( { mid => $p->{id_user} } )->next;
-        if ($r) {
-            my $user;
-            my $new_user;
+        my $user = ci->user->search_ci(mid => $p->{id_user});
+        die 'User not found' unless $user;
 
-            my $row;
-            my $cont = 2;
-            $new_user = "Duplicate of " . $r->{username};
-            $row      = ci->user->find(
-                { username => $new_user, active => mdb->true } )->next;
-            while ($row) {
-                $new_user = "Duplicate of " . $r->{username} . " " . $cont++;
-                $row      = ci->user->find(
-                    { username => $new_user, active => mdb->true } )->next;
-            }
-            if ( !$row ) {
-                my $user_mid;
+        my $new_username_pattern = sprintf 'Duplicate of %s', $user->username;
+        my $new_username = $new_username_pattern;
 
-                my $ci_data = {
-                    name             => $new_user,
-                    bl               => '*',
-                    username         => $new_user,
-                    realname         => $r->{realname},
-                    alias            => $r->{alias},
-                    email            => $r->{email},
-                    phone            => $r->{phone},
-                    active           => '1',
-                    project_security => $r->{project_security},
-                };
+        for ( 1 .. 1000 ) {
+            last unless ci->user->find_one( { username => $new_username } );
+            die 'Infinite loop when duplicating user' if $_ == 1000;
 
-                my $ci = ci->user->new(%$ci_data);
-                $user_mid = $ci->save;
-                $c->stash->{json} = {
-                    msg     => _loc('User added'),
-                    success => \1,
-                    user_id => $user_mid
-                };
-            }
-            $c->stash->{json}
-                = { success => \1, msg => _loc("User duplicated") };
+            $new_username = $new_username_pattern . ' ' . ($_ + 1);
         }
+
+        my $ci_data = {
+            name             => $new_username,
+            bl               => '*',
+            username         => $new_username,
+            realname         => $user->realname,
+            alias            => $user->alias,
+            email            => $user->email,
+            phone            => $user->phone,
+            active           => '1',
+            project_security => $user->project_security,
+            groups           => [ map { $_->mid } _array $user->groups ]
+        };
+
+        my $ci = ci->user->new(%$ci_data);
+        $ci->save;
+
+        $c->stash->{json} = { success => \1, msg => _loc('User duplicated') };
     }
     catch {
-        $c->stash->{json}
-            = { success => \0, msg => _loc('Error duplicating user') };
+        $c->stash->{json} = { success => \0, msg => _loc('Error duplicating user') };
     };
 
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub country_info : Local {

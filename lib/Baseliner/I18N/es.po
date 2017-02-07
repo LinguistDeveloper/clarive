@@ -281,7 +281,7 @@ msgstr "Ver CIs"
 
 #: lib/Baseliner/Controller/CI.pm root/comp/catalog/manual_deploy.js
 #: root/comp/role_grid.js root/comp/topic/topic_admin.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/site/lifecycle-graph.js
 msgid "Role"
 msgstr "Rol"
@@ -1160,6 +1160,7 @@ msgid "Label added"
 msgstr "Etiqueta añadida"
 
 #: lib/Baseliner/Controller/Label.pm lib/Baseliner/Controller/Role.pm
+#: lib/Baseliner/Controller/User.pm lib/Baseliner/Controller/UserGroup.pm
 #: lib/Baseliner/Role/ControllerValidator.pm
 msgid "Validation failed"
 msgstr "Fallo en la validación"
@@ -1225,7 +1226,7 @@ msgstr ""
 #: lib/BaselinerX/CI/report.pm root/comp/configlist/grid.mas
 #: root/comp/daemon_grid.js root/comp/job_new.js root/comp/monitor_grid.js
 #: root/comp/notifications.js root/comp/rules.js
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js root/comp/user_group_grid.js
 #: root/comp/user_info.mas root/forms/if_var_condition.js root/site/common.js
 msgid "All"
 msgstr "Todos"
@@ -1561,8 +1562,6 @@ msgid ""
 "The rule of type `%1` already exists with name `%2`, please introduce "
 "another name"
 msgstr ""
-"La regla del tipo `%1` ya existe con el nombre `%2`, por favor introduzca "
-"otro"
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Rule %1 saved"
@@ -1640,7 +1639,7 @@ msgstr "no se ha pasado id_rule"
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Rule with id %1 not found"
-msgstr "Regla con id %1 no encontrada"
+msgstr ""
 
 #: lib/Baseliner/Controller/Rule.pm
 msgid "Simulation of modification of rule statements"
@@ -1909,7 +1908,7 @@ msgstr "Petición de semáforo inactiva"
 
 #: lib/Baseliner/Controller/Slot.pm root/comp/job_calendar_editor.js
 msgid "Calendaring"
-msgstr "Ventanas de Pase"
+msgstr ""
 
 #: lib/Baseliner/Controller/Slot.pm
 msgid "View Job Calendar"
@@ -1930,7 +1929,7 @@ msgstr "Administrar Calendario de Pases"
 msgid "Calendar"
 msgstr "Calendario"
 
-#: lib/Baseliner/Controller/Slot.pm root/comp/user_grid.js
+#: lib/Baseliner/Controller/Slot.pm
 msgid "Namespace"
 msgstr "Ámbito"
 
@@ -2126,8 +2125,7 @@ msgstr "Nombre"
 msgid "E-mail"
 msgstr "Correo Electrónico"
 
-#: lib/Baseliner/Controller/Topic.pm root/comp/user_grid.js
-#: root/comp/user_info.mas
+#: lib/Baseliner/Controller/Topic.pm root/comp/user_info.mas
 msgid "Phone Number"
 msgstr "Teléfono"
 
@@ -2146,7 +2144,8 @@ msgstr "Usuario"
 msgid "The user %1 does not exist in Clarive"
 msgstr "El usuario %1 no existe en Clarive"
 
-#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Model/Messaging.pm
+#: lib/Baseliner/Controller/Topic.pm lib/Baseliner/Controller/UserGroup.pm
+#: lib/Baseliner/Model/Messaging.pm
 msgid "Missing id"
 msgstr "Falta el id"
 
@@ -2560,8 +2559,9 @@ msgstr "Tema"
 msgid "User Admin"
 msgstr "Administración de Usuarios"
 
-#: lib/Baseliner/Controller/User.pm root/comp/role_detail.js root/comp/sms.js
-#: root/comp/user_grid.js root/fields/templates/config/listbox.js
+#: lib/Baseliner/Controller/User.pm root/ci/UserGroup.js
+#: root/comp/role_detail.js root/comp/sms.js root/comp/user_grid.js
+#: root/comp/user_group_grid.js root/fields/templates/config/listbox.js
 msgid "Users"
 msgstr "Usuarios"
 
@@ -2582,32 +2582,16 @@ msgid "Missing parameter username"
 msgstr "Falta el parámetro username"
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User added"
-msgstr "Usuario grabado"
+msgid "User name already exists"
+msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "User name already exists, introduce another user name"
-msgstr "El usuario ya existe, intoduce otro usuario"
+msgid "User saved"
+msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
-msgid "Error adding User: %1"
-msgstr "Error grabando usuario: %1"
-
-#: lib/Baseliner/Controller/User.pm lib/Baseliner/Model/Rules.pm
-msgid "User not found"
-msgstr "Usuario no encontrado"
-
-#: lib/Baseliner/Controller/User.pm
-msgid "User modified"
-msgstr "Usuario modificado"
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Could not find ci for user %1"
-msgstr "No se ha encontrado ningún ci para el usuario %1"
-
-#: lib/Baseliner/Controller/User.pm
-msgid "Error modifying User: %1"
-msgstr "Error modificando usuario: %1"
+msgid "Error saving user: %1"
+msgstr ""
 
 #: lib/Baseliner/Controller/User.pm
 msgid "User deleted"
@@ -2664,6 +2648,38 @@ msgstr "Error: Fichero no encontrado"
 #: lib/Baseliner/Controller/User.pm
 msgid "Country info success"
 msgstr "Información del país correcta"
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User Groups"
+msgstr "Grupos de usuarios"
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group name already exists"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group saved"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "Error saving user group"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group deleted"
+msgstr "Grupo eliminado"
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "Error deleting User group: %1"
+msgstr "Error eliminando grupo: %1"
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "User group duplicated"
+msgstr ""
+
+#: lib/Baseliner/Controller/UserGroup.pm
+msgid "Error duplicating user group"
+msgstr ""
 
 #: lib/Baseliner/Core/Baseline.pm
 msgid "Config global baselines"
@@ -3001,6 +3017,10 @@ msgstr "Llamada a una regla Webservice"
 #: lib/Baseliner/Model/Rules.pm
 msgid "Rule not found"
 msgstr "Regla no encontrada"
+
+#: lib/Baseliner/Model/Rules.pm
+msgid "User not found"
+msgstr "Usuario no encontrado"
 
 #: lib/Baseliner/Model/Rules.pm
 msgid "Security"
@@ -4520,15 +4540,19 @@ msgstr ""
 
 #: lib/BaselinerX/CI/GitRevision.pm
 msgid "Missing parameter repo_dir"
-msgstr "Falta parámetro repo_dir"
+msgstr ""
 
 #: lib/BaselinerX/CI/GitRevision.pm
 msgid "Missing parameter repo_mid"
-msgstr "Falta parámetro repo_mid"
+msgstr ""
 
 #: lib/BaselinerX/CI/GitRevision.pm
 msgid "Missing parameter sha"
-msgstr "Falta parámetro sha"
+msgstr ""
+
+#: lib/BaselinerX/CI/UserGroup.pm
+msgid "User %1 does not exist"
+msgstr "Usuario %1 no existe"
 
 #: lib/BaselinerX/CI/asset.pm
 msgid "Could not insert asset"
@@ -5055,7 +5079,8 @@ msgstr "Informes de Regla"
 #: root/comp/lifecycle/report_edit.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/site/common.js root/site/model.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js root/site/common.js
+#: root/site/model.js
 msgid "Edit"
 msgstr "Editar"
 
@@ -5070,7 +5095,8 @@ msgstr "Editar"
 #: root/comp/project_grid.mas root/comp/repl.js root/comp/role_grid.js
 #: root/comp/rules.js root/comp/scheduler_grid.js root/comp/sms.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/site/common.js root/site/model.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js root/site/common.js
+#: root/site/model.js
 msgid "Delete"
 msgstr "Borrar"
 
@@ -5410,7 +5436,7 @@ msgstr "Nemónico"
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rule_new.js
 #: root/comp/scheduler_grid.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_actions.mas root/comp/user_grid.js root/comp/user_info.mas
+#: root/comp/user_actions.mas root/comp/user_info.mas
 #: root/comp/user_infoactions.mas root/fields/system/js/list_tasks.js
 #: root/fields/templates/config/ci_grid.js
 #: root/fields/templates/config/ci_list.js root/fields/templates/config/cis.js
@@ -5777,7 +5803,8 @@ msgid "Job Logs"
 msgstr "Logs de Pase"
 
 #: lib/BaselinerX/Job.pm root/comp/message_grid.js root/comp/user_grid.js
-#: root/fields/templates/html/upload_files.html root/site/common.js
+#: root/comp/user_group_grid.js root/fields/templates/html/upload_files.html
+#: root/site/common.js
 msgid "Id"
 msgstr "Id"
 
@@ -6021,7 +6048,7 @@ msgstr "Cambios"
 msgid "bl"
 msgstr "entorno"
 
-#: lib/BaselinerX/Reports/listado_jobs.pm root/comp/user_grid.js
+#: lib/BaselinerX/Reports/listado_jobs.pm
 #: root/fields/templates/config/generic_fields.js
 msgid "System"
 msgstr "Sistema"
@@ -7458,9 +7485,9 @@ msgstr "Usuario"
 
 #: root/ci/DBDest.js root/ci/clax_agent.js root/ci/dbi_connection.js
 #: root/ci/ftp_agent.js root/ci/oracle_connection.js root/ci/user.js
-#: root/comp/lifecycle/workspace_new.js root/comp/user_grid.js
-#: root/forms/ldap_search.js root/forms/rest_request.js
-#: root/forms/web_request.js root/site/login.js root/site/tabfu.js
+#: root/comp/lifecycle/workspace_new.js root/forms/ldap_search.js
+#: root/forms/rest_request.js root/forms/web_request.js root/site/login.js
+#: root/site/tabfu.js
 msgid "Password"
 msgstr "Contraseña"
 
@@ -8215,8 +8242,8 @@ msgstr ""
 #: root/comp/role_detail.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
-#: root/comp/user_grid.js root/forms/shortcut.js root/site/dashboard.js
-#: root/site/explorer.js root/site/model.js root/site/prefs.js
+#: root/forms/shortcut.js root/site/dashboard.js root/site/explorer.js
+#: root/site/model.js root/site/prefs.js
 msgid "Save"
 msgstr "Guardar"
 
@@ -8245,8 +8272,7 @@ msgstr "Error de escritura al catálogo"
 #: root/comp/notifications.js root/comp/role_detail.js
 #: root/comp/scheduler_grid.js root/comp/sms.js root/comp/topic/form_editor.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/comp/user_info.mas root/site/common.js
-#: root/site/explorer.js
+#: root/comp/user_info.mas root/site/common.js root/site/explorer.js
 msgid "Close"
 msgstr "Cerrar"
 
@@ -8324,7 +8350,8 @@ msgstr "Proyecto"
 #: root/comp/notifications.js root/comp/project_grid.mas
 #: root/comp/role_grid.js root/comp/scheduler_grid.js root/comp/sem.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/view_commits_history.js root/site/tabfu.js
+#: root/comp/user_group_grid.js root/comp/view_commits_history.js
+#: root/site/tabfu.js
 msgid "<Enter your search string>"
 msgstr "<Introduzca cadena de búsqueda>"
 
@@ -8339,7 +8366,7 @@ msgstr "Catálogo"
 #: root/comp/notifications.js root/comp/project_grid.mas
 #: root/comp/role_grid.js root/comp/rules.js root/comp/scheduler_grid.js
 #: root/comp/sem.js root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/comp/view_commits_history.js
+#: root/comp/user_group_grid.js root/comp/view_commits_history.js
 msgid "Search"
 msgstr "Buscar"
 
@@ -8510,7 +8537,8 @@ msgstr "¿Está seguro de querer borrar %1 elementos?"
 #: root/comp/role_detail.js root/comp/role_grid.js root/comp/rules.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/site/common.js root/site/kanban.js root/site/tabfu.js
+#: root/comp/user_group_grid.js root/site/common.js root/site/kanban.js
+#: root/site/tabfu.js
 msgid "Confirmation"
 msgstr "Confirmación"
 
@@ -8538,11 +8566,11 @@ msgstr "Mostrar"
 msgid "rows/page"
 msgstr "filas/página"
 
-#: root/comp/ci-gridtree.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/user_group_grid.js root/site/common.js
 msgid "Rows {0} - {1} of {2}"
 msgstr "Filas {0} - {1} de {2}"
 
-#: root/comp/ci-gridtree.js root/site/common.js
+#: root/comp/ci-gridtree.js root/comp/user_group_grid.js root/site/common.js
 msgid "There are no rows available"
 msgstr "No hay registros disponibles"
 
@@ -8649,7 +8677,8 @@ msgstr "Recibido"
 #: root/comp/notifications.js root/comp/role_grid.js
 #: root/comp/topic/topic_admin.js root/comp/topic/topic_lib.js
 #: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/js/list_tasks.js root/site/common.js root/site/tabfu.js
+#: root/comp/user_group_grid.js root/fields/system/js/list_tasks.js
+#: root/site/common.js root/site/tabfu.js
 msgid "Select at least one row"
 msgstr "Seleccione al menos una fila"
 
@@ -8798,8 +8827,9 @@ msgstr "Activar"
 #: root/comp/notifications.js root/comp/role_detail.js root/comp/sequences.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/fields/system/html/field_title.html
-#: root/site/explorer.js root/site/kanban.js root/site/tabfu.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js
+#: root/fields/system/html/field_title.html root/site/explorer.js
+#: root/site/kanban.js root/site/tabfu.js
 msgid "Success"
 msgstr "Éxito"
 
@@ -8807,8 +8837,9 @@ msgstr "Éxito"
 #: root/comp/notifications.js root/comp/scheduler_grid.js
 #: root/comp/sequences.js root/comp/topic/topic_admin.js
 #: root/comp/topic/topic_lib.js root/comp/topic/topic_lib_grid.js
-#: root/comp/user_grid.js root/fields/system/js/list_tasks.js
-#: root/site/common.js root/site/explorer.js
+#: root/comp/user_grid.js root/comp/user_group_grid.js
+#: root/fields/system/js/list_tasks.js root/site/common.js
+#: root/site/explorer.js
 msgid "ERROR"
 msgstr "ERROR"
 
@@ -9297,7 +9328,7 @@ msgstr "Activar Ventana"
 
 #: root/comp/job_calendar_slot_edit.js
 msgid "Weekday"
-msgstr "Día"
+msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
 msgid "Starts at"
@@ -9309,11 +9340,11 @@ msgstr "Hora fin"
 
 #: root/comp/job_calendar_slot_edit.js
 msgid "Edit Calendar Slot for %1"
-msgstr "Editar Ventana de Pase para %1"
+msgstr ""
 
 #: root/comp/job_calendar_slot_edit.js
 msgid "Edit Calendar Slot"
-msgstr "Editar Ventana de Pase"
+msgstr ""
 
 #: root/comp/job_calendar_slots.js
 msgid "new slot"
@@ -9447,8 +9478,6 @@ msgid ""
 "It's mandatory to add comments explaining why this job is outside any time "
 "slots"
 msgstr ""
-"En pases fuera de ventana, es obligatorio informar el motivo del pase en el "
-"campo observaciones"
 
 #: root/comp/job_new.js root/comp/role_grid.js
 msgid "Invalid"
@@ -9717,8 +9746,7 @@ msgstr "SQL"
 
 #: root/comp/lifecycle/report_edit.js root/comp/log_grid.js
 #: root/comp/topic/form_editor.js root/comp/topic/topic_admin.js
-#: root/comp/topic/topic_lib_grid.js root/comp/user_grid.js
-#: root/fields/system/html/field_title.html
+#: root/comp/topic/topic_lib_grid.js root/fields/system/html/field_title.html
 #: root/fields/templates/config/list_topics_selector.js root/site/tabfu.js
 msgid "Information"
 msgstr "Información"
@@ -10209,11 +10237,11 @@ msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "Update time and date of the job"
-msgstr "Modificar hora y fecha del pase"
+msgstr ""
 
 #: root/comp/monitor_grid.js
 msgid "There are no allowed windows for the job"
-msgstr "No hay ventanas permitidas para el pase"
+msgstr ""
 
 #: root/comp/monitor_grid.js root/site/common.js
 msgid "Rejected"
@@ -10659,6 +10687,7 @@ msgstr "El Rol no existe"
 
 #: root/comp/role_grid.js root/comp/scheduler_grid.js
 #: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/user_group_grid.js
 msgid "Duplicate"
 msgstr "Duplicar"
 
@@ -10786,7 +10815,7 @@ msgstr ""
 
 #: root/comp/rule_new.js
 msgid "Rule warning window"
-msgstr "Ventana de advertencias de reglas"
+msgstr ""
 
 #: root/comp/rules.js
 msgid "Delete rule %1?"
@@ -10810,11 +10839,11 @@ msgstr "Importada la regla: %1"
 
 #: root/comp/rules.js
 msgid "Drag and Drop Files Here"
-msgstr "Arastre y deje los ficheros aqui"
+msgstr ""
 
 #: root/comp/rules.js
 msgid "Select or Drag and Drop Rule Files Here"
-msgstr "Seleccione o arrastre los ficheros aqui"
+msgstr ""
 
 #: root/comp/rules.js
 msgid "Edit Rule"
@@ -11598,7 +11627,7 @@ msgstr "Regla de Formulario"
 
 #: root/comp/topic/topic_admin.js
 msgid "Select Form Rule"
-msgstr "Seleccionar Regla de Formulario"
+msgstr ""
 
 #: root/comp/topic/topic_admin.js
 msgid "Defined in the Workflow Tab"
@@ -11650,15 +11679,15 @@ msgstr "seleccione un estado..."
 msgid "From Status"
 msgstr "Estado Origen"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Available Roles"
 msgstr "Roles disponibles"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Delete row"
 msgstr "Borrar fila"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Are you sure you want to delete the row selected?"
 msgstr "¿Seguro que quiere borrar la fila?"
 
@@ -11682,7 +11711,7 @@ msgstr "Seleccione al menos un rol y estado destino"
 msgid "By project"
 msgstr "Por proyecto"
 
-#: root/comp/topic/topic_admin.js root/comp/user_grid.js
+#: root/comp/topic/topic_admin.js
 msgid "Available Projects"
 msgstr "Proyectos disponibles"
 
@@ -11990,58 +12019,6 @@ msgstr "Timeline"
 msgid "Invalid report meta for id %1"
 msgstr ""
 
-#: root/comp/user_grid.js
-msgid "Assign roles/projects"
-msgstr "Asignar roles/proyectos"
-
-#: root/comp/user_grid.js
-msgid "You must save the user before"
-msgstr "Tienes que grabar el usuario primero"
-
-#: root/comp/user_grid.js
-msgid "Unassign roles/projects"
-msgstr "Desasignar roles/proyectos"
-
-#: root/comp/user_grid.js
-msgid "User doesn't exist"
-msgstr "El usuario no existe"
-
-#: root/comp/user_grid.js
-msgid "Passwords do not match"
-msgstr "Contraseñas no encontradas"
-
-#: root/comp/user_grid.js
-msgid "Edit user"
-msgstr "Editar usuario"
-
-#: root/comp/user_grid.js
-msgid "Delete All"
-msgstr "Borrar Todos"
-
-#: root/comp/user_grid.js root/comp/user_info.mas
-msgid "Roles/Projects User"
-msgstr "Roles/Proyectos de usuario"
-
-#: root/comp/user_grid.js
-msgid "Account Type"
-msgstr "Tipo de cuenta"
-
-#: root/comp/user_grid.js
-msgid "Regular"
-msgstr "Regular"
-
-#: root/comp/user_grid.js root/site/tabfu.js
-msgid "Confirm Password"
-msgstr "Confirmar contraseña"
-
-#: root/comp/user_grid.js root/comp/user_info.mas
-msgid "Email address"
-msgstr "Correo electrónico"
-
-#: root/comp/user_grid.js
-msgid "Create user"
-msgstr "Crear usuario"
-
 #: root/comp/user_grid.js root/site/main.js root/site/prefs.js
 msgid "Preferences"
 msgstr "Preferencias"
@@ -12058,13 +12035,37 @@ msgstr "Cambiar contraseña"
 msgid "Avatar"
 msgstr "Avatar"
 
+#: root/comp/user_group_grid.js
+msgid "User Group Administration"
+msgstr "Administración de grupos de usuarios"
+
+#: root/comp/user_group_grid.js
+msgid "Are you sure you want to delete the user group %1"
+msgstr "Estás seguro de que quieres eliminar el grupo %1"
+
+#: root/comp/user_group_grid.js
+msgid "User groups"
+msgstr "Grupos de usuarios"
+
+#: root/comp/user_group_grid.js
+msgid "Group"
+msgstr "Grupo"
+
 #: root/comp/user_info.mas
 msgid "Actions User"
 msgstr "Acciones de usuario"
 
 #: root/comp/user_info.mas
+msgid "Roles/Projects User"
+msgstr "Roles/Proyectos de usuario"
+
+#: root/comp/user_info.mas
 msgid "Watch all actions"
 msgstr "Ver todas las acciones"
+
+#: root/comp/user_info.mas
+msgid "Email address"
+msgstr "Correo electrónico"
 
 #: root/comp/view_commits_history.js
 msgid "Commits history of branch"
@@ -13704,11 +13705,11 @@ msgstr "Excluir contenido de la expresión regular"
 
 #: root/forms/fail.js
 msgid "Error Message"
-msgstr "Mensaje de error"
+msgstr ""
 
 #: root/forms/fail.js
 msgid "abort here"
-msgstr "abortar aquí"
+msgstr ""
 
 #: root/forms/file_foreach.js
 msgid "Path Mode"
@@ -15464,7 +15465,7 @@ msgstr "Seleccionar Roles"
 
 #: root/site/model.js
 msgid "Select Rule"
-msgstr "Seleccionar Regla"
+msgstr ""
 
 #: root/site/model.js
 msgid "Select CI Role"
@@ -15681,6 +15682,10 @@ msgid "New Password"
 msgstr "Nueva Contraseña"
 
 #: root/site/tabfu.js
+msgid "Confirm Password"
+msgstr "Confirmar contraseña"
+
+#: root/site/tabfu.js
 msgid "Aceptar"
 msgstr "Aceptar"
 
@@ -15802,6 +15807,60 @@ msgstr "origen"
 msgid "to"
 msgstr "destino"
 
+#~ msgid "User added"
+#~ msgstr "Usuario grabado"
+
+#~ msgid "User name already exists, introduce another user name"
+#~ msgstr "El usuario ya existe, intoduce otro usuario"
+
+#~ msgid "Error adding User: %1"
+#~ msgstr "Error grabando usuario: %1"
+
+#~ msgid "User modified"
+#~ msgstr "Usuario modificado"
+
+#~ msgid "Could not find ci for user %1"
+#~ msgstr "No se ha encontrado ningún ci para el usuario %1"
+
+#~ msgid "Error modifying User: %1"
+#~ msgstr "Error modificando usuario: %1"
+
+#~ msgid "Missing groupname"
+#~ msgstr "Falta el groupname"
+
+#~ msgid "User group added"
+#~ msgstr "Grupo agregado"
+
+#~ msgid "Group name already exists.  Specify another group name"
+#~ msgstr "El nombre de grupo ya existe.  Especifica otro nombre"
+
+#~ msgid "Error adding User group: %1"
+#~ msgstr "Error agregando grupo: %1"
+
+#~ msgid "Missing update type"
+#~ msgstr "Falta el update type"
+
+#~ msgid "Missing group mid"
+#~ msgstr "Falta el mid del grupo"
+
+#~ msgid "Group not found"
+#~ msgstr "Grupo no encontrado"
+
+#~ msgid "User group modified"
+#~ msgstr "Grupo modificado"
+
+#~ msgid "Error modifying user group: %1"
+#~ msgstr "Error modificando grupo: %1"
+
+#~ msgid "UserGroup duplicated"
+#~ msgstr "Grupo duplicado"
+
+#~ msgid "Missing id_group or group not found"
+#~ msgstr "Falta el id_group o el grupo no existe"
+
+#~ msgid "Error duplicating userGroup: %1"
+#~ msgstr "Error duplicando grupo: %1"
+
 #~ msgid "Drop files here to upload"
 #~ msgstr "Arrastre los ficheros aquí para subirlos"
 
@@ -15913,8 +15972,20 @@ msgstr "destino"
 #~ msgid "event purge daemon frequency (secs)"
 #~ msgstr "frecuencia del demonio de purga de eventos (segs)"
 
+#~ msgid "Job %1 does not need rollback"
+#~ msgstr "Pase %1 no necesita marcha atrás"
+
+#~ msgid "Job Slots"
+#~ msgstr "Ventanas de Pase"
+
 #~ msgid "Create a new Job"
 #~ msgstr "Nuevo Pase"
+
+#~ msgid "Edit Job Slot for %1"
+#~ msgstr "Editar Ventana de Pase para %1"
+
+#~ msgid "Edit Job Slot"
+#~ msgstr "Editar Ventana de Pase"
 
 #~ msgid "Destination Baseline"
 #~ msgstr "Entorno Destino"
@@ -16001,9 +16072,6 @@ msgstr "destino"
 
 #~ msgid "Select topic form"
 #~ msgstr "Seleccione formulario"
-
-#~ msgid "Job %1 does not need rollback"
-#~ msgstr "Pase %1 no necesita marcha atrás"
 
 #~ msgid "Rerun Job"
 #~ msgstr "Reiniciar Pase"
@@ -16096,6 +16164,9 @@ msgstr "destino"
 #~ msgstr ""
 #~ "Demonio de eventos iniciándose con frecuencia %1, timeout %2, boost %3"
 
+#~ msgid "Select one"
+#~ msgstr "Seleccione uno"
+
 #~ msgid "%1 removed %2"
 #~ msgstr "%1 borró %2"
 
@@ -16125,9 +16196,6 @@ msgstr "destino"
 
 #~ msgid "Missing repo mid"
 #~ msgstr "Falta mid de repo"
-
-#~ msgid "Select one"
-#~ msgstr "Seleccione uno"
 
 #~ msgid "Topic %1 does not match category %2. Skipped"
 #~ msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
@@ -16450,9 +16518,6 @@ msgstr "destino"
 #~ msgid "Tool"
 #~ msgstr "Herramienta"
 
-#~ msgid "Group"
-#~ msgstr "Grupo"
-
 #~ msgid "Reports Available"
 #~ msgstr "Informes Disponibles"
 
@@ -16480,8 +16545,11 @@ msgstr "destino"
 #~ msgid "group"
 #~ msgstr "grupo"
 
-#~ msgid "host"
-#~ msgstr "host"
+#~ msgid "Assign roles/projects"
+#~ msgstr "Asignar roles/proyectos"
+
+#~ msgid "You must save the user before"
+#~ msgstr "Tienes que grabar el usuario primero"
 
 #~ msgid "os"
 #~ msgstr "s.o."
@@ -18022,9 +18090,6 @@ msgstr "destino"
 #~ msgid "category_status"
 #~ msgstr "Categoría/Estado"
 
-#~ msgid "Groups"
-#~ msgstr "Grupos"
-
 #~ msgid "Create notification"
 #~ msgstr "Crear notificación"
 
@@ -18807,32 +18872,35 @@ msgstr "destino"
 #~ "Desplazamiento en días desde hoy para mostrar en el gráfico. 0 o vacío "
 #~ "para HOY"
 
-#~ msgid "Use these categories"
-#~ msgstr "Usar categorías"
+#~ msgid "Unassign roles/projects"
+#~ msgstr "Desasignar roles/proyectos"
 
-#~ msgid "Available fields"
-#~ msgstr "Campos disponibles"
+#~ msgid "User doesn't exist"
+#~ msgstr "El usuario no existe"
 
-#~ msgid "Rol"
-#~ msgstr "Rol"
+#~ msgid "Passwords do not match"
+#~ msgstr "Contraseñas no encontradas"
 
-#~ msgid "Open life cicle"
-#~ msgstr "Abrir ciclo de vida"
+#~ msgid "Edit user"
+#~ msgstr "Editar usuario"
 
-#~ msgid "Error: Role already exists"
-#~ msgstr "Error: El rol ya existe"
+#~ msgid "Delete All"
+#~ msgstr "Borrar Todos"
 
-#~ msgid "'Preformatted Text'"
-#~ msgstr "Texto con Preformato"
+#~ msgid "Groups"
+#~ msgstr "Grupos"
 
-#~ msgid "Date time format"
-#~ msgstr "Formato fecha-hora"
+#~ msgid "Account Type"
+#~ msgstr "Tipo de cuenta"
 
-#~ msgid "Class selection"
-#~ msgstr "Selección por Clase"
+#~ msgid "Regular"
+#~ msgstr "Regular"
 
-#~ msgid "The project %1 has %2 user(s) assigned, delete this project?"
-#~ msgstr "El proyeto %1 tiene %2 usuarios asignados, ¿desea borrarlo?"
+#~ msgid "Create user"
+#~ msgstr "Crear usuario"
 
-#~ msgid "step"
-#~ msgstr "paso"
+#~ msgid "You must save the user group before"
+#~ msgstr "Debes guardar el grupo antes"
+
+#~ msgid "Edit usergroup"
+#~ msgstr "Editar grupo"

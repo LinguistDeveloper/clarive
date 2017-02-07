@@ -258,7 +258,8 @@ sub delete {
             $username = $self->modified_by;
         }
         catch {
-            Util->_error("Problem here");
+            my $error = shift;
+            Util->_error("Problem here: $error");
         };
 
         event_new 'event.ci.delete' => { username => $username, ci => $self} => sub {

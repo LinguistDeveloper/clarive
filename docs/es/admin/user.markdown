@@ -38,6 +38,12 @@ Una vez completado el formulario es **necesario** guardar antes de asignar los r
 
 Bajo estos campos, se muestran los roles definidos en la base de datos en el cuadro de la izquierda mientras que los [ámbitos](concepts/scope) disponibles se muestran en la tabla de la derecha.
 
+**NOTA IMPORTANTE**: La asignación de roles a usuarios sólo está disponible para usuarios guardados.
+Guárdelo antes de añadir roles.
+
+**NOTA IMPORTANTE 2**: Si un usuario pertenece a algún grupo, su seguridad no se puede gestionar individualmente sino
+que será el resultado de combinar las seguridades de todos los grupos a los que pertenece.
+
 Para añadir uno o varios roles a un usuario, se marcan los roles deseados en la parte izquierda de la ventana y los proyectos en la parte derecha. A continuación pulsar en `Asignar roles/proyectos`. El rol se mostrará en la tabla inferior de la ventana.
 
 Para desasignar un rol o un proyecto a un usuario, se puede realizar de varias maneras, por ejemplo:

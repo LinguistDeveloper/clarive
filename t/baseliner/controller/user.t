@@ -24,6 +24,9 @@ use_ok 'Baseliner::Controller::User';
 subtest 'infoactions: non admin user is not allowed to query other users action' => sub {
     _setup();
 
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
+
     my $controller = _build_controller();
     my $c = _build_c( req => { params => { username => 'root' } } );
 
@@ -35,6 +38,9 @@ subtest 'infoactions: non admin user is not allowed to query other users action'
 subtest 'infoactions: same user is allowed to query his own actions' => sub {
     _setup();
 
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
+
     my $controller = _build_controller();
     my $c = _build_c( req => { params => { username => 'test' } } );
     $controller->infoactions($c);
@@ -43,6 +49,9 @@ subtest 'infoactions: same user is allowed to query his own actions' => sub {
 
 subtest 'infoactions: root user is allowed to query any user actions' => sub {
     _setup();
+
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
 
     my $controller = _build_controller();
     my $c          = _build_c(
@@ -57,6 +66,9 @@ subtest 'infoactions: root user is allowed to query any user actions' => sub {
 subtest 'infodetail: non admin user is not allowed to query other users detail' => sub {
     _setup();
 
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
+
     my $controller = _build_controller();
     my $c          = _build_c(
         req      => { params => { username => 'root' } },
@@ -69,6 +81,9 @@ subtest 'infodetail: non admin user is not allowed to query other users detail' 
 
 subtest 'infodetail: non admin user is not allowed to query role details' => sub {
     _setup();
+
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
 
     my $controller = _build_controller();
     my $params     = { id_role => 1 };
@@ -84,6 +99,9 @@ subtest 'infodetail: non admin user is not allowed to query role details' => sub
 subtest 'infodetail: same user is allowed to query his own details' => sub {
     _setup();
 
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
+
     my $controller = _build_controller();
     my $c          = _build_c(
         req      => { params => { username => 'test' } },
@@ -95,6 +113,9 @@ subtest 'infodetail: same user is allowed to query his own details' => sub {
 
 subtest 'infodetail: root user is allowed to query any user details' => sub {
     _setup();
+
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
 
     my $controller = _build_controller();
     my $c          = _build_c(
@@ -162,10 +183,10 @@ subtest 'list: returns complete user list' => sub {
     my $c = _build_c( username => 'root' );
     $controller->list($c);
 
-    is $c->stash->{json}{data}[1]->{username}, 'user1';
-    is $c->stash->{json}{data}[2]->{username}, 'user2';
-    is @{$c->stash->{json}{data}}, 3;
-    is $c->stash->{json}{totalCount}, 3;
+    is $c->stash->{json}{data}[0]->{username}, 'user1';
+    is $c->stash->{json}{data}[1]->{username}, 'user2';
+    is @{$c->stash->{json}{data}}, 2;
+    is $c->stash->{json}{totalCount}, 2;
 };
 
 subtest 'list: returns user list with limit -1' => sub {
@@ -184,8 +205,8 @@ subtest 'list: returns user list with limit -1' => sub {
     );
     $controller->list($c);
 
-    is @{$c->stash->{json}{data}}, 3;
-    is $c->stash->{json}{totalCount}, 3;
+    is @{$c->stash->{json}{data}}, 2;
+    is $c->stash->{json}{totalCount}, 2;
 };
 
 subtest 'list: returns user list with limit 1' => sub {
@@ -205,7 +226,7 @@ subtest 'list: returns user list with limit 1' => sub {
     $controller->list($c);
 
     is @{$c->stash->{json}{data}}, 1;
-    is $c->stash->{json}{totalCount}, 3;
+    is $c->stash->{json}{totalCount}, 2;
 };
 
 subtest 'avatar: generates user avatar if it doesnt exit' => sub {
@@ -331,6 +352,9 @@ subtest 'avatar_refresh: shows error when no avatar was present' => sub {
 subtest 'avatar_refresh: throws when refreshing avatar for another user' => sub {
     _setup();
 
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
+
     my $c = _build_c( username => 'test' );
 
     my $controller = _build_controller();
@@ -341,6 +365,9 @@ subtest 'avatar_refresh: throws when refreshing avatar for another user' => sub 
 
 subtest 'avatar_refresh: removes avatar for another when root' => sub {
     _setup();
+
+    my $user = ci->user->new( name => 'test' );
+    $user->save;
 
     my $tempdir = tempdir();
 
@@ -421,6 +448,8 @@ subtest 'avatar_upload: saves avatar' => sub {
 
 subtest 'avatar_upload: throws when uploading avatar for another user' => sub {
     _setup();
+
+    TestSetup->create_user( username => 'test' );
 
     my $c = _build_c( username => 'test' );
 
@@ -641,6 +670,304 @@ subtest 'infodetail: gets projects with icon' => sub {
     like $data->{projects}->[0]->{name}, qr/$nature_icon/;
 };
 
+subtest 'toggle_roles_projects: assigns new roles and projects' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci('project');
+    my $id_role     = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $id_role2 = TestSetup->create_role;
+    my $project2 = TestUtils->create_ci('project');
+    my $area2 = TestUtils->create_ci('area');
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                action           => 'assign',
+                id               => $user->mid,
+                roles_checked    => [ $id_role2, 999, $id_role2 ],
+                projects_checked => [ 999, $project2->mid, $project2->mid, $area2->mid ]
+            }
+        },
+        username => 'root'
+    );
+    $controller->toggle_roles_projects($c);
+
+    $user = ci->new($user->{mid});
+
+    is_deeply $user->project_security,
+      {
+        $id_role => {
+            project => [ $project->mid ]
+        },
+        $id_role2 => {
+            project => [ $project2->mid ],
+            area    => [ $area2->mid ]
+        }
+      };
+};
+
+subtest 'toggle_roles_projects: unassigns roles and projects' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci('project');
+    my $id_role     = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                action           => 'unassign',
+                id               => $user->mid,
+                roles_checked    => [ $id_role ],
+                projects_checked => [ $project->mid ]
+            }
+        },
+        username => 'root'
+    );
+    $controller->toggle_roles_projects($c);
+
+    $user = ci->new($user->{mid});
+
+    is_deeply $user->project_security, {};
+};
+
+subtest 'delete_roles: deletes roles' => sub {
+    _setup();
+
+    my $project      = TestUtils->create_ci('project');
+    my $id_role     = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id            => $user->mid,
+                roles_checked => [$id_role],
+            }
+        },
+        username => 'root'
+    );
+    $controller->delete_roles($c);
+
+    $user = ci->new($user->{mid});
+
+    is_deeply $user->project_security, {};
+};
+
+subtest 'update: creates new user' => sub {
+    _setup();
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                username => 'foo',
+                pass     => 'bar'
+            }
+        },
+        username => 'root'
+    );
+    $controller->update($c);
+
+    my $user = ci->user->search_ci;
+
+    is $user->username, 'foo';
+};
+
+subtest 'update: shows error when user already exists' => sub {
+    _setup();
+
+    TestSetup->create_user( username => 'exists' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                username => 'exists',
+                pass     => 'bar'
+            }
+        },
+        username => 'root'
+    );
+    $controller->update($c);
+
+    like $c->stash->{json}->{msg}, qr/validation failed/i;
+    like $c->stash->{json}->{errors}->{username}, qr/already exists/i;
+};
+
+subtest 'update: updates user' => sub {
+    _setup();
+
+    my $usergroup = TestUtils->create_ci( 'UserGroup', groupname => 'group', );
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id       => $user->mid,
+                username => 'user',
+                realname => 'Real Name',
+                groups   => [ $usergroup->mid ]
+            }
+        },
+        username => 'root'
+    );
+    $controller->update($c);
+
+    my $updated_user = ci->new( $user->mid );
+
+    is $updated_user->mid,      $user->mid;
+    is $updated_user->realname, 'Real Name';
+    is_deeply [ map { $_->mid } _array $updated_user->groups ], [ $usergroup->mid ];
+};
+
+subtest 'update: updates user changing username' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id       => $user->mid,
+                username => 'another'
+            }
+        },
+        username => 'root'
+    );
+    $controller->update($c);
+
+    my $updated_user = ci->new( $user->mid );
+
+    is $updated_user->mid,      $user->mid;
+    is $updated_user->username, 'another';
+};
+
+subtest 'update: shows error when updating user with existing username' => sub {
+    _setup();
+
+    TestSetup->create_user( username => 'exists' );
+
+    my $user = TestSetup->create_user( username => 'test' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id => $user->mid,
+                username => 'exists',
+                pass     => 'bar'
+            }
+        },
+        username => 'root'
+    );
+    $controller->update($c);
+
+    like $c->stash->{json}->{msg}, qr/validation failed/i;
+    like $c->stash->{json}->{errors}->{username}, qr/already exists/i;
+};
+
+subtest 'delete: deletes user by id' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id => $user->mid,
+            }
+        },
+        username => 'root'
+    );
+
+    $controller->delete($c);
+
+    ok !ci->user->find_one( { mid => $user->mid } );
+};
+
+subtest 'delete: deletes user by username' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                username => $user->username
+            }
+        },
+        username => 'root'
+    );
+
+    $controller->delete($c);
+
+    ok !ci->user->find_one( { mid => $user->mid } );
+};
+
+subtest 'duplicate: duplicates user' => sub {
+    _setup();
+
+    my $usergroup = TestUtils->create_ci('UserGroup', name => 'test');
+    my $user = TestSetup->create_user( username => 'user', groups => [$usergroup->mid] );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id_user => $user->mid
+            }
+        },
+        username => 'root'
+    );
+
+    $controller->duplicate($c);
+
+    my $new_user = ci->user->search_ci(mid => {'$ne' => $user->mid});
+
+    is $new_user->username, 'Duplicate of user';
+    is_deeply [ map { $_->mid } _array $new_user->groups ], [ $usergroup->mid ];
+};
+
+subtest 'duplicate: duplicates user more than once' => sub {
+    _setup();
+
+    my $user = TestSetup->create_user( username => 'user' );
+
+    my $controller = _build_controller();
+    my $c          = _build_c(
+        req => {
+            params => {
+                id_user => $user->mid
+            }
+        },
+        username => 'root'
+    );
+
+    $controller->duplicate($c);
+    $controller->duplicate($c);
+    $controller->duplicate($c);
+    $controller->duplicate($c);
+
+    my @new_users = ci->user->search_cis(mid => {'$ne' => $user->mid});
+
+    is @new_users, 4;
+
+    is $new_users[0]->username, 'Duplicate of user';
+    is $new_users[1]->username, 'Duplicate of user 2';
+    is $new_users[2]->username, 'Duplicate of user 3';
+    is $new_users[3]->username, 'Duplicate of user 4';
+};
+
 done_testing;
 
 sub _build_c {
@@ -667,8 +994,8 @@ sub _setup {
     mdb->master_rel->drop;
     mdb->master_doc->drop;
 
-    my $user = ci->user->new( name => 'test' );
-    $user->save;
+    #my $user = ci->user->new( name => 'test' );
+    #$user->save;
 }
 
 sub _build_controller {
