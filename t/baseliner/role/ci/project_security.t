@@ -74,6 +74,37 @@ subtest 'toggle_roles_projects: unassigns roles and projects' => sub {
     is_deeply $user->project_security, {};
 };
 
+subtest 'toggle_roles_projects: assigns new roles and all projects' => sub {
+    _setup();
+
+    my $project = TestUtils->create_ci('project');
+    my $id_role = TestSetup->create_role();
+    my $user = TestSetup->create_user( name => 'user1', username => 'user1', id_role => $id_role, project => $project );
+
+    my $id_role2 = TestSetup->create_role;
+    my $project2 = TestUtils->create_ci('project');
+    my $area2    = TestUtils->create_ci('area');
+
+    $user->toggle_roles_projects(
+        action   => 'assign',
+        roles    => [ $id_role2, 999, $id_role2 ],
+        projects => [ 'all' ]
+    );
+
+    $user = ci->new( $user->{mid} );
+
+    is_deeply $user->project_security,
+      {
+        $id_role => {
+            project => [ $project->mid ]
+        },
+        $id_role2 => {
+            project => [ $project->mid, $project2->mid ],
+            area    => [ $area2->mid ]
+        }
+      };
+};
+
 subtest 'delete_roles: deletes roles' => sub {
     _setup();
 

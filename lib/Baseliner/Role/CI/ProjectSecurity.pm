@@ -2,6 +2,7 @@ package Baseliner::Role::CI::ProjectSecurity;
 use Moose::Role;
 with 'Baseliner::Role::CI::Internal';
 
+use Try::Tiny;
 use Baseliner::Utils qw(_array _unique);
 
 sub roles_projects {
@@ -42,6 +43,16 @@ sub toggle_roles_projects {
 
     my @dimensions = map { Util->to_base_class($_) } Util->packages_that_do('Baseliner::Role::CI::Project');
 
+    if ( grep { $_ eq 'all' } @projects ) {
+        @projects = ();
+
+        foreach my $dimension (@dimensions) {
+            try {
+                push @projects, map { $_->{mid} } ci->$dimension->find->all;
+            };
+        }
+    }
+
     my $projects_by_dimensions = {};
     foreach my $project (@projects) {
         my $ci = eval { ci->new($project) };
@@ -75,7 +86,7 @@ sub toggle_roles_projects {
             }
         }
 
-        delete $project_security->{$id_role} unless %{ $project_security->{$id_role} };
+        delete $project_security->{$id_role} unless %{ $project_security->{$id_role} // {} };
     }
 
     $self->update( project_security => $project_security );

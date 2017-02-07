@@ -72,7 +72,7 @@ define(function() {
             iconCls: 'default_folders',
             data: {
                 project: '',
-                id_project: 'todos',
+                id_project: 'all',
                 parent_checked: ''
             }
         });
@@ -98,7 +98,7 @@ define(function() {
                     if (node.attributes.leaf) {
                         projectsChecked.push(node.attributes.data.id_project);
                     } else {
-                        if (node.childNodes.length > 0 || node.attributes.data.id_project == 'todos') {
+                        if (node.childNodes.length > 0 || node.attributes.data.id_project == 'all') {
                             projectsChecked.push(node.attributes.data.id_project);
                         }
                     }
