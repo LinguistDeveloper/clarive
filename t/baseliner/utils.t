@@ -588,15 +588,20 @@ subtest '_probe_one_row: basic one term' => sub {
 };
 
 subtest '_is_binary: thows an exception when parameter size is 0' => sub {
-    like exception { _is_binary() }, qr/sub is_bianry needs one parameter/;
+    like exception { _is_binary() }, qr/_is_binary accepts one parameter/;
 };
 
 subtest '_is_binary: thows an exception when parameter size is greater than 1' => sub {
-    like exception { _is_binary( data => 'data', path => '/my_path' ) }, qr/sub is_bianry needs one parameter/;
+    like exception { _is_binary( data => 'data', path => '/my_path' ) }, qr/_is_binary accepts one parameter/;
 };
 
 subtest '_is_binary: thows an exception when parameter is not the correct one' => sub {
-    like exception { _is_binary( datas => 'data' ) }, qr/_is_binary accept only parameters: data, fh or path/;
+    like exception { _is_binary( datas => 'data' ) }, qr/_is_binary accepts only parameters: data, fh or path/;
+};
+
+subtest '_is_binary: return false when data is empty' => sub {
+    ok !Util->_is_binary( data => undef );
+    ok !Util->_is_binary( data => '' );
 };
 
 subtest '_is_binary: return false when data is not binary' => sub {

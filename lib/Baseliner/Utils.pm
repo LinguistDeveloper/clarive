@@ -2505,20 +2505,25 @@ sub _truncate {
 sub _is_binary {
     my %p = @_;
 
-    _fail( "sub is_bianry needs one parameter" ) if scalar keys %p != 1;
-    my $magic = File::LibMagic->new(magic_file => "$ENV{CLARIVE_BASE}/local/share/misc/magic.mgc");
+    _fail('_is_binary accepts one parameter') if scalar keys %p != 1;
+
+    my $magic = File::LibMagic->new( magic_file => "$ENV{CLARIVE_BASE}/local/share/misc/magic.mgc" );
     my $info;
 
-    if ( $p{data} ) {
-        $info = $magic->info_from_string( $p{data} );
-    } elsif ( $p{fh} ) {
-        $info = $magic->info_from_handle( $p{fh} );
-    } elsif ( $p{path} ) {
-        $info = $magic->info_from_filename( $p{path} );
-    } else {
-        _fail( "_is_binary accept only parameters: data, fh or path" );
+    if ( exists $p{data} ) {
+        $info = $magic->info_from_string( ( $p{data} // '' ) . '' );
     }
-    return $info->{description} !~ m/ascii|text/i;
+    elsif ( $p{fh} ) {
+        $info = $magic->info_from_handle( $p{fh} );
+    }
+    elsif ( $p{path} ) {
+        $info = $magic->info_from_filename( $p{path} );
+    }
+    else {
+        _fail('_is_binary accepts only parameters: data, fh or path');
+    }
+
+    return $info->{description} !~ m/empty|ascii|text/i;
 }
 
 sub _timeout {

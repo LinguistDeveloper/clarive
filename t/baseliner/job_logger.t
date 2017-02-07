@@ -57,10 +57,26 @@ subtest 'common_log: logs data' => sub {
         'text'        => 'foobar',
         't'           => ignore(),
         'ts'          => ignore(),
+        'stream'      => ignore(),
       };
 
     my $grid = mdb->grid->find_one;
     is Baseliner::Utils::uncompress( $grid->slurp ), 'DATA';
+};
+
+subtest 'common_log: correctly saves zero data' => sub {
+    _setup();
+
+    my $job = _mock_job();
+
+    my $logger = _build_logger( job => $job, jobid => 1, exec => 1, current_service => 'some.service' );
+
+    capture {
+        $logger->common_log( 'info', 0, 0 );
+    };
+
+    my $job_log = mdb->job_log->find_one;
+    is $job_log->{text}, 0;
 };
 
 subtest 'common_log: correctly saves unicode text' => sub {

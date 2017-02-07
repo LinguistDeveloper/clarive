@@ -78,6 +78,7 @@ sub common_log {
     my $username   = $p{username};
     my $return_row = $p{return_row};
     my $no_trim    = $p{no_trim};
+    my $stream     = $p{stream};
 
     my ($package, $filename, $line);
     if( ref $lev eq 'ARRAY' ) {
@@ -127,9 +128,10 @@ sub common_log {
         $doc->{stmt_level} = $stmt_level;
         $doc->{service_key} = $self->current_service;
         $doc->{rule} =  $self->job->id_rule if defined $self->job->id_rule;
+        $doc->{stream} =  $stream;
         $doc->{no_trim}     = $no_trim ? 1 : 0;
 
-        if ($data) {
+        if (defined $data) {
             my $filtered_data = $data;
             if( !Util->_is_binary(data => $data) ){
                 $filtered_data = Util->hide_passwords($data);

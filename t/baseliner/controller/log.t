@@ -14,7 +14,6 @@ use Encode ();
 use Digest::MD5 qw(md5_base64);
 
 use Capture::Tiny qw(capture);
-use Baseliner::Utils ();
 
 use_ok 'Baseliner::Controller::Log';
 
@@ -26,18 +25,6 @@ subtest 'log_data: throws no log found' => sub {
     my $c = _build_c();
 
     like exception { $controller->log_data( $c, 123 ) }, qr/Log row not found/;
-};
-
-subtest 'log_data: throws when log found but without data' => sub {
-    _setup();
-
-    mdb->job_log->insert( { id => 123 } );
-
-    my $controller = _build_controller();
-
-    my $c = _build_c();
-
-    like exception { $controller->log_data( $c, 123 ) }, qr/Log data not found/;
 };
 
 subtest 'log_data: returns job log data' => sub {
@@ -480,6 +467,52 @@ subtest 'auto_refresh: returns empty refresh when no job found' => sub {
             'top_id'   => undef
         }
       };
+};
+
+subtest 'log_stream: returns error when stream file not available' => sub {
+    _setup();
+
+    my $id_job = 0 + mdb->seq('job_log_id');
+    mdb->job_log->insert( { id => $id_job } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { id => $id_job } } );
+
+    $controller->log_stream($c);
+
+    like $c->res->body, qr/no stream available/i;
+};
+
+subtest 'log_stream: returns streaming js' => sub {
+    _setup();
+
+    my $path = File::Temp->new;
+    TestUtils->write_file('something', $path->filename);
+
+    my $id_job = 0 + mdb->seq('job_log_id');
+    mdb->job_log->insert( { id => $id_job, stream => $path->filename } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { id => $id_job } } );
+
+    $controller->log_stream($c);
+
+    like $c->res->body, qr/xhr/;
+};
+
+subtest 'log_stream_events: throws error when stream file not available' => sub {
+    _setup();
+
+    my $id_job = 0 + mdb->seq('job_log_id');
+    mdb->job_log->insert( { id => $id_job } );
+
+    my $controller = _build_controller();
+
+    my $c = _build_c( req => { params => { id => $id_job } } );
+
+    like exception { $controller->log_stream_events($c) }, qr/no stream available/i;
 };
 
 done_testing;

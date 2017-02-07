@@ -368,6 +368,10 @@
                        data_name = "Log Data " + rec.data.id;
                    }
                    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/job-full-log.svg'/></a> " + datalen ;
+
+                   if (value.stream) {
+                       ret += '<a href="#" onclick="javascript:Baseliner.addNewTabSearch(\'/job/log/stream?id=' + rec.data.id + '\', \'Streaming\'); return false;"><img border=0 class="force_size_in_icon" src="/static/images/loading/loading-fast.gif" /></a>';
+                   }
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
                    ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/icons/page-new.svg'></a> "
