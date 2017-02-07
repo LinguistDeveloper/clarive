@@ -5,6 +5,7 @@ use warnings;
 use Time::HiRes qw(usleep);
 use Benchmark ();
 use Clarive::Code::JSUtils qw(js_sub);
+use Baseliner::Utils qw(_retry);
 
 sub generate {
     my $self  = shift;
@@ -21,6 +22,13 @@ sub generate {
             my $s = shift;
 
             usleep( $s * 1_000_000 );
+        },
+        retry => js_sub {
+            my ( $cb, $options ) = @_;
+
+            return _retry $cb,
+              attempts => exists $options->{attempts} ? $options->{attempts} : 0,
+              pause => $options->{pause};
         },
     };
 }

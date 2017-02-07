@@ -2755,15 +2755,17 @@ sub _capture_pipe {
 sub _retry {
     my ( $cb, %params ) = @_;
 
-    my $attempts = $params{attempts} || 1;
+    my $attempts = $params{attempts} // 1;
     my $pause    = $params{pause} // 0.5;
     my $when     = $params{when};
     my $warn     = $params{warn};
 
+    my $forever = $attempts == 0;
+
     my $ok = 0;
     my $last_error;
     my $last_val;
-    for ( 1 .. $attempts ) {
+    while ($forever ? 1 : $attempts > 0) {
         local $@;
         eval {
             $last_val = $cb->();
@@ -2781,6 +2783,8 @@ sub _retry {
         }
 
         usleep( $pause * 1_000_000 ) if $pause;
+
+        $attempts--;
     }
 
     if ( !$ok ) {
