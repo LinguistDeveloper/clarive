@@ -12084,6 +12084,10 @@ msgid "Author"
 msgstr "Autor"
 
 #: root/comp/view_commits_history.js
+msgid "Merge"
+msgstr "Mergeo"
+
+#: root/comp/view_commits_history.js
 msgid "Bls"
 msgstr "Entornos"
 

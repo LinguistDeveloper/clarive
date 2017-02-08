@@ -11923,6 +11923,10 @@ msgid "Author"
 msgstr ""
 
 #: root/comp/view_commits_history.js
+msgid "Merge"
+msgstr ""
+
+#: root/comp/view_commits_history.js
 msgid "Bls"
 msgstr ""
 

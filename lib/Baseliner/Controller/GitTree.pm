@@ -879,6 +879,7 @@ sub get_log_history {
             $log->{ago} = Util->ago($date_str);
         }elsif( $_=~/^Merge: (.+)/){
             $merge = $1;
+            $log->{merge} = 1;
         }elsif( $_=~/^commit (.+)/){
             if($log->{author}){
                 push @commits, $log;
