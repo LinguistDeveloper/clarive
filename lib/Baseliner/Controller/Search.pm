@@ -84,7 +84,9 @@ sub clean_match {
 
 sub order_matches {
     my ($self,$query,$config,@results) = @_;
-    my $docs = [];
+
+    my @docs;
+
     # ( my $query_clean = $query ) =~ s/\W+//g;
     my $max_excerpt_size = $config->{max_excerpt_size} // 120;
     my $max_excerpt_tokens = $config->{max_excerpt_tokens} // 5;
@@ -112,13 +114,23 @@ sub order_matches {
         $$doc{text} = substr $$doc{text},0,$max_excerpt_size; # if no excerpt, search_results.js uses text, so we better trim
         $$doc{matches} = $idexact*1000000 + ($idmatch>0?(10**(1/$idmatch)*10000):0) + ($tmatch>0?(10**(1/$tmatch)*1000):0) + scalar @found;
         $$doc{title} = "$$doc{title}";
-        push $docs, $doc;  # we don't filter results
+        push @docs, $doc;  # we don't filter results
     }
-    #my $res = { results => , query => $query, matches => @$docs };
-    # TODO mid here may not come and maybe a string, don't order on it
-    [ sort {
-        $$a{matches} == $$b{matches} ? $$a{mid} <=> $$b{mid} : $$b{matches} <=> $$a{matches}
-        } @$docs ];
+
+    # put mid first if query is an mid
+    @docs = sort {
+       if( $$a{mid} eq $query ) {
+           -1;
+       }
+       elsif( $$b{mid} eq $query ) {
+           1;
+       }
+       else {
+           0;
+       }
+    } @docs;
+
+    return \@docs;
 }
 
 =head2 query_lucy

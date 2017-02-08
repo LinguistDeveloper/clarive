@@ -6,6 +6,7 @@ use Baseliner::Core::Registry ':dsl';
 use Baseliner::Role::CI::Generic;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::Search;
 use Baseliner::Model::Permissions;
 use Try::Tiny;
 use experimental 'switch', 'smartmatch', 'autoderef';
@@ -1803,33 +1804,32 @@ sub search_provider_name { 'CIs' };
 sub search_provider_type { 'CI' };
 sub search_query {
     my ($self, %p ) = @_;
+
     my $query = $p{query};
-    my $limit = 50; #$p{limit} // 1000;
-    my $where = {};
+    my $limit = $p{limit} // 50;
+    my $where = { collection => mdb->nin( 'topic', 'job' ) };
 
     return () if ! length $query;
-    my $res = mdb->master_doc->search( query=>$query, limit=>1000,
-        #project=>{name=>1,collection=>1},
-        project=>{ _id=>0 },
-        filter=>{ collection=>mdb->nin('topic','job') }
+
+    Baseliner::Search->inject_search_query(
+        $where, $query,
+        fields => [
+            qw(
+              mid
+              moniker
+              name
+              description
+              yaml
+              )
+        ]
     );
 
-    my @results = map {
-        my $r = $$_{obj};
-        $r;
-    } _array( $res->{results} );
+    my @results = mdb->master_doc
+        ->find( $where )
+        ->fields({ _id=>0 })
+        ->limit( $limit )
+        ->all;
 
-    my $wh = {collection=>mdb->nin('topic','job') };
-    mdb->query_build( where=>$wh, query=>$query, fields=>['mid','moniker','name','description'] );
-    push @results, map {
-        delete $$_{_id};
-        $_;
-    } mdb->master_doc->find($wh)->limit(1000)->all;
-
-    my %res_unique = map { $$_{mid} => $_ } @results;
-
-    #my @mids = map { $_->{obj}{mid} } _array $res->{results};
-    #$where->{'me.mid'} = mdb->in(@mids);
     return map {
         my $r = $_;
         my $text = Util->_encode_json( $r );
@@ -1854,7 +1854,7 @@ sub search_query {
             mid   => $r->{mid},
             id    => $r->{mid},
         }
-    } values %res_unique;
+    } @results;
 }
 
 =head2

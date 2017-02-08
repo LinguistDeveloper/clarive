@@ -2,12 +2,6 @@ package Baseliner::Model::Topic;
 use Moose;
 BEGIN { extends 'Catalyst::Model' }
 
-use Baseliner::Core::Registry ':dsl';
-use Baseliner::Utils;
-use Baseliner::Sugar;
-use Baseliner::Model::Permissions;
-use Baseliner::Model::Users;
-use Baseliner::RuleRunner;
 use Path::Class;
 use List::Util qw(first);
 use Try::Tiny;
@@ -15,6 +9,13 @@ use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
 use v5.10;
 use experimental 'autoderef', 'switch';
+use Baseliner::Core::Registry ':dsl';
+use Baseliner::Utils;
+use Baseliner::Sugar;
+use Baseliner::Model::Permissions;
+use Baseliner::Model::Users;
+use Baseliner::RuleRunner;
+use Baseliner::Search;
 
 my $post_filter = sub {
         my ($text, @vars ) = @_;
@@ -548,7 +549,10 @@ sub topics_for_user {
     my ( @mids_in, @mids_nin, @mids_or );
 
     if ( length($query) ) {
-        @mids_in = $self->run_query_builder( $query, $where, $username, id_project => $id_project);
+        my @all_fields = _unique map { $_->{id_field} } $self->get_fieldlet_nodes();
+        my $fields = ['mid', 'category.name', 'category_status.name', '_txt', @all_fields];
+
+        Baseliner::Search->inject_search_query($where, $query, fields => $fields);
     }
 
     my ($select,$order_by, $as, $group_by);
