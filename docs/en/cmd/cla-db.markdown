@@ -4,51 +4,33 @@ index: 5000
 icon: console
 ---
 
-`cla db`: Database diff and deploy tool.
+### db-reindex
 
-This command is in charge of deploying Clarive schema to a database. The behavior is the same as the command `db-deploy`.
+Reindexes all database tables, applying and updating the
+product recommended indexes again.
 
-The option `–h` shows the command help with a short description of every option: 
+`--drop` - drops known (product) indexes before reindexing.
+`--collection [name]` - limit reindex to just this collection name
+(ie. `topic`, `master`, etc.)
 
-        > cla db -h
+**WARNING**: a reindex can take anywhere from a few minutes to
+many hours, and may block access to the database in the meanwhile.
+So make sure to plan in advance for downtime.
 
-        NAME
-        Clarive DB Schema Deploy
+### db-dump
 
-        DESCRIPTION
-        Deploy Clarive's schema to a database.
+Dumps a selection of collections from the MongoDB database using
+the `mongodump` utility.
 
-        USAGE
-        cla db-deploy [options]
 
-        Options:
-        -h     :this help
-        -deploy    :actually execute statements in the db
-                    cla db-deploy --deploy
-        -run   :Run DB statements interactively or from STDIN
-        -quote   :quote table names
-        -drop    :add drop statements
-        -grep    :grep a string or re in the generated sql
-        -env   :sets CLARIVE_ENV (local, test, prod, t, etc...)
-        -schema    :schemas to deploy (does not work for migrations)
-                    cla db-deploy --schema BaliUser --schema BaliProject
-        -dump    : dump collections skipping logs and filesystem data
+The collections dumped do not hold large "blobs",
+it only includes things such as topics, CIs, and admin
+info. The objective is to have a way of creating a quick dump
+to send to support that is not as big as a full database dump.
 
-        Versioning Options:
-        --diff    :diffs this schema against the database
-        --installversion  :installs versioning tables if needed
-        --upgrade   :upgrades database version
-        --from <version>  :from version (replaces current db version)
-        --to <version>  :to version (replaces current schema version)
-        --grep <re>     :filter diff statements with a reg. expression
+A local installation of a MongoDB client is needed
+for this command to work, and the `mongodump` command
+needs to be in the path.
 
-        Examples:
-        cla db-deploy --env t
-        cla db-deploy --env t --diff
-        cla db-deploy --env t --diff --deploy
-        cla db-deploy --env t --installversion
-        cla db-deploy --env t --upgrade         # print migration scripts only, no changes made
-        cla db-deploy --env t --upgrade –deploy   # print migration scripts only, no changes made
-        cla db-deploy --env t --upgrade --show --to 2 # same, but with schema version 2
-        cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
-
+`--all`
+dumps all collections instead, instead of just essential ones.

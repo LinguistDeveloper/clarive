@@ -61,5 +61,5 @@ sub _setup {
 sub _build_cmd {
     my (%params) = @_;
 
-    return Clarive::Cmd::docs->new( app => $Clarive::app, mkdocs_path =>"$tempdir/mkdocs"  );
+    return Clarive::Cmd::docs->new( app => $Clarive::app, mkdocs_path =>"$tempdir/mkdocs", opts => {} );
 }

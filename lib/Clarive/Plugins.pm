@@ -1,9 +1,21 @@
 package Clarive::Plugins;
 use Mouse;
-use Baseliner::Utils qw(_dir _file _debug);
 
+use Class::Load qw(is_class_loaded);
 use Path::Class ();
-has app => qw(is ro isa Any weak_ref 1 required 1), default=>sub{ Clarive->app };
+use Try::Tiny;
+
+use Baseliner::Utils qw(_dir _file _debug _json_pointer);
+
+has app      => qw(is ro isa Any weak_ref 1 required 1), default=>sub{ Clarive->app };
+has _registry => qw(is rw isa HashRef);
+
+my $REGISTRY = {};
+
+sub registry {
+    my $self = shift;
+    return $self->_registry || $REGISTRY;
+}
 
 sub _plugin_id {
     shift;
@@ -30,6 +42,54 @@ sub load_info {
     $info->{version} //= '';
 
     return $info;
+}
+
+sub load_command {
+    my $self = shift;
+    my ( $cmd ) = @_;
+
+    my $cmd_package;
+
+    for my $lang ( qw(js pl) ) {
+        if( my $first = $self->locate_first( "cmd/$cmd.$lang" ) ) {
+            my $path = $first->{path};
+            $cmd_package = "Clarive::Cmd::Plugin::$cmd";
+
+            if( ! is_class_loaded( $cmd_package ) ) {
+
+                # create a Cmd class on-the-fly for this plugin cmd
+                my $class = Mouse::Meta::Class->create(
+                    $cmd_package,
+                    superclasses => ['Clarive::Cmd'],
+                    methods      => {
+                        run => sub {
+                            my $self = shift;
+                            my %opts = @_;
+
+                            require Clarive::Code;
+                            my $stash = {};
+                            try {
+                                my $cc = Clarive::Code->new(
+                                    lang    => $lang,
+                                    app     => $self->app,
+                                    options => \%opts
+                                );
+                                $cc->eval_file( $path, $stash );
+                            }
+                            catch {
+                                my $err = shift;
+                                die "$err\n";
+                            };
+                            exit 0;
+                        }
+                    },
+                );
+                $class->make_immutable;
+            }
+        }
+    }
+
+    return ( $cmd_package, 'run' );
 }
 
 sub search_path {

@@ -4,56 +4,58 @@ index: 5000
 icon: console
 ---
 
-`cla disp`: Performs operations related to the dispatcher.
+This command starts the Clarive Dispatcher.
+The Dispatcher is the process in charge of starting and managing the availability
+of all active daemons. To decide which daemons to start, whether they are forked
+or not, and other options, the Dispatcher will use the Daemon configuration options
+set by the administrator (see Daemon administration for mor info).
 
-Without any option this command starts the dispatcher service which it’s in charge of starting all active daemons, the way it starts, forked or not, is taken from the service config.
+The Dispatcher handles the received signals and performs the appropriate operation,
+every defined seconds, checking the status of each active daemon. The behavior
+can be defined as the following:
 
-Dispatcher handles the received signals and performs the appropriate operation, every defined seconds, checks the status of each active daemon, the behaviour is as following:
+- If a daemon is active in the deamons list, the dispatcher starts the service
 
 - If daemon has been deactivate, dispatcher stops the daemon.
 - If daemon has been activated, dispatcher starts the service.
 - If daemon is active, checks if it is running and if not, it intends to starts the service again.
 
+- If a daemon is active, checks if it's running and if not, it starts the service again
 
-The frecuency that dispatcher checks daemons status is a configuration parameter called ‘frecuency’ and by default it is assigned a value of 30 seconds.
+The frequency the dispatcher checks for daemons statuses is a configuration
+parameter called `frequency` which, by default, is assigned a value of `30`
+seconds.
 
-This command support two different options, they are:
+## Subcommands
 
-`-h`: displays a brief help to the screen:
+The `disp` command has several subcommands, they are:
 
-    > cla disp –h
+### disp-start
 
-    Clarive Dispatcher
-      Common options:
+Same as `cla disp`, starts the dispatcher in online mode. Use `--daemon` to
+start in the background.
 
-          --daemon        forks and starts the server
+`--daemon`: runs the service in the background
 
-    stop
-      stops the server.
+### disp-stop
 
-     restart
-      restarts the server.
+Stops the dispatcher and all managed services. This call accepts the
+following options:
 
-     log
-      prints the logfile to screen.
+`--no_wait_kill`: The dispatcher is killed without wait, if this option is
+  not set, the dispatcher will wait 30 seconds to shutdown.
 
-     tail
-      follows the server log file.
+`--keep_pidfile`: Keeps the file containing the process pid.
 
-`-daemon`: To run the service in background.
+### disp-log
 
-This command has different options, they are:
+Prints logfile to screen.
 
-`disp-start`: Same as cla disp, describe above.
-`disp-stop`:  Stops the dispatcher and the services.  This call accepts the following options:
+### disp-tail
 
-- *no_wait_kill* - The dispatcher is killed without wait, if this option is not set, the dispatcher will wait 30 seconds to shutdown.
-- *keep_pidfile* - Keeps the file containing the process pid.
+Tails the log file, while accepting some arguments when called to
+configure the output, these are:
 
-`disp-log`: Print logfile to screen.
-
-`disp-tail`: Follows log file, it accepts some arguments when called to configure the output, these are:
-
-- *tail* - Number of lines displayed, default is 500. We can modify this value executing : cla disp-tail -tail=<number_of_lines>.
-- *interval* - The initial number of seconds that will be spent sleeping, before the file is first checked, default is .5.
-
+`--tail`: Number of lines displayed, default is 500.
+`--interval`: The initial number of seconds that will be spent sleeping,
+  before the file is first checked, default is .5.

@@ -71,7 +71,7 @@ sub setup {
         warn @_;
     };
 
-    $CWD = $ENV{CLARIVE_HOME};
+    return $Clarive::app;
 }
 
 END {

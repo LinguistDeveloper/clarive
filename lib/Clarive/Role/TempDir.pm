@@ -4,7 +4,7 @@ use v5.10;
 
 requires 'home';
 
-has tmp_dir    => qw(is rw lazy 1 default), sub {
+has tmp_dir    => qw(is rw isa Str lazy 1 default), sub {
     my $self = shift;
     # TMPDIR
     my $tmpdir = $ENV{CLARIVE_TEMP} || join('/', $self->base, 'tmp' );
@@ -12,7 +12,7 @@ has tmp_dir    => qw(is rw lazy 1 default), sub {
     $tmpdir;
 };
 
-has log_dir    => qw(is rw lazy 1 default), sub {
+has log_dir    => qw(is rw isa Str lazy 1 default), sub {
     my $self = shift;
     # LOG DIR
     my $logdir = $ENV{CLARIVE_LOGDIR} || join('/', $self->base, 'logs' );
@@ -20,7 +20,7 @@ has log_dir    => qw(is rw lazy 1 default), sub {
     $logdir;
 };
 
-has job_dir    => qw(is rw lazy 1 default), sub {
+has job_dir    => qw(is rw isa Str lazy 1 default), sub {
     my $self = shift;
     # LOG DIR
     my $jobdir = $ENV{CLARIVE_JOBDIR} || join('/', $self->base, 'jobs' );
@@ -28,7 +28,7 @@ has job_dir    => qw(is rw lazy 1 default), sub {
     $jobdir;
 };
 
-has pid_dir    => qw(is rw lazy 1 default), sub {
+has pid_dir    => qw(is rw isa Str lazy 1 default), sub {
     my $self = shift;
     # PID DIR uses log dir
     my $logdir = $ENV{CLARIVE_PIDDIR} || join('/', $self->base, 'logs' );

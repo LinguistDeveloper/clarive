@@ -6,6 +6,8 @@ use Text::Markdown 'markdown';
 use Clarive::cache;
 use v5.10;
 
+extends 'Clarive::Cmd';
+
 our $CAPTION = 'Manage the Clarive Documentation';
 
 has doc_version => qw(is rw isa Str), default => '';
