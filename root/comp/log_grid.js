@@ -30,6 +30,10 @@
         if( params == undefined ) params={};
         if( params.anim == undefined ) params.anim='f';
         params.callback = function(){
+            if (!grid.getEl()) {
+                return;
+            }
+
             Baseliner.hideLoadingMaskFade(grid.getEl());
             if( params.anim == 'f' )
                 grid.getGridEl().fadeIn({ duration: .1 });
@@ -601,7 +605,7 @@
 
     //Scroll to bottom when the store reloads
     store.on('load', function(){
-        if( mid != "" ) {
+        if (mid != "" && grid.view && grid.view.scroller) {
             grid.view.scroller.scroll('down', 9999999999999, true);
         }
         var job = current_job();
