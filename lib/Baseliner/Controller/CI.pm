@@ -1367,10 +1367,9 @@ sub export_csv {
     my @array = map { _damn( $_ ) } @cis;
     my $class = "BaselinerX::CI::$ci_type";
 
-
     my @csv_cols;
 
-    my @ci_cols = map {$_} $class->meta->get_attribute_list;
+    my @ci_cols = map {$_->name} $class->meta->get_all_attributes;
 
     #ojo, revisar que si hay 0 filas seleccionadas, tiene que devolver SOLO los nombres de las columnas
     #my @ci_cols = keys %{ @array[0] };
