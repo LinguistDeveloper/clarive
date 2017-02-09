@@ -42,10 +42,8 @@ sub generate_menus {
         my $id   = _name_to_id($name);
         $data->{color} //= 'transparent';
         "menu.topic.$id" => {
-            label =>
-qq[<span id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></span>],
-            title =>
-qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></span>],
+            label => qq[<span id="boot" class="main-menu main-menu-topic"><span class="label" style="background-color:$data->{color}">$name</span></span>],
+            title => qq[<span id="boot" class="main-menu main-menu-topic"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></span>],
             index    => $seq++,
             actions  => [ { action => "action.topics.view", bounds => { id_category => $data->{id} } }, ],
             url_comp => "/topic/grid?category_id=" . $data->{id},
@@ -59,8 +57,8 @@ qq[<span id="boot" style="background:transparent;height:14px;margin-bottom:0px">
         my $id   = _name_to_id($name);
         $data->{color} //= 'transparent';
         "menu.topic.create.$id" => {
-            label =>
-qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+            label => qq[<span id="boot" class="main-menu main-menu-topic"><span class="label" style="background-color:$data->{color}">$name</span></span>],
+            title => qq[<span id="boot" class="main-menu main-menu-topic"><span class="label" style="background-color:$data->{color}">$name</span></span>],
             index    => $seq++,
             actions  => [ { action => "action.topics.create", bounds => { id_category => $data->{id} } } ],
             url_comp => '/topic/view',
@@ -75,10 +73,8 @@ qq[<div id="boot" style="background:transparent"><span class="label" style="back
         my $id   = _name_to_id($name);
         $data->{color} //= 'transparent';
         "menu.topic.status.$id" => {
-            label =>
-qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px;">$name</span>],
-            title =>
-qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px;">$name</span>],
+            label => qq[<span class="main-menu main-menu-status">$name</span>],
+            title => qq[<span class="main-menu main-menu-status">$name</span>],
             index       => $seq++,
             hideOnClick => 0,
 

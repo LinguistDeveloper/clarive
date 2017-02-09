@@ -4029,6 +4029,7 @@ subtest 'generate_menus: generates create topics menu for user' => sub {
             'new_category_name' => 'Category',
             'swEdit'=>'1'
         },
+        'title' => re(qr/Category/),
         'label' => re(qr/Category/),
         'index'    => 11,
         'url_comp' => '/topic/view',

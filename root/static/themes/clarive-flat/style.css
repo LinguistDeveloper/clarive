@@ -3073,13 +3073,6 @@ body#login-page {
     background-image: url("/static/images/icons/row-check-sprite.gif") !important;
 }
 
-.bali-main-menu button {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 10px;
-    margin: 0 0 0 4px;
-    text-transform: uppercase;
-}
-
 .x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
     height: 16px;
 }
@@ -4113,4 +4106,28 @@ textarea.x-form-textarea.x-form-field.console.x-border-panel {
 
 .x-item-disabled .x-tbar-loading{
   background-image: url(/static/images/loading/indicator.gif) !important;
+}
+
+/* SEMANTIC STYLES */
+
+.main-menu, .main-menu span {
+    cursor: pointer;
+    background:transparent;
+}
+
+.main-menu.main-menu-header button {
+    font-size: 10px;
+    margin: 0 0 0 4px;
+    text-transform: uppercase;
+}
+
+.main-menu.main-menu-topic {
+    background:transparent;
+    margin-bottom:0px;
+}
+
+.main-menu.main-menu-status {
+    background:transparent;
+    font-size: 10px;
+    text-transform: uppercase;
 }
