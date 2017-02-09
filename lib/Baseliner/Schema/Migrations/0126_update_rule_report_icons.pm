@@ -85,9 +85,14 @@ sub _exists_icon {
 sub _update_report_children {
     my ( $self, $json ) = @_;
 
-    $json->{icon} = $self->get_icon_for_reports( $json->{icon} ) if $json->{icon};
+    my $type = $json->{type};
+    if ( $type && $type eq 'sort_field' ) {
+        $type = $json->{sort_direction} && $json->{sort_direction} eq '1' ? 'sort_field_asc' : 'sort_field_desc';
+    }
+    $json->{icon} = $self->get_icon_for_reports($type) if $type;
+
     foreach my $child ( _array $json->{children} ) {
-        $child->{children} = $self->_update_report_children($child) || [];
+        $self->_update_report_children($child);
     }
 }
 
@@ -124,42 +129,24 @@ sub downgrade {
 
 sub get_icon_for_reports {
     my $self = shift;
-    my ($icon) = @_;
-    return $DEFAULT_REPORT_ICON unless $icon;
+    my ($type) = @_;
+    return $DEFAULT_REPORT_ICON unless $type;
 
     my %report_icon = (
-        '/static/images/icons/field.png'           => '/static/images/icons/ci-report-selected-field.svg',
-        '/static/images/icons/field.svg'           => '/static/images/icons/ci-report-selected-field.svg',
-        '/static/images/icons/where.svg'           => '/static/images/icons/ci-report-filter-field.svg',
-        '/static/images/icons/where.png'           => '/static/images/icons/ci-report-filter-field.svg',
-        '/static/images/icons/topic.svg'           => '/static/images/icons/ci-report-selected-category.svg',
-        '/static/images/icons/topic_one.png'       => '/static/images/icons/ci-report-selected-category.svg',
-        '/static/images/icons/topic.png'           => '/static/images/icons/ci-report-selected-category.svg',
-        '/static/images/icons/folder_database.png' => '/static/images/icons/ci-report-category.svg',
-        '/static/images/icons/folder_database.svg' => '/static/images/icons/ci-report-category.svg',
-        '/static/images/icons/folder-database.svg' => '/static/images/icons/ci-report-category.svg',
-        '/static/images/icons/folder_explore.png'  => '/static/images/icons/ci-report-field.svg',
-        '/static/images/icons/folder_explore.svg'  => '/static/images/icons/ci-report-field.svg',
-        '/static/images/icons/folder_magnify.png'  => '/static/images/icons/ci-report-field.svg',
-        '/static/images/icons/folder-explore.svg'  => '/static/images/icons/ci-report-field.svg',
-        '/static/images/icons/folder_find.png'     => '/static/images/icons/ci-report-filter.svg',
-        '/static/images/icons/folder_find.svg'     => '/static/images/icons/ci-report-filter.svg',
-        '/static/images/icons/folder-find.svg'     => '/static/images/icons/ci-report-filter.svg',
-        '/static/images/icons/folder_go.svg'       => '/static/images/icons/ci-report-sort.svg',
-        '/static/images/icons/folder_go.png'       => '/static/images/icons/ci-report-sort.svg',
-        '/static/images/icons/folder-go.svg'       => '/static/images/icons/ci-report-sort.svg',
-        '/static/images/icons/arrow_down.gif'      => '/static/images/icons/ci-report-sort-desc.svg',
-        '/static/images/icons/arrow-down.gif'      => '/static/images/icons/ci-report-sort-desc.svg',
-        '/static/images/icons/arrow-down.svg'      => '/static/images/icons/ci-report-sort-desc.svg',
-        '/static/images/icons/arrow_down.svg'      => '/static/images/icons/ci-report-sort-desc.svg',
-        '/static/images/icons/arrow_up.gif'        => '/static/images/icons/ci-report-sort-asc.svg',
-        '/static/images/icons/arrow-up.gif'        => '/static/images/icons/ci-report-sort-asc.svg',
-        '/static/images/icons/arrow-up.svg'        => '/static/images/icons/ci-report-sort-asc.svg',
-        '/static/images/icons/arrow_up.svg'        => '/static/images/icons/ci-report-sort-asc.svg',
-
+        'categories'       => '/static/images/icons/ci-report-category.svg',
+        'category'         => '/static/images/icons/ci-report-selected-field.svg',
+        'categories_field' => '/static/images/icons/ci-report-selected-category.svg',
+        'select'           => '/static/images/icons/ci-report-field.svg',
+        'select_field'     => '/static/images/icons/ci-report-selected-field.svg',
+        'sort_field_asc'   => '/static/images/icons/ci-report-sort-asc.svg',
+        'sort_field_desc'  => '/static/images/icons/ci-report-sort-desc.svg',
+        'value'            => '/static/images/icons/ci-report-filter-field.svg',
+        'where'            => '/static/images/icons/ci-report-filter.svg',
+        'where_field'      => '/static/images/icons/ci-report-selected-field.svg',
+        'sort'             => '/static/images/icons/ci-report-sort.svg'
     );
 
-    return $report_icon{$icon} || $DEFAULT_REPORT_ICON;
+    return $report_icon{$type} || $DEFAULT_REPORT_ICON;
 }
 
 sub get_icon_from_register_key {
