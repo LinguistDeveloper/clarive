@@ -127,6 +127,110 @@ subtest 'take: enqueues next semaphore' => sub {
     is $queue->[1]->{seq},    $seq + 1;
 };
 
+subtest 'take: reenqueues semaphore when it disappears from queue' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $queue;
+    my $pulled;
+    my $released;
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                my $doc = mdb->sem->find_one;
+                if ( $doc && @{ $doc->{queue} } == 2) {
+                    if (!$pulled) {
+                        mdb->sem->update( { key => 'sem' }, { '$pull' => { queue => {} } }, { safe => 1 } );
+
+                        $pulled = 1;
+                    }
+                }
+
+                if ($pulled) {
+                    $released = 1;
+                    $sem->release;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem2 = Baseliner::Sem->new( key => 'sem' );
+        $sem2->take( timeout => 5 );
+        $sem2->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    ok $pulled;
+    ok $released;
+};
+
+subtest 'take: reenqueues semaphore when collection is erased' => sub {
+    _setup();
+
+    my $sem = Baseliner::Sem->new( key => 'sem' );
+    $sem->take( timeout => 5 );
+
+    my $queue;
+    my $pulled;
+    my $released;
+
+    if ( my $pid = fork ) {
+        _timeout 5, sub {
+            while (1) {
+                my $res = waitpid( $pid, WNOHANG );
+
+                if ( $res == -1 || $res ) {
+                    last;
+                }
+
+                my $doc = mdb->sem->find_one;
+                if ( $doc && $doc->{queue} && @{ $doc->{queue} } == 2) {
+                    if (!$pulled) {
+                        mdb->sem->remove;
+
+                        $pulled = 1;
+                    }
+                }
+
+                if ($pulled) {
+                    $released = 1;
+                    $sem->release;
+                }
+            }
+        };
+    }
+    else {
+        die "cannot fork: $!" unless defined $pid;
+
+        mdb->disconnect;
+
+        my $sem2 = Baseliner::Sem->new( key => 'sem' );
+        $sem2->take( timeout => 5 );
+        $sem2->release;
+
+        mdb->disconnect;
+        exit;
+    }
+
+    ok $pulled;
+    ok $released;
+};
+
 subtest 'take: unshifts from queue on release' => sub {
     _setup();
 
