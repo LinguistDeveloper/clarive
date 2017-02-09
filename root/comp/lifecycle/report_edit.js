@@ -147,6 +147,9 @@
                 });
                 break;
             case 'status':
+                if (!Ext.isArray(attr.value)) {
+                    attr.value = attr.value.split(/,|\|/);
+                }
                 field = new Baseliner.StatusBox({
                     fieldLabel: _('Status'),
                     name: 'value',
@@ -162,6 +165,7 @@
                         }
                     })
                 });
+                field.setValue(attr.value.join(','));
                 oper_by_type = oper_in;
                 break;
             case 'ci':
