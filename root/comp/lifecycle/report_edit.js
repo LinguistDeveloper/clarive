@@ -183,12 +183,12 @@
                         security: true
                     });
                 } else {
-                    var filter = pn.attributes.filter || 'none';
+                    var filter = pn.attributes.filter;
                     if (meta_type == 'user') {
                         var user_box_store = new Baseliner.Topic.StoreUsers({
                             autoLoad: true,
                             baseParams: {
-                                roles: filter,
+                                roles: filter || 'none',
                                 start: 0,
                                 limit: 9999
                             }
