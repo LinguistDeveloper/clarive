@@ -49,6 +49,7 @@ subtest 'list_status: returns all ci status when no query' => sub {
                                     'frozen' => \0,
                                     'readonly' => \0,
                                     'id' => ignore(),
+                                    'id_status' => ignore(),
                                     'type' => 'G',
                                     'seq' => undef,
                                     'bl' => '*'

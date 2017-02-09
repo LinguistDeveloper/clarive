@@ -147,6 +147,9 @@
                 });
                 break;
             case 'status':
+                if (!Ext.isArray(attr.value)) {
+                    attr.value = attr.value.split(/,|\|/);
+                }
                 field = new Baseliner.StatusBox({
                     fieldLabel: _('Status'),
                     name: 'value',
@@ -162,6 +165,7 @@
                         }
                     })
                 });
+                field.setValue(attr.value.join(','));
                 oper_by_type = oper_in;
                 break;
             case 'ci':
@@ -183,12 +187,12 @@
                         security: true
                     });
                 } else {
-                    var filter = pn.attributes.filter || 'none';
+                    var filter = pn.attributes.filter;
                     if (meta_type == 'user') {
                         var user_box_store = new Baseliner.Topic.StoreUsers({
                             autoLoad: true,
                             baseParams: {
-                                roles: filter,
+                                roles: filter || 'none',
                                 start: 0,
                                 limit: 9999
                             }

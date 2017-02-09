@@ -174,6 +174,7 @@ sub list_status : Local {
     my $query = $p->{category} ? { '$and' => [{ id_status => mdb->in(@query)} ] } : {};
     if($p->{query}){
         @query = split '\s',$p->{query} if($p->{query});
+        @query = map {split /\|/} @query;
         $query = %$query ?
              { '$and' => $query->{'$and'}, '$or' => [{ id_status => mdb->in(@query)}, { name => qr/$query[0]/i }] }
             :{'$or' => [{ id_status => mdb->in(@query)}, { name => qr/$query[0]/i }]};
@@ -190,6 +191,7 @@ sub list_status : Local {
         push @rows,
           {
             id          => $r->{id_status},
+            id_status   => $r->{id_status},
             name        => $r->{name},
             description => $r->{description},
             bl          => $r->{bl},
