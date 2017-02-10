@@ -463,8 +463,7 @@ sub log_stream : Path('/job/log/stream') {
     $conn_id =~ s{[^A-Za-z0-9]}{}g;
 
     my $stream = <<"EOF";
-    <script src="/static/jquery/jquery-1.7.1.min.js"></script>
-    <div style="font-family: monospace; padding: .5em; word-wrap: break-word;">
+    <div style="font-family: monospace; word-wrap: break-word;">
         <div class="output-$conn_id"></div>
         <img class="loading-$conn_id" src="/static/images/loading/loading-fast.gif" />
     </div>
