@@ -3795,6 +3795,9 @@ table.table-bordered.table-condensed.dashboard td > div > img {
 
 .x-dd-drag-ghost {
     list-style: none;
+    padding-bottom: 4px !important;
+    margin-top: 2px !important;
+    margin-left: 2px !important;
 }
 
 .x-dd-drag-ghost .styledCheckboxWrap {
@@ -3831,11 +3834,13 @@ table.table-bordered.table-condensed.dashboard td > div > img {
 }
 
 .x-dd-drop-nodrop .x-dd-drop-icon {
-    background-image: url("/static/images/icons/drop-no.svg");
+    background-image: url("/static/images/icons/drop-deny.svg");
+    margin-left: 2px;
+    margin-top: 1px;
 }
 
 .x-dd-drop-ok .x-dd-drop-icon {
-    background-image: url("/static/images/icons/drop-yes.svg");
+    background-image: url("/static/images/icons/drop-ok.svg");
     margin-top: 3px;
     margin-left: 3px;
 }
@@ -4130,4 +4135,20 @@ textarea.x-form-textarea.x-form-field.console.x-border-panel {
     background:transparent;
     font-size: 10px;
     text-transform: uppercase;
+}
+
+.x-dd-drag-proxy.x-dd-drop-ok.drop-tab-ok .x-dd-drop-icon {
+     margin-top: 0px;
+}
+
+.x-dd-drag-proxy .x-tab-strip-closable.x-tab-strip-over .x-tab-right {
+     background-color: #fff;
+}
+
+.x-dd-drag-proxy .x-tab-with-icon .x-tab-strip-text {
+   background-size: 13px;
+}
+
+.x-dd-drag-ghost .x-tab-strip-closable.x-tab-with-icon.x-tab-strip-over li {
+      margin-top: 2px;
 }
