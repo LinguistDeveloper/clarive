@@ -1976,3 +1976,20 @@ span.x-tab-strip-text.x-panel-inline-icon {
 .x-tab-strip.x-tab-strip-top .x-tab-strip-closable.x-tab-strip-active * {
     cursor: default;
 }
+
+/* Superbox style */
+.x-superboxselect-item,
+.x-superboxselect-item-hover {
+    background-color: #F5F5F5 !important;
+    border: 1px solid #F5F5F5 !important;
+}
+
+.x-superboxselect-item-focus {
+    border-color: #F5F5F5 !important;
+    background: #F5F5F5 !important;
+    color: #000 !important;
+}
+
+.x-superboxselect-item.x-superboxselect-item.x-superboxselect-item-focus .x-superboxselect-item-close {
+    background:url(/static/superbox/close.png) no-repeat scroll left 0px !important;
+}
