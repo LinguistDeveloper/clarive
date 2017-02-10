@@ -2,12 +2,12 @@ package Baseliner::Controller::Log;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 
-use File::Tail;
 use Compress::Zlib qw(uncompress);
 use Try::Tiny;
 use Encode ();
 use JSON ();
 use IO::Socket::INET; # recv
+use Baseliner::Tail;
 use Baseliner::Core::Registry;
 use Baseliner::Utils;
 
@@ -520,7 +520,7 @@ sub log_stream_events : Path('/job/log/stream_events') {
 
     _fail 'No stream available' unless $log->{stream} && -f $log->{stream};
 
-    my $tail = try { File::Tail->new( name => $log->{stream}, interval => 1, maxinterval => 1, nowait => 1 ) };
+    my $tail = try { Baseliner::Tail->new( file => $log->{stream} ) };
     _fail 'Stream error' unless $tail;
 
     $c->res->status(200);
@@ -531,18 +531,17 @@ sub log_stream_events : Path('/job/log/stream_events') {
 
     my $io = $c->req->env->{'psgix.io'};
 
-    my @content =
-      map { Util->_html_colorize( _html_escape($_) ) } do { open my $fh, '<', $log->{stream}; <$fh> };
-
-    $fh->write( join '', map { "<div>$_</div>" } @content );
+    $fh->write('<div>');
 
     try {
-        while ( defined( my $line = $tail->read ) ) {
-            if ( length $line ) {
-                $line = _html_escape($line);
-                $line = Util->_html_colorize($line);
+        while ( defined( my $buf = $tail->read ) ) {
+            if ( length $buf ) {
+                $buf = _html_escape($buf);
+                $buf = Util->_html_colorize($buf);
 
-                $fh->write("<div>$line</div>");
+                $buf =~ s{\r?\n}{</div><div>}g;
+
+                $fh->write($buf);
             }
 
             # Hacky way to detect if the client has disconnected
@@ -550,11 +549,13 @@ sub log_stream_events : Path('/job/log/stream_events') {
             last if defined $ret && !length $ret;
 
             # When input is there try to read as fast as possible, otherwise wait
-            if ( !length $line ) {
+            if ( !length $buf ) {
                 sleep 1;
             }
         }
     };
+
+    $fh->write('</div>');
 
     $fh->close;
 }
