@@ -14,7 +14,7 @@ In the next window there are two sections:
 
 In the left section you can see the days of the week that are specified in the calendar at the right.
 
-Clicking in the graph, you can edit job slot. The options are:
+Clicking in the graph, you can edit the calendar slot. The options are:
 
 - **Day** - Select the day.
 - **Type** - Select the slot type with one of the following states:
@@ -23,7 +23,6 @@ Clicking in the graph, you can edit job slot. The options are:
    - *No Job* - Disallow jobs in the specified time slot. This option takes precedence over the others options.
 - **Start Time** - Set the start time of the slot.
 - **End Time** - Indicates the end time of the slot.
-
 
 The actions that can be performed once established the options are:
 
@@ -36,7 +35,4 @@ The actions that can be performed once established the options are:
 - **Create Inactive Slot** - Create an inactive slot.
 - **Close** - Close the window without save the changes.
 
-
-
 If you want to define a slot for a specific day, click on `New Slot` below each day.
-
