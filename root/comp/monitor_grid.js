@@ -1534,7 +1534,7 @@
         var contents = ''; record.data.contents.join('<br />');
         var execs = record.data.exec > 1 ? " ("+record.data.exec+")" : '';
         return String.format(
-                '<b><a href="javascript:Baseliner.openLogTab(\'{1}\', \'{2}\');" style="font-family: Tahoma;">{0}{3}</a></b><br />',
+                '<b><a href="javascript:Baseliner.openLogTab(\'{1}\', \'{2}\');">{0}{3}</a></b><br />',
                 value, record.data.mid, record.data.name, execs );
     };
 

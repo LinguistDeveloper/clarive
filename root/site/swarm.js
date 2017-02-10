@@ -70,24 +70,51 @@ Cla.Swarm = Ext.extend( Ext.Panel, {
         self.btn_pause,
         self.btn_stop,
         {xtype: 'tbfill'},
-        //{ xtype: 'tbspacer', width: 100 },
-        {xtype: 'tbtext', text: 'Speed', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
-        { xtype: 'tbspacer', width: 10 },
-        {xtype: 'tbtext', text: '-', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
-        { xtype: 'tbspacer', width: 10 },
-        self.slider,
-        { xtype: 'tbspacer', width: 10 },
-        {xtype: 'tbtext', text:' +', style : "color:#0066FF;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
-        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"},
-        { xtype: 'tbspacer', width: 100 },
-        {xtype: 'tbtext', text: 'Event Driven ', style : "color:#FF0000;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
-        { xtype: 'tbspacer', width: 10 },
-        self.slidertime,
-        { xtype: 'tbspacer', width: 10 },
-        {xtype: 'tbtext', text: ' Real Time', style : "color:#009933;font-style:italic;font-family: tahoma, arial, verdana, sans-serif;font-size: 11px;"},
-        { xtype: 'tbspacer', width: 100 },
-        //{xtype: 'tbtext', text: '|     |', style : "color:#000000;font-style:arial;font-size: 11px;"},
-        //self.scale_bar,
+        {
+            xtype: 'tbtext',
+            text: 'Speed',
+            style: "color:#0066FF;font-style:italic;font-size: 11px;"
+        }, {
+            xtype: 'tbspacer',
+            width: 10
+        }, {
+            xtype: 'tbtext',
+            text: '-',
+            style: "color:#0066FF;font-style:italic;font-size: 11px;"
+        }, {
+            xtype: 'tbspacer',
+            width: 10
+        },
+        self.slider, {
+                xtype: 'tbspacer',
+                width: 10
+            }, {
+                xtype: 'tbtext',
+                text: ' +',
+                style: "color:#0066FF;font-style:italic;font-size: 11px;"
+            },
+            {
+                xtype: 'tbspacer',
+                width: 100
+            }, {
+                xtype: 'tbtext',
+                text: 'Event Driven ',
+                style: "color:#FF0000;font-style:italic;font-size: 11px;"
+            }, {
+                xtype: 'tbspacer',
+                width: 10
+            },
+            self.slidertime, {
+                xtype: 'tbspacer',
+                width: 10
+            }, {
+                xtype: 'tbtext',
+                text: ' Real Time',
+                style: "color:#009933;font-style:italic;font-size: 11px;"
+            }, {
+                xtype: 'tbspacer',
+                width: 100
+            },
         { xtype: 'tbspacer', width: 25 },
         ];
 

@@ -16,7 +16,10 @@
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
         Baseliner.ajaxEval('/event/event_data', { id_event: rec.data.id_event, id_rule_log: rec.data.id_rule_log, type: 'stash' }, function(res){
-            var output = new Ext.form.TextArea({ value: res.data, style:'font-family:Consolas, Courier New, Courier' });
+            var output = new Ext.form.TextArea({
+                value: res.data,
+                cls: 'console'
+            });
             var win = new Baseliner.Window({ layout:'fit', width:800, height: 400, items: output });
             win.show();
         });
@@ -35,7 +38,10 @@
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
         Baseliner.ajaxEval('/event/event_data', { id_rule_log: rec.data.id_rule_log, type:'output' }, function(res){
-            var output = new Ext.form.TextArea({ value: res.data, style:'font-family:Consolas, Courier New, Courier' });
+            var output = new Ext.form.TextArea({
+                value: res.data,
+                cls: 'console'
+            });
             var win = new Baseliner.Window({ layout:'fit', width: 800, height: 400, items: output, maximizable:true });
             win.show();
         });

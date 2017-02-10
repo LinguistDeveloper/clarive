@@ -73,7 +73,7 @@ sub ci_bool {
 
 sub ci_courier {
     $_[0] =~ m{^/}
-        ? sprintf('<span style="font-family: Consolas, Courier New, Courier;">%s</span>', $_[0])
+        ? sprintf('<span class="console">%s</span>', $_[0])
         : $_[0];
 }
 

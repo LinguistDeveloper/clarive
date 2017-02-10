@@ -60,7 +60,9 @@
                 border: false
             });
             self.card.add( self.pull_list );
-            this.log = new Ext.form.TextArea({ style:'font-family: Consolas, Courier New, Courier, mono;' });
+            this.log = new Ext.form.TextArea({
+                cls: 'console'
+            });
             this.$last_log_id = '';
             this.card.add( this.log );
             this.show();
@@ -284,7 +286,12 @@
                         self.el.unmask();
                         var log = res.log.join("\n");
                         var win = new Baseliner.Window({ width: 940, height: 400, layout:'fit', modal:true, items: [
-                            new Ext.form.TextArea({ value: log, readOnly:true, style:'font-family:Consolas, Courier New, Courier, mono' }) ] });
+                            new Ext.form.TextArea({
+                                value: log,
+                                readOnly: true,
+                                cls: 'console'
+                            })]
+                    });
                         win.show();
                     });
                 });

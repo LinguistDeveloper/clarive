@@ -504,7 +504,7 @@
     var time_not_available = new Ext.form.Label({
         hidden: true,
         cls:'no_calendar_windows',
-        fieldLabel: _('Time'), style: 'color: red; font-weight: bold; font-family: Calibri, OpenSans, Helvetica Neue, Arial, sans-serif;',
+        fieldLabel: _('Time'), style: 'color: red; font-weight: bold;',
         text: _('No calendar windows available for selected date')
     });
 

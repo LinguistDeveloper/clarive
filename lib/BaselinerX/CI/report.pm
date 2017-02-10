@@ -1261,7 +1261,7 @@ method run( :$id_category_report=undef,:$start=0, :$limit=undef, :$username=unde
                 my @status_changes = Baseliner->model('Topic')->status_changes( $_->{mid} );
                 my $html = '<div style="width:250px">';
                 for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
-                    $html .= '<p style="font: 10px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
+                    $html .= '<p style="font-size: 10px; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
                 }
                 $html .= '</div>';
                 $row{$k} = $html;

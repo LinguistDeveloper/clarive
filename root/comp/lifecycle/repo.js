@@ -140,7 +140,6 @@
 
     var show_properties = function( path, name, version, leaf ) {
  /*       if(repo_type == 'GitRepository'){
-             //var style_cons = 'background-color: #000; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
             var style_cons = 'margin: 10px 10px 10px 10px';
             //var output = new Ext.form.TextArea({
             // var tpl = new Ext.XTemplate('<div>Commit: {data}</div>');
@@ -239,7 +238,7 @@
         //Ext.example.msg('Button Toggled', 'Button "{0}" was toggled to {1}.', item.text, pressed);
  /*   }
 
-    var button_style = 'normal 11px tahoma,verdana,helvetica';
+    var button_style = 'normal 11px';
     var button = {
         h: new Ext.Button({ pane: 'hist', text: _('history'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: properties_toggle, pressed: true }),
         d: new Ext.Button({ pane: 'diff', text: _('diff'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: properties_toggle, pressed: false }),

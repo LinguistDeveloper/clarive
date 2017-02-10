@@ -21,7 +21,7 @@ has title              => ( is => 'rw', isa => 'Str' );
 has level              => ( is => 'rw', isa => 'Int' );
 has handler            => ( is => 'rw', isa => 'Str' );
 has icon               => ( is => 'rw', isa => 'Str', default => '' );
-has cls                => ( is => 'rw', isa => 'Str', default => 'bali-main-menu' );
+has cls                => ( is => 'rw', isa => 'Str', default => 'main-menu main-menu-header' );
 has comp_data          => ( is => 'rw', isa => 'HashRef', default => sub { +{} } );
 has separator          => ( is => 'rw', isa => 'Bool', default => 0 );
 has hideOnClick        => ( is => 'rw', isa => 'Bool', default =>1 );

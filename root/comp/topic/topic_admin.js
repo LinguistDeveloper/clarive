@@ -221,7 +221,7 @@
 
     var render_status = function(value,meta,rec,rowIndex,colIndex,store){
         var ret =
-            '<b><span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#111">' + value + '</span></b>';
+            '<b><span style="text-transform:uppercase;color:#111">' + value + '</span></b>';
         return ret;
     };
 
@@ -230,7 +230,7 @@
             value = value.join(', ');
         value = '<div style="white-space:normal !important;">'+ value +'</div>';
         var ret =
-            '<span style="text-transform:uppercase;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#111">' + value + '</span>';
+            '<span style="text-transform:uppercase;color:#111">' + value + '</span>';
         return ret;
     };
     var render_status_arrow = function(value,meta,rec,rowIndex,colIndex,store){

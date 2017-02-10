@@ -2305,9 +2305,12 @@ Baseliner.DataEditor = function(c) {
             else if( col == 2 || (col == 1 && c.hide_type)  ) {
                 var rec = store.getAt(row);
                 if( rec.get('type') == 'Value' ) {
-                    editor = new Ext.form.TextArea({ value: rec.get('value'),
-                        style:{ 'font-family':'Consolas, Courier New' },
-                        selectOnFocus: true, readOnly: read_only });
+                    editor = new Ext.form.TextArea({
+                        value: rec.get('value'),
+                        cls: 'console',
+                        selectOnFocus: true,
+                        readOnly: read_only
+                    });
                 } else {
                     (function(){
                     var st = new Baseliner.store.CI({ baseParams:{ role: 'Infrastructure' } });
@@ -2382,8 +2385,10 @@ Baseliner.AutoGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         var fieldName = this.getColumnModel().getDataIndex( cell[1] );
         var rec = this.store.getAt( cell[ 0 ] );
         var v = rec.get( fieldName );
-        var ta = new Ext.form.TextArea({ value: v,
-            style:{ 'font-family':'Consolas, Courier New' } });
+        var ta = new Ext.form.TextArea({
+            value: v,
+            cls:'console'
+        });
         var win = new Ext.Window({ modal:true, width: 600, height: 350,
             layout:'fit', items:[ ta ], maximizable: true
         });

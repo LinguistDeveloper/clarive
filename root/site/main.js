@@ -294,7 +294,7 @@
     }
 
     Cla.main_toolbar = new Ext.Toolbar({
-        id: 'mainMenu',
+        id: 'main-menu',
         region: 'north',
         height: Prefs.toolbar_height,
         items: tbar_items

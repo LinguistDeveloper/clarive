@@ -182,7 +182,7 @@
                                <table class="table table-bordered table-condensed" style="width: 90%">
                               <thead>
                                    <tr>
-                                       <th id='[%= code_section[changes[i].path] %]' data-file="[%= changes[i].path %]" style="font-family: Courier New, Courier, monospace;" colspan=3>
+                                       <th id='[%= code_section[changes[i].path] %]' data-file="[%= changes[i].path %]" cls="console" colspan=3>
                                            [%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
                                            [%
                                                 var repo = repo_dir;

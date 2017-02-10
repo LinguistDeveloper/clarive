@@ -243,7 +243,8 @@ cla.parseVars('${foo}',{ foo: 'bar' });
         name: 'output',
         title: _('Output'),
         closable: false,
-        style: 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier',
+        style: 'background: black; background-image: none; color: #10C000;',
+        cls: 'console',
         width: 700,
         height: 300
     });

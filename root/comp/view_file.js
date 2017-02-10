@@ -268,7 +268,7 @@
             }
         }
     };
-    var button_style = 'normal 11px tahoma,verdana,helvetica';
+    var button_style = 'normal 11px';
     var source_button = new Ext.Button({
         pane: 'source',
         text: _('source'),

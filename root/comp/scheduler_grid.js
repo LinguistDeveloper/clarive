@@ -248,7 +248,7 @@
 
     var name_renderer = function(value, metadata, rec, rowIndex, colIndex, store) {
         var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img class="force_size_in_icon" src="' + IC('job-full-log') + '" /></a>', rec.data.id_last_log);
-        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + str + "</div>";
+        return "<div class='scheduler-name-renderer'>" + str + "</div>";
     };
 
     var grid = new Ext.grid.GridPanel({

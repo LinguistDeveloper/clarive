@@ -29,12 +29,12 @@ my $iid = Util->_md5;
           html = html + '<td>'+job.project+'</td>';
           html = html + '<td>'+job.bl+'</td>';
           if ( job.id_ok ) {
-            html = html + '<td>'+job.last_ok+' '+_('days')+' (<b><a href="javascript:Baseliner.addNewTab(\'/job/log/dashboard?mid='+job.mid_ok+'&name='+job.name_ok+'\', _(\'Log '+job.name_ok+'\') );" style="font-family: Tahoma;">#'+job.id_ok+'</a></b>)</td>';
+            html = html + '<td>'+job.last_ok+' '+_('days')+' (<b><a href="javascript:Baseliner.addNewTab(\'/job/log/dashboard?mid='+job.mid_ok+'&name='+job.name_ok+'\', _(\'Log '+job.name_ok+'\') );">#'+job.id_ok+'</a></b>)</td>';
           } else {
             html = html + '<td> ------------- </td>';
           }
           if ( job.id_err ) {
-            html = html + '<td>'+job.last_err+' '+_('days')+' (<b><a href="javascript:Baseliner.addNewTab(\'/job/log/dashboard?mid='+job.mid_err+'&name='+job.name_err+'\', _(\'Log '+job.name_err+'\') );" style="font-family: Tahoma;color:red;">#'+job.id_err+'</a></b>)</td>';
+            html = html + '<td>'+job.last_err+' '+_('days')+' (<b><a href="javascript:Baseliner.addNewTab(\'/job/log/dashboard?mid='+job.mid_err+'&name='+job.name_err+'\', _(\'Log '+job.name_err+'\') );" style="color:red;">#'+job.id_err+'</a></b>)</td>';
           } else {
             html = html + '<td> ------------- </td>';
           }

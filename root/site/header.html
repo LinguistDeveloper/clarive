@@ -30,8 +30,6 @@
     <link rel="stylesheet" type="text/css" href="/static/ext/examples/ux/css/ux-all.css" />
     <!-- C3 Stylesheet -->
     <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
-    <!-- site is the global stylesheet -->
-    <link rel="stylesheet" type="text/css" href="/static/site.css" />
 
 % if( my $theme_dir = $c->stash->{theme_dir} ) {
     <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
@@ -92,8 +90,8 @@
     <link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.print.css" media="print" />
     <!-- Treegrid -->
     <link rel="stylesheet" type="text/css" href="/static/gridtree/css/treegrid.css" />
-    <!-- final css override -->
-    <link rel="stylesheet" type="text/css" href="/static/final.css" />
+
+    <link rel="stylesheet" type="text/css" href="/static/sprites.css" />
     <!-- Ext Spinner Widget -->
     <link rel="stylesheet" href="/static/ex.ux.form.spinner/Spinner.css" type="text/css" />
 </head>
@@ -106,7 +104,7 @@
                 <div class="bar" style="width: 0%"></div>
             </div>
         </div>
-        <div id="bali-loading-text" style="text-align: center; text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999; font-family: Calibri, OpenSans, Tahoma, Helvetica Neue, Helvetica, Arial, sans-serif;">
+        <div id="bali-loading-text" style="text-align: center; text-transform: uppercase; font-weight: normal; font-size: 11px; color: #999;">
           <% _loc('Loading') %>
         </div>
     </div>

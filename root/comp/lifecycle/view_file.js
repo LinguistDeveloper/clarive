@@ -1,8 +1,9 @@
 (function(params) {
-    var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
+    var style_cons = 'background: black; background-image: none; color: #10C000;';
     var code = new Ext.form.TextArea({
         name: 'code',
-        style: style_cons
+        style: style_cons,
+        cls: 'console'
     });
 
     Baseliner.ajaxEval( '/lifecycle/view_file', params, function(res) {
