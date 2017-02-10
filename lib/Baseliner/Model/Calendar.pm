@@ -64,7 +64,7 @@ sub merge_calendars {
     my $where = { active => mdb->true };
     $where->{bl} = ['*'];
     $where->{ns} = $p{ns} if $p{ns};
-    push $where->{bl} , $p{bl} if $p{bl};
+    push @{ $where->{bl} }, $p{bl} if $p{bl};
     $where->{bl} = mdb->in( $where->{bl} );
 
     my @cals = mdb->calendar->find($where)

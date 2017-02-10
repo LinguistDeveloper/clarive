@@ -2883,8 +2883,8 @@ my %TERMINAL_COLORS = (
 sub _html_colorize {
     my ($line) = @_;
 
-    $line =~ s{\033\[(\d);(\d+)m}{"<span style=\"color:$TERMINAL_COLORS{\"$1;$2\"}\">"}e;
-    $line =~ s{\033\[0m}{"</span>"}e;
+    $line =~ s{\033\[(\d);(\d+)m}{"<span style=\"color:$TERMINAL_COLORS{\"$1;$2\"}\">"}ge;
+    $line =~ s{\033\[0m}{"</span>"}ge;
 
     return $line;
 }

@@ -370,7 +370,7 @@
                    ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 class='force_size_in_icon' src='/static/images/icons/job-full-log.svg'/></a> " + datalen ;
 
                    if (value.stream) {
-                       ret += '<a href="#" onclick="javascript:Baseliner.addNewTabSearch(\'/job/log/stream?id=' + rec.data.id + '\', \'' + data_name + ' Streaming\'); return false;"><img border=0 class="force_size_in_icon" src="/static/images/loading/loading-fast.gif" /></a>';
+                       ret += '<a href="#" onclick="javascript:Baseliner.addNewTab(\'/job/log/stream?id=' + rec.data.id + '\', \'' + data_name + ' Streaming\'); return false;"><img border=0 class="force_size_in_icon" src="/static/images/loading/loading-fast.gif" /></a>';
                    }
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
