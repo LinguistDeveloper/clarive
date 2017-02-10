@@ -88,6 +88,8 @@ sub take {
     while (1) {
         try {
             $self->_cleanup_dead_sessions;
+
+            $self->_refresh_slots_counts;
         };
 
         $self->_debug_threshold( _loc( 'Waiting for semaphore %1 (%2)', $self->key, $self->who ) );
@@ -219,27 +221,30 @@ sub _create {
 
 sub _enqueue {
     my $self = shift;
+    my (%params) = @_;
 
     my ( $package, $filename, $line ) = caller;
     my $caller = "$package ($line)";
 
-    my $seq = 0 + mdb->seq('sem');
+    my $seq = delete $params{seq} || 0 + mdb->seq('sem');
     $self->seq($seq);
 
-    my $id_queue = mdb->oid;
-    my $doc      = {
+    my $id_queue = delete $params{id_queue} || mdb->oid;
+
+    my $doc = {
         _id        => $id_queue,
         key        => $self->key,
         who        => $self->who,
         seq        => 0 + $seq,
-        ts         => Time::HiRes::time(),
+        ts         => 0 + sprintf( '%.5f', Time::HiRes::time() ),
         caller     => "$package ($line)",
         active     => '1',
         pid        => $$,
         ts_request => mdb->ts,
         hostname   => $self->disp_id,
         status     => 'waiting',
-        session    => $self->session
+        session    => $self->session,
+        %params
     };
 
     warn "$self: [enqueue] id=$id_queue seq=$seq\n" if DEBUG;
@@ -267,6 +272,9 @@ sub _try_to_take {
 
             unless ( $item && $item->{seq} ) {
                 warn "$self: [take] no seq found\n" if DEBUG;
+
+                $self->_enqueue( id_queue => $self->id_queue, seq => $self->seq, recreated => 1 );
+
                 return;
             }
 
@@ -337,6 +345,26 @@ sub _connections {
     return [] unless $sys && $sys->{inprog};
 
     return $sys->{inprog};
+}
+
+sub _refresh_slots_counts {
+    my $self = shift;
+
+    $self->_create unless mdb->sem->find_one( { key => $self->key } );
+
+    $self->_lock_queue(
+        sub {
+            my $sem_doc = mdb->sem->find_one( { key => $self->key } );
+            return unless $sem_doc;
+
+            my $real_slots = grep { $_->{status} eq 'busy' } @{ $sem_doc->{queue} };
+            my $slots = $sem_doc->{slots};
+
+            if ( $real_slots != $slots ) {
+                mdb->sem->update( { key => $self->key }, { '$set' => { slots => $real_slots } } );
+            }
+        }
+    );
 }
 
 sub _cleanup_dead_sessions {
@@ -440,6 +468,8 @@ sub _lock_queue {
     $time = 0;
     while (1) {
         my $res;
+
+        last unless mdb->sem->find_one( { key => $self->key } );
 
         try {
             $res = mdb->sem->update( { key => $self->key }, { '$set' => { locked => 0 } }, { safe => 1 } );
