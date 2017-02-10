@@ -459,11 +459,12 @@ sub log_stream : Path('/job/log/stream') {
     }
 
     my $conn_id = "$c";
+    $conn_id =~ s{HASH}{};
     $conn_id =~ s{[^A-Za-z0-9]}{}g;
 
     my $stream = <<"EOF";
     <script src="/static/jquery/jquery-1.7.1.min.js"></script>
-    <div style="font-family: monospace; padding: .5em">
+    <div style="font-family: monospace; padding: .5em; word-wrap: break-word;">
         <div class="output-$conn_id"></div>
         <img class="loading-$conn_id" src="/static/images/loading/loading-fast.gif" />
     </div>
@@ -537,9 +538,10 @@ sub log_stream_events : Path('/job/log/stream_events') {
         while ( defined( my $buf = $tail->read ) ) {
             if ( length $buf ) {
                 $buf = _html_escape($buf);
+                $buf =~ s{[ \t]}{\&nbsp;}g;
                 $buf = Util->_html_colorize($buf);
 
-                $buf =~ s{\r?\n}{</div><div>}g;
+                $buf =~ s{\r?\n}{</div><div>}gsm;
 
                 $fh->write($buf);
             }
