@@ -217,11 +217,14 @@ Baseliner.message = function(title, msg, config){
         msg = msg.substring(0,500) + '(...)' ;
     }
 
-    var id = $.gritter.add( Ext.apply({
-        title: title, text: msg, fade: true, 'class': 'baseliner-message',
-        time: 2200,
-        image: '/static/images/icons/about.svg'
-    }, config));
+    try {
+        $.gritter.add( Ext.apply({
+            title: title, text: msg, fade: true, 'class': 'baseliner-message',
+            time: 2200,
+            image: '/static/images/icons/about.svg'
+        }, config));
+    } catch(e) {
+    };
 };
 
 Baseliner.warning = function(title, msg ){
