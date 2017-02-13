@@ -1,5 +1,5 @@
----------------------------------------------- 6.6.3 --------------------------------------------
-[ENHANCEMENTS]
+﻿---------------------------------------------- 6.6.3 --------------------------------------------
+[ENHANCEMENTSSSSSSS]
 - #34989 Graceful HUP shutdown of event daemon, no notification forks
 - #35059 Rename "cla bali" to "cla service"
 - #35102 Improve visualization in role configuration window
