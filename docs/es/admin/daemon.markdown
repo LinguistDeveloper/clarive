@@ -1,4 +1,4 @@
----
+﻿---
 title: Administración de demonios
 index: 5000
 icon: daemon
@@ -8,6 +8,8 @@ Un demonio es un programa informático que se ejecuta como un proceso en segundo
 En Clarive, los demonios son especiales, los procesos independientes los inicia el [Dispatcher](admin/dispatcher).
 
 Realizan operaciones criticas para el correcto funcionamiento de la herramienta. Entre las funciones que poseen destacan:
+
+Línea nueva.
 
 * Ejecución de pases.
 * Procesamiento de eventos.
